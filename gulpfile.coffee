@@ -23,7 +23,7 @@ dest = 'dist'
 src = 'app'
 
 targets =
-  js      : 'nexangular.js'
+  js      : 'imago.widgets.angular.js'
   jade    : 'templates.js'
   coffee  : 'coffee.js'
 
