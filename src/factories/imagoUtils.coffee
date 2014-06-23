@@ -424,3 +424,7 @@ imagoWidgets.factory 'imagoUtils', ->
     # type = imagoUtils.toType(elem)
     # return console.log 'Panel: no valid query' unless type in ['object', 'string', ' array']
     if angular.isArray(elem) then elem else [elem]
+
+  getData: (asset, attribute) ->
+    return console.log "This asset does not contain a #{attribute} attribute" unless asset.meta[attribute]
+    return asset.meta[attribute].value
