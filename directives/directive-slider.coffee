@@ -1,9 +1,11 @@
-NexAngular.directive 'imagoSlider', (imagoUtils) ->
+imago.widgets.angular.directive 'imagoSlider', (imagoUtils) ->
   replace: true
-  templateUrl: '/NexAngular/slider-widget.html'
+  templateUrl: '/app/directives/views/slider-widget.html'
   controller: ($scope, $element, $attrs, $window) ->
 
-    $scope.$watch 'assets', (assetsData) ->
+    source = $attrs.source or 'assets'
+
+    $scope.$watch source, (assetsData) ->
       if assetsData
         $scope.loadedData = true
         $scope.slideSource = []
@@ -32,7 +34,6 @@ NexAngular.directive 'imagoSlider', (imagoUtils) ->
       $scope.currentIndex = if ($scope.currentIndex < $scope.slideSource.length - 1) then ++$scope.currentIndex else 0
 
     $scope.goNext = () ->
-      # console.log 'go next'
       $scope.currentIndex = if ($scope.currentIndex > 0) then --$scope.currentIndex else $scope.slideSource.length - 1
 
     angular.element($window).on 'keydown', (e) ->

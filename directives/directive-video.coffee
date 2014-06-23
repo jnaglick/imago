@@ -1,7 +1,7 @@
-NexAngular.directive 'imagoVideo', (imagoUtils) ->
+imago.widgets.angular.directive 'imagoVideo', (imagoUtils) ->
   replace: true
   scope: true
-  templateUrl: '/NexAngular/video-widget.html'
+  templateUrl: '/app/directives/views/video-widget.html'
   controller: ($scope, $element, $attrs, $transclude, $window) ->
 
     # console.log $element[0].childen('video')

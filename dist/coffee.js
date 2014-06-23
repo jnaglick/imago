@@ -1,14 +1,14 @@
 imago.widgets.angular = angular.module('imago.widgets.angular', ["ImagoTemplates"]);
 
-NexAngular.directive('imagoImage', function() {
+imago.widgets.angular.directive('imagoImage', function() {
   return {
     replace: true,
-    templateUrl: '/NexAngular/image-widget.html',
+    templateUrl: '/app/directives/views/image-widget.html',
     controller: function($scope, $element, $attrs, $transclude) {},
     compile: function(tElement, tAttrs, transclude) {
       return {
         pre: function(scope, iElement, iAttrs, controller) {
-          var assetRatio, backgroundSize, dpr, height, r, servingSize, sizemode, width, wrapperRatio;
+          var assetRatio, backgroundSize, dpr, r, servingSize, wrapperRatio;
           this.defaults = {
             align: 'center center',
             sizemode: 'fit',
@@ -16,10 +16,10 @@ NexAngular.directive('imagoImage', function() {
             scale: 1,
             lazy: true,
             maxSize: 2560,
-            noResize: false,
+            responsive: true,
             mediasize: false,
-            width: 'auto',
-            height: 'auto'
+            width: '',
+            height: ''
           };
           angular.forEach(this.defaults, function(value, key) {
             return this[key] = value;
@@ -31,9 +31,9 @@ NexAngular.directive('imagoImage', function() {
           if (!this.image.serving_url) {
             return;
           }
-          width = this.width || iElement[0].clientWidth;
-          height = this.height || iElement[0].clientHeight;
-          sizemode = this.sizemode;
+          this.width = this.width || iElement[0].clientWidth;
+          this.height = this.height || iElement[0].clientHeight;
+          this.sizemode = this.sizemode;
           scope.elementStyle = {};
           if (angular.isString(this.image.resolution)) {
             r = this.image.resolution.split('x');
@@ -43,33 +43,37 @@ NexAngular.directive('imagoImage', function() {
             };
           }
           assetRatio = this.resolution.width / this.resolution.height;
-          if (width === 'auto' || height === 'auto') {
-            if (angular.isNumber(width) && angular.isNumber(height)) {
+          if (this.width === 'auto' || this.height === 'auto') {
+            if (angular.isNumber(this.width) && angular.isNumber(this.height)) {
 
-            } else if (height === 'auto' && angular.isNumber(width)) {
-              height = width / assetRatio;
-              scope.elementStyle.height = height;
-            } else if (width === 'auto' && angular.isNumber(height)) {
-              width = height * assetRatio;
-              scope.elementStyle.width = width;
+            } else if (this.height === 'auto' && angular.isNumber(this.width)) {
+              this.height = this.width / assetRatio;
+              scope.elementStyle.height = this.height;
+            } else if (this.width === 'auto' && angular.isNumber(this.height)) {
+              this.width = this.height * assetRatio;
+              scope.elementStyle.width = this.width;
+            } else if (this.height === 'auto' && this.width === 'auto') {
+              this.width = iElement[0].clientWidth;
+              this.height = this.width / assetRatio;
+              scope.elementStyle.height = this.height;
             } else {
-              width = iElement[0].clientWidth;
-              height = iElement[0].clientHeight;
+              this.width = iElement[0].clientWidth;
+              this.height = iElement[0].clientHeight;
             }
           }
-          wrapperRatio = width / height;
+          wrapperRatio = this.width / this.height;
           dpr = Math.ceil(window.devicePixelRatio) || 1;
           if (sizemode === 'crop') {
             if (assetRatio <= wrapperRatio) {
-              servingSize = Math.round(Math.max(width, width / assetRatio));
+              servingSize = Math.round(Math.max(this.width, this.width / assetRatio));
             } else {
-              servingSize = Math.round(Math.max(height, height * assetRatio));
+              servingSize = Math.round(Math.max(this.height, this.height * assetRatio));
             }
           } else {
             if (assetRatio <= wrapperRatio) {
-              servingSize = Math.round(Math.max(height, height * assetRatio));
+              servingSize = Math.round(Math.max(this.height, this.height * assetRatio));
             } else {
-              servingSize = Math.round(Math.max(width, width / assetRatio));
+              servingSize = Math.round(Math.max(this.width, this.width / assetRatio));
             }
           }
           servingSize = parseInt(Math.min(servingSize * dpr, this.maxSize));
@@ -83,10 +87,7 @@ NexAngular.directive('imagoImage', function() {
           return scope.imageStyle = {
             "background-image": "url(" + this.servingUrl + ")",
             "background-size": backgroundSize,
-            "background-position": this.align,
-            "display": "inline-block",
-            "width": "100%",
-            "height": "100%"
+            "background-position": this.align
           };
         },
         post: function(scope, iElement, iAttrs, controller) {}
@@ -96,12 +97,14 @@ NexAngular.directive('imagoImage', function() {
   };
 });
 
-NexAngular.directive('imagoSlider', function(imagoUtils) {
+imago.widgets.angular.directive('imagoSlider', function(imagoUtils) {
   return {
     replace: true,
-    templateUrl: '/NexAngular/slider-widget.html',
+    templateUrl: '/app/directives/views/slider-widget.html',
     controller: function($scope, $element, $attrs, $window) {
-      $scope.$watch('assets', function(assetsData) {
+      var source;
+      source = $attrs.source || 'assets';
+      $scope.$watch(source, function(assetsData) {
         var item, _i, _len, _ref;
         if (assetsData) {
           $scope.loadedData = true;
@@ -179,11 +182,11 @@ NexAngular.directive('imagoSlider', function(imagoUtils) {
   };
 });
 
-NexAngular.directive('imagoVideo', function(imagoUtils) {
+imago.widgets.angular.directive('imagoVideo', function(imagoUtils) {
   return {
     replace: true,
     scope: true,
-    templateUrl: '/NexAngular/video-widget.html',
+    templateUrl: '/app/directives/views/video-widget.html',
     controller: function($scope, $element, $attrs, $transclude, $window) {
       var compile, detectCodec, pad, renderVideo, resize, updateTime, videoElement;
       $scope.videoWrapper = $element[0].children[1];
