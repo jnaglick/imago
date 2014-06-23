@@ -1,0 +1,1 @@
+NexAngular = angular.module 'NexAngular', ["ImagoTemplates"]

@@ -1,0 +1,24 @@
+{
+  "name": "NexAngular",
+  "version": "1.0.0",
+  "homepage": "https://github.com/Nex9/nexangular",
+  "authors": [
+    "Sebastian Moreno <sebastian@nex9.com>"
+  ],
+  "description": "Nex Widgets for AngularJS",
+  "main": "gulpfile.js",
+  "moduleType": [
+    "globals"
+  ],
+  "keywords": [
+    "Nex"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
+}
