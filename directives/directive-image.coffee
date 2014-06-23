@@ -1,4 +1,4 @@
-imago.widgets.angular.directive 'imagoImage', () ->
+imagoWidgets.directive 'imagoImage', () ->
   replace: true
   templateUrl: '/app/directives/views/image-widget.html'
   controller: ($scope, $element, $attrs, $transclude) ->

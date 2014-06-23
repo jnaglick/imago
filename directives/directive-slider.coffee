@@ -1,4 +1,4 @@
-imago.widgets.angular.directive 'imagoSlider', (imagoUtils) ->
+imagoWidgets.angular.directive 'imagoSlider', (imagoUtils) ->
   replace: true
   templateUrl: '/app/directives/views/slider-widget.html'
   controller: ($scope, $element, $attrs, $window) ->

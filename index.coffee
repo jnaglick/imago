@@ -1,1 +1,1 @@
-imago.widgets.angular = angular.module 'imago.widgets.angular', ["ImagoTemplates"]
+imagoWidgets = angular.module 'imago.widgets.angular', ["ImagoTemplates"]

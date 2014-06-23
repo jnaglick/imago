@@ -1,4 +1,4 @@
-imago.widgets.angular.directive 'imagoVideo', (imagoUtils) ->
+imagoWidgets.angular.directive 'imagoVideo', (imagoUtils) ->
   replace: true
   scope: true
   templateUrl: '/app/directives/views/video-widget.html'
