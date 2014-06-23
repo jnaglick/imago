@@ -1,6 +1,8 @@
-imago.widgets.angular = angular.module('imago.widgets.angular', ["ImagoTemplates"]);
+var imagoWidgets;
 
-imago.widgets.angular.directive('imagoImage', function() {
+imagoWidgets = angular.module('imago.widgets.angular', ["ImagoTemplates"]);
+
+imagoWidgets.directive('imagoImage', function() {
   return {
     replace: true,
     templateUrl: '/app/directives/views/image-widget.html',
@@ -97,7 +99,7 @@ imago.widgets.angular.directive('imagoImage', function() {
   };
 });
 
-imago.widgets.angular.directive('imagoSlider', function(imagoUtils) {
+imagoWidgets.angular.directive('imagoSlider', function(imagoUtils) {
   return {
     replace: true,
     templateUrl: '/app/directives/views/slider-widget.html',
@@ -182,7 +184,7 @@ imago.widgets.angular.directive('imagoSlider', function(imagoUtils) {
   };
 });
 
-imago.widgets.angular.directive('imagoVideo', function(imagoUtils) {
+imagoWidgets.angular.directive('imagoVideo', function(imagoUtils) {
   return {
     replace: true,
     scope: true,
