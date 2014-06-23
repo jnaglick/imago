@@ -1,5 +1,5 @@
 {
-    "name": "nex-angular",
+    "name": "imago.widgets.angular",
     "version": "0.0.1",
     "description": "Angular theme for NEX9 LLC",
     "main": "gulpfile.js",
