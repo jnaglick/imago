@@ -102,7 +102,7 @@ imagoWidgets.directive('imagoImage', function() {
   };
 });
 
-imagoWidgets.angular.directive('imagoSlider', function(imagoUtils) {
+imagoWidgets.directive('imagoSlider', function(imagoUtils) {
   return {
     replace: true,
     templateUrl: '/app/directives/views/slider-widget.html',
@@ -187,7 +187,7 @@ imagoWidgets.angular.directive('imagoSlider', function(imagoUtils) {
   };
 });
 
-imagoWidgets.angular.directive('imagoVideo', function(imagoUtils) {
+imagoWidgets.directive('imagoVideo', function(imagoUtils) {
   return {
     replace: true,
     scope: true,
