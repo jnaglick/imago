@@ -1,6 +1,4 @@
-var NexAngular;
-
-NexAngular = angular.module('NexAngular', ["ImagoTemplates"]);
+imago.widgets.angular = angular.module('imago.widgets.angular', ["ImagoTemplates"]);
 
 NexAngular.directive('imagoImage', function() {
   return {
