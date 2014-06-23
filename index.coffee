@@ -1,1 +1,1 @@
-NexAngular = angular.module 'NexAngular', ["ImagoTemplates"]
+imago.widgets.angular = angular.module 'imago.widgets.angular', ["ImagoTemplates"]
