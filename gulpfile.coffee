@@ -62,8 +62,8 @@ gulp.task "jade", ->
     .pipe jade({locals: YOUR_LOCALS}).on('error', reportError)
     .pipe templateCache(
       standalone: true
-      root: "/NexAngular/"
-      module: "ImagoTemplates"
+      root: "/imagoWidgets/"
+      module: "ImagoWidgetsTemplates"
     )
     .pipe concat targets.jade
     .pipe gulp.dest dest

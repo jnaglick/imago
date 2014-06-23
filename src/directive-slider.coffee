@@ -1,6 +1,6 @@
 imagoWidgets.directive 'imagoSlider', (imagoUtils) ->
   replace: true
-  templateUrl: '/app/directives/views/slider-widget.html'
+  templateUrl: '/imagoWidgets/slider-widget.html'
   controller: ($scope, $element, $attrs, $window) ->
 
     source = $attrs.source or 'assets'

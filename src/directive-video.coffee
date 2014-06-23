@@ -1,7 +1,7 @@
 imagoWidgets.directive 'imagoVideo', (imagoUtils) ->
   replace: true
   scope: true
-  templateUrl: '/app/directives/views/video-widget.html'
+  templateUrl: '/imagoWidgets/video-widget.html'
   controller: ($scope, $element, $attrs, $transclude, $window) ->
 
     # console.log $element[0].childen('video')
