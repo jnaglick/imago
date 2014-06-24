@@ -11,38 +11,37 @@ imagoWidgets.factory 'imagoPanel', ($http, imagoUtils, $q, $location) ->
     # console.log 'query in getData', query
     return console.log "Panel: query is empty, aborting #{query}" unless query
     # return if path is @path
-    @query = query
     if angular.isString(query)
-      @query =
+      query =
         [path: query]
 
-    @query = imagoUtils.toArray(@query)
+    query = imagoUtils.toArray(query)
 
 
-    @promises = []
-    @data = []
+    promises = []
+    data = []
 
-    # console.log 'before', @query
-    angular.forEach @query, (value) =>
+    # console.log 'before', query
+    angular.forEach query, (value) =>
       # console.log 'in foreach', value
-      @promises.push @search(value).success((data) =>
+      promises.push @search(value).success((response) =>
 
         # if the data is one single item and its a collection
-        if data.length is 1 and data[0].kind is 'Collection'
-          @data.push data[0]
+        if response.length is 1 and response[0].kind is 'Collection'
+          data.push response[0]
         else
           result =
-            items : data
-            count : data.length
+            items : response
+            count : response.length
 
-          @data.push(result)
+          data.push(result)
         # else construct a result object
         # {items : data, count : data.length}
       )
-    $q.all(@promises).then ((response)=>
-      return @data
+    $q.all(promises).then ((response)=>
+      return data
       # console.log response
-      # console.log @data
+      # console.log data
     )
 
   objListToDict: (obj_or_list) ->
