@@ -14,7 +14,7 @@ imagoWidgets.directive 'imagoVideo', (imagoUtils) ->
 
     $scope.$watch $attrs['source'], (video) ->
       if video and video.kind is "Video"
-        compile video
+        render video
       else
         $scope.videoBackground =
           "display" : "none"
@@ -29,7 +29,7 @@ imagoWidgets.directive 'imagoVideo', (imagoUtils) ->
       $scope.$apply(()->
         resize()
       )
-    compile = (video) ->
+    render = (video) ->
       @options = {}
       @defaults =
         autobuffer  : null
