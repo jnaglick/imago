@@ -27,21 +27,19 @@ imagoWidgets.directive 'imagoImage', () ->
       $log.log '@noResize depricated will be removed soon, use responsive: false'
       @responsive = false
 
-    $scope.$watch $attrs['source'], (data) ->
+    $scope.$watch $attrs['source'], (data) =>
       if data
-        preload data
+        @data = data
+        preload @data
 
     preload = (data) =>
 
-      @data = data
+      unless data.serving_url then return
 
+      $scope.elementStyle = {} unless $scope.elementStyle
 
-      unless @data.serving_url then return
-
-      $scope.elementStyle = {}
-
-      if angular.isString(@data.resolution)
-        r = @data.resolution.split('x')
+      if angular.isString(data.resolution)
+        r = data.resolution.split('x')
         @resolution =
           width:  r[0]
           height: r[1]
@@ -50,22 +48,22 @@ imagoWidgets.directive 'imagoImage', () ->
 
       assetRatio = @resolution.width / @resolution.height
 
-      console.log @width, @height
+      # console.log @width, @height
 
       # use pvrovided dimentions.
       if angular.isNumber(@width) and angular.isNumber(@height)
-        # $log.log 'fixed size', width, height
+        # $log.log 'fixed size', @width, @height
 
       # fit width
       else if @height is 'auto' and angular.isNumber(@width)
         @height = @width / assetRatio
-        $scope.elementStyle.height = @height
+        $scope.elementStyle.height = parseInt @height
         # $log.log 'fit width', @width, @height
 
       # fit height
       else if @width is 'auto' and angular.isNumber(@height)
         @width = @height * assetRatio
-        $scope.elementStyle.width = @width
+        $scope.elementStyle.width = parseInt @width
         # $log.log 'fit height', @width, @height
 
       # we want dynamic resizing without css.
@@ -73,7 +71,7 @@ imagoWidgets.directive 'imagoImage', () ->
       else if @width is 'auto' and @height is 'auto'
         @width  = $element[0].clientWidth
         @height = @width / assetRatio
-        $scope.elementStyle.height = @height
+        $scope.elementStyle.height = parseInt @height
         # $log.log 'both auto', @width, @height
 
       # width and height dynamic, needs to be defined via css
@@ -121,11 +119,10 @@ imagoWidgets.directive 'imagoImage', () ->
 
       # make sure we only load a new size
       if servingSize is @servingSize
-        # $log.log 'abort load. same size', @servingSize, servingSize
         $scope.status = 'loaded'
         return
 
-      servingUrl = "#{ @data.serving_url }=s#{ servingSize * @scale }"
+      servingUrl = "#{ data.serving_url }=s#{ servingSize * @scale }"
 
       @servingSize = servingSize
 
@@ -150,25 +147,8 @@ imagoWidgets.directive 'imagoImage', () ->
       $scope.status = 'loaded'
 
 
-    $scope.setBackgroundSize = () =>
-      # $log.log 'calcMediaSize', @sizemode
-      width  =  @width  or @el.width()
-      height =  @height or @el.height()
-      # $log.log 'calcMediaSize: width, height', width, height
-      assetRatio = @resolution.width / @resolution.height
-      wrapperRatio = width / height
-      if @sizemode is 'crop'
-        # $log.log '@sizemode crop', assetRatio, wrapperRatio
-        if assetRatio < wrapperRatio then value = "100% auto" else value = "auto 100%"
-      else
-        # $log.log '@sizemode fit', assetRatio, wrapperRatio
-        if assetRatio > wrapperRatio then value = "100% auto" else value = "auto 100%"
-
-      @data.css backgroundSize  : value
-
     $scope.onResize = () =>
-      $scope.imageStyle =
-        $scope.imageStyle['background-size'] = @calcMediaSize()
+      $scope.imageStyle['background-size'] = $scope.calcMediaSize()
 
     $scope.calcMediaSize = () =>
       # for key, value of options
@@ -190,4 +170,12 @@ imagoWidgets.directive 'imagoImage', () ->
         if assetRatio > wrapperRatio then "100% auto" else "auto 100%"
 
 
+    $scope.$on 'resizelimit', $scope.onResize if @responsive
 
+    $scope.$on 'resizestop', () =>
+      # console.log 'resizestop'
+      preload(@data) if @responsive
+
+    $scope.$on 'scrollstop', () =>
+      # console.log 'scrollstop'
+      preload(@data) if @lazy

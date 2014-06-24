@@ -37,21 +37,25 @@ imagoWidgets.directive('imagoImage', function() {
         $log.log('@noResize depricated will be removed soon, use responsive: false');
         this.responsive = false;
       }
-      $scope.$watch($attrs['source'], function(data) {
-        if (data) {
-          return preload(data);
-        }
-      });
+      $scope.$watch($attrs['source'], (function(_this) {
+        return function(data) {
+          if (data) {
+            _this.data = data;
+            return preload(_this.data);
+          }
+        };
+      })(this));
       preload = (function(_this) {
         return function(data) {
           var assetRatio, dpr, img, r, servingSize, servingUrl, wrapperRatio;
-          _this.data = data;
-          if (!_this.data.serving_url) {
+          if (!data.serving_url) {
             return;
           }
-          $scope.elementStyle = {};
-          if (angular.isString(_this.data.resolution)) {
-            r = _this.data.resolution.split('x');
+          if (!$scope.elementStyle) {
+            $scope.elementStyle = {};
+          }
+          if (angular.isString(data.resolution)) {
+            r = data.resolution.split('x');
             _this.resolution = {
               width: r[0],
               height: r[1]
@@ -61,19 +65,18 @@ imagoWidgets.directive('imagoImage', function() {
             return $log.log('tried to preload during preloading!!');
           }
           assetRatio = _this.resolution.width / _this.resolution.height;
-          console.log(_this.width, _this.height);
           if (angular.isNumber(_this.width) && angular.isNumber(_this.height)) {
 
           } else if (_this.height === 'auto' && angular.isNumber(_this.width)) {
             _this.height = _this.width / assetRatio;
-            $scope.elementStyle.height = _this.height;
+            $scope.elementStyle.height = parseInt(_this.height);
           } else if (_this.width === 'auto' && angular.isNumber(_this.height)) {
             _this.width = _this.height * assetRatio;
-            $scope.elementStyle.width = _this.width;
+            $scope.elementStyle.width = parseInt(_this.width);
           } else if (_this.width === 'auto' && _this.height === 'auto') {
             _this.width = $element[0].clientWidth;
             _this.height = _this.width / assetRatio;
-            $scope.elementStyle.height = _this.height;
+            $scope.elementStyle.height = parseInt(_this.height);
           } else {
             _this.width = $element[0].clientWidth;
             _this.height = $element[0].clientHeight;
@@ -99,7 +102,7 @@ imagoWidgets.directive('imagoImage', function() {
             $scope.status = 'loaded';
             return;
           }
-          servingUrl = "" + _this.data.serving_url + "=s" + (servingSize * _this.scale);
+          servingUrl = "" + data.serving_url + "=s" + (servingSize * _this.scale);
           _this.servingSize = servingSize;
           $scope.imageStyle = {};
           if (!_this.responsive) {
@@ -118,37 +121,12 @@ imagoWidgets.directive('imagoImage', function() {
           return $scope.status = 'loaded';
         };
       })(this);
-      $scope.setBackgroundSize = (function(_this) {
-        return function() {
-          var assetRatio, height, value, width, wrapperRatio;
-          width = _this.width || _this.el.width();
-          height = _this.height || _this.el.height();
-          assetRatio = _this.resolution.width / _this.resolution.height;
-          wrapperRatio = width / height;
-          if (_this.sizemode === 'crop') {
-            if (assetRatio < wrapperRatio) {
-              value = "100% auto";
-            } else {
-              value = "auto 100%";
-            }
-          } else {
-            if (assetRatio > wrapperRatio) {
-              value = "100% auto";
-            } else {
-              value = "auto 100%";
-            }
-          }
-          return _this.data.css({
-            backgroundSize: value
-          });
-        };
-      })(this);
       $scope.onResize = (function(_this) {
         return function() {
-          return $scope.imageStyle = $scope.imageStyle['background-size'] = _this.calcMediaSize();
+          return $scope.imageStyle['background-size'] = $scope.calcMediaSize();
         };
       })(this);
-      return $scope.calcMediaSize = (function(_this) {
+      $scope.calcMediaSize = (function(_this) {
         return function() {
           var assetRatio, wrapperRatio;
           _this.width = $element[0].clientWidth || _this.width;
@@ -173,6 +151,23 @@ imagoWidgets.directive('imagoImage', function() {
           }
         };
       })(this);
+      if (this.responsive) {
+        $scope.$on('resizelimit', $scope.onResize);
+      }
+      $scope.$on('resizestop', (function(_this) {
+        return function() {
+          if (_this.responsive) {
+            return preload(_this.data);
+          }
+        };
+      })(this));
+      return $scope.$on('scrollstop', (function(_this) {
+        return function() {
+          if (_this.lazy) {
+            return preload(_this.data);
+          }
+        };
+      })(this));
     }
   };
 });
