@@ -1,5 +1,6 @@
 imagoWidgets.directive 'imagoImage', () ->
   replace: true
+  scope: true
   templateUrl: '/imagoWidgets/image-widget.html'
   controller: ($scope, $element, $attrs, $transclude, $window, $log, $q, $timeout) ->
 
@@ -28,9 +29,9 @@ imagoWidgets.directive 'imagoImage', () ->
       @responsive = false
 
     $scope.$watch $attrs['source'], (data) =>
-      if data
-        @data = data
-        preload @data
+      return unless data
+      @data = data
+      preload @data
 
     preload = (data) =>
 
@@ -44,7 +45,7 @@ imagoWidgets.directive 'imagoImage', () ->
           width:  r[0]
           height: r[1]
 
-      return $log.log('tried to preload during preloading!!') if $scope.status is 'preloading'
+      # return $log.log('tried to preload during preloading!!') if $scope.status is 'preloading'
 
       assetRatio = @resolution.width / @resolution.height
 
@@ -119,6 +120,7 @@ imagoWidgets.directive 'imagoImage', () ->
 
       # make sure we only load a new size
       if servingSize is @servingSize
+        console.log 'same size exit'
         $scope.status = 'loaded'
         return
 
@@ -150,6 +152,7 @@ imagoWidgets.directive 'imagoImage', () ->
       $scope.imageStyle['background-size'] = $scope.calcMediaSize()
 
     $scope.calcMediaSize = () =>
+      # console.log 'calcMediaSize'
       # for key, value of options
       #   @[key] = value
 
@@ -162,14 +165,16 @@ imagoWidgets.directive 'imagoImage', () ->
 
       wrapperRatio = @width / @height
       if @sizemode is 'crop'
-        # $log.log '@sizemode crop', assetRatio, wrapperRatio
+        $log.log '@sizemode crop', assetRatio, wrapperRatio
         if assetRatio < wrapperRatio then "100% auto" else "auto 100%"
       else
-        # $log.log '@sizemode fit', assetRatio, wrapperRatio
+        $log.log '@sizemode fit', assetRatio, wrapperRatio
         if assetRatio > wrapperRatio then "100% auto" else "auto 100%"
 
 
-    $scope.$on 'resizelimit', $scope.onResize if @responsive
+    $scope.$on 'resizelimit', () =>
+      # console.log 'resizelimit'
+      $scope.onResize if @responsive
 
     $scope.$on 'resizestop', () =>
       # console.log 'resizestop'

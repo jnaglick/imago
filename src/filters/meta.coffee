@@ -1,5 +1,6 @@
 imagoWidgets.filter "meta", () ->
   (input) ->
+
     unless input then return
 
     resources = input.split('.')
