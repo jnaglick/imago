@@ -139,12 +139,11 @@ imagoWidgets.directive 'imagoImage', () ->
         $scope.imageStyle['background-size']     = $scope.calcMediaSize()
         $scope.imageStyle['background-position'] = @align
         $scope.imageStyle['display']             = 'inline-block'
+        $scope.status = 'loaded'
         $scope.$apply()
         # console.log '$scope.imageStyle', $scope.imageStyle
 
       img[0].src = servingUrl
-
-      $scope.status = 'loaded'
 
 
     $scope.onResize = () =>

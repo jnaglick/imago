@@ -115,10 +115,10 @@ imagoWidgets.directive('imagoImage', function() {
             $scope.imageStyle['background-size'] = $scope.calcMediaSize();
             $scope.imageStyle['background-position'] = _this.align;
             $scope.imageStyle['display'] = 'inline-block';
+            $scope.status = 'loaded';
             return $scope.$apply();
           });
-          img[0].src = servingUrl;
-          return $scope.status = 'loaded';
+          return img[0].src = servingUrl;
         };
       })(this);
       $scope.onResize = (function(_this) {
