@@ -35,7 +35,7 @@ imagoWidgets.directive 'imagoImage', () ->
 
     preload = (data) =>
 
-      unless data.serving_url then return
+      return unless data.serving_url
 
       $scope.elementStyle = {} unless $scope.elementStyle
 
@@ -47,7 +47,7 @@ imagoWidgets.directive 'imagoImage', () ->
 
       # return $log.log('tried to preload during preloading!!') if $scope.status is 'preloading'
 
-      assetRatio = @resolution.width / @resolution.height
+      @assetRatio = @resolution.width / @resolution.height
 
       # console.log @width, @height
 
@@ -57,13 +57,13 @@ imagoWidgets.directive 'imagoImage', () ->
 
       # fit width
       else if @height is 'auto' and angular.isNumber(@width)
-        @height = @width / assetRatio
+        @height = @width / @assetRatio
         $scope.elementStyle.height = parseInt @height
         # $log.log 'fit width', @width, @height
 
       # fit height
       else if @width is 'auto' and angular.isNumber(@height)
-        @width = @height * assetRatio
+        @width = @height * @assetRatio
         $scope.elementStyle.width = parseInt @width
         # $log.log 'fit height', @width, @height
 
@@ -71,7 +71,7 @@ imagoWidgets.directive 'imagoImage', () ->
       # like standard image behaviour. will get a height according to the width
       else if @width is 'auto' and @height is 'auto'
         @width  = $element[0].clientWidth
-        @height = @width / assetRatio
+        @height = @width / @assetRatio
         $scope.elementStyle.height = parseInt @height
         # $log.log 'both auto', @width, @height
 
@@ -92,7 +92,7 @@ imagoWidgets.directive 'imagoImage', () ->
 
       wrapperRatio = @width / @height
 
-      # $log.log 'width, height, wrapperRatio, assetRatio', @width, @height, wrapperRatio, assetRatio
+      # $log.log 'width, height, wrapperRatio, @assetRatio', @width, @height, wrapperRatio, assetRatio
       # debugger
 
       dpr = if @hires then Math.ceil(window.devicePixelRatio) or 1 else 1
@@ -108,13 +108,13 @@ imagoWidgets.directive 'imagoImage', () ->
 
       # sizemode fit
       else
-        # $log.log 'ratios', assetRatio, wrapperRatio
-        if assetRatio <= wrapperRatio
-          # $log.log 'fit full height', @width, @height, assetRatio, @height * assetRatio
+        # $log.log 'ratios', @assetRatio, wrapperRatio
+        if @assetRatio <= wrapperRatio
+          # $log.log 'fit full height', @width, @height, @assetRatio, @height * assetRatio
           servingSize = Math.round(Math.max(@height, @height * assetRatio))
         else
-          # $log.log 'fit full width', @width, @height, assetRatio, height / assetRatio
-          servingSize = Math.round(Math.max(@width, @width / assetRatio))
+          # $log.log 'fit full width', @width, @height, @assetRatio, height / assetRatio
+          servingSize = Math.round(Math.max(@width, @width / @assetRatio))
 
       servingSize = parseInt Math.min(servingSize * dpr, @maxsize), 10
 
@@ -161,15 +161,14 @@ imagoWidgets.directive 'imagoImage', () ->
       @height = $element[0].clientHeight or @height
       # $log.log 'calcMediaSize: @width, @height', @width, @height
       return unless @width and @height
-      assetRatio   = @resolution.width / @resolution.height
 
       wrapperRatio = @width / @height
       if @sizemode is 'crop'
-        $log.log '@sizemode crop', assetRatio, wrapperRatio
-        if assetRatio < wrapperRatio then "100% auto" else "auto 100%"
+        $log.log '@sizemode crop', @assetRatio, wrapperRatio
+        if @assetRatio < wrapperRatio then "100% auto" else "auto 100%"
       else
-        $log.log '@sizemode fit', assetRatio, wrapperRatio
-        if assetRatio > wrapperRatio then "100% auto" else "auto 100%"
+        $log.log '@sizemode fit', @assetRatio, wrapperRatio
+        if @assetRatio > wrapperRatio then "100% auto" else "auto 100%"
 
 
     $scope.$on 'resizelimit', () =>

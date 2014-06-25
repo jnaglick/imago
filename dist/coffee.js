@@ -46,7 +46,7 @@ imagoWidgets.directive('imagoImage', function() {
       })(this));
       preload = (function(_this) {
         return function(data) {
-          var assetRatio, dpr, img, r, servingSize, servingUrl, wrapperRatio;
+          var dpr, img, r, servingSize, servingUrl, wrapperRatio;
           if (!data.serving_url) {
             return;
           }
@@ -60,18 +60,18 @@ imagoWidgets.directive('imagoImage', function() {
               height: r[1]
             };
           }
-          assetRatio = _this.resolution.width / _this.resolution.height;
+          _this.assetRatio = _this.resolution.width / _this.resolution.height;
           if (angular.isNumber(_this.width) && angular.isNumber(_this.height)) {
 
           } else if (_this.height === 'auto' && angular.isNumber(_this.width)) {
-            _this.height = _this.width / assetRatio;
+            _this.height = _this.width / _this.assetRatio;
             $scope.elementStyle.height = parseInt(_this.height);
           } else if (_this.width === 'auto' && angular.isNumber(_this.height)) {
-            _this.width = _this.height * assetRatio;
+            _this.width = _this.height * _this.assetRatio;
             $scope.elementStyle.width = parseInt(_this.width);
           } else if (_this.width === 'auto' && _this.height === 'auto') {
             _this.width = $element[0].clientWidth;
-            _this.height = _this.width / assetRatio;
+            _this.height = _this.width / _this.assetRatio;
             $scope.elementStyle.height = parseInt(_this.height);
           } else {
             _this.width = $element[0].clientWidth;
@@ -87,10 +87,10 @@ imagoWidgets.directive('imagoImage', function() {
               servingSize = Math.round(Math.max(_this.height, _this.height * assetRatio));
             }
           } else {
-            if (assetRatio <= wrapperRatio) {
+            if (_this.assetRatio <= wrapperRatio) {
               servingSize = Math.round(Math.max(_this.height, _this.height * assetRatio));
             } else {
-              servingSize = Math.round(Math.max(_this.width, _this.width / assetRatio));
+              servingSize = Math.round(Math.max(_this.width, _this.width / _this.assetRatio));
             }
           }
           servingSize = parseInt(Math.min(servingSize * dpr, _this.maxsize), 10);
@@ -125,24 +125,23 @@ imagoWidgets.directive('imagoImage', function() {
       })(this);
       $scope.calcMediaSize = (function(_this) {
         return function() {
-          var assetRatio, wrapperRatio;
+          var wrapperRatio;
           _this.width = $element[0].clientWidth || _this.width;
           _this.height = $element[0].clientHeight || _this.height;
           if (!(_this.width && _this.height)) {
             return;
           }
-          assetRatio = _this.resolution.width / _this.resolution.height;
           wrapperRatio = _this.width / _this.height;
           if (_this.sizemode === 'crop') {
-            $log.log('@sizemode crop', assetRatio, wrapperRatio);
-            if (assetRatio < wrapperRatio) {
+            $log.log('@sizemode crop', _this.assetRatio, wrapperRatio);
+            if (_this.assetRatio < wrapperRatio) {
               return "100% auto";
             } else {
               return "auto 100%";
             }
           } else {
-            $log.log('@sizemode fit', assetRatio, wrapperRatio);
-            if (assetRatio > wrapperRatio) {
+            $log.log('@sizemode fit', _this.assetRatio, wrapperRatio);
+            if (_this.assetRatio > wrapperRatio) {
               return "100% auto";
             } else {
               return "auto 100%";
@@ -271,6 +270,22 @@ imagoWidgets.directive('imagoVideo', function(imagoUtils) {
     templateUrl: '/imagoWidgets/video-widget.html',
     controller: function($scope, $element, $attrs, $transclude, $window) {
       var detectCodec, pad, render, renderVideo, resize, updateTime, videoElement;
+      this.defaults = {
+        autobuffer: null,
+        autoplay: false,
+        controls: true,
+        preload: 'none',
+        size: 'hd',
+        align: 'left top',
+        sizemode: 'fit',
+        lazy: true
+      };
+      angular.forEach(this.defaults, function(value, key) {
+        return this[key] = value;
+      });
+      angular.forEach($attrs, function(value, key) {
+        return this[key] = value;
+      });
       $scope.videoWrapper = $element[0].children[1];
       $scope.time = '00:00';
       $scope.seekTime = 0;
@@ -290,55 +305,57 @@ imagoWidgets.directive('imagoVideo', function(imagoUtils) {
           return updateTime($scope.videoWrapper.currentTime);
         });
       });
-      angular.element($window).bind('resize', function(e) {
-        return $scope.$apply(function() {
+      render = (function(_this) {
+        return function(video) {
+          var r;
+          if (!$scope.videoBackground) {
+            $scope.videoBackground = {};
+          }
+          if (angular.isString(video.resolution)) {
+            r = video.resolution.split('x');
+            _this.esolution = {
+              width: r[0],
+              height: r[1]
+            };
+          }
+          _this.assetRatio = _this.resolution.width / _this.resolution.height;
+          if (_this.controls) {
+            $scope.controls = angular.copy(_this.controls);
+          }
+          if (angular.isNumber(_this.width) && angular.isNumber(_this.height)) {
+
+          } else if (_this.height === 'auto' && angular.isNumber(_this.width)) {
+            _this.height = _this.width / _this.assetRatio;
+          } else if (_this.width === 'auto' && angular.isNumber(_this.height)) {
+            _this.width = _this.height * _this.assetRatio;
+            _this.el.css({
+              width: _this.width,
+              height: _this.height
+            });
+          } else if (_this.width === 'auto' && _this.height === 'auto') {
+            _this.width = parseInt(_this.el.css('width'));
+            _this.height = _this.width / _this.assetRatio;
+            _this.el.height(parseInt(_this.height));
+          } else {
+            _this.width = parseInt(_this.el.css('width'));
+            _this.height = parseInt(_this.el.css('height'));
+            _this.log('fit width', _this.width, _this.height);
+          }
+          $scope.videoBackground = {
+            "background-position": "" + _this.options.align
+          };
+          $scope.optionsVideo = _this;
+          renderVideo(video);
+          videoElement(video);
           return resize();
-        });
-      });
-      render = function(video) {
-        this.options = {};
-        this.defaults = {
-          autobuffer: null,
-          autoplay: false,
-          controls: true,
-          preload: 'none',
-          size: 'hd',
-          align: 'left top',
-          sizemode: 'fit',
-          lazy: true
         };
-        angular.forEach(this.defaults, function(value, key) {
-          return this.options[key] = value;
-        });
-        angular.forEach($attrs, function(value, key) {
-          return this.options[key] = value;
-        });
-        $scope.optionsVideo = this.options;
-        if (this.options.controls) {
-          $scope.controls = angular.copy($scope.optionsVideo.controls);
-        }
-        $scope.videoBackground = {
-          "background-position": "" + this.options.align
-        };
-        renderVideo(video);
-        videoElement(video);
-        return resize();
-      };
+      })(this);
       renderVideo = function(video) {
-        var dpr, height, r, width;
+        var dpr;
         console.log(video);
         dpr = this.hires ? Math.ceil(window.devicePixelRatio) || 1 : 1;
-        width = $scope.optionsVideo.width || $element[0].clientWidth;
-        height = $scope.optionsVideo.height || $element[0].clientHeight;
         this.serving_url = video.serving_url;
         this.serving_url += "=s" + (Math.ceil(Math.min(Math.max(width, height) * dpr, 1600)));
-        if (angular.isString(video.resolution)) {
-          r = video.resolution.split('x');
-          $scope.optionsVideo.resolution = {
-            width: r[0],
-            height: r[1]
-          };
-        }
         $scope.videoBackground["background-image"] = "url(" + this.serving_url + ")";
         $scope.videoBackground["background-repeat"] = "no-repeat";
         $scope.videoBackground["background-size"] = "auto 100%";
@@ -423,78 +440,79 @@ imagoWidgets.directive('imagoVideo', function(imagoUtils) {
           return $scope.videoWrapper.msRequestFullscreen();
         }
       };
-      resize = function() {
-        var assetRatio, height, width, wrapperRatio;
-        if (!$scope.optionsVideo) {
-          return;
-        }
-        assetRatio = $scope.optionsVideo.resolution.width / $scope.optionsVideo.resolution.height;
-        if ($scope.optionsVideo.sizemode === "crop") {
-          width = $element[0].clientWidth;
-          height = $element[0].clientHeight;
-          wrapperRatio = width / height;
-          if (assetRatio < wrapperRatio) {
-            if (imagoUtils.isiOS()) {
-              $scope.styleFormats["width"] = "100%";
-              $scope.styleFormats["height"] = "100%";
-            }
-            if ($scope.optionsVideo.align === "center center") {
-              $scope.styleFormats["top"] = "0";
-              $scope.styleFormats["left"] = "0";
-            } else {
-              $scope.styleFormats["width"] = "100%";
-              $scope.styleFormats["height"] = "auto";
-            }
-            if ($scope.optionsVideo.align === "center center") {
-              $scope.styleFormats["top"] = "50%";
-              $scope.styleFormats["left"] = "auto";
-              $scope.styleFormats["margin-top"] = "-" + (width / assetRatio / 2) + "px";
-              $scope.styleFormats["margin-left"] = "0px";
-            }
-            $scope.videoBackground["background-size"] = "100% auto";
-            return $scope.videoBackground["background-position"] = $scope.optionsVideo.align;
-          } else {
-            if (imagoUtils.isiOS()) {
-              $scope.styleFormats["width"] = "100%";
-              $scope.styleFormats["height"] = "100%";
-            }
-            if ($scope.optionsVideo.align === "center center") {
-              $scope.styleFormats["top"] = "0";
-              $scope.styleFormats["left"] = "0";
-            } else {
-              $scope.styleFormats["width"] = "auto";
-              $scope.styleFormats["height"] = "100%";
-            }
-            if ($scope.optionsVideo.align === "center center") {
-              $scope.styleFormats["top"] = "auto";
-              $scope.styleFormats["left"] = "50%";
-              $scope.styleFormats["margin-top"] = "0px";
-              $scope.styleFormats["margin-left"] = "-" + (height * assetRatio / 2) + "px";
-            }
-            $scope.videoBackground["background-size"] = "auto 100%";
-            return $scope.videoBackground["background-position"] = $scope.optionsVideo.align;
+      resize = (function(_this) {
+        return function() {
+          var height, width, wrapperRatio;
+          if (!$scope.optionsVideo) {
+            return;
           }
-        } else {
-          width = $element[0].clientWidth;
-          height = $element[0].clientHeight;
-          wrapperRatio = width / height;
-          if (assetRatio > wrapperRatio) {
-            $scope.styleFormats["width"] = '100%';
-            $scope.styleFormats["height"] = imagoUtils.isiOS() ? '100%' : 'auto';
-            $scope.videoBackground["background-size"] = '100% auto';
-            $scope.videoBackground["background-position"] = $scope.optionsVideo.align;
-            $scope.videoBackground["width"] = "" + width + "px";
-            return $scope.videoBackground["height"] = "" + (parseInt(width / assetRatio, 10)) + "px";
+          if ($scope.optionsVideo.sizemode === "crop") {
+            width = $element[0].clientWidth;
+            height = $element[0].clientHeight;
+            wrapperRatio = width / height;
+            if (_this.assetRatio < wrapperRatio) {
+              if (imagoUtils.isiOS()) {
+                $scope.styleFormats["width"] = "100%";
+                $scope.styleFormats["height"] = "100%";
+              }
+              if ($scope.optionsVideo.align === "center center") {
+                $scope.styleFormats["top"] = "0";
+                $scope.styleFormats["left"] = "0";
+              } else {
+                $scope.styleFormats["width"] = "100%";
+                $scope.styleFormats["height"] = "auto";
+              }
+              if ($scope.optionsVideo.align === "center center") {
+                $scope.styleFormats["top"] = "50%";
+                $scope.styleFormats["left"] = "auto";
+                $scope.styleFormats["margin-top"] = "-" + (width / _this.assetRatio / 2) + "px";
+                $scope.styleFormats["margin-left"] = "0px";
+              }
+              $scope.videoBackground["background-size"] = "100% auto";
+              return $scope.videoBackground["background-position"] = $scope.optionsVideo.align;
+            } else {
+              if (imagoUtils.isiOS()) {
+                $scope.styleFormats["width"] = "100%";
+                $scope.styleFormats["height"] = "100%";
+              }
+              if ($scope.optionsVideo.align === "center center") {
+                $scope.styleFormats["top"] = "0";
+                $scope.styleFormats["left"] = "0";
+              } else {
+                $scope.styleFormats["width"] = "auto";
+                $scope.styleFormats["height"] = "100%";
+              }
+              if ($scope.optionsVideo.align === "center center") {
+                $scope.styleFormats["top"] = "auto";
+                $scope.styleFormats["left"] = "50%";
+                $scope.styleFormats["margin-top"] = "0px";
+                $scope.styleFormats["margin-left"] = "-" + (height * _this.assetRatio / 2) + "px";
+              }
+              $scope.videoBackground["background-size"] = "auto 100%";
+              return $scope.videoBackground["background-position"] = $scope.optionsVideo.align;
+            }
           } else {
-            $scope.styleFormats["width"] = imagoUtils.isiOS() ? '100%' : 'auto';
-            $scope.styleFormats["height"] = '100%';
-            $scope.videoBackground["background-size"] = 'auto 100%';
-            $scope.videoBackground["background-position"] = $scope.optionsVideo.align;
-            $scope.videoBackground["width"] = "" + (parseInt(height * assetRatio, 10)) + "px";
-            return $scope.videoBackground["height"] = "" + height + "px";
+            width = $element[0].clientWidth;
+            height = $element[0].clientHeight;
+            wrapperRatio = width / height;
+            if (_this.assetRatio > wrapperRatio) {
+              $scope.styleFormats["width"] = '100%';
+              $scope.styleFormats["height"] = imagoUtils.isiOS() ? '100%' : 'auto';
+              $scope.videoBackground["background-size"] = '100% auto';
+              $scope.videoBackground["background-position"] = $scope.optionsVideo.align;
+              $scope.videoBackground["width"] = "" + width + "px";
+              return $scope.videoBackground["height"] = "" + (parseInt(width / _this.assetRatio, 10)) + "px";
+            } else {
+              $scope.styleFormats["width"] = imagoUtils.isiOS() ? '100%' : 'auto';
+              $scope.styleFormats["height"] = '100%';
+              $scope.videoBackground["background-size"] = 'auto 100%';
+              $scope.videoBackground["background-position"] = $scope.optionsVideo.align;
+              $scope.videoBackground["width"] = "" + (parseInt(height * _this.assetRatio, 10)) + "px";
+              return $scope.videoBackground["height"] = "" + height + "px";
+            }
           }
-        }
-      };
+        };
+      })(this);
       videoElement = function(video) {
         var codec, format, i, result, _i, _len, _ref, _results;
         $scope.videoFormats = [];
@@ -519,7 +537,7 @@ imagoWidgets.directive('imagoVideo', function(imagoUtils) {
         }
         return _results;
       };
-      return detectCodec = function() {
+      detectCodec = function() {
         var codecs, key, tag, value;
         tag = document.createElement('video');
         if (!tag.canPlayType) {
@@ -539,6 +557,11 @@ imagoWidgets.directive('imagoVideo', function(imagoUtils) {
           }
         }
       };
+      return $scope.$on('resizelimit', (function(_this) {
+        return function() {
+          return resize();
+        };
+      })(this));
     }
   };
 });
