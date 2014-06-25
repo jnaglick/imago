@@ -21,20 +21,22 @@ imagoWidgets.directive 'imagoSlider', (imagoUtils) ->
 
         @id = imagoUtils.uuid()
 
-    $scope.currentIndex = 0;
+    $scope.currentIndex = 0
 
     $scope.setCurrentSlideIndex = (index) ->
-      $scope.currentIndex = index;
+      $scope.currentIndex = index
 
     $scope.isCurrentSlideIndex = (index) ->
-      return $scope.currentIndex is index;
+      return $scope.currentIndex is index
 
     $scope.goPrev = () ->
-      # console.log 'go prev'
       $scope.currentIndex = if ($scope.currentIndex < $scope.slideSource.length - 1) then ++$scope.currentIndex else 0
 
     $scope.goNext = () ->
       $scope.currentIndex = if ($scope.currentIndex > 0) then --$scope.currentIndex else $scope.slideSource.length - 1
+
+    $scope.getLast = () ->
+      $scope.slideSource.length - 1
 
     angular.element($window).on 'keydown', (e) ->
       return unless $scope.confSlider.enablekeys
@@ -65,7 +67,7 @@ imagoWidgets.directive 'imagoSlider', (imagoUtils) ->
         noResize:     false
         current:      0
         lazy:         false
-        align:        'center center'
+        align:         'center center'
 
       angular.forEach @defaults, (value, key) ->
         scope.confSlider[key] = value
