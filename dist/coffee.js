@@ -326,54 +326,51 @@ imagoWidgets.directive('imagoVideo', function(imagoUtils) {
 
           } else if (_this.height === 'auto' && angular.isNumber(_this.width)) {
             _this.height = _this.width / _this.assetRatio;
+            $scope.videoBackground.height = _this.height;
           } else if (_this.width === 'auto' && angular.isNumber(_this.height)) {
             _this.width = _this.height * _this.assetRatio;
-            _this.el.css({
-              width: _this.width,
-              height: _this.height
-            });
+            $scope.videoBackground['width'] = _this.width;
+            $scope.videoBackground['height'] = _this.height;
           } else if (_this.width === 'auto' && _this.height === 'auto') {
-            _this.width = parseInt(_this.el.css('width'));
+            _this.width = $element[0].clientWidth;
             _this.height = _this.width / _this.assetRatio;
-            _this.el.height(parseInt(_this.height));
+            $scope.videoBackground.height = _this.height;
           } else {
-            _this.width = parseInt(_this.el.css('width'));
-            _this.height = parseInt(_this.el.css('height'));
-            _this.log('fit width', _this.width, _this.height);
+            _this.width = $element[0].clientWidth;
+            _this.height = $element[0].clientHeight;
           }
-          $scope.videoBackground = {
-            "background-position": "" + _this.options.align
-          };
+          $scope.videoBackground['background-position'] = "" + _this.options.align;
           $scope.optionsVideo = _this;
           renderVideo(video);
           videoElement(video);
           return resize();
         };
       })(this);
-      renderVideo = function(video) {
-        var dpr;
-        console.log(video);
-        dpr = this.hires ? Math.ceil(window.devicePixelRatio) || 1 : 1;
-        this.serving_url = video.serving_url;
-        this.serving_url += "=s" + (Math.ceil(Math.min(Math.max(width, height) * dpr, 1600)));
-        $scope.videoBackground["background-image"] = "url(" + this.serving_url + ")";
-        $scope.videoBackground["background-repeat"] = "no-repeat";
-        $scope.videoBackground["background-size"] = "auto 100%";
-        if (angular.isNumber(width)) {
-          $scope.videoBackground["width"] = width;
-        }
-        if (angular.isNumber(height)) {
-          $scope.videoBackground["height"] = height;
-        }
-        $scope.styleFormats = {
-          "autoplay": $scope.optionsVideo["autoplay"],
-          "preload": $scope.optionsVideo["preload"],
-          "autobuffer": $scope.optionsVideo["autobuffer"],
-          "x-webkit-airplay": 'allow',
-          "webkitAllowFullscreen": 'true'
+      renderVideo = (function(_this) {
+        return function(video) {
+          var dpr;
+          dpr = _this.hires ? Math.ceil(window.devicePixelRatio) || 1 : 1;
+          _this.serving_url = video.serving_url;
+          _this.serving_url += "=s" + (Math.ceil(Math.min(Math.max(_this.width, _this.height) * dpr, 1600)));
+          $scope.videoBackground["background-image"] = "url(" + _this.serving_url + ")";
+          $scope.videoBackground["background-repeat"] = "no-repeat";
+          $scope.videoBackground["background-size"] = "auto 100%";
+          if (angular.isNumber(width)) {
+            $scope.videoBackground["width"] = width;
+          }
+          if (angular.isNumber(height)) {
+            $scope.videoBackground["height"] = height;
+          }
+          $scope.styleFormats = {
+            "autoplay": $scope.optionsVideo["autoplay"],
+            "preload": $scope.optionsVideo["preload"],
+            "autobuffer": $scope.optionsVideo["autobuffer"],
+            "x-webkit-airplay": 'allow',
+            "webkitAllowFullscreen": 'true'
+          };
+          return _this.id = imagoUtils.uuid();
         };
-        return this.id = imagoUtils.uuid();
-      };
+      })(this);
       pad = function(num) {
         if (num < 10) {
           return "0" + num;

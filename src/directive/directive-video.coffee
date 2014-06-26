@@ -5,7 +5,6 @@ imagoWidgets.directive 'imagoVideo', (imagoUtils) ->
   controller: ($scope, $element, $attrs, $transclude, $window) ->
 
     @defaults =
-
       autobuffer  : null
       autoplay    : false
       controls    : true
@@ -22,11 +21,11 @@ imagoWidgets.directive 'imagoVideo', (imagoUtils) ->
     angular.forEach $attrs, (value, key) ->
       @[key] = value
 
-    # console.log $element[0].childen('video')
 
     $scope.videoWrapper = $element[0].children[1]
     $scope.time = '00:00'
     $scope.seekTime = 0
+
     # TODO: Remember users preference by localStorage
     $scope.volumeInput = 100
 
@@ -38,10 +37,9 @@ imagoWidgets.directive 'imagoVideo', (imagoUtils) ->
           "display" : "none"
 
     angular.element($scope.videoWrapper).bind 'timeupdate', (e) ->
-      $scope.$apply(()->
+      $scope.$apply ()->
         $scope.seekTime = $scope.videoWrapper.currentTime / $scope.videoWrapper.duration * 100
-        updateTime($scope.videoWrapper.currentTime)
-      )
+        updateTime $scope.videoWrapper.currentTime
 
     render = (video) =>
 
@@ -67,34 +65,32 @@ imagoWidgets.directive 'imagoVideo', (imagoUtils) ->
       # fit width
       else if @height is 'auto' and angular.isNumber(@width)
         @height = @width / @assetRatio
-        # @height @height
+        $scope.videoBackground.height = @height
         # @log 'fit width', @width, @height
 
       # fit height
       else if @width is 'auto' and angular.isNumber(@height)
         @width = @height * @assetRatio
-        @el.css
-          width:  @width
-          height: @height
+        $scope.videoBackground['width']  = @width
+        $scope.videoBackground['height'] = @height
         # @log 'fit height', @width, @height
 
       # we want dynamic resizing without css.
       # like standard image behaviour. will get a height according to the width
       else if @width is 'auto' and @height is 'auto'
-        @width  = parseInt @el.css('width')
+        @width  = $element[0].clientWidth
         @height = @width / @assetRatio
-        @el.height(parseInt @height)
+        $scope.videoBackground.height = @height
         # @log 'dynamic resizing without css', @width, @height
 
       # width and height dynamic, needs to be defined via css
       # either width height or position
       else
-        @width  = parseInt @el.css('width')
-        @height = parseInt @el.css('height')
-        @log 'fit width', @width, @height
+        @width  = $element[0].clientWidth
+        @height = $element[0].clientHeight
+        # @log 'fit width', @width, @height
 
-      $scope.videoBackground =
-        "background-position" : "#{@options.align}"
+      $scope.videoBackground['background-position'] = "#{@options.align}"
 
       $scope.optionsVideo = @
 
@@ -102,15 +98,13 @@ imagoWidgets.directive 'imagoVideo', (imagoUtils) ->
       videoElement video
       resize()
 
-    renderVideo = (video) ->
-      console.log video
+    renderVideo = (video) =>
+      # console.log video
       dpr = if @hires then Math.ceil(window.devicePixelRatio) or 1 else 1
 
 
       @serving_url = video.serving_url
-      @serving_url += "=s#{ Math.ceil(Math.min(Math.max(width, height) * dpr, 1600)) }"
-
-      # convert resolution string to object
+      @serving_url += "=s#{ Math.ceil(Math.min(Math.max(@width, @height) * dpr, 1600)) }"
 
       $scope.videoBackground["background-image"]  = "url(#{@serving_url})"
       $scope.videoBackground["background-repeat"] = "no-repeat"
