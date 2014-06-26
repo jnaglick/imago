@@ -184,28 +184,39 @@ imagoWidgets.directive('imagoSlider', function(imagoUtils) {
     scope: true,
     transclude: true,
     templateUrl: '/imagoWidgets/slider-widget.html',
-    controller: function($scope, $element, $attrs, $window) {
-      var source;
+    controller: function($scope, $element, $attrs, $window, imagoPanel) {
+      var prepareSlides, source;
       source = $attrs.source || 'assets';
+      console.log('is it an array: ', angular.isArray(source));
       $scope.$watch(source, function(assetsData) {
-        var item, _i, _len, _ref;
         if (assetsData) {
-          $scope.loadedData = true;
-          $scope.slideSource = [];
-          for (_i = 0, _len = assetsData.length; _i < _len; _i++) {
-            item = assetsData[_i];
-            if (item.serving_url) {
-              $scope.slideSource.push(item);
-            }
+          if (!angular.isArray(assetsData)) {
+            return imagoPanel.getData(assetsData.path).then(function(response) {
+              assetsData = response[0].items;
+              return prepareSlides(assetsData);
+            });
+          } else {
+            return prepareSlides(assetsData);
           }
-          if (((_ref = $scope.slideSource) != null ? _ref.length : void 0) <= 1 || !$scope.slideSource) {
-            $scope.confSlider.enablearrows = false;
-            $scope.confSlider.enablekeys = false;
-          }
-          return this.id = imagoUtils.uuid();
         }
       });
-      $scope.currentIndex = 0;
+      prepareSlides = function(assetsData) {
+        var item, _i, _len, _ref;
+        $scope.loadedData = true;
+        $scope.slideSource = [];
+        for (_i = 0, _len = assetsData.length; _i < _len; _i++) {
+          item = assetsData[_i];
+          if (item.serving_url) {
+            $scope.slideSource.push(item);
+          }
+        }
+        if (((_ref = $scope.slideSource) != null ? _ref.length : void 0) <= 1 || !$scope.slideSource) {
+          $scope.confSlider.enablearrows = false;
+          $scope.confSlider.enablekeys = false;
+        }
+        this.id = imagoUtils.uuid();
+        return $scope.currentIndex = 0;
+      };
       $scope.setCurrentSlideIndex = function(index) {
         return $scope.currentIndex = index;
       };

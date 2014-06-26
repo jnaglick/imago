@@ -3,27 +3,37 @@ imagoWidgets.directive 'imagoSlider', (imagoUtils) ->
   scope: true
   transclude: true
   templateUrl: '/imagoWidgets/slider-widget.html'
-  controller: ($scope, $element, $attrs, $window) ->
+  controller: ($scope, $element, $attrs, $window, imagoPanel) ->
 
     source = $attrs.source or 'assets'
 
+    console.log 'is it an array: ', angular.isArray(source)
+
     $scope.$watch source, (assetsData) ->
       if assetsData
-        $scope.loadedData = true
-        $scope.slideSource = []
+        unless angular.isArray(assetsData)
+          imagoPanel.getData(assetsData.path).then (response) ->
+            assetsData = response[0].items
+            prepareSlides(assetsData)
+        else
+          prepareSlides(assetsData)
 
-          #If slider has one slide
-        for item in assetsData
-          if item.serving_url
-            $scope.slideSource.push item
+    prepareSlides = (assetsData) ->
+      $scope.loadedData = true
+      $scope.slideSource = []
 
-        if $scope.slideSource?.length <= 1 or !$scope.slideSource
-            $scope.confSlider.enablearrows = false
-            $scope.confSlider.enablekeys   = false
+      #If slider has one slide
+      for item in assetsData
+        if item.serving_url
+          $scope.slideSource.push item
 
-        @id = imagoUtils.uuid()
+      if $scope.slideSource?.length <= 1 or !$scope.slideSource
+          $scope.confSlider.enablearrows = false
+          $scope.confSlider.enablekeys   = false
 
-    $scope.currentIndex = 0
+      @id = imagoUtils.uuid()
+
+      $scope.currentIndex = 0
 
     $scope.setCurrentSlideIndex = (index) ->
       $scope.currentIndex = index
