@@ -31,9 +31,9 @@ imagoWidgets.directive 'imagoImage', () ->
     $scope.$watch $attrs['source'], (data) =>
       return unless data
       @data = data
-      preload @data
+      render @data
 
-    preload = (data) =>
+    render = (data) =>
 
       return unless data.serving_url
 
@@ -44,12 +44,11 @@ imagoWidgets.directive 'imagoImage', () ->
         @resolution =
           width:  r[0]
           height: r[1]
+        @assetRatio = r[0]/r[1]
 
-      # return $log.log('tried to preload during preloading!!') if $scope.status is 'preloading'
+      # return $log.log('tried to render during rendering!!') if $scope.status is 'preloading'
 
-      @assetRatio = @resolution.width / @resolution.height
-
-      # console.log @width, @height
+      console.log '@assetRatio', @assetRatio
 
       # use pvrovided dimentions.
       if angular.isNumber(@width) and angular.isNumber(@height)
@@ -83,8 +82,6 @@ imagoWidgets.directive 'imagoImage', () ->
         # $log.log 'width and height dynamic', @width, @height
 
 
-      # angular if in viewport
-
       $scope.status = 'preloading'
 
       # unbind scrollstop listener for lazy loading
@@ -99,19 +96,19 @@ imagoWidgets.directive 'imagoImage', () ->
 
       # $log.log 'width, height', width, height
       if @sizemode is 'crop'
-        if assetRatio <= wrapperRatio
+        if @assetRatio <= wrapperRatio
           # $log.log 'crop full width'
-          servingSize = Math.round(Math.max(@width, @width / assetRatio))
+          servingSize = Math.round(Math.max(@width, @width / @assetRatio))
         else
           # $log.log 'crop full height'
-          servingSize = Math.round(Math.max(@height, @height * assetRatio))
+          servingSize = Math.round(Math.max(@height, @height * @assetRatio))
 
       # sizemode fit
       else
         # $log.log 'ratios', @assetRatio, wrapperRatio
         if @assetRatio <= wrapperRatio
           # $log.log 'fit full height', @width, @height, @assetRatio, @height * assetRatio
-          servingSize = Math.round(Math.max(@height, @height * assetRatio))
+          servingSize = Math.round(Math.max(@height, @height * @assetRatio))
         else
           # $log.log 'fit full width', @width, @height, @assetRatio, height / assetRatio
           servingSize = Math.round(Math.max(@width, @width / @assetRatio))
@@ -177,8 +174,8 @@ imagoWidgets.directive 'imagoImage', () ->
 
     $scope.$on 'resizestop', () =>
       # console.log 'resizestop'
-      preload(@data) if @responsive
+      render(@data) if @responsive
 
     $scope.$on 'scrollstop', () =>
       # console.log 'scrollstop'
-      preload(@data) if @lazy
+      render(@data) if @lazy
