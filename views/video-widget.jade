@@ -10,8 +10,8 @@ div(ng-style="wrapperStyle", ng-click="videoActive = true", class="imagovideo im
       input.seek(type='range',ng-model="seekTime", ng-change="seek(seekTime)")
     a.size(ng-click="toggleSize()") hd
     span.volume
-      span.fa.fa-volume-up(ng-click="volumeUp()")
+      span.fa.fa-volume-up.icon-volume-up(ng-click="volumeUp()")
       input(type='range', ng-model="volumeInput", ng-change="onVolumeChange(volumeInput)")
-      span.fa.fa-volume-down(ng-click="volumeDown()")
+      span.fa.fa-volume-down.icon-volume-down(ng-click="volumeDown()")
     a.fullscreen.fa.fa-expand(ng-click="fullScreen()")
     a.screen.fa.fa-compress

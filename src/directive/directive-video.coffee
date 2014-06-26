@@ -164,6 +164,8 @@ imagoWidgets.directive 'imagoVideo', (imagoUtils) ->
       else
         $scope.optionsVideo.size = 'hd'
 
+      $scope.videoFormats.reverse()
+
     $scope.seek = (e) =>
       seek = parseFloat(e / 100)
       $scope.seekTime = parseFloat(@videoEl.duration * seek)
@@ -174,9 +176,11 @@ imagoWidgets.directive 'imagoVideo', (imagoUtils) ->
 
     $scope.volumeDown = () =>
       @videoEl.volume = 0
+      $scope.volumeInput = 0
 
     $scope.volumeUp = () =>
-      @videoEl.volume = 100
+      @videoEl.volume = 1
+      $scope.volumeInput = 100
 
     $scope.fullScreen = =>
       if @videoEl.requestFullscreen

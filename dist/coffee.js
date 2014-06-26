@@ -427,10 +427,11 @@ imagoWidgets.directive('imagoVideo', function(imagoUtils) {
       setSize = function(size) {};
       $scope.toggleSize = function() {
         if ($scope.optionsVideo.size === 'hd') {
-          return $scope.optionsVideo.size = 'sd';
+          $scope.optionsVideo.size = 'sd';
         } else {
-          return $scope.optionsVideo.size = 'hd';
+          $scope.optionsVideo.size = 'hd';
         }
+        return $scope.videoFormats.reverse();
       };
       $scope.seek = (function(_this) {
         return function(e) {
@@ -447,12 +448,14 @@ imagoWidgets.directive('imagoVideo', function(imagoUtils) {
       })(this);
       $scope.volumeDown = (function(_this) {
         return function() {
-          return _this.videoEl.volume = 0;
+          _this.videoEl.volume = 0;
+          return $scope.volumeInput = 0;
         };
       })(this);
       $scope.volumeUp = (function(_this) {
         return function() {
-          return _this.videoEl.volume = 100;
+          _this.videoEl.volume = 1;
+          return $scope.volumeInput = 100;
         };
       })(this);
       $scope.fullScreen = (function(_this) {
