@@ -199,7 +199,7 @@ imagoSlider = (function() {
   function imagoSlider() {
     return {
       replace: true,
-      scope: true,
+      scope: false,
       transclude: true,
       templateUrl: '/imagoWidgets/slider-widget.html',
       controller: function($scope, $element, $attrs, $window, imagoPanel) {
@@ -232,7 +232,6 @@ imagoSlider = (function() {
             $scope.confSlider.enablearrows = false;
             $scope.confSlider.enablekeys = false;
           }
-          this.id = imagoUtils.uuid();
           return $scope.currentIndex = 0;
         };
         $scope.setCurrentSlideIndex = function(index) {

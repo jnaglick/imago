@@ -3,7 +3,7 @@ class imagoSlider extends Directive
   constructor: ->
     return {
       replace: true
-      scope: true
+      scope: false
       transclude: true
       templateUrl: '/imagoWidgets/slider-widget.html'
       controller: ($scope, $element, $attrs, $window, imagoPanel) ->
@@ -34,7 +34,7 @@ class imagoSlider extends Directive
               $scope.confSlider.enablearrows = false
               $scope.confSlider.enablekeys   = false
 
-          @id = imagoUtils.uuid()
+          # @id = imagoUtils.uuid()
 
           $scope.currentIndex = 0
 
