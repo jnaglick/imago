@@ -1,6 +1,6 @@
 angular.module("ImagoWidgetsTemplates", []).run(["$templateCache", function($templateCache) {$templateCache.put("/imagoWidgets/image-widget.html","<div ng-style=\"elementStyle\" ng-class=\"status\" class=\"imagoimage imagowrapper\"><div ng-style=\"imageStyle\" class=\"image\"></div><div ng-hide=\"status === \'loaded\'\" class=\"loading\"><div class=\"spin\"></div><div class=\"spin2\"></div></div></div>");
 $templateCache.put("/imagoWidgets/slider-widget.html","<div ng-class=\"elementStyle\"><div ng-style=\"sliderStyle\" ng-swipe-left=\"goPrev()\" ng-swipe-right=\"goNext()\" class=\"nexslider\"><div ng-show=\"confSlider.enablearrows &amp;&amp; loadedData\" ng-click=\"goPrev()\" class=\"prev\"></div><div ng-show=\"confSlider.enablearrows &amp;&amp; loadedData\" ng-click=\"goNext()\" class=\"next\"></div><div ng-class=\"{\'active\':isCurrentSlideIndex($index)}\" ng-repeat=\"slide in slideSource\" ng-hide=\"!isCurrentSlideIndex($index)\" class=\"slide\"><div imago-image=\"imago-image\" source=\"slide\" sizemode=\"{{$parent.confSlider.sizemode}}\"></div></div></div></div>");
-$templateCache.put("/imagoWidgets/video-widget.html","<div ng-style=\"wrapperStyle\" ng-click=\"videoActive = true\" class=\"imagovideo imagowrapper {{optionsVideo.align}} {{optionsVideo.size}} {{optionsVideo.sizemode}}\"><a ng-click=\"togglePlay()\" class=\"playbig fa fa-play\"></a><video ng-style=\"videoStyle\" ng-show=\"videoActive\"><source ng-repeat=\"format in videoFormats\" src=\"{{format.src}}\" data-size=\"{{format.size}}\" data-codec=\"{{format.codec}}\" type=\"{{format.type}}\"/></video><div ng-if=\"controls\" class=\"controls\"><a ng-click=\"play()\" class=\"play fa fa-play\"></a><a ng-click=\"pause()\" class=\"pause fa fa-pause\"></a><span class=\"time\">{{time}}</span><span class=\"seekbar\"><input type=\"range\" ng-model=\"seekTime\" ng-change=\"seek(seekTime)\" class=\"seek\"/></span><a ng-click=\"toggleSize()\" class=\"size\">hd</a><span class=\"volume\"><span ng-click=\"volumeUp()\" class=\"fa fa-volume-up\"></span><input type=\"range\" ng-model=\"volumeInput\" ng-change=\"onVolumeChange(volumeInput)\"/><span ng-click=\"volumeDown()\" class=\"fa fa-volume-down\"></span></span><a ng-click=\"fullScreen()\" class=\"fullscreen fa fa-resize-full\"></a><a class=\"screen fa fa-resize-small\"></a></div></div>");}]);
+$templateCache.put("/imagoWidgets/video-widget.html","<div ng-style=\"wrapperStyle\" ng-click=\"videoActive = true\" class=\"imagovideo imagowrapper {{optionsVideo.align}} {{optionsVideo.size}} {{optionsVideo.sizemode}}\"><a ng-click=\"togglePlay()\" ng-hide=\"optionsVideo.playing\" class=\"playbig fa fa-play\"></a><video ng-style=\"videoStyle\" ng-show=\"videoActive\"><source ng-repeat=\"format in videoFormats\" src=\"{{format.src}}\" data-size=\"{{format.size}}\" data-codec=\"{{format.codec}}\" type=\"{{format.type}}\"/></video><div ng-if=\"controls\" class=\"controls\"><a ng-click=\"play()\" ng-hide=\"optionsVideo.playing\" class=\"play fa fa-play\"></a><a ng-click=\"pause()\" ng-show=\"optionsVideo.playing\" class=\"pause fa fa-pause\"></a><span class=\"time\">{{time}}</span><span class=\"seekbar\"><input type=\"range\" ng-model=\"seekTime\" ng-change=\"seek(seekTime)\" class=\"seek\"/></span><a ng-click=\"toggleSize()\" class=\"size\">hd</a><span class=\"volume\"><span ng-click=\"volumeUp()\" class=\"fa fa-volume-up\"></span><input type=\"range\" ng-model=\"volumeInput\" ng-change=\"onVolumeChange(volumeInput)\"/><span ng-click=\"volumeDown()\" class=\"fa fa-volume-down\"></span></span><a ng-click=\"fullScreen()\" class=\"fullscreen fa fa-expand\"></a><a class=\"screen fa fa-compress\"></a></div></div>");}]);
 var imagoWidgets;
 
 imagoWidgets = angular.module('imago.widgets.angular', ["ImagoWidgetsTemplates"]);
@@ -182,6 +182,7 @@ imagoWidgets.directive('imagoSlider', function(imagoUtils) {
   return {
     replace: true,
     scope: true,
+    transclude: true,
     templateUrl: '/imagoWidgets/slider-widget.html',
     controller: function($scope, $element, $attrs, $window) {
       var source;
@@ -296,7 +297,7 @@ imagoWidgets.directive('imagoVideo', function(imagoUtils) {
           return _this[key] = value;
         };
       })(this));
-      $scope.videoEl = $element[0].children[1];
+      this.videoEl = $element[0].children[1];
       $scope.time = '00:00';
       $scope.seekTime = 0;
       $scope.volumeInput = 100;
@@ -307,12 +308,19 @@ imagoWidgets.directive('imagoVideo', function(imagoUtils) {
         this.data = data;
         return render(this.data);
       });
-      angular.element($scope.videoEl).bind('timeupdate', function(e) {
-        return $scope.$apply(function() {
-          $scope.seekTime = $scope.videoEl.currentTime / $scope.videoEl.duration * 100;
-          return updateTime($scope.videoEl.currentTime);
-        });
-      });
+      angular.element(this.videoEl).bind('timeupdate', (function(_this) {
+        return function(e) {
+          $scope.seekTime = _this.videoEl.currentTime / _this.videoEl.duration * 100;
+          updateTime(_this.videoEl.currentTime);
+          return $scope.$apply();
+        };
+      })(this));
+      angular.element(this.videoEl).bind('ended', (function(_this) {
+        return function(e) {
+          $scope.optionsVideo.playing = false;
+          return $scope.$apply();
+        };
+      })(this));
       render = (function(_this) {
         return function(data) {
           var r;
@@ -398,21 +406,27 @@ imagoWidgets.directive('imagoVideo', function(imagoUtils) {
         result = calc.join(":");
         return $scope.time = result;
       };
-      $scope.play = function() {
-        $scope.videoEl.play();
-        return $scope.optionsVideo.state = 'playing';
-      };
-      $scope.togglePlay = function() {
-        if ($scope.optionsVideo.state === 'playing') {
-          return $scope.videoEl.pause();
-        } else {
-          return $scope.videoEl.play();
-        }
-      };
-      $scope.pause = function() {
-        $scope.videoEl.pause();
-        return $scope.optionsVideo.state = 'pause';
-      };
+      $scope.play = (function(_this) {
+        return function() {
+          _this.videoEl.play();
+          return $scope.optionsVideo.playing = true;
+        };
+      })(this);
+      $scope.togglePlay = (function(_this) {
+        return function() {
+          if (!_this.videoEl.paused) {
+            return $scope.pause();
+          } else {
+            return $scope.play();
+          }
+        };
+      })(this);
+      $scope.pause = (function(_this) {
+        return function() {
+          _this.videoEl.pause();
+          return $scope.optionsVideo.playing = false;
+        };
+      })(this);
       setSize = function(size) {};
       $scope.toggleSize = function() {
         if ($scope.optionsVideo.size === 'hd') {
@@ -421,26 +435,42 @@ imagoWidgets.directive('imagoVideo', function(imagoUtils) {
           return $scope.optionsVideo.size = 'hd';
         }
       };
-      $scope.seek = function(e) {
-        var seek;
-        seek = parseFloat(e / 100);
-        $scope.seekTime = parseFloat($scope.videoEl.duration * seek);
-        return $scope.videoEl.currentTime = angular.copy($scope.seekTime);
-      };
-      $scope.onVolumeChange = function(e) {
-        return $scope.videoEl.volume = parseFloat(e / 100);
-      };
-      $scope.fullScreen = function() {
-        if ($scope.videoEl.requestFullscreen) {
-          return $scope.videoEl.requestFullscreen();
-        } else if ($scope.videoEl.webkitRequestFullscreen) {
-          return $scope.videoEl.webkitRequestFullscreen();
-        } else if ($scope.videoEl.mozRequestFullScreen) {
-          return $scope.videoEl.mozRequestFullScreen();
-        } else if ($scope.videoEl.msRequestFullscreen) {
-          return $scope.videoEl.msRequestFullscreen();
-        }
-      };
+      $scope.seek = (function(_this) {
+        return function(e) {
+          var seek;
+          seek = parseFloat(e / 100);
+          $scope.seekTime = parseFloat(_this.videoEl.duration * seek);
+          return _this.videoEl.currentTime = angular.copy($scope.seekTime);
+        };
+      })(this);
+      $scope.onVolumeChange = (function(_this) {
+        return function(e) {
+          return _this.videoEl.volume = parseFloat(e / 100);
+        };
+      })(this);
+      $scope.volumeDown = (function(_this) {
+        return function() {
+          return _this.videoEl.volume = 0;
+        };
+      })(this);
+      $scope.volumeUp = (function(_this) {
+        return function() {
+          return _this.videoEl.volume = 100;
+        };
+      })(this);
+      $scope.fullScreen = (function(_this) {
+        return function() {
+          if (_this.videoEl.requestFullscreen) {
+            return _this.videoEl.requestFullscreen();
+          } else if (_this.videoEl.webkitRequestFullscreen) {
+            return _this.videoEl.webkitRequestFullscreen();
+          } else if (_this.videoEl.mozRequestFullScreen) {
+            return _this.videoEl.mozRequestFullScreen();
+          } else if (_this.videoEl.msRequestFullscreen) {
+            return _this.videoEl.msRequestFullscreen();
+          }
+        };
+      })(this);
       resize = (function(_this) {
         return function() {
           var height, vs, width, wrapperRatio, ws;

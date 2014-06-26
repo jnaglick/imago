@@ -110,7 +110,7 @@ gulp.task "watch", ->
   , ->
     gulp.start('coffee')
 
-  files = [targets.coffee]
+  files = [targets.coffee, targets.jade]
   sources = ("#{dest}/#{file}" for file in files)
 
   watch

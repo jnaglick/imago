@@ -24,7 +24,7 @@ imagoWidgets.directive 'imagoVideo', (imagoUtils) ->
       @[key] = value
 
 
-    $scope.videoEl = $element[0].children[1]
+    @videoEl = $element[0].children[1]
     $scope.time = '00:00'
     $scope.seekTime = 0
 
@@ -36,10 +36,14 @@ imagoWidgets.directive 'imagoVideo', (imagoUtils) ->
       @data = data
       render @data
 
-    angular.element($scope.videoEl).bind 'timeupdate', (e) ->
-      $scope.$apply ()->
-        $scope.seekTime = $scope.videoEl.currentTime / $scope.videoEl.duration * 100
-        updateTime $scope.videoEl.currentTime
+    angular.element(@videoEl).bind 'timeupdate', (e) =>
+        $scope.seekTime = @videoEl.currentTime / @videoEl.duration * 100
+        updateTime @videoEl.currentTime
+        $scope.$apply()
+
+    angular.element(@videoEl).bind 'ended', (e) =>
+      $scope.optionsVideo.playing = false
+      $scope.$apply()
 
     render = (data) =>
 
@@ -130,19 +134,19 @@ imagoWidgets.directive 'imagoVideo', (imagoUtils) ->
       result = calc.join ":"
       $scope.time = result
 
-    $scope.play = ->
-      $scope.videoEl.play()
-      $scope.optionsVideo.state = 'playing'
+    $scope.play = =>
+      @videoEl.play()
+      $scope.optionsVideo.playing = true
 
-    $scope.togglePlay = ->
-      if $scope.optionsVideo.state is 'playing'
-        $scope.videoEl.pause()
+    $scope.togglePlay = =>
+      unless @videoEl.paused
+        $scope.pause()
       else
-        $scope.videoEl.play()
+        $scope.play()
 
-    $scope.pause = ->
-      $scope.videoEl.pause()
-      $scope.optionsVideo.state = 'pause'
+    $scope.pause = =>
+      @videoEl.pause()
+      $scope.optionsVideo.playing = false
 
     setSize = (size) ->
       # srcs = @el.children('source')
@@ -160,23 +164,29 @@ imagoWidgets.directive 'imagoVideo', (imagoUtils) ->
       else
         $scope.optionsVideo.size = 'hd'
 
-    $scope.seek = (e) ->
+    $scope.seek = (e) =>
       seek = parseFloat(e / 100)
-      $scope.seekTime = parseFloat($scope.videoEl.duration * seek)
-      $scope.videoEl.currentTime = angular.copy($scope.seekTime)
+      $scope.seekTime = parseFloat(@videoEl.duration * seek)
+      @videoEl.currentTime = angular.copy($scope.seekTime)
 
-    $scope.onVolumeChange = (e) ->
-      $scope.videoEl.volume = parseFloat(e / 100)
+    $scope.onVolumeChange = (e) =>
+      @videoEl.volume = parseFloat(e / 100)
 
-    $scope.fullScreen = ->
-      if $scope.videoEl.requestFullscreen
-        $scope.videoEl.requestFullscreen();
-      else if $scope.videoEl.webkitRequestFullscreen
-        $scope.videoEl.webkitRequestFullscreen();
-      else if $scope.videoEl.mozRequestFullScreen
-        $scope.videoEl.mozRequestFullScreen();
-      else if $scope.videoEl.msRequestFullscreen
-        $scope.videoEl.msRequestFullscreen();
+    $scope.volumeDown = () =>
+      @videoEl.volume = 0
+
+    $scope.volumeUp = () =>
+      @videoEl.volume = 100
+
+    $scope.fullScreen = =>
+      if @videoEl.requestFullscreen
+        @videoEl.requestFullscreen();
+      else if @videoEl.webkitRequestFullscreen
+        @videoEl.webkitRequestFullscreen();
+      else if @videoEl.mozRequestFullScreen
+        @videoEl.mozRequestFullScreen();
+      else if @videoEl.msRequestFullscreen
+        @videoEl.msRequestFullscreen();
 
     resize = =>
       return unless $scope.optionsVideo

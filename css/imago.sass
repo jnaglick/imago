@@ -25,6 +25,10 @@
     background-repeat: no-repeat
     position: relative
 
+  &:hover
+    .controls
+      opacity: 1
+
   .spin,
   .spin2
     opacity: 0
@@ -135,9 +139,6 @@
     transition: opacity 0.5s ease-in-out
     opacity: 0
 
-    &.active
-      opacity: 1
-
     > span,
     > a
       display: block
@@ -166,9 +167,6 @@
     .play,
     .pause
       left: 15px
-
-    .pause
-      display: none
 
     .time
       left: 38px
