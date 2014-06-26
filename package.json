@@ -1,29 +1,30 @@
 {
-    "name": "imago.widgets.angular",
-    "version": "0.0.1",
-    "description": "Angular theme for NEX9 LLC",
-    "main": "gulpfile.js",
-    "scripts": {
-        "test": "echo \"Error: no test specified\" && exit 1"
-    },
-    "author": "Nex9 LLC",
-    "license": "ISC",
-    "dependencies": {
-        "coffee-script": "*",
-        "gulp": "*",
-        "gulp-angular-templatecache": "*",
-        "gulp-coffee": "^*",
-        "gulp-coffeelint": "*",
-        "gulp-concat": "*",
-        "gulp-jade": "*",
-        "gulp-ngmin": "*",
-        "gulp-plumber": "*",
-        "gulp-uglify": "*",
-        "gulp-util": "*",
-        "gulp-watch": "*",
-        "gutil": "*"
-    },
-    "devDependencies": {
-        "node-notifier": "*"
-    }
+  "name": "imago.widgets.angular",
+  "version": "0.0.1",
+  "description": "Angular theme for NEX9 LLC",
+  "main": "gulpfile.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Nex9 LLC",
+  "license": "ISC",
+  "dependencies": {
+    "coffee-script": "*",
+    "gulp": "*",
+    "gulp-angular-templatecache": "*",
+    "gulp-coffee": "^*",
+    "gulp-coffeelint": "*",
+    "gulp-concat": "*",
+    "gulp-jade": "*",
+    "gulp-ng-classify": "^3.0.0",
+    "gulp-ngmin": "*",
+    "gulp-plumber": "*",
+    "gulp-uglify": "*",
+    "gulp-util": "*",
+    "gulp-watch": "*",
+    "gutil": "*"
+  },
+  "devDependencies": {
+    "node-notifier": "*"
+  }
 }

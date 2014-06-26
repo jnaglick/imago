@@ -1,4 +1,4 @@
-imagoWidgets.factory 'imagoPanel', ($http, imagoUtils, $q, $location) ->
+angular.module('imago.widgets.angular').factory 'imagoPanel', ($http, imagoUtils, $q, $location) ->
 
 
   search: (query) ->

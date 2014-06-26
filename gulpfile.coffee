@@ -6,7 +6,10 @@ concat          = require 'gulp-concat'
 gulp            = require 'gulp'
 
 jade            = require 'gulp-jade'
+
 ngmin           = require 'gulp-ngmin'
+ngClassify      = require 'gulp-ng-classify'
+
 plumber         = require 'gulp-plumber'
 templateCache   = require 'gulp-angular-templatecache'
 uglify          = require 'gulp-uglify'
@@ -45,11 +48,11 @@ gulp.task "coffee", ->
     .pipe plumber(
       errorHandler: reportError
     )
+    .pipe ngClassify(appName: 'imago.widgets.angular')
     .pipe coffee(
       bare: true
     ).on('error', reportError)
     .pipe coffeelint()
-    # .pipe rename extname: ""
     .pipe concat targets.coffee
     .pipe gulp.dest dest
 
@@ -94,6 +97,15 @@ gulp.task "build", ["js"], ->
   combineJs()
 
 gulp.task "b", ["build"]
+
+minify = ->
+  gulp.src "#{dest}/#{targets.js}"
+    .pipe ngmin()
+    .pipe uglify()
+    .pipe concat targets.jsMin
+    .pipe gulp.dest dest
+
+gulp.task "minify", ['build'], minify
 
 
 ## Essentials Task

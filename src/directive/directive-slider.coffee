@@ -1,90 +1,94 @@
-imagoWidgets.directive 'imagoSlider', (imagoUtils) ->
-  replace: true
-  scope: true
-  transclude: true
-  templateUrl: '/imagoWidgets/slider-widget.html'
-  controller: ($scope, $element, $attrs, $window, imagoPanel) ->
+class imagoSlider extends Directive
 
-    source = $attrs.source or 'assets'
+  constructor: ->
+    return {
+      replace: true
+      scope: true
+      transclude: true
+      templateUrl: '/imagoWidgets/slider-widget.html'
+      controller: ($scope, $element, $attrs, $window, imagoPanel) ->
 
-    console.log 'is it an array: ', angular.isArray(source)
+        source = $attrs.source or 'assets'
 
-    $scope.$watch source, (assetsData) ->
-      if assetsData
-        unless angular.isArray(assetsData)
-          imagoPanel.getData(assetsData.path).then (response) ->
-            assetsData = response[0].items
-            prepareSlides(assetsData)
-        else
-          prepareSlides(assetsData)
+        console.log 'is it an array: ', angular.isArray(source)
 
-    prepareSlides = (assetsData) ->
-      $scope.loadedData = true
-      $scope.slideSource = []
+        $scope.$watch source, (assetsData) ->
+          if assetsData
+            unless angular.isArray(assetsData)
+              imagoPanel.getData(assetsData.path).then (response) ->
+                assetsData = response[0].items
+                prepareSlides(assetsData)
+            else
+              prepareSlides(assetsData)
 
-      #If slider has one slide
-      for item in assetsData
-        if item.serving_url
-          $scope.slideSource.push item
+        prepareSlides = (assetsData) ->
+          $scope.loadedData = true
+          $scope.slideSource = []
 
-      if $scope.slideSource?.length <= 1 or !$scope.slideSource
-          $scope.confSlider.enablearrows = false
-          $scope.confSlider.enablekeys   = false
+          #If slider has one slide
+          for item in assetsData
+            if item.serving_url
+              $scope.slideSource.push item
 
-      @id = imagoUtils.uuid()
+          if $scope.slideSource?.length <= 1 or !$scope.slideSource
+              $scope.confSlider.enablearrows = false
+              $scope.confSlider.enablekeys   = false
 
-      $scope.currentIndex = 0
+          @id = imagoUtils.uuid()
 
-    $scope.setCurrentSlideIndex = (index) ->
-      $scope.currentIndex = index
+          $scope.currentIndex = 0
 
-    $scope.isCurrentSlideIndex = (index) ->
-      return $scope.currentIndex is index
+        $scope.setCurrentSlideIndex = (index) ->
+          $scope.currentIndex = index
 
-    $scope.goPrev = () ->
-      $scope.currentIndex = if ($scope.currentIndex < $scope.slideSource.length - 1) then ++$scope.currentIndex else 0
+        $scope.isCurrentSlideIndex = (index) ->
+          return $scope.currentIndex is index
 
-    $scope.goNext = () ->
-      $scope.currentIndex = if ($scope.currentIndex > 0) then --$scope.currentIndex else $scope.slideSource.length - 1
+        $scope.goPrev = () ->
+          $scope.currentIndex = if ($scope.currentIndex < $scope.slideSource.length - 1) then ++$scope.currentIndex else 0
 
-    $scope.getLast = () ->
-      $scope.slideSource.length - 1
+        $scope.goNext = () ->
+          $scope.currentIndex = if ($scope.currentIndex > 0) then --$scope.currentIndex else $scope.slideSource.length - 1
 
-    angular.element($window).on 'keydown', (e) ->
-      return unless $scope.confSlider.enablekeys
-      switch e.keyCode
-        when 37
-          $scope.$apply(()->
-            $scope.goPrev()
-          )
-        when 39
-          $scope.$apply(()->
-            $scope.goNext()
-          )
+        $scope.getLast = () ->
+          $scope.slideSource.length - 1
 
-  compile: (tElement, tAttrs, transclude) ->
-    pre: (scope, iElement, iAttrs, controller) ->
+        angular.element($window).on 'keydown', (e) ->
+          return unless $scope.confSlider.enablekeys
+          switch e.keyCode
+            when 37
+              $scope.$apply(()->
+                $scope.goPrev()
+              )
+            when 39
+              $scope.$apply(()->
+                $scope.goNext()
+              )
 
-      scope.confSlider = {}
+      compile: (tElement, tAttrs, transclude) ->
+        pre: (scope, iElement, iAttrs, controller) ->
 
-      @defaults =
-        animation:    'fade'
-        sizemode:     'fit'
-        current:      0
-        enablekeys:   true
-        enablearrows: true
-        enablehtml:   true
-        subslides:    false
-        loop:         true
-        noResize:     false
-        current:      0
-        lazy:         false
-        align:         'center center'
+          scope.confSlider = {}
 
-      angular.forEach @defaults, (value, key) ->
-        scope.confSlider[key] = value
+          @defaults =
+            animation:    'fade'
+            sizemode:     'fit'
+            current:      0
+            enablekeys:   true
+            enablearrows: true
+            enablehtml:   true
+            subslides:    false
+            loop:         true
+            noResize:     false
+            current:      0
+            lazy:         false
+            align:         'center center'
 
-      angular.forEach iAttrs, (value, key) ->
-        scope.confSlider[key] = value
+          angular.forEach @defaults, (value, key) ->
+            scope.confSlider[key] = value
 
-      scope.elementStyle = scope.confSlider.animation
+          angular.forEach iAttrs, (value, key) ->
+            scope.confSlider[key] = value
+
+          scope.elementStyle = scope.confSlider.animation
+    }

@@ -1,4 +1,4 @@
-imagoWidgets.filter "meta", () ->
+angular.module('imago.widgets.angular').filter "meta", () ->
   (input) ->
 
     unless input then return

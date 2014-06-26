@@ -1,4 +1,4 @@
-imagoWidgets.factory 'imagoUtils', ->
+angular.module('imago.widgets.angular').factory 'imagoUtils', ->
 
   KEYS =
     '16'  : 'onShift'
