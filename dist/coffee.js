@@ -73,7 +73,6 @@ imagoImage = (function() {
               };
               _this.assetRatio = r[0] / r[1];
             }
-            console.log('@assetRatio', _this.assetRatio);
             if (angular.isNumber(_this.width) && angular.isNumber(_this.height)) {
 
             } else if (_this.height === 'auto' && angular.isNumber(_this.width)) {
@@ -205,7 +204,6 @@ imagoSlider = (function() {
       controller: function($scope, $element, $attrs, $window, imagoPanel) {
         var prepareSlides, source;
         source = $attrs.source || 'assets';
-        console.log('is it an array: ', angular.isArray(source));
         $scope.$watch(source, function(assetsData) {
           if (assetsData) {
             if (!angular.isArray(assetsData)) {

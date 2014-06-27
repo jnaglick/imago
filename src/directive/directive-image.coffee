@@ -51,7 +51,7 @@ class imagoImage extends Directive
 
           # return $log.log('tried to render during rendering!!') if $scope.status is 'preloading'
 
-          console.log '@assetRatio', @assetRatio
+          # console.log '@assetRatio', @assetRatio
 
           # use pvrovided dimentions.
           if angular.isNumber(@width) and angular.isNumber(@height)

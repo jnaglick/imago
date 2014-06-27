@@ -10,8 +10,6 @@ class imagoSlider extends Directive
 
         source = $attrs.source or 'assets'
 
-        console.log 'is it an array: ', angular.isArray(source)
-
         $scope.$watch source, (assetsData) ->
           if assetsData
             unless angular.isArray(assetsData)
