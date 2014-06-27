@@ -120,7 +120,7 @@ class imagoImage extends Directive
 
           # make sure we only load a new size
           if servingSize is @servingSize
-            console.log 'same size exit'
+            # console.log 'same size exit'
             $scope.status = 'loaded'
             return
 
@@ -164,10 +164,10 @@ class imagoImage extends Directive
 
           wrapperRatio = @width / @height
           if @sizemode is 'crop'
-            $log.log '@sizemode crop', @assetRatio, wrapperRatio
+            # $log.log '@sizemode crop', @assetRatio, wrapperRatio
             if @assetRatio < wrapperRatio then "100% auto" else "auto 100%"
           else
-            $log.log '@sizemode fit', @assetRatio, wrapperRatio
+            # $log.log '@sizemode fit', @assetRatio, wrapperRatio
             if @assetRatio > wrapperRatio then "100% auto" else "auto 100%"
 
 

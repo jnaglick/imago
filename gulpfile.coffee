@@ -48,7 +48,11 @@ gulp.task "coffee", ->
     .pipe plumber(
       errorHandler: reportError
     )
-    .pipe ngClassify(appName: 'imago.widgets.angular')
+    .pipe ngClassify(
+      appName: 'imago.widgets.angular'
+      factory:
+        format: 'camelCase'
+      )
     .pipe coffee(
       bare: true
     ).on('error', reportError)
