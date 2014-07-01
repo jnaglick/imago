@@ -2,7 +2,8 @@ div(ng-class="elementStyle")
   div(ng-transclude)
   .nexslider(ng-style="sliderStyle",
             ng-swipe-left="goPrev()",
-            ng-swipe-right="goNext()")
+            ng-swipe-right="goNext()"
+            )
     //- .debug {{slideSource | json}}
     .prev(ng-show="confSlider.enablearrows && loadedData",
           ng-click="goPrev()")
