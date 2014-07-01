@@ -1,4 +1,4 @@
-class Compile extends Directive
+class imagoCompile extends Directive
   constructor: ($compile) ->
     ($scope, $element, $attrs) ->
       $scope.$watch(
