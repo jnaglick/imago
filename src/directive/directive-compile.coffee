@@ -1,13 +1,15 @@
 class imagoCompile extends Directive
   constructor: ($compile) ->
     return {
-      controller: ($scope, $element, $attrs) ->
-        $scope.$watch(
-          ($scope) ->
-            $scope.$eval($attrs.compile)
+      link: (scope, element, attrs) ->
+        scope.$watch(
+          (scope) ->
+            return unless attrs.compile
+            scope.$eval(attrs.compile)
 
           (value) ->
-            $element.html(value)
-            $compile($element.contents())($scope)
+            return unless value
+            element.html(value)
+            $compile(element.contents())(scope)
         )
     }
