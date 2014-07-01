@@ -18,14 +18,16 @@ var imagoCompile;
 
 imagoCompile = (function() {
   function imagoCompile($compile) {
-    (function($scope, $element, $attrs) {
-      return $scope.$watch(function($scope) {
-        return $scope.$eval($attrs.compile);
-      }, function(value) {
-        $element.html(value);
-        return $compile(element.contents())($scope);
-      });
-    });
+    return {
+      controller: function($scope, $element, $attrs) {
+        return $scope.$watch(function($scope) {
+          return $scope.$eval($attrs.compile);
+        }, function(value) {
+          $element.html(value);
+          return $compile(element.contents())($scope);
+        });
+      }
+    };
   }
 
   return imagoCompile;
