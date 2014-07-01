@@ -11,6 +11,26 @@ App = (function() {
 
 angular.module('imago.widgets.angular', App());
 
+var Compile;
+
+Compile = (function() {
+  function Compile($compile) {
+    (function($scope, $element, $attrs) {
+      return $scope.$watch(function($scope) {
+        return $scope.$eval($attrs.compile);
+      }, function(value) {
+        $element.html(value);
+        return $compile(element.contents())($scope);
+      });
+    });
+  }
+
+  return Compile;
+
+})();
+
+angular.module('imago.widgets.angular').directive('compile', ['$compile', Compile]);
+
 var imagoImage;
 
 imagoImage = (function() {
