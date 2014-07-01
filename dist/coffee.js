@@ -21,7 +21,7 @@ imagoCompile = (function() {
           return $scope.$eval($attrs.compile);
         }, function(value) {
           $element.html(value);
-          return $compile(element.contents())($scope);
+          return $compile($element.contents())($scope);
         });
       }
     };

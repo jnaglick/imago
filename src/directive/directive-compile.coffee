@@ -8,6 +8,6 @@ class imagoCompile extends Directive
 
           (value) ->
             $element.html(value)
-            $compile(element.contents())($scope)
+            $compile($element.contents())($scope)
         )
     }
