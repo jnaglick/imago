@@ -343,7 +343,7 @@ imagoVideo = (function() {
       replace: true,
       scope: true,
       templateUrl: '/imagoWidgets/video-widget.html',
-      controller: function($scope, $element, $attrs, $transclude, $window) {
+      controller: function($scope, $element, $attrs, $transclude, $window, imagoUtils) {
         var detectCodec, loadSources, pad, render, renderVideo, resize, setSize, updateTime;
         this.defaults = {
           autobuffer: null,

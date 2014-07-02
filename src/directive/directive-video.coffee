@@ -5,7 +5,7 @@ class imagoVideo extends Directive
       replace: true
       scope: true
       templateUrl: '/imagoWidgets/video-widget.html'
-      controller: ($scope, $element, $attrs, $transclude, $window) ->
+      controller: ($scope, $element, $attrs, $transclude, $window, imagoUtils) ->
 
         @defaults =
           autobuffer  : null
