@@ -1247,7 +1247,7 @@ Meta = (function() {
       if (!(this[resources[0]] || this[resources[0]].meta[resources[1]].value)) {
         return;
       }
-      if (this[resources[0]].meta[resources[1]].value.type) {
+      if (this[resources[0]].meta[resources[1]].value.type != null) {
         return this[resources[0]].meta[resources[1]].value.value;
       } else {
         return this[resources[0]].meta[resources[1]].value;
