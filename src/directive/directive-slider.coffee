@@ -23,6 +23,9 @@ class imagoSlider extends Directive
           $scope.loadedData = true
           $scope.slideSource = []
 
+          $scope.height = $element[0].clientHeight
+          $scope.width = $element[0].clientWidth
+
           #If slider has one slide
           for item in assetsData
             if item.serving_url

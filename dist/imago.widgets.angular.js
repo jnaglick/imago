@@ -81,6 +81,12 @@ imagoImage = (function() {
             if (!data) {
               return;
             }
+            if ($scope.$parent.width) {
+              _this.width = $scope.$parent.width;
+            }
+            if ($scope.$parent.height) {
+              _this.height = $scope.$parent.height;
+            }
             _this.data = data;
             return render(_this.data);
           };
@@ -247,6 +253,8 @@ imagoSlider = (function() {
           var item, _i, _len, _ref;
           $scope.loadedData = true;
           $scope.slideSource = [];
+          $scope.height = $element[0].clientHeight;
+          $scope.width = $element[0].clientWidth;
           for (_i = 0, _len = assetsData.length; _i < _len; _i++) {
             item = assetsData[_i];
             if (item.serving_url) {

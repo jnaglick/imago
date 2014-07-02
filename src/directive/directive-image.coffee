@@ -33,6 +33,12 @@ class imagoImage extends Directive
 
         $scope.$watch $attrs['source'], (data) =>
           return unless data
+
+          if $scope.$parent.width
+            @width = $scope.$parent.width
+          if $scope.$parent.height
+            @height = $scope.$parent.height
+            
           @data = data
           render @data
 
