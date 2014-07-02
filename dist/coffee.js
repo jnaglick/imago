@@ -352,7 +352,8 @@ imagoVideo = (function() {
           sizemode: 'fit',
           lazy: true,
           width: '',
-          height: ''
+          height: '',
+          hires: true
         };
         angular.forEach(this.defaults, (function(_this) {
           return function(value, key) {
@@ -364,6 +365,12 @@ imagoVideo = (function() {
             return _this[key] = value;
           };
         })(this));
+        if (!!+this.width) {
+          this.orgWidth = this.width = +this.width;
+        }
+        if (!!+this.height) {
+          this.orgHeight = this.height = +this.height;
+        }
         this.videoEl = $element[0].children[1];
         $scope.time = '00:00';
         $scope.seekTime = 0;
@@ -437,12 +444,8 @@ imagoVideo = (function() {
             $scope.wrapperStyle["background-image"] = "url(" + _this.serving_url + ")";
             $scope.wrapperStyle["background-repeat"] = "no-repeat";
             $scope.wrapperStyle["background-size"] = "auto 100%";
-            if (angular.isNumber(_this.width)) {
-              $scope.wrapperStyle["width"] = parseInt(_this.width);
-            }
-            if (angular.isNumber(_this.width)) {
-              $scope.wrapperStyle["height"] = parseInt(_this.height);
-            }
+            $scope.wrapperStyle["width"] = angular.isNumber(_this.orgWidth) ? _this.orgWidth : $element[0].parentNode.clientWidth || parseInt(_this.width);
+            $scope.wrapperStyle["height"] = angular.isNumber(_this.orgHeight) ? _this.orgHeight : $element[0].parentNode.clientHeight || parseInt(_this.height);
             return $scope.videoStyle = {
               "autoplay": $scope.optionsVideo["autoplay"],
               "preload": $scope.optionsVideo["preload"],
@@ -494,7 +497,9 @@ imagoVideo = (function() {
             return $scope.optionsVideo.playing = false;
           };
         })(this);
-        setSize = function(size) {};
+        setSize = function(size) {
+          return console.log('******** setSize, nothing here');
+        };
         $scope.toggleSize = function() {
           if ($scope.optionsVideo.size === 'hd') {
             $scope.optionsVideo.size = 'sd';
@@ -572,7 +577,7 @@ imagoVideo = (function() {
                   vs.marginLeft = '0px';
                 }
                 ws.backgroundSize = '100% auto';
-                return ws.backgroundPosition = _this.align;
+                ws.backgroundPosition = _this.align;
               } else {
                 if (imagoUtils.isiOS()) {
                   vs.width = '100%';
@@ -592,23 +597,30 @@ imagoVideo = (function() {
                   vs.marginLeft = "-" + (parseInt(_this.height * _this.assetRatio / 2, 10)) + "px";
                 }
                 ws.backgroundSize = 'auto 100%';
-                return ws.backgroundPosition = _this.align;
+                ws.backgroundPosition = _this.align;
               }
             } else if (_this.sizemode === 'fit') {
-              width = $element[0].clientWidth;
-              height = $element[0].clientHeight;
+              width = angular.isNumber(_this.orgWidth) ? _this.orgWidth : $element[0].parentNode.clientWidth || parseInt(_this.width);
+              height = angular.isNumber(_this.orgHeight) ? _this.orgHeight : $element[0].parentNode.clientHeight || parseInt(_this.height);
               wrapperRatio = width / height;
               if (_this.assetRatio > wrapperRatio) {
                 vs.width = '100%';
                 vs.height = imagoUtils.isiOS() ? '100%' : 'auto';
                 ws.backgroundSize = '100% auto';
-                return ws.backgroundPosition = _this.align;
+                ws.backgroundPosition = _this.align;
+                ws.width = "" + width + "px";
+                ws.height = "" + (parseInt(width / _this.assetRatio, 10)) + "px";
               } else {
                 vs.width = imagoUtils.isiOS() ? '100%' : 'auto';
                 vs.height = '100%';
                 ws.backgroundSize = 'auto 100%';
-                return ws.backgroundPosition = _this.align;
+                ws.backgroundPosition = _this.align;
+                ws.height = "" + height + "px";
+                ws.width = "" + (parseInt(height * _this.assetRatio, 10)) + "px";
               }
+            }
+            if (!$scope.$$phase) {
+              return $scope.$apply($scope.wrapperStyle);
             }
           };
         })(this);
@@ -656,11 +668,9 @@ imagoVideo = (function() {
             }
           }
         };
-        return $scope.$on('resizelimit', (function(_this) {
-          return function() {
-            return resize();
-          };
-        })(this));
+        if (!(angular.isNumber(this.orgWidth) && angular.isNumber(this.orgHeight))) {
+          return $scope.$on('resizelimit', resize);
+        }
       }
     };
   }

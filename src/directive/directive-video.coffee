@@ -27,8 +27,8 @@ class imagoVideo extends Directive
         angular.forEach $attrs, (value, key) =>
           @[key] = value
 
-        @width  = +@width  if angular.isNumber(+@width)
-        @height = +@height if angular.isNumber(+@height)
+        @orgWidth  = @width  = +@width  if !!+@width
+        @orgHeight = @height = +@height if !!+@height
 
         @videoEl = $element[0].children[1]
         $scope.time = '00:00'
@@ -67,7 +67,7 @@ class imagoVideo extends Directive
 
           # use pvrovided dimentions.
           if angular.isNumber(@width) and angular.isNumber(@height)
-            console.log 'we have numbers for width and height', @width, @height
+            # console.log 'we have numbers for width and height', @width, @height
 
 
           # fit width
@@ -116,8 +116,8 @@ class imagoVideo extends Directive
           $scope.wrapperStyle["background-image"]  = "url(#{@serving_url})"
           $scope.wrapperStyle["background-repeat"] = "no-repeat"
           $scope.wrapperStyle["background-size"]   = "auto 100%"
-          $scope.wrapperStyle["width"]  = parseInt @width  if angular.isNumber(@width)
-          $scope.wrapperStyle["height"] = parseInt @height if angular.isNumber(@width)
+          $scope.wrapperStyle["width"]  = if angular.isNumber(@orgWidth)  then @orgWidth  else ($element[0].parentNode.clientWidth  or parseInt @width)
+          $scope.wrapperStyle["height"] = if angular.isNumber(@orgHeight) then @orgHeight else ($element[0].parentNode.clientHeight or parseInt @height)
           $scope.videoStyle =
             "autoplay" :   $scope.optionsVideo["autoplay"]
             "preload" :    $scope.optionsVideo["preload"]
@@ -201,7 +201,6 @@ class imagoVideo extends Directive
             @videoEl.msRequestFullscreen();
 
         resize = =>
-          console.log 'resize func'
           return unless $scope.optionsVideo
 
           vs = $scope.videoStyle
@@ -258,28 +257,30 @@ class imagoVideo extends Directive
 
             # element might not have a height yet,
             # fall back to @height and @width
-            width  = $element[0].clientWidth  or @width
-            height = $element[0].clientHeight or @height
+            width  = if angular.isNumber(@orgWidth)  then @orgWidth  else ($element[0].parentNode.clientWidth  or parseInt @width)
+            height = if angular.isNumber(@orgHeight) then @orgHeight else ($element[0].parentNode.clientHeight or parseInt @height)
             wrapperRatio = width / height
 
-            console.log 'wrapperRatio', width, height, wrapperRatio
+            # console.log 'wrapperRatio', width, height, wrapperRatio
 
             if @assetRatio > wrapperRatio
-              # console.log  'here'
+              # console.log  'assetRatio > wrapperRatio'
               vs.width  = '100%'
               vs.height = if imagoUtils.isiOS() then '100%' else 'auto'
-              # vs.height = '100%'
               ws.backgroundSize = '100% auto'
               ws.backgroundPosition = @align
-              ws.width  = "#{ @width }px"
-              ws.height = "#{ parseInt(@width / @assetRatio, 10) }px"
+              ws.width  = "#{ width }px"
+              ws.height = "#{ parseInt(width / @assetRatio, 10) }px"
             else
+              # console.log  'assetRatio < wrapperRatio'
               vs.width  = if imagoUtils.isiOS() then '100%' else 'auto'
               vs.height = '100%'
               ws.backgroundSize = 'auto 100%'
               ws.backgroundPosition = @align
-              ws.width  = "#{ parseInt(@height * @assetRatio, 10) }px"
-              ws.height = "#{ @height }px"
+              ws.height = "#{ height }px"
+              ws.width  = "#{ parseInt(height * @assetRatio, 10) }px"
+
+          $scope.$apply $scope.wrapperStyle if !$scope.$$phase
 
         loadSources = (data) ->
           $scope.videoFormats = []
@@ -312,5 +313,6 @@ class imagoVideo extends Directive
               return key
 
         # we should only do this if the video changes actually size
-        $scope.$on 'resizelimit', resize
+        unless (angular.isNumber(@orgWidth) and angular.isNumber(@orgHeight))
+          $scope.$on 'resizelimit', resize
     }
