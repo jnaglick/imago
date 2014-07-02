@@ -16,12 +16,18 @@ var imagoCompile;
 imagoCompile = (function() {
   function imagoCompile($compile) {
     return {
-      controller: function($scope, $element, $attrs) {
-        return $scope.$watch(function($scope) {
-          return $scope.$eval($attrs.compile);
+      link: function(scope, element, attrs) {
+        return scope.$watch(function(scope) {
+          if (!attrs.compile) {
+            return;
+          }
+          return scope.$eval(attrs.compile);
         }, function(value) {
-          $element.html(value);
-          return $compile($element.contents())($scope);
+          if (!value) {
+            return;
+          }
+          element.html(value);
+          return $compile(element.contents())(scope);
         });
       }
     };
@@ -1231,7 +1237,7 @@ var Meta;
 Meta = (function() {
   function Meta() {
     return function(input) {
-      var resources;
+      var resources, _ref;
       if (!input) {
         return;
       }
@@ -1243,10 +1249,10 @@ Meta = (function() {
       if (!this[resources[0]]) {
         return;
       }
-      if (this[resources[0]].meta[resources[1]].value.type) {
-        return this[resources[0]].meta[resources[1]].value.value;
+      if ((_ref = this[resources[0]].meta[resources[1]].value) != null ? _ref.type : void 0) {
+        return this[resources[0]].meta[resources[1]].value.value != null;
       } else {
-        return this[resources[0]].meta[resources[1]].value;
+        return this[resources[0]].meta[resources[1]].value != null;
       }
     };
   }

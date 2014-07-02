@@ -2,7 +2,7 @@ class Meta extends Filter
 
   constructor: () ->
     return (input) ->
-      unless input then return
+      return unless input
 
       resources = input.split('.')
       unless resources.length is 2
@@ -11,7 +11,7 @@ class Meta extends Filter
 
       unless this[resources[0]] then return
 
-      if this[resources[0]].meta[resources[1]].value.type
-        return this[resources[0]].meta[resources[1]].value.value
+      if this[resources[0]].meta[resources[1]].value?.type
+        return this[resources[0]].meta[resources[1]].value.value?
       else
-        return this[resources[0]].meta[resources[1]].value
+        return this[resources[0]].meta[resources[1]].value?
