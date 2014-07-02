@@ -19,6 +19,7 @@ class imagoVideo extends Directive
           lazy        : true
           width       : ''
           height      : ''
+          hires       : true
 
         angular.forEach @defaults, (value, key) =>
           @[key] = value
@@ -26,6 +27,8 @@ class imagoVideo extends Directive
         angular.forEach $attrs, (value, key) =>
           @[key] = value
 
+        @width  = +@width  if angular.isNumber(+@width)
+        @height = +@height if angular.isNumber(+@height)
 
         @videoEl = $element[0].children[1]
         $scope.time = '00:00'
@@ -64,19 +67,20 @@ class imagoVideo extends Directive
 
           # use pvrovided dimentions.
           if angular.isNumber(@width) and angular.isNumber(@height)
+            console.log 'we have numbers for width and height', @width, @height
 
 
           # fit width
           else if @height is 'auto' and angular.isNumber(@width)
             @height = @width / @assetRatio
             $scope.wrapperStyle.height = parseInt @height
-            # @log 'fit width', @width, @height
+            # console.log 'fit width', @width, @height
 
           # fit height
           else if @width is 'auto' and angular.isNumber(@height)
             @width = @height * @assetRatio
             $scope.wrapperStyle.width  = parseInt @width
-            # @log 'fit height', @width, @height
+            # console.log 'fit height', @width, @height
 
           # we want dynamic resizing without css.
           # like standard image behaviour. will get a height according to the width
@@ -152,6 +156,7 @@ class imagoVideo extends Directive
           $scope.optionsVideo.playing = false
 
         setSize = (size) ->
+          console.log '******** setSize, nothing here'
           # srcs = @el.children('source')
           # return unless srcs.length > 1
 
@@ -196,6 +201,7 @@ class imagoVideo extends Directive
             @videoEl.msRequestFullscreen();
 
         resize = =>
+          console.log 'resize func'
           return unless $scope.optionsVideo
 
           vs = $scope.videoStyle
@@ -206,7 +212,7 @@ class imagoVideo extends Directive
             height = $element[0].clientHeight
             wrapperRatio = width / height
             if @assetRatio < wrapperRatio
-              #log 'full width'
+              # log 'full width'
               if imagoUtils.isiOS()
                   vs.width  = '100%'
                   vs.height = '100%'
@@ -250,24 +256,30 @@ class imagoVideo extends Directive
           else if @sizemode is 'fit'
             # console.log 'fit'
 
-            width  = $element[0].clientWidth
-            height = $element[0].clientHeight
+            # element might not have a height yet,
+            # fall back to @height and @width
+            width  = $element[0].clientWidth  or @width
+            height = $element[0].clientHeight or @height
             wrapperRatio = width / height
 
+            console.log 'wrapperRatio', width, height, wrapperRatio
+
             if @assetRatio > wrapperRatio
+              # console.log  'here'
               vs.width  = '100%'
               vs.height = if imagoUtils.isiOS() then '100%' else 'auto'
+              # vs.height = '100%'
               ws.backgroundSize = '100% auto'
               ws.backgroundPosition = @align
-              # ws.width  = "#{ @width }px"
-              # ws.height = "#{ parseInt(@width / @assetRatio, 10) }px"
+              ws.width  = "#{ @width }px"
+              ws.height = "#{ parseInt(@width / @assetRatio, 10) }px"
             else
               vs.width  = if imagoUtils.isiOS() then '100%' else 'auto'
               vs.height = '100%'
               ws.backgroundSize = 'auto 100%'
               ws.backgroundPosition = @align
-              # ws.width  = "#{ parseInt(@height * @assetRatio, 10) }px"
-              # ws.height = "#{ @height }px"
+              ws.width  = "#{ parseInt(@height * @assetRatio, 10) }px"
+              ws.height = "#{ @height }px"
 
         loadSources = (data) ->
           $scope.videoFormats = []
@@ -299,6 +311,6 @@ class imagoVideo extends Directive
             if tag.canPlayType value
               return key
 
-        $scope.$on 'resizelimit', () =>
-          resize()
+        # we should only do this if the video changes actually size
+        $scope.$on 'resizelimit', resize
     }
