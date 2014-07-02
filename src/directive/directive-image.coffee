@@ -38,7 +38,7 @@ class imagoImage extends Directive
 
         render = (data) =>
 
-          unless data.serving_url
+          unless data?.serving_url
             $element.remove()
             return
 

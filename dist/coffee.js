@@ -15,21 +15,19 @@ var imagoCompile;
 
 imagoCompile = (function() {
   function imagoCompile($compile) {
-    return {
-      link: function(scope, element, attrs) {
-        return scope.$watch(function(scope) {
-          if (!attrs.compile) {
-            return;
-          }
-          return scope.$eval(attrs.compile);
-        }, function(value) {
-          if (!value) {
-            return;
-          }
-          element.html(value);
-          return $compile(element.contents())(scope);
-        });
-      }
+    return function(scope, element, attrs) {
+      var compile, htmlName;
+      compile = function(newHTML) {
+        newHTML = $compile(newHTML)(scope);
+        return element.html("").append(newHTML);
+      };
+      htmlName = attrs.compile;
+      return scope.$watch(htmlName, function(newHTML) {
+        if (!newHTML) {
+          return;
+        }
+        return compile(newHTML);
+      });
     };
   }
 
@@ -87,7 +85,7 @@ imagoImage = (function() {
         render = (function(_this) {
           return function(data) {
             var dpr, img, r, servingSize, servingUrl, wrapperRatio;
-            if (!data.serving_url) {
+            if (!(data != null ? data.serving_url : void 0)) {
               $element.remove();
               return;
             }
