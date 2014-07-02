@@ -1235,7 +1235,7 @@ var Meta;
 Meta = (function() {
   function Meta() {
     return function(input) {
-      var resources, _ref;
+      var resources;
       if (!input) {
         return;
       }
@@ -1244,13 +1244,13 @@ Meta = (function() {
         console.log('Not enough data for meta');
         return;
       }
-      if (!this[resources[0]]) {
+      if (!(this[resources[0]] || this[resources[0]].meta[resources[1]].value)) {
         return;
       }
-      if ((_ref = this[resources[0]].meta[resources[1]].value) != null ? _ref.type : void 0) {
-        return this[resources[0]].meta[resources[1]].value.value != null;
+      if (this[resources[0]].meta[resources[1]].value.type) {
+        return this[resources[0]].meta[resources[1]].value.value;
       } else {
-        return this[resources[0]].meta[resources[1]].value != null;
+        return this[resources[0]].meta[resources[1]].value;
       }
     };
   }
