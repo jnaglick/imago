@@ -1252,7 +1252,7 @@ Meta = (function() {
         console.log('Not enough data for meta');
         return;
       }
-      if (!(this[resources[0]] || this[resources[0]].meta[resources[1]].value)) {
+      if (!this[resources[0]]) {
         return;
       }
       if (this[resources[0]].meta[resources[1]].value.type) {
