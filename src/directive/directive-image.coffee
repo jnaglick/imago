@@ -38,18 +38,21 @@ class imagoImage extends Directive
             @width = $scope.$parent.width
           if $scope.$parent.height
             @height = $scope.$parent.height
-            
+
+          # convert to int if its a number
+          @width =  parseInt @width if parseInt @width
+          @height = parseInt @height if parseInt @height
+
           @data = data
           render @data
 
         render = (data) =>
-
           unless data?.serving_url
             $element.remove()
             return
 
           $scope.elementStyle = {} unless $scope.elementStyle
-
+          #console.log 'elementStyle ' , $scope.elementStyle
           if angular.isString(data.resolution)
             r = data.resolution.split('x')
             @resolution =
@@ -63,19 +66,20 @@ class imagoImage extends Directive
 
           # use pvrovided dimentions.
           if angular.isNumber(@width) and angular.isNumber(@height)
-            # $log.log 'fixed size', @width, @height
+            #$log.log 'fixed size', @width, @height
 
           # fit width
           else if @height is 'auto' and angular.isNumber(@width)
             @height = @width / @assetRatio
             $scope.elementStyle.height = parseInt @height
-            # $log.log 'fit width', @width, @height
+            #$log.log 'fit width', @width, @height
 
           # fit height
           else if @width is 'auto' and angular.isNumber(@height)
+
             @width = @height * @assetRatio
             $scope.elementStyle.width = parseInt @width
-            # $log.log 'fit height', @width, @height
+            #$log.log 'fit height', @width, @height
 
           # we want dynamic resizing without css.
           # like standard image behaviour. will get a height according to the width
@@ -116,7 +120,7 @@ class imagoImage extends Directive
 
           # sizemode fit
           else
-            # $log.log 'ratios', @assetRatio, wrapperRatio
+            # $log.log 'assetratio: ', @assetRatio, 'wrapperraito: ' , wrapperRatio
             if @assetRatio <= wrapperRatio
               # $log.log 'fit full height', @width, @height, @assetRatio, @height * assetRatio
               servingSize = Math.round(Math.max(@height, @height * @assetRatio))
@@ -138,17 +142,17 @@ class imagoImage extends Directive
 
           # $log.log 'servingURl', servingUrl
           $scope.imageStyle = {}
-
           unless @responsive
-            $scope.imageStyle['width']  = "#{parseInt @width,  10}px"
-            $scope.imageStyle['height'] = "#{parseInt @height, 10}px"
+            $scope.imageStyle.width = "#{parseInt @width,  10}px"
+            $scope.imageStyle.height = "#{parseInt @height, 10}px"
+
 
           img = angular.element('<img>')
           img.on 'load', (e) =>
-            $scope.imageStyle['background-image']    = "url(#{servingUrl})"
-            $scope.imageStyle['background-size']     = $scope.calcMediaSize()
-            $scope.imageStyle['background-position'] = @align
-            $scope.imageStyle['display']             = 'inline-block'
+            $scope.imageStyle.backgroundImage    = "url(#{servingUrl})"
+            $scope.imageStyle.backgroundSize    = $scope.calcMediaSize()
+            $scope.imageStyle.backgroundPosition = @align
+            $scope.imageStyle.display             = 'inline-block'
             $scope.status = 'loaded'
             $scope.$apply()
             # console.log '$scope.imageStyle', $scope.imageStyle
@@ -157,16 +161,16 @@ class imagoImage extends Directive
 
 
         $scope.onResize = () =>
+          # console.log 'onResize func'
           $scope.imageStyle['background-size'] = $scope.calcMediaSize()
 
         $scope.calcMediaSize = () =>
-          # console.log 'calcMediaSize'
           # for key, value of options
           #   @[key] = value
-
           # $log.log 'calcMediaSize', @sizemode
           @width  = $element[0].clientWidth  or @width
           @height = $element[0].clientHeight or @height
+
           # $log.log 'calcMediaSize: @width, @height', @width, @height
           return unless @width and @height
 
@@ -180,11 +184,10 @@ class imagoImage extends Directive
 
 
         $scope.$on 'resizelimit', () =>
-          # console.log 'resizelimit'
-          $scope.onResize if @responsive
+          #console.log 'resizelimit' ,@responsive
+          $scope.onResize() if @responsive
 
         $scope.$on 'resizestop', () =>
-          # console.log 'resizestop'
           render(@data) if @responsive
 
         $scope.$on 'scrollstop', () =>

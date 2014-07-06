@@ -8,6 +8,7 @@ class imagoSlider extends Directive
       templateUrl: '/imagoWidgets/slider-widget.html'
       controller: ($scope, $element, $attrs, $window, imagoPanel) ->
 
+
         source = $attrs.source or 'assets'
 
         $scope.$watch source, (assetsData) ->
@@ -25,15 +26,16 @@ class imagoSlider extends Directive
 
           $scope.height = $element[0].clientHeight
           $scope.width = $element[0].clientWidth
-
+          # console.log 'width slider ' , $scope.width
+          # console.log 'height slider ' , $scope.height
           #If slider has one slide
           for item in assetsData
             if item.serving_url
               $scope.slideSource.push item
-
           if $scope.slideSource?.length <= 1 or !$scope.slideSource
               $scope.confSlider.enablearrows = false
               $scope.confSlider.enablekeys   = false
+
 
           # @id = imagoUtils.uuid()
 
