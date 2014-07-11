@@ -1,17 +1,18 @@
-div(ng-style="wrapperStyle", ng-click="videoActive = true", class="imagovideo imagowrapper {{optionsVideo.align}} {{optionsVideo.size}} {{optionsVideo.sizemode}}")
-  a.playbig.fa.fa-play(ng-click="togglePlay()", ng-hide="optionsVideo.playing")
-  video(ng-style="videoStyle", ng-show="videoActive")
-    source(ng-repeat="format in videoFormats", src="{{format.src}}", data-size="{{format.size}}", data-codec="{{format.codec}}", type="{{format.type}}")
-  .controls(ng-if="controls")
-    a.play.fa.fa-play(ng-click="play()", ng-hide="optionsVideo.playing")
-    a.pause.fa.fa-pause(ng-click="pause()", ng-show="optionsVideo.playing")
-    span.time {{time}}
-    span.seekbar
-      input.seek(type='range',ng-model="seekTime", ng-change="seek(seekTime)")
-    a.size(ng-click="toggleSize()") hd
-    span.volume
-      span.fa.fa-volume-up.icon-volume-up(ng-click="volumeUp()")
-      input(type='range', ng-model="volumeInput", ng-change="onVolumeChange(volumeInput)")
-      span.fa.fa-volume-down.icon-volume-down(ng-click="volumeDown()")
-    a.fullscreen.fa.fa-expand(ng-click="fullScreen()")
-    a.screen.fa.fa-compress
+div(class="imagovideo {{optionsVideo.align}} {{optionsVideo.size}} {{optionsVideo.sizemode}}")
+  .imagowrapper(ng-style="wrapperStyle" ng-click="videoActive = true")
+    a.playbig.fa.fa-play(ng-click="togglePlay()", ng-hide="optionsVideo.playing")
+    video(ng-style="videoStyle", ng-show="videoActive")
+      source(ng-repeat="format in videoFormats", src="{{format.src}}", data-size="{{format.size}}", data-codec="{{format.codec}}", type="{{format.type}}")
+    .controls(ng-if="controls")
+      a.play.fa.fa-play(ng-click="play()", ng-hide="optionsVideo.playing")
+      a.pause.fa.fa-pause(ng-click="pause()", ng-show="optionsVideo.playing")
+      span.time {{time}}
+      span.seekbar
+        input.seek(type='range',ng-model="seekTime", ng-change="seek(seekTime)")
+      a.size(ng-click="toggleSize()") hd
+      span.volume
+        span.fa.fa-volume-up.icon-volume-up(ng-click="volumeUp()")
+        input(type='range', ng-model="volumeInput", ng-change="onVolumeChange(volumeInput)")
+        span.fa.fa-volume-down.icon-volume-down(ng-click="volumeDown()")
+      a.fullscreen.fa.fa-expand(ng-click="fullScreen()")
+      a.screen.fa.fa-compress

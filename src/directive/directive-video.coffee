@@ -30,7 +30,10 @@ class imagoVideo extends Directive
         @orgWidth  = @width  = +@width  if !!+@width
         @orgHeight = @height = +@height if !!+@height
 
-        @videoEl = $element[0].children[1]
+
+
+        @videoEl = $element[0].children[0].children[1]
+
         $scope.time = '00:00'
         $scope.seekTime = 0
 
@@ -80,7 +83,7 @@ class imagoVideo extends Directive
           else if @width is 'auto' and angular.isNumber(@height)
             @width = @height * @assetRatio
             $scope.wrapperStyle.width  = parseInt @width
-            # console.log 'fit height', @width, @height
+            # console.log 'fit height', @width, @height , $scope.wrapperStyle
 
           # we want dynamic resizing without css.
           # like standard image behaviour. will get a height according to the width
@@ -116,14 +119,18 @@ class imagoVideo extends Directive
           $scope.wrapperStyle["background-image"]  = "url(#{@serving_url})"
           $scope.wrapperStyle["background-repeat"] = "no-repeat"
           $scope.wrapperStyle["background-size"]   = "auto 100%"
-          $scope.wrapperStyle["width"]  = if angular.isNumber(@orgWidth)  then @orgWidth  else ($element[0].parentNode.clientWidth  or parseInt @width)
-          $scope.wrapperStyle["height"] = if angular.isNumber(@orgHeight) then @orgHeight else ($element[0].parentNode.clientHeight or parseInt @height)
+
+          $scope.wrapperStyle["width"]  = if angular.isNumber(@orgWidth)  then @orgWidth  else ($element[0].clientWidth or parseInt @width)
+          $scope.wrapperStyle["height"] = if angular.isNumber(@orgHeight) then @orgHeight else ($element[0].clientHeight or parseInt @height)
+
           $scope.videoStyle =
             "autoplay" :   $scope.optionsVideo["autoplay"]
             "preload" :    $scope.optionsVideo["preload"]
             "autobuffer" : $scope.optionsVideo["autobuffer"]
             "x-webkit-airplay" : 'allow'
             "webkitAllowFullscreen" : 'true'
+
+          $scope.$apply $scope.wrapperStyle if !$scope.$$phase
 
         pad = (num)->
           return "0" + num  if num < 10
@@ -146,6 +153,7 @@ class imagoVideo extends Directive
           $scope.optionsVideo.playing = true
 
         $scope.togglePlay = =>
+
           unless @videoEl.paused
             $scope.pause()
           else
@@ -257,11 +265,13 @@ class imagoVideo extends Directive
 
             # element might not have a height yet,
             # fall back to @height and @width
-            width  = if angular.isNumber(@orgWidth)  then @orgWidth  else ($element[0].parentNode.clientWidth  or parseInt @width)
-            height = if angular.isNumber(@orgHeight) then @orgHeight else ($element[0].parentNode.clientHeight or parseInt @height)
+            width  = if angular.isNumber(@orgWidth)  then @orgWidth  else ($element[0].clientWidth or parseInt @width)
+            height = if angular.isNumber(@orgHeight) then @orgHeight else ($element[0].clientHeight or parseInt @height)
+            # console.log 'height ' , height
+            # console.log 'width ' , width
             wrapperRatio = width / height
-
-            # console.log 'wrapperRatio', width, height, wrapperRatio
+            # console.log 'wrapperRatio ' , wrapperRatio
+            # console.log 'element ',$element[0]
 
             if @assetRatio > wrapperRatio
               # console.log  'assetRatio > wrapperRatio'
@@ -272,13 +282,13 @@ class imagoVideo extends Directive
               ws.width  = "#{ width }px"
               ws.height = "#{ parseInt(width / @assetRatio, 10) }px"
             else
-              # console.log  'assetRatio < wrapperRatio'
+              # console.log  'assetRatio = ', @assetRatio , ' < wrapperRatio'
               vs.width  = if imagoUtils.isiOS() then '100%' else 'auto'
               vs.height = '100%'
               ws.backgroundSize = 'auto 100%'
               ws.backgroundPosition = @align
               ws.height = "#{ height }px"
-              ws.width  = "#{ parseInt(height * @assetRatio, 10) }px"
+              ws.width  = "#{ parseInt( height * @assetRatio, 10) }px"
 
           $scope.$apply $scope.wrapperStyle if !$scope.$$phase
 

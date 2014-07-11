@@ -185,6 +185,7 @@ class imagoImage extends Directive
 
         $scope.$on 'resizelimit', () =>
           #console.log 'resizelimit' ,@responsive
+
           $scope.onResize() if @responsive
 
         $scope.$on 'resizestop', () =>
