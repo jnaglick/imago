@@ -12,5 +12,12 @@ class imagoContact extends Directive
         $scope.submitForm = (isValid) ->
           if isValid
             console.log "send function will go here."
-            console.log $scope.nexContact
+            console.log @getValues()
+
+        getValues: () ->
+          @formData =
+            name:      $scope.name
+            email:     $scope.email
+            message:   $scope.message
+            subscribe: $scope.subscribe
     }

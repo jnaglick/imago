@@ -48,10 +48,20 @@ imagoContact = (function() {
       templateUrl: '/imagoWidgets/contact-widget.html',
       controller: function($scope, imagoSubmit) {
         console.log('imagoContact: ', imagoSubmit);
-        return $scope.submitForm = function(isValid) {
+        $scope.submitForm = function(isValid) {
           if (isValid) {
             console.log("send function will go here.");
-            return console.log($scope.nexContact);
+            return console.log(this.getValues());
+          }
+        };
+        return {
+          getValues: function() {
+            return this.formData = {
+              name: $scope.name,
+              email: $scope.email,
+              message: $scope.message,
+              subscribe: $scope.subscribe
+            };
           }
         };
       }
