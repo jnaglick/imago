@@ -1,0 +1,43 @@
+form(name="nexContact" ng-submit="submitForm(nexContact.$valid)" novalidate)
+
+  div.nex.field
+    label(for="name") Name
+    input(type="text"
+      name="name"
+      ng-model="name"
+      ng-class="{'invalid' : nexContact.name.$invalid && !nexContact.name.$prestine}"
+      placeholder="Name"
+      required)
+
+  div.nex.field
+    label(for="email") Email
+    input(type="email"
+      name="email"
+      ng-model="email"
+      ng-class="{'invalid' : nexContact.email.$invalid && !nexContact.email.$prestine}"
+      placeholder="Email"
+      required)
+
+  div.nex.field
+    label(for="message") Message
+    textarea(name="message"
+      ng-model="message"
+      ng-class="{'invalid' : nexContact.message.$invalid && !nexContact.message.$prestine}"
+      placeholder="Your message."
+      required)
+
+  div.nex.checkbox
+    input(type="checkbox"
+      name="subscribe"
+      ng-model="subscribe"
+      checked)
+    label(for="subscribe") Subscribe
+
+  div.formcontrols
+    button.send(type="submit" ng-disabled="nexContact.$invalid") Send
+
+div.sucess
+  span Thank You!
+
+div.error
+  span Error!
