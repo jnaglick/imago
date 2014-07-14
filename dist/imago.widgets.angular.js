@@ -814,46 +814,53 @@ imagoPanel = (function() {
 
 angular.module('imago.widgets.angular').factory('imagoPanel', ['$http', 'imagoUtils', '$q', '$location', imagoPanel]);
 
-var imagoSubmit;
+var imagoSubmit,
+  __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
 
 imagoSubmit = (function() {
-  function imagoSubmit($http, imagoUtils, $q, $location) {
+  function imagoSubmit($http, imagoUtils) {
     return {
-      xsrfHeader: '',
-      getxsrf: (function(_this) {
-        return function() {
-          var url;
-          url = data === 'online' && debug ? "http://" + tenant + ".imagoapp.com/api/v2/getxsrf" : "/api/v2/getxsrf";
-          return $http.get(url).then(function(response) {
-            console.log('response: ', response);
-            return _this.xsrfHeader = response;
-          }, function(error) {
-            console.log('error: ', error);
-            return error;
-          });
-        };
-      })(this),
-      formToJson: (function(_this) {
-        return function(form) {
-          console.log('form: ', form);
-          return angular.toJson(form);
-        };
-      })(this),
-      send: function(data) {
-        this.getxsrf();
-        if (!this.xsrfHeader) {
-          return console.log(this.getxsrf());
+      getxsrf: function() {
+        var url;
+        url = data === 'online' && debug ? "http://" + tenant + ".imagoapp.com/api/v2/getxsrf" : "/api/v2/getxsrf";
+        return $http.get(url);
+      },
+      formToJson: function(form) {
+        var defaultFields, key, message, obj, value;
+        defaultFields = ['message', 'subscribe'];
+        obj = {};
+        message = '';
+        for (key in form) {
+          value = form[key];
+          if (__indexOf.call(defaultFields, key) < 0) {
+            message += "" + (imagoUtils.titleCase(key)) + ": " + value + "<br><br>";
+          }
+          obj[key] = value || '';
         }
-        return $http.post(this.formToJson(data), data === 'online' && debug ? "http://" + tenant + ".imagoapp.com/api/v2/contact" : "/api/v2/contact", {
-          xsrfHeaderName: this.xsrfHeader
-        }).then((function(_this) {
+        obj.message = message + imagoUtils.replaceNewLines(obj.message || '');
+        return angular.toJson(obj);
+      },
+      send: function(data) {
+        return this.getxsrf().then((function(_this) {
           return function(response) {
-            console.log(response);
-            return true;
+            var postUrl, xsrfHeader;
+            console.log('getxsrf success: ', response);
+            xsrfHeader = {
+              "Nex-Xsrf": response.data
+            };
+            postUrl = data === 'online' && debug ? "http://" + tenant + ".imagoapp.com/api/v2/contact" : "/api/v2/contact";
+            return $http.post(postUrl, _this.formToJson(data), {
+              headers: xsrfHeader
+            }).then(function(response) {
+              console.log('success: ', response);
+              return true;
+            }, function(error) {
+              console.log('error: ', error);
+              return false;
+            });
           };
         })(this), function(error) {
-          console.log('error: ', error);
-          return false;
+          return console.log('getxsrf error: ', error);
         });
       }
     };
@@ -863,7 +870,7 @@ imagoSubmit = (function() {
 
 })();
 
-angular.module('imago.widgets.angular').factory('imagoSubmit', ['$http', 'imagoUtils', '$q', '$location', imagoSubmit]);
+angular.module('imago.widgets.angular').factory('imagoSubmit', ['$http', 'imagoUtils', imagoSubmit]);
 
 var imagoUtils;
 
@@ -1152,6 +1159,12 @@ imagoUtils = (function() {
       singularize: function(str) {
         return str.replace(/s$/, '');
       },
+      titleCase: function(str) {
+        if (typeof str !== 'string') {
+          return str;
+        }
+        return str.charAt(0).toUpperCase() + str.slice(1);
+      },
       normalize: function(s) {
         var mapping, r, str;
         mapping = {
@@ -1233,9 +1246,6 @@ imagoUtils = (function() {
       isFirefox: function() {
         return !!navigator.userAgent.match(/Firefox/i);
       },
-      isOpera: function() {
-        return !!navigator.userAgent.match(/Presto/i);
-      },
       isSafari: function() {
         return !!navigator.userAgent.match(/Safari/i) && !this.isChrome();
       },
@@ -1309,6 +1319,9 @@ imagoUtils = (function() {
       inUsa: function(value) {
         var _ref;
         return (_ref = value != null ? value.toLowerCase() : void 0) === 'usa' || _ref === 'united states' || _ref === 'united states of america';
+      },
+      replaceNewLines: function(msg) {
+        return msg.replace(/(\r\n\r\n|\r\n|\n|\r)/gm, "<br>");
       },
       getCurrencySymbol: function(currency) {
         return SYMBOLS[currency] || SYMBOLS.GENERIC;
