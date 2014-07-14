@@ -1,6 +1,6 @@
 class imagoContact extends Directive
 
-  constructor: ->
+  constructor: (imagoSubmit)->
     return {
       replace: true
       scope: {}
