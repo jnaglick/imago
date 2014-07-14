@@ -4,20 +4,11 @@ class imagoContact extends Directive
     return {
       replace: true
       scope: {}
-      transclude: true
       templateUrl: '/imagoWidgets/contact-widget.html'
-      controller: ($scope, imagoSubmit) ->
-        console.log 'imagoContact: ', $scope.submitForm
+      controller: ($scope) ->
 
         $scope.submitForm = (isValid) =>
           if isValid
-            console.log "send function will go here."
-            console.log @getValues()
+            imagoSubmit.send($scope.contact)
 
-        getValues: () ->
-          @formData =
-            name:      $scope.name
-            email:     $scope.email
-            message:   $scope.message
-            subscribe: $scope.subscribe
     }

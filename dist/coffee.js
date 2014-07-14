@@ -44,28 +44,15 @@ imagoContact = (function() {
     return {
       replace: true,
       scope: {},
-      transclude: true,
       templateUrl: '/imagoWidgets/contact-widget.html',
-      controller: function($scope, imagoSubmit) {
-        console.log('imagoContact: ', $scope.submitForm);
-        $scope.submitForm = (function(_this) {
+      controller: function($scope) {
+        return $scope.submitForm = (function(_this) {
           return function(isValid) {
             if (isValid) {
-              console.log("send function will go here.");
-              return console.log(_this.getValues());
+              return imagoSubmit.send($scope.contact);
             }
           };
         })(this);
-        return {
-          getValues: function() {
-            return this.formData = {
-              name: $scope.name,
-              email: $scope.email,
-              message: $scope.message,
-              subscribe: $scope.subscribe
-            };
-          }
-        };
       }
     };
   }
@@ -832,7 +819,7 @@ imagoSubmit = (function() {
       getxsrf: (function(_this) {
         return function() {
           var url;
-          url = data === 'online' && debug ? "http://" + tenant + ".imagoapp.com/api/v3/getxsrf" : "/api/v3/getxsrf";
+          url = data === 'online' && debug ? "http://" + tenant + ".imagoapp.com/api/v2/getxsrf" : "/api/v2/getxsrf";
           return $http.get(url).then(function(response) {
             console.log('response: ', response);
             return _this.xsrfHeader = response;
@@ -851,7 +838,7 @@ imagoSubmit = (function() {
       send: function(data) {
         this.getxsrf();
         if (!this.xsrfHeader) {
-          return false;
+          return console.log(this.getxsrf());
         }
         return $http.post(this.formToJson(data), data === 'online' && debug ? "http://" + tenant + ".imagoapp.com/api/v2/contact" : "/api/v2/contact", {
           xsrfHeaderName: this.xsrfHeader

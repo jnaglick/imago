@@ -5,33 +5,34 @@ div.nex.form
       label(for="name") Name
       input(type="text"
         name="name"
-        ng-model="name"
-        ng-class="{'invalid' : nexContact.name.$invalid && !nexContact.name.$prestine}"
+        ng-model="contact.name"
         placeholder="Name"
-        required)
+        require
+        )
 
     div.nex.field
       label(for="email") Email
       input(type="email"
         name="email"
-        ng-model="email"
-        ng-class="{'invalid' : nexContact.email.$invalid && !nexContact.email.$prestine}"
+        ng-model="contact.email"
         placeholder="Email"
-        required)
+        require
+        )
 
     div.nex.field
       label(for="message") Message
       textarea(name="message"
-        ng-model="message"
-        ng-class="{'invalid' : nexContact.message.$invalid && !nexContact.message.$prestine}"
+        ng-model="contact.message"
         placeholder="Your message."
-        required)
+        require
+        )
 
     div.nex.checkbox
       input(type="checkbox"
         name="subscribe"
-        ng-model="subscribe"
-        checked)
+        ng-model="contact.subscribe"
+        checked
+        )
       label(for="subscribe") Subscribe
 
     div.formcontrols

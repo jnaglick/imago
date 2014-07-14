@@ -1,4 +1,4 @@
-angular.module("ImagoWidgetsTemplates", []).run(["$templateCache", function($templateCache) {$templateCache.put("/imagoWidgets/contact-widget.html","<div class=\"nex form\"><form name=\"nexContact\" ng-submit=\"submitForm(nexContact.$valid)\" novalidate=\"novalidate\"><div class=\"nex field\"><label for=\"name\">Name</label><input type=\"text\" name=\"name\" ng-model=\"name\" ng-class=\"{\'invalid\' : nexContact.name.$invalid &amp;&amp; !nexContact.name.$prestine}\" placeholder=\"Name\" required=\"required\"/></div><div class=\"nex field\"><label for=\"email\">Email</label><input type=\"email\" name=\"email\" ng-model=\"email\" ng-class=\"{\'invalid\' : nexContact.email.$invalid &amp;&amp; !nexContact.email.$prestine}\" placeholder=\"Email\" required=\"required\"/></div><div class=\"nex field\"><label for=\"message\">Message</label><textarea name=\"message\" ng-model=\"message\" ng-class=\"{\'invalid\' : nexContact.message.$invalid &amp;&amp; !nexContact.message.$prestine}\" placeholder=\"Your message.\" required=\"required\"></textarea></div><div class=\"nex checkbox\"><input type=\"checkbox\" name=\"subscribe\" ng-model=\"subscribe\" checked=\"checked\"/><label for=\"subscribe\">Subscribe</label></div><div class=\"formcontrols\"><button type=\"submit\" ng-disabled=\"nexContact.$invalid\" class=\"send\">Send</button></div></form><div class=\"sucess\"><span>Thank You!</span></div><div class=\"error\"><span>Error!</span></div></div>");
+angular.module("ImagoWidgetsTemplates", []).run(["$templateCache", function($templateCache) {$templateCache.put("/imagoWidgets/contact-widget.html","<div class=\"nex form\"><form name=\"nexContact\" ng-submit=\"submitForm(nexContact.$valid)\" novalidate=\"novalidate\"><div class=\"nex field\"><label for=\"name\">Name</label><input type=\"text\" name=\"name\" ng-model=\"contact.name\" placeholder=\"Name\" require=\"require\"/></div><div class=\"nex field\"><label for=\"email\">Email</label><input type=\"email\" name=\"email\" ng-model=\"contact.email\" placeholder=\"Email\" require=\"require\"/></div><div class=\"nex field\"><label for=\"message\">Message</label><textarea name=\"message\" ng-model=\"contact.message\" placeholder=\"Your message.\" require=\"require\"></textarea></div><div class=\"nex checkbox\"><input type=\"checkbox\" name=\"subscribe\" ng-model=\"contact.subscribe\" checked=\"checked\"/><label for=\"subscribe\">Subscribe</label></div><div class=\"formcontrols\"><button type=\"submit\" ng-disabled=\"nexContact.$invalid\" class=\"send\">Send</button></div></form><div class=\"sucess\"><span>Thank You!</span></div><div class=\"error\"><span>Error!</span></div></div>");
 $templateCache.put("/imagoWidgets/image-widget.html","<div ng-style=\"elementStyle\" ng-class=\"status\" class=\"imagoimage imagowrapper\"><div ng-style=\"imageStyle\" class=\"image\"></div><div ng-hide=\"status === \'loaded\'\" class=\"loading\"><div class=\"spin\"></div><div class=\"spin2\"></div></div></div>");
 $templateCache.put("/imagoWidgets/slider-widget.html","<div ng-class=\"elementStyle\"><div ng-transclude=\"ng-transclude\"></div><div ng-style=\"sliderStyle\" ng-swipe-left=\"goPrev()\" ng-swipe-right=\"goNext()\" class=\"nexslider\"><div ng-show=\"confSlider.enablearrows &amp;&amp; loadedData\" ng-click=\"goPrev()\" class=\"prev\"></div><div ng-show=\"confSlider.enablearrows &amp;&amp; loadedData\" ng-click=\"goNext()\" class=\"next\"></div><div ng-class=\"{\'active\':isCurrentSlideIndex($index)}\" ng-repeat=\"slide in slideSource\" ng-hide=\"!isCurrentSlideIndex($index)\" class=\"slide\"><div imago-image=\"imago-image\" source=\"slide\" sizemode=\"{{ $parent.confSlider.sizemode }}\"></div></div></div></div>");
 $templateCache.put("/imagoWidgets/video-widget.html","<div class=\"imagovideo {{optionsVideo.align}} {{optionsVideo.size}} {{optionsVideo.sizemode}}\"><div ng-style=\"wrapperStyle\" ng-click=\"videoActive = true\" class=\"imagowrapper\"><a ng-click=\"togglePlay()\" ng-hide=\"optionsVideo.playing\" class=\"playbig fa fa-play\"></a><video ng-style=\"videoStyle\" ng-show=\"videoActive\"><source ng-repeat=\"format in videoFormats\" src=\"{{format.src}}\" data-size=\"{{format.size}}\" data-codec=\"{{format.codec}}\" type=\"{{format.type}}\"/></video><div ng-if=\"controls\" class=\"controls\"><a ng-click=\"play()\" ng-hide=\"optionsVideo.playing\" class=\"play fa fa-play\"></a><a ng-click=\"pause()\" ng-show=\"optionsVideo.playing\" class=\"pause fa fa-pause\"></a><span class=\"time\">{{time}}</span><span class=\"seekbar\"><input type=\"range\" ng-model=\"seekTime\" ng-change=\"seek(seekTime)\" class=\"seek\"/></span><a ng-click=\"toggleSize()\" class=\"size\">hd</a><span class=\"volume\"><span ng-click=\"volumeUp()\" class=\"fa fa-volume-up icon-volume-up\"></span><input type=\"range\" ng-model=\"volumeInput\" ng-change=\"onVolumeChange(volumeInput)\"/><span ng-click=\"volumeDown()\" class=\"fa fa-volume-down icon-volume-down\"></span></span><a ng-click=\"fullScreen()\" class=\"fullscreen fa fa-expand\"></a><a class=\"screen fa fa-compress\"></a></div></div></div>");}]);
@@ -48,28 +48,15 @@ imagoContact = (function() {
     return {
       replace: true,
       scope: {},
-      transclude: true,
       templateUrl: '/imagoWidgets/contact-widget.html',
-      controller: function($scope, imagoSubmit) {
-        console.log('imagoContact: ', $scope.submitForm);
-        $scope.submitForm = (function(_this) {
+      controller: function($scope) {
+        return $scope.submitForm = (function(_this) {
           return function(isValid) {
             if (isValid) {
-              console.log("send function will go here.");
-              return console.log(_this.getValues());
+              return imagoSubmit.send($scope.contact);
             }
           };
         })(this);
-        return {
-          getValues: function() {
-            return this.formData = {
-              name: $scope.name,
-              email: $scope.email,
-              message: $scope.message,
-              subscribe: $scope.subscribe
-            };
-          }
-        };
       }
     };
   }
@@ -836,7 +823,7 @@ imagoSubmit = (function() {
       getxsrf: (function(_this) {
         return function() {
           var url;
-          url = data === 'online' && debug ? "http://" + tenant + ".imagoapp.com/api/v3/getxsrf" : "/api/v3/getxsrf";
+          url = data === 'online' && debug ? "http://" + tenant + ".imagoapp.com/api/v2/getxsrf" : "/api/v2/getxsrf";
           return $http.get(url).then(function(response) {
             console.log('response: ', response);
             return _this.xsrfHeader = response;
@@ -855,7 +842,7 @@ imagoSubmit = (function() {
       send: function(data) {
         this.getxsrf();
         if (!this.xsrfHeader) {
-          return false;
+          return console.log(this.getxsrf());
         }
         return $http.post(this.formToJson(data), data === 'online' && debug ? "http://" + tenant + ".imagoapp.com/api/v2/contact" : "/api/v2/contact", {
           xsrfHeaderName: this.xsrfHeader

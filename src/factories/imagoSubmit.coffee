@@ -6,7 +6,7 @@ class imagoSubmit extends Factory
       xsrfHeader: ''
 
       getxsrf: () =>
-        url = if (data is 'online' and debug) then "http://#{tenant}.imagoapp.com/api/v3/getxsrf" else "/api/v3/getxsrf"
+        url = if (data is 'online' and debug) then "http://#{tenant}.imagoapp.com/api/v2/getxsrf" else "/api/v2/getxsrf"
         $http.get(url).then (response) =>
           console.log 'response: ', response
           @xsrfHeader = response
@@ -20,7 +20,7 @@ class imagoSubmit extends Factory
 
       send: (data) ->
         @getxsrf()
-        return false unless @xsrfHeader
+        return console.log @getxsrf() unless @xsrfHeader
 
         $http.post( @formToJson(data),
           if (data is 'online' and debug) then "http://#{tenant}.imagoapp.com/api/v2/contact" else "/api/v2/contact",
