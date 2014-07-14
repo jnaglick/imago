@@ -1,4 +1,4 @@
-class imagoContact extends Factory
+class imagoSubmit extends Factory
 
   constructor: ($http, imagoUtils, $q, $location) ->
     return {
