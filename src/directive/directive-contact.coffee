@@ -7,9 +7,9 @@ class imagoContact extends Directive
       transclude: true
       templateUrl: '/imagoWidgets/contact-widget.html'
       controller: ($scope, imagoSubmit) ->
-        console.log 'imagoContact: ', imagoSubmit
+        console.log 'imagoContact: ', $scope.submitForm
 
-        $scope.submitForm = (isValid) ->
+        $scope.submitForm = (isValid) =>
           if isValid
             console.log "send function will go here."
             console.log @getValues()

@@ -51,13 +51,15 @@ imagoContact = (function() {
       transclude: true,
       templateUrl: '/imagoWidgets/contact-widget.html',
       controller: function($scope, imagoSubmit) {
-        console.log('imagoContact: ', imagoSubmit);
-        $scope.submitForm = function(isValid) {
-          if (isValid) {
-            console.log("send function will go here.");
-            return console.log(this.getValues());
-          }
-        };
+        console.log('imagoContact: ', $scope.submitForm);
+        $scope.submitForm = (function(_this) {
+          return function(isValid) {
+            if (isValid) {
+              console.log("send function will go here.");
+              return console.log(_this.getValues());
+            }
+          };
+        })(this);
         return {
           getValues: function() {
             return this.formData = {
