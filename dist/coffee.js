@@ -37,6 +37,32 @@ imagoCompile = (function() {
 
 angular.module('imago.widgets.angular').directive('imagoCompile', ['$compile', imagoCompile]);
 
+var imagoContact;
+
+imagoContact = (function() {
+  function imagoContact(imagoSubmit) {
+    return {
+      replace: true,
+      scope: {},
+      templateUrl: '/imagoWidgets/contact-widget.html',
+      controller: function($scope) {
+        return $scope.submitForm = (function(_this) {
+          return function(isValid) {
+            if (isValid) {
+              return imagoSubmit.send($scope.contact);
+            }
+          };
+        })(this);
+      }
+    };
+  }
+
+  return imagoContact;
+
+})();
+
+angular.module('imago.widgets.angular').directive('imagoContact', ['imagoSubmit', imagoContact]);
+
 var imagoImage;
 
 imagoImage = (function() {
@@ -83,6 +109,12 @@ imagoImage = (function() {
             }
             if ($scope.$parent.height) {
               _this.height = $scope.$parent.height;
+            }
+            if (parseInt(_this.width)) {
+              _this.width = parseInt(_this.width);
+            }
+            if (parseInt(_this.height)) {
+              _this.height = parseInt(_this.height);
             }
             _this.data = data;
             return render(_this.data);
@@ -147,15 +179,15 @@ imagoImage = (function() {
             _this.servingSize = servingSize;
             $scope.imageStyle = {};
             if (!_this.responsive) {
-              $scope.imageStyle['width'] = "" + (parseInt(_this.width, 10)) + "px";
-              $scope.imageStyle['height'] = "" + (parseInt(_this.height, 10)) + "px";
+              $scope.imageStyle.width = "" + (parseInt(_this.width, 10)) + "px";
+              $scope.imageStyle.height = "" + (parseInt(_this.height, 10)) + "px";
             }
             img = angular.element('<img>');
             img.on('load', function(e) {
-              $scope.imageStyle['background-image'] = "url(" + servingUrl + ")";
-              $scope.imageStyle['background-size'] = $scope.calcMediaSize();
-              $scope.imageStyle['background-position'] = _this.align;
-              $scope.imageStyle['display'] = 'inline-block';
+              $scope.imageStyle.backgroundImage = "url(" + servingUrl + ")";
+              $scope.imageStyle.backgroundSize = $scope.calcMediaSize();
+              $scope.imageStyle.backgroundPosition = _this.align;
+              $scope.imageStyle.display = 'inline-block';
               $scope.status = 'loaded';
               return $scope.$apply();
             });
@@ -194,7 +226,7 @@ imagoImage = (function() {
         $scope.$on('resizelimit', (function(_this) {
           return function() {
             if (_this.responsive) {
-              return $scope.onResize;
+              return $scope.onResize();
             }
           };
         })(this));
@@ -371,7 +403,7 @@ imagoVideo = (function() {
         if (!!+this.height) {
           this.orgHeight = this.height = +this.height;
         }
-        this.videoEl = $element[0].children[1];
+        this.videoEl = $element[0].children[0].children[1];
         $scope.time = '00:00';
         $scope.seekTime = 0;
         $scope.volumeInput = 100;
@@ -444,15 +476,18 @@ imagoVideo = (function() {
             $scope.wrapperStyle["background-image"] = "url(" + _this.serving_url + ")";
             $scope.wrapperStyle["background-repeat"] = "no-repeat";
             $scope.wrapperStyle["background-size"] = "auto 100%";
-            $scope.wrapperStyle["width"] = angular.isNumber(_this.orgWidth) ? _this.orgWidth : $element[0].parentNode.clientWidth || parseInt(_this.width);
-            $scope.wrapperStyle["height"] = angular.isNumber(_this.orgHeight) ? _this.orgHeight : $element[0].parentNode.clientHeight || parseInt(_this.height);
-            return $scope.videoStyle = {
+            $scope.wrapperStyle["width"] = angular.isNumber(_this.orgWidth) ? _this.orgWidth : $element[0].clientWidth || parseInt(_this.width);
+            $scope.wrapperStyle["height"] = angular.isNumber(_this.orgHeight) ? _this.orgHeight : $element[0].clientHeight || parseInt(_this.height);
+            $scope.videoStyle = {
               "autoplay": $scope.optionsVideo["autoplay"],
               "preload": $scope.optionsVideo["preload"],
               "autobuffer": $scope.optionsVideo["autobuffer"],
               "x-webkit-airplay": 'allow',
               "webkitAllowFullscreen": 'true'
             };
+            if (!$scope.$$phase) {
+              return $scope.$apply($scope.wrapperStyle);
+            }
           };
         })(this);
         pad = function(num) {
@@ -600,8 +635,8 @@ imagoVideo = (function() {
                 ws.backgroundPosition = _this.align;
               }
             } else if (_this.sizemode === 'fit') {
-              width = angular.isNumber(_this.orgWidth) ? _this.orgWidth : $element[0].parentNode.clientWidth || parseInt(_this.width);
-              height = angular.isNumber(_this.orgHeight) ? _this.orgHeight : $element[0].parentNode.clientHeight || parseInt(_this.height);
+              width = angular.isNumber(_this.orgWidth) ? _this.orgWidth : $element[0].clientWidth || parseInt(_this.width);
+              height = angular.isNumber(_this.orgHeight) ? _this.orgHeight : $element[0].clientHeight || parseInt(_this.height);
               wrapperRatio = width / height;
               if (_this.assetRatio > wrapperRatio) {
                 vs.width = '100%';
@@ -774,6 +809,64 @@ imagoPanel = (function() {
 })();
 
 angular.module('imago.widgets.angular').factory('imagoPanel', ['$http', 'imagoUtils', '$q', '$location', imagoPanel]);
+
+var imagoSubmit,
+  __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
+
+imagoSubmit = (function() {
+  function imagoSubmit($http, imagoUtils) {
+    return {
+      getxsrf: function() {
+        var url;
+        url = data === 'online' && debug ? "http://" + tenant + ".imagoapp.com/api/v2/getxsrf" : "/api/v2/getxsrf";
+        return $http.get(url);
+      },
+      formToJson: function(form) {
+        var defaultFields, key, message, obj, value;
+        defaultFields = ['message', 'subscribe'];
+        obj = {};
+        message = '';
+        for (key in form) {
+          value = form[key];
+          if (__indexOf.call(defaultFields, key) < 0) {
+            message += "" + (imagoUtils.titleCase(key)) + ": " + value + "<br><br>";
+          }
+          obj[key] = value || '';
+        }
+        obj.message = message + imagoUtils.replaceNewLines(obj.message || '');
+        return angular.toJson(obj);
+      },
+      send: function(data) {
+        return this.getxsrf().then((function(_this) {
+          return function(response) {
+            var postUrl, xsrfHeader;
+            console.log('getxsrf success: ', response);
+            xsrfHeader = {
+              "Nex-Xsrf": response.data
+            };
+            postUrl = data === 'online' && debug ? "http://" + tenant + ".imagoapp.com/api/v2/contact" : "/api/v2/contact";
+            return $http.post(postUrl, _this.formToJson(data), {
+              headers: xsrfHeader
+            }).then(function(response) {
+              console.log('success: ', response);
+              return true;
+            }, function(error) {
+              console.log('error: ', error);
+              return false;
+            });
+          };
+        })(this), function(error) {
+          return console.log('getxsrf error: ', error);
+        });
+      }
+    };
+  }
+
+  return imagoSubmit;
+
+})();
+
+angular.module('imago.widgets.angular').factory('imagoSubmit', ['$http', 'imagoUtils', imagoSubmit]);
 
 var imagoUtils;
 
@@ -1062,6 +1155,12 @@ imagoUtils = (function() {
       singularize: function(str) {
         return str.replace(/s$/, '');
       },
+      titleCase: function(str) {
+        if (typeof str !== 'string') {
+          return str;
+        }
+        return str.charAt(0).toUpperCase() + str.slice(1);
+      },
       normalize: function(s) {
         var mapping, r, str;
         mapping = {
@@ -1143,9 +1242,6 @@ imagoUtils = (function() {
       isFirefox: function() {
         return !!navigator.userAgent.match(/Firefox/i);
       },
-      isOpera: function() {
-        return !!navigator.userAgent.match(/Presto/i);
-      },
       isSafari: function() {
         return !!navigator.userAgent.match(/Safari/i) && !this.isChrome();
       },
@@ -1219,6 +1315,9 @@ imagoUtils = (function() {
       inUsa: function(value) {
         var _ref;
         return (_ref = value != null ? value.toLowerCase() : void 0) === 'usa' || _ref === 'united states' || _ref === 'united states of america';
+      },
+      replaceNewLines: function(msg) {
+        return msg.replace(/(\r\n\r\n|\r\n|\n|\r)/gm, "<br>");
       },
       getCurrencySymbol: function(currency) {
         return SYMBOLS[currency] || SYMBOLS.GENERIC;

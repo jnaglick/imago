@@ -283,6 +283,10 @@ class imagoUtils extends Factory
       singularize: (str) ->
         str.replace(/s$/, '')
 
+      titleCase: (str) ->
+        return str if typeof str isnt 'string'
+        str.charAt(0).toUpperCase() + str.slice(1)
+
       normalize: (s) ->
         mapping =
           'ä': 'ae'
@@ -354,9 +358,6 @@ class imagoUtils extends Factory
       isFirefox: ->
         return !!navigator.userAgent.match(/Firefox/i)
 
-      isOpera: ->
-        return !!navigator.userAgent.match(/Presto/i)
-
       isSafari: ->
         return !!navigator.userAgent.match(/Safari/i) and not @isChrome()
 
@@ -415,6 +416,9 @@ class imagoUtils extends Factory
 
       inUsa: (value) ->
         value?.toLowerCase() in ['usa', 'united states', 'united states of america']
+
+      replaceNewLines: (msg) ->
+        msg.replace(/(\r\n\r\n|\r\n|\n|\r)/gm, "<br>")
 
       getCurrencySymbol: (currency) ->
         SYMBOLS[currency] or SYMBOLS.GENERIC
