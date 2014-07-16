@@ -1,5 +1,5 @@
-.imagoimage.imagowrapper(ng-style="elementStyle", ng-class="status")
-  .image(ng-style="imageStyle")
-  .loading(ng-hide="status === 'loaded'")
+.imagoimage.imagowrapper(in-view="visible = $inview" ng-style="elementStyle", ng-class="status")
+  .image(ng-if="visible" ng-style="imageStyle")
+  .loading(ng-show="!visible" ng-hide="status === 'loaded'")
     .spin
     .spin2
