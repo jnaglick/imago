@@ -5,7 +5,7 @@ class imagoVideo extends Directive
       replace: true
       scope: true
       templateUrl: '/imagoWidgets/video-widget.html'
-      controller: ($scope, $element, $attrs, $transclude, $window, imagoUtils) ->
+      controller: ($scope, $element, $attrs, $transclude, $window, imagoUtils, $timeout) ->
 
         @defaults =
           autobuffer  : null
@@ -130,7 +130,8 @@ class imagoVideo extends Directive
             "x-webkit-airplay" : 'allow'
             "webkitAllowFullscreen" : 'true'
 
-          $scope.$apply $scope.wrapperStyle if !$scope.$$phase
+
+
 
         pad = (num)->
           return "0" + num  if num < 10
@@ -290,7 +291,7 @@ class imagoVideo extends Directive
               ws.height = "#{ height }px"
               ws.width  = "#{ parseInt( height * @assetRatio, 10) }px"
 
-          $scope.$apply $scope.wrapperStyle if !$scope.$$phase
+          $timeout () -> $scope.$apply $scope.wrapperStyle #if !$scope.$$phase
 
         loadSources = (data) ->
           $scope.videoFormats = []
