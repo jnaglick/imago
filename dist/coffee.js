@@ -121,7 +121,7 @@ imagoImage = (function() {
         })(this));
         render = (function(_this) {
           return function(data) {
-            var dpr, img, r, servingSize, servingUrl, wrapperRatio, _ref, _ref1;
+            var dpr, img, r, servingSize, servingUrl, wrapperRatio;
             if (!(data != null ? data.serving_url : void 0)) {
               $element.remove();
               return;
@@ -144,10 +144,9 @@ imagoImage = (function() {
               };
               _this.assetRatio = r[0] / r[1];
             }
-            if (_this.width && _this.height) {
-              _ref = [parseInt(_this.width, parseInt(_this.height))], _this.width = _ref[0], _this.height = _ref[1];
-            } else {
-              _ref1 = [$element[0].clientWidth, $element[0].clientHeight], _this.width = _ref1[0], _this.height = _ref1[1];
+            if (!(_this.width && _this.height)) {
+              _this.width = $element[0].clientWidth;
+              _this.height = $element[0].clientHeight;
             }
             $scope.status = 'preloading';
             wrapperRatio = _this.width / _this.height;

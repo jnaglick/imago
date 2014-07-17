@@ -75,10 +75,9 @@ class imagoImage extends Directive
               height: r[1]
             @assetRatio = r[0]/r[1]
 
-          if @width and @height
-            [@width, @height] = [parseInt @width, parseInt @height]
-          else
-            [@width, @height] = [$element[0].clientWidth, $element[0].clientHeight]
+          unless @width and @height
+            @width = $element[0].clientWidth
+            @height = $element[0].clientHeight
 
           # return $log.log('tried to render during rendering!!') if $scope.status is 'preloading'
 
