@@ -1,6 +1,6 @@
 angular.module("ImagoWidgetsTemplates", []).run(["$templateCache", function($templateCache) {$templateCache.put("/imagoWidgets/contact-widget.html","<div class=\"nex form\"><form name=\"nexContact\" ng-submit=\"submitForm(nexContact.$valid)\" novalidate=\"novalidate\"><div class=\"nex field\"><label for=\"name\">Name</label><input type=\"text\" name=\"name\" ng-model=\"contact.name\" placeholder=\"Name\" require=\"require\"/></div><div class=\"nex field\"><label for=\"email\">Email</label><input type=\"email\" name=\"email\" ng-model=\"contact.email\" placeholder=\"Email\" require=\"require\"/></div><div class=\"nex field\"><label for=\"message\">Message</label><textarea name=\"message\" ng-model=\"contact.message\" placeholder=\"Your message.\" require=\"require\"></textarea></div><div class=\"nex checkbox\"><input type=\"checkbox\" name=\"subscribe\" ng-model=\"contact.subscribe\" checked=\"checked\"/><label for=\"subscribe\">Subscribe</label></div><div class=\"formcontrols\"><button type=\"submit\" ng-disabled=\"nexContact.$invalid\" class=\"send\">Send</button></div></form><div class=\"sucess\"><span>Thank You!</span></div><div class=\"error\"><span>Error!</span></div></div>");
-$templateCache.put("/imagoWidgets/image-widget.html","<div ng-style=\"elementStyle\" ng-class=\"status\" class=\"imagoimage imagowrapper\"><div ng-style=\"imageStyle\" class=\"image\"></div><div ng-hide=\"status === \'loaded\'\" class=\"loading\"><div class=\"spin\"></div><div class=\"spin2\"></div></div></div>");
-$templateCache.put("/imagoWidgets/slider-widget.html","<div ng-class=\"elementStyle\"><div ng-transclude=\"ng-transclude\"></div><div ng-style=\"sliderStyle\" ng-swipe-left=\"goPrev()\" ng-swipe-right=\"goNext()\" class=\"nexslider\"><div ng-show=\"confSlider.enablearrows &amp;&amp; loadedData\" ng-click=\"goPrev()\" class=\"prev\"></div><div ng-show=\"confSlider.enablearrows &amp;&amp; loadedData\" ng-click=\"goNext()\" class=\"next\"></div><div ng-class=\"{\'active\':isCurrentSlideIndex($index)}\" ng-repeat=\"slide in slideSource\" ng-hide=\"!isCurrentSlideIndex($index)\" class=\"slide\"><div imago-image=\"imago-image\" source=\"slide\" sizemode=\"{{ $parent.confSlider.sizemode }}\"></div></div></div></div>");
+$templateCache.put("/imagoWidgets/image-widget.html","<div in-view=\"visible = $inview\" ng-style=\"elementStyle\" ng-class=\"status\" class=\"imagoimage imagowrapper\"><div ng-if=\"visible\" ng-style=\"imageStyle\" class=\"image\"></div><div ng-show=\"!visible\" ng-hide=\"status === \'loaded\'\" class=\"loading\"><div class=\"spin\"></div><div class=\"spin2\"></div></div></div>");
+$templateCache.put("/imagoWidgets/slider-widget.html","<div ng-class=\"elementStyle\"><div ng-transclude=\"ng-transclude\"></div><div ng-style=\"sliderStyle\" ng-swipe-left=\"goPrev()\" ng-swipe-right=\"goNext()\" class=\"nexslider\"><div ng-show=\"confSlider.enablearrows &amp;&amp; loadedData\" ng-click=\"goPrev()\" class=\"prev\"></div><div ng-show=\"confSlider.enablearrows &amp;&amp; loadedData\" ng-click=\"goNext()\" class=\"next\"></div><div ng-class=\"{\'active\':isCurrentSlideIndex($index)}\" ng-repeat=\"slide in slideSource\" ng-hide=\"!isCurrentSlideIndex($index)\" class=\"slide\"><div imago-image=\"imago-image\" dimensions=\"dimensions\" source=\"slide\" sizemode=\"{{ $parent.confSlider.sizemode }}\"></div></div></div></div>");
 $templateCache.put("/imagoWidgets/video-widget.html","<div class=\"imagovideo {{optionsVideo.align}} {{optionsVideo.size}} {{optionsVideo.sizemode}}\"><div ng-style=\"wrapperStyle\" ng-click=\"videoActive = true\" class=\"imagowrapper\"><a ng-click=\"togglePlay()\" ng-hide=\"optionsVideo.playing\" class=\"playbig fa fa-play\"></a><video ng-style=\"videoStyle\" ng-show=\"videoActive\"><source ng-repeat=\"format in videoFormats\" src=\"{{format.src}}\" data-size=\"{{format.size}}\" data-codec=\"{{format.codec}}\" type=\"{{format.type}}\"/></video><div ng-if=\"controls\" class=\"controls\"><a ng-click=\"play()\" ng-hide=\"optionsVideo.playing\" class=\"play fa fa-play\"></a><a ng-click=\"pause()\" ng-show=\"optionsVideo.playing\" class=\"pause fa fa-pause\"></a><span class=\"time\">{{time}}</span><span class=\"seekbar\"><input type=\"range\" ng-model=\"seekTime\" ng-change=\"seek(seekTime)\" class=\"seek\"/></span><a ng-click=\"toggleSize()\" class=\"size\">hd</a><span class=\"volume\"><span ng-click=\"volumeUp()\" class=\"fa fa-volume-up icon-volume-up\"></span><input type=\"range\" ng-model=\"volumeInput\" ng-change=\"onVolumeChange(volumeInput)\"/><span ng-click=\"volumeDown()\" class=\"fa fa-volume-down icon-volume-down\"></span></span><a ng-click=\"fullScreen()\" class=\"fullscreen fa fa-expand\"></a><a class=\"screen fa fa-compress\"></a></div></div></div>");}]);
 var App;
 
@@ -76,7 +76,21 @@ imagoImage = (function() {
       scope: true,
       templateUrl: '/imagoWidgets/image-widget.html',
       controller: function($scope, $element, $attrs, $transclude, $window, $log, $q, $timeout) {
-        var render;
+        var render, sourcePromise;
+        sourcePromise = (function(_this) {
+          return function() {
+            var deffered;
+            deffered = $q.defer();
+            _this.watch = $scope.$watch($attrs['source'], function(data) {
+              if (!data) {
+                return;
+              }
+              _this.data = data;
+              return deffered.resolve(_this.data);
+            });
+            return deffered.promise;
+          };
+        })(this)();
         this.defaults = {
           align: 'center center',
           sizemode: 'fit',
@@ -103,25 +117,10 @@ imagoImage = (function() {
           $log.log('@noResize depricated will be removed soon, use responsive: false');
           this.responsive = false;
         }
-        $scope.$watch($attrs['source'], (function(_this) {
+        sourcePromise.then((function(_this) {
           return function(data) {
-            if (!data) {
-              return;
-            }
-            if ($scope.$parent.width) {
-              _this.width = $scope.$parent.width;
-            }
-            if ($scope.$parent.height) {
-              _this.height = $scope.$parent.height;
-            }
-            if (parseInt(_this.width)) {
-              _this.width = parseInt(_this.width);
-            }
-            if (parseInt(_this.height)) {
-              _this.height = parseInt(_this.height);
-            }
-            _this.data = data;
-            return render(_this.data);
+            _this.watch;
+            return render(data);
           };
         })(this));
         render = (function(_this) {
@@ -130,6 +129,13 @@ imagoImage = (function() {
             if (!(data != null ? data.serving_url : void 0)) {
               $element.remove();
               return;
+            }
+            if (_this.dimensions) {
+              $scope.$watch($attrs['dimensions'], function(value) {
+                return angular.forEach(value, function(value, key) {
+                  return _this[key] = value;
+                });
+              });
             }
             if (!$scope.elementStyle) {
               $scope.elementStyle = {};
@@ -142,19 +148,7 @@ imagoImage = (function() {
               };
               _this.assetRatio = r[0] / r[1];
             }
-            if (angular.isNumber(_this.width) && angular.isNumber(_this.height)) {
-
-            } else if (_this.height === 'auto' && angular.isNumber(_this.width)) {
-              _this.height = _this.width / _this.assetRatio;
-              $scope.elementStyle.height = parseInt(_this.height);
-            } else if (_this.width === 'auto' && angular.isNumber(_this.height)) {
-              _this.width = _this.height * _this.assetRatio;
-              $scope.elementStyle.width = parseInt(_this.width);
-            } else if (_this.width === 'auto' && _this.height === 'auto') {
-              _this.width = $element[0].clientWidth;
-              _this.height = _this.width / _this.assetRatio;
-              $scope.elementStyle.height = parseInt(_this.height);
-            } else {
+            if (!(_this.width && _this.height)) {
               _this.width = $element[0].clientWidth;
               _this.height = $element[0].clientHeight;
             }
@@ -258,13 +252,218 @@ imagoImage = (function() {
 
 angular.module('imago.widgets.angular').directive('imagoImage', [imagoImage]);
 
+var addWindowInViewItem, bindWindowEvents, checkInView, debounce, getBoundingClientRect, getViewportHeight, inView, removeWindowInViewItem, triggerInViewCallback, unbindWindowEvents, windowCheckInViewDebounced, windowEventsHandler, _windowEventsHandlerBinded, _windowInViewItems;
+
+inView = (function() {
+  function inView($parse) {
+    return {
+      restrict: 'A',
+      require: '?^inViewContainer',
+      link: function(scope, element, attrs, containerController) {
+        var inViewFunc, item, performCheckDebounced;
+        console.log('containerController: ', containerController);
+        if (!attrs.inView) {
+          return;
+        }
+        inViewFunc = $parse(attrs.inView);
+        item = {
+          element: element,
+          wasInView: false,
+          offset: 0,
+          callback: function($inview, $inviewpart) {
+            return scope.$apply((function(_this) {
+              return function() {
+                return inViewFunc(scope, {
+                  '$element': element[0],
+                  '$inview': $inview,
+                  '$inviewpart': $inviewpart
+                });
+              };
+            })(this));
+          }
+        };
+        performCheckDebounced = windowCheckInViewDebounced;
+        addWindowInViewItem(item);
+        performCheckDebounced();
+        if (attrs.inViewOffset != null) {
+          attrs.$observe('inViewOffset', function(offset) {
+            item.offset = scope.$eval(offset) || 0;
+            return performCheckDebounced();
+          });
+        }
+        return scope.$on('$destroy', function() {
+          return removeWindowInViewItem(item);
+        });
+      }
+    };
+  }
+
+  return inView;
+
+})();
+
+_windowInViewItems = [];
+
+addWindowInViewItem = function(item) {
+  _windowInViewItems.push(item);
+  return bindWindowEvents();
+};
+
+removeWindowInViewItem = function(item) {
+  var i;
+  _windowInViewItems = (function() {
+    var _i, _len, _results;
+    _results = [];
+    for (_i = 0, _len = _windowInViewItems.length; _i < _len; _i++) {
+      i = _windowInViewItems[_i];
+      if (i !== item) {
+        _results.push(i);
+      }
+    }
+    return _results;
+  })();
+  return unbindWindowEvents();
+};
+
+_windowEventsHandlerBinded = false;
+
+windowEventsHandler = function() {
+  if (_windowInViewItems.length) {
+    return windowCheckInViewDebounced();
+  }
+};
+
+bindWindowEvents = function() {
+  if (_windowEventsHandlerBinded) {
+    return;
+  }
+  _windowEventsHandlerBinded = true;
+  return angular.element(window).bind('checkInView click ready scroll resize', windowEventsHandler);
+};
+
+unbindWindowEvents = function() {
+  if (!_windowEventsHandlerBinded) {
+    return;
+  }
+  if (_windowInViewItems.length || _containersControllers.length) {
+    return;
+  }
+  _windowEventsHandlerBinded = false;
+  return angular.element(window).unbind('checkInView click ready scroll resize', windowEventsHandler);
+};
+
+triggerInViewCallback = function(item, inview, isTopVisible, isBottomVisible) {
+  var el, inviewpart;
+  if (inview) {
+    el = item.element[0];
+    inviewpart = (isTopVisible && 'top') || (isBottomVisible && 'bottom') || 'both';
+    if (!(item.wasInView && item.wasInView === inviewpart && el.offsetTop === item.lastOffsetTop)) {
+      item.lastOffsetTop = el.offsetTop;
+      item.wasInView = inviewpart;
+      return item.callback(true, inviewpart);
+    }
+  } else if (item.wasInView) {
+    item.wasInView = false;
+    return item.callback(false);
+  }
+};
+
+checkInView = function(items, container) {
+  var bounds, element, item, viewport, _i, _j, _len, _len1, _ref, _ref1, _ref2, _ref3, _results;
+  viewport = {
+    top: 0,
+    bottom: getViewportHeight()
+  };
+  if (container && container !== window) {
+    bounds = getBoundingClientRect(container);
+    if (bounds.top > viewport.bottom || bounds.bottom < viewport.top) {
+      for (_i = 0, _len = items.length; _i < _len; _i++) {
+        item = items[_i];
+        triggerInViewCallback(item, false);
+      }
+      return;
+    }
+    if (bounds.top > viewport.top) {
+      viewport.top = bounds.top;
+    }
+    if (bounds.bottom < viewport.bottom) {
+      viewport.bottom = bounds.bottom;
+    }
+  }
+  _results = [];
+  for (_j = 0, _len1 = items.length; _j < _len1; _j++) {
+    item = items[_j];
+    element = item.element[0];
+    bounds = getBoundingClientRect(element);
+    bounds.top += (_ref = (_ref1 = item.offset) != null ? _ref1[0] : void 0) != null ? _ref : item.offset;
+    bounds.bottom += (_ref2 = (_ref3 = item.offset) != null ? _ref3[1] : void 0) != null ? _ref2 : item.offset;
+    if (bounds.top < viewport.bottom && bounds.bottom >= viewport.top) {
+      _results.push(triggerInViewCallback(item, true, bounds.bottom > viewport.bottom, bounds.top < viewport.top));
+    } else {
+      _results.push(triggerInViewCallback(item, false));
+    }
+  }
+  return _results;
+};
+
+getViewportHeight = function() {
+  var height, mode, _ref;
+  height = window.innerHeight;
+  if (height) {
+    return height;
+  }
+  mode = document.compatMode;
+  if (mode || !(typeof $ !== "undefined" && $ !== null ? (_ref = $.support) != null ? _ref.boxModel : void 0 : void 0)) {
+    height = mode === 'CSS1Compat' ? document.documentElement.clientHeight : document.body.clientHeight;
+  }
+  return height;
+};
+
+getBoundingClientRect = function(element) {
+  var el, parent, top;
+  top = 0;
+  el = element;
+  while (el) {
+    top += el.offsetTop;
+    el = el.offsetParent;
+  }
+  parent = element.parentElement;
+  while (parent) {
+    if (parent.scrollTop != null) {
+      top -= parent.scrollTop;
+    }
+    parent = parent.parentElement;
+  }
+  return {
+    top: top,
+    bottom: top + element.offsetHeight
+  };
+};
+
+debounce = function(f, t) {
+  var timer;
+  timer = null;
+  return function() {
+    if (timer != null) {
+      clearTimeout(timer);
+    }
+    return timer = setTimeout(f, t != null ? t : 100);
+  };
+};
+
+windowCheckInViewDebounced = debounce(function() {
+  return checkInView(_windowInViewItems);
+});
+
+angular.module('imago.widgets.angular').directive('inView', ['$parse', inView]);
+
 var imagoSlider;
 
 imagoSlider = (function() {
   function imagoSlider() {
     return {
       replace: true,
-      scope: false,
+      scope: true,
       transclude: true,
       templateUrl: '/imagoWidgets/slider-widget.html',
       controller: function($scope, $element, $attrs, $window, imagoPanel) {
@@ -286,8 +485,10 @@ imagoSlider = (function() {
           var item, _i, _len, _ref;
           $scope.loadedData = true;
           $scope.slideSource = [];
-          $scope.height = $element[0].clientHeight;
-          $scope.width = $element[0].clientWidth;
+          $scope.dimensions = {
+            width: $element[0].clientWidth,
+            height: $element[0].clientHeight
+          };
           for (_i = 0, _len = assetsData.length; _i < _len; _i++) {
             item = assetsData[_i];
             if (item.serving_url) {
@@ -376,7 +577,7 @@ imagoVideo = (function() {
       replace: true,
       scope: true,
       templateUrl: '/imagoWidgets/video-widget.html',
-      controller: function($scope, $element, $attrs, $transclude, $window, imagoUtils) {
+      controller: function($scope, $element, $attrs, $transclude, $window, imagoUtils, $timeout) {
         var detectCodec, loadSources, pad, render, renderVideo, resize, setSize, updateTime;
         this.defaults = {
           autobuffer: null,
@@ -482,16 +683,13 @@ imagoVideo = (function() {
             $scope.wrapperStyle["background-size"] = "auto 100%";
             $scope.wrapperStyle["width"] = angular.isNumber(_this.orgWidth) ? _this.orgWidth : $element[0].clientWidth || parseInt(_this.width);
             $scope.wrapperStyle["height"] = angular.isNumber(_this.orgHeight) ? _this.orgHeight : $element[0].clientHeight || parseInt(_this.height);
-            $scope.videoStyle = {
+            return $scope.videoStyle = {
               "autoplay": $scope.optionsVideo["autoplay"],
               "preload": $scope.optionsVideo["preload"],
               "autobuffer": $scope.optionsVideo["autobuffer"],
               "x-webkit-airplay": 'allow',
               "webkitAllowFullscreen": 'true'
             };
-            if (!$scope.$$phase) {
-              return $scope.$apply($scope.wrapperStyle);
-            }
           };
         })(this);
         pad = function(num) {
@@ -658,9 +856,9 @@ imagoVideo = (function() {
                 ws.width = "" + (parseInt(height * _this.assetRatio, 10)) + "px";
               }
             }
-            if (!$scope.$$phase) {
+            return $timeout(function() {
               return $scope.$apply($scope.wrapperStyle);
-            }
+            });
           };
         })(this);
         loadSources = function(data) {
