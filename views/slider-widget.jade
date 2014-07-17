@@ -13,6 +13,7 @@ div(ng-class="elementStyle")
           ng-repeat="slide in slideSource",
           ng-hide="!isCurrentSlideIndex($index)")
       div(imago-image,
+          dimensions="dimensions",
           source="slide",
           sizemode="{{ $parent.confSlider.sizemode }}"
           )

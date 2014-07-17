@@ -7,6 +7,17 @@ class imagoImage extends Directive
       templateUrl: '/imagoWidgets/image-widget.html'
       controller: ($scope, $element, $attrs, $transclude, $window, $log, $q, $timeout) ->
 
+        sourcePromise = do () ->
+          deffered = $q.defer()
+
+          @watch = $scope.$watch $attrs['source'], (data) =>
+            return unless data
+            @data = data
+
+            deffered.resolve(@data)
+
+          return deffered.promise
+
         @defaults =
           align     : 'center center'
           sizemode  : 'fit'              # fit, crop
@@ -20,36 +31,40 @@ class imagoImage extends Directive
           height    : ''
           responsive: true
 
-
         angular.forEach @defaults, (value, key) =>
           @[key] = value
 
         angular.forEach $attrs, (value, key) =>
           @[key] = value
 
+
         if $attrs['no-resize']
           $log.log '@noResize depricated will be removed soon, use responsive: false'
           @responsive = false
 
-        $scope.$watch $attrs['source'], (data) =>
-          return unless data
 
-          if $scope.$parent.width
-            @width = $scope.$parent.width
-          if $scope.$parent.height
-            @height = $scope.$parent.height
+        # $scope.$watch $attrs['source'], (data) =>
+        #   return unless data
+        #   # convert to int if its a number
+        #   @width =  parseInt @width if parseInt @width
+        #   @height = parseInt @height if parseInt @height
+        #
+        #   @data = data
+        #   render @data
 
-          # convert to int if its a number
-          @width =  parseInt @width if parseInt @width
-          @height = parseInt @height if parseInt @height
-
-          @data = data
-          render @data
+        sourcePromise.then (data) =>
+          @watch
+          render data
 
         render = (data) =>
           unless data?.serving_url
             $element.remove()
             return
+
+          if @dimensions
+            $scope.$watch $attrs['dimensions'], (value) =>
+              angular.forEach value, (value, key) =>
+                @[key] = value
 
           $scope.elementStyle = {} unless $scope.elementStyle
           #console.log 'elementStyle ' , $scope.elementStyle
@@ -60,41 +75,45 @@ class imagoImage extends Directive
               height: r[1]
             @assetRatio = r[0]/r[1]
 
+          unless @width and @height
+            @width  = $element[0].clientWidth
+            @height = $element[0].clientHeight
+
           # return $log.log('tried to render during rendering!!') if $scope.status is 'preloading'
 
           # console.log '@assetRatio', @assetRatio
 
           # use pvrovided dimentions.
-          if angular.isNumber(@width) and angular.isNumber(@height)
-            #$log.log 'fixed size', @width, @height
-
-          # fit width
-          else if @height is 'auto' and angular.isNumber(@width)
-            @height = @width / @assetRatio
-            $scope.elementStyle.height = parseInt @height
-            #$log.log 'fit width', @width, @height
-
-          # fit height
-          else if @width is 'auto' and angular.isNumber(@height)
-
-            @width = @height * @assetRatio
-            $scope.elementStyle.width = parseInt @width
-            #$log.log 'fit height', @width, @height
-
-          # we want dynamic resizing without css.
-          # like standard image behaviour. will get a height according to the width
-          else if @width is 'auto' and @height is 'auto'
-            @width  = $element[0].clientWidth
-            @height = @width / @assetRatio
-            $scope.elementStyle.height = parseInt @height
-            # $log.log 'both auto', @width, @height
-
-          # width and height dynamic, needs to be defined via css
-          # either width height or position
-          else
-            @width  = $element[0].clientWidth
-            @height = $element[0].clientHeight
-            # $log.log 'width and height dynamic', @width, @height
+          # if angular.isNumber(@width) and angular.isNumber(@height)
+          #   #$log.log 'fixed size', @width, @height
+          #
+          # # fit width
+          # else if @height is 'auto' and angular.isNumber(@width)
+          #   @height = @width / @assetRatio
+          #   $scope.elementStyle.height = parseInt @height
+          #   #$log.log 'fit width', @width, @height
+          #
+          # # fit height
+          # else if @width is 'auto' and angular.isNumber(@height)
+          #
+          #   @width = @height * @assetRatio
+          #   $scope.elementStyle.width = parseInt @width
+          #   #$log.log 'fit height', @width, @height
+          #
+          # # we want dynamic resizing without css.
+          # # like standard image behaviour. will get a height according to the width
+          # else if @width is 'auto' and @height is 'auto'
+          #   @width  = $element[0].clientWidth
+          #   @height = @width / @assetRatio
+          #   $scope.elementStyle.height = parseInt @height
+          #   # $log.log 'both auto', @width, @height
+          #
+          # # width and height dynamic, needs to be defined via css
+          # # either width height or position
+          # else
+          #   @width  = $element[0].clientWidth
+          #   @height = $element[0].clientHeight
+          #   # $log.log 'width and height dynamic', @width, @height
 
 
           $scope.status = 'preloading'
@@ -158,7 +177,6 @@ class imagoImage extends Directive
             # console.log '$scope.imageStyle', $scope.imageStyle
 
           img[0].src = servingUrl
-
 
         $scope.onResize = () =>
           # console.log 'onResize func'

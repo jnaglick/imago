@@ -3,7 +3,7 @@ class imagoSlider extends Directive
   constructor: ->
     return {
       replace: true
-      scope: false
+      scope: true
       transclude: true
       templateUrl: '/imagoWidgets/slider-widget.html'
       controller: ($scope, $element, $attrs, $window, imagoPanel) ->
@@ -24,10 +24,8 @@ class imagoSlider extends Directive
           $scope.loadedData = true
           $scope.slideSource = []
 
-          $scope.height = $element[0].clientHeight
-          $scope.width = $element[0].clientWidth
-          # console.log 'width slider ' , $scope.width
-          # console.log 'height slider ' , $scope.height
+          $scope.dimensions = {width: $element[0].clientWidth, height: $element[0].clientHeight}
+
           #If slider has one slide
           for item in assetsData
             if item.serving_url
