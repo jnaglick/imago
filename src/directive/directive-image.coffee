@@ -7,7 +7,7 @@ class imagoImage extends Directive
       templateUrl: '/imagoWidgets/image-widget.html'
       controller: ($scope, $element, $attrs, $transclude, $window, $log, $q, $timeout) ->
 
-        sourcePromise = do () ->
+        sourcePromise = do () =>
           deffered = $q.defer()
 
           @watch = $scope.$watch $attrs['source'], (data) =>
