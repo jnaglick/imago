@@ -97,7 +97,8 @@ imagoImage = (function() {
           maxsize: 2560,
           mediasize: false,
           width: '',
-          height: ''
+          height: '',
+          responsive: true
         };
         angular.forEach(this.defaults, (function(_this) {
           return function(value, key) {
@@ -588,6 +589,8 @@ imagoVideo = (function() {
           height: '',
           hires: true
         };
+        this.timeLineEl = document.getElementsByTagName('input')[0];
+        $scope.seekTime = this.timeLineEl.value = 0;
         angular.forEach(this.defaults, (function(_this) {
           return function(value, key) {
             return _this[key] = value;
@@ -617,9 +620,11 @@ imagoVideo = (function() {
         });
         angular.element(this.videoEl).bind('timeupdate', (function(_this) {
           return function(e) {
-            $scope.seekTime = _this.videoEl.currentTime / _this.videoEl.duration * 100;
+            $scope.seekTime = parseFloat((_this.videoEl.currentTime / _this.videoEl.duration) * 100);
             updateTime(_this.videoEl.currentTime);
-            return $scope.$apply();
+            if (!$scope.$$phase) {
+              return $scope.$apply();
+            }
           };
         })(this));
         angular.element(this.videoEl).bind('ended', (function(_this) {
@@ -645,23 +650,11 @@ imagoVideo = (function() {
             if (_this.controls) {
               $scope.controls = angular.copy(_this.controls);
             }
-            if (angular.isNumber(_this.width) && angular.isNumber(_this.height)) {
-
-            } else if (_this.height === 'auto' && angular.isNumber(_this.width)) {
-              _this.height = _this.width / _this.assetRatio;
-              $scope.wrapperStyle.height = parseInt(_this.height);
-            } else if (_this.width === 'auto' && angular.isNumber(_this.height)) {
-              _this.width = _this.height * _this.assetRatio;
-              $scope.wrapperStyle.width = parseInt(_this.width);
-            } else if (_this.width === 'auto' && _this.height === 'auto') {
-              _this.width = $element[0].clientWidth;
-              _this.height = _this.width / _this.assetRatio;
-              $scope.wrapperStyle.height = parseInt(_this.height);
-            } else {
+            if (!(_this.width && _this.height)) {
               _this.width = $element[0].clientWidth;
               _this.height = $element[0].clientHeight;
             }
-            $scope.wrapperStyle['background-position'] = "" + _this.align;
+            $scope.wrapperStyle.backgroundPosition = "" + _this.align;
             $scope.optionsVideo = _this;
             renderVideo(data);
             loadSources(data);
@@ -674,15 +667,15 @@ imagoVideo = (function() {
             dpr = _this.hires ? Math.ceil(window.devicePixelRatio) || 1 : 1;
             _this.serving_url = data.serving_url;
             _this.serving_url += "=s" + (Math.ceil(Math.min(Math.max(_this.width, _this.height) * dpr, 1600)));
-            $scope.wrapperStyle["background-image"] = "url(" + _this.serving_url + ")";
-            $scope.wrapperStyle["background-repeat"] = "no-repeat";
-            $scope.wrapperStyle["background-size"] = "auto 100%";
-            $scope.wrapperStyle["width"] = angular.isNumber(_this.orgWidth) ? _this.orgWidth : $element[0].clientWidth || parseInt(_this.width);
-            $scope.wrapperStyle["height"] = angular.isNumber(_this.orgHeight) ? _this.orgHeight : $element[0].clientHeight || parseInt(_this.height);
+            $scope.wrapperStyle.backgroundImage = "url(" + _this.serving_url + ")";
+            $scope.wrapperStyle.backgroundRepeat = "no-repeat";
+            $scope.wrapperStyle.backgroundSize = "auto 100%";
+            $scope.wrapperStyle.width = angular.isNumber(_this.orgWidth) ? _this.orgWidth : $element[0].clientWidth || parseInt(_this.width);
+            $scope.wrapperStyle.height = angular.isNumber(_this.orgHeight) ? _this.orgHeight : $element[0].clientHeight || parseInt(_this.height);
             return $scope.videoStyle = {
-              "autoplay": $scope.optionsVideo["autoplay"],
-              "preload": $scope.optionsVideo["preload"],
-              "autobuffer": $scope.optionsVideo["autobuffer"],
+              "autoplay": $scope.optionsVideo.autoplay,
+              "preload": $scope.optionsVideo.preload,
+              "autobuffer": $scope.optionsVideo.autobuffer,
               "x-webkit-airplay": 'allow',
               "webkitAllowFullscreen": 'true'
             };
@@ -709,25 +702,19 @@ imagoVideo = (function() {
           result = calc.join(":");
           return $scope.time = result;
         };
-        $scope.play = (function(_this) {
-          return function() {
-            _this.videoEl.play();
-            return $scope.optionsVideo.playing = true;
-          };
-        })(this);
         $scope.togglePlay = (function(_this) {
           return function() {
             if (!_this.videoEl.paused) {
-              return $scope.pause();
+              _this.videoEl.pause();
+              return $scope.optionsVideo.playing = false;
             } else {
-              return $scope.play();
+              console.log('play');
+              _this.videoEl.play();
+              $scope.optionsVideo.playing = true;
+              if (!$scope.$$phase) {
+                return $scope.$apply();
+              }
             }
-          };
-        })(this);
-        $scope.pause = (function(_this) {
-          return function() {
-            _this.videoEl.pause();
-            return $scope.optionsVideo.playing = false;
           };
         })(this);
         setSize = function(size) {
@@ -742,11 +729,8 @@ imagoVideo = (function() {
           return $scope.videoFormats.reverse();
         };
         $scope.seek = (function(_this) {
-          return function(e) {
-            var seek;
-            seek = parseFloat(e / 100);
-            $scope.seekTime = parseFloat(_this.videoEl.duration * seek);
-            return _this.videoEl.currentTime = angular.copy($scope.seekTime);
+          return function(time) {
+            return _this.videoEl.currentTime = parseFloat(time / 100 * _this.videoEl.duration);
           };
         })(this);
         $scope.onVolumeChange = (function(_this) {
@@ -852,9 +836,9 @@ imagoVideo = (function() {
                 ws.width = "" + (parseInt(height * _this.assetRatio, 10)) + "px";
               }
             }
-            return $timeout(function() {
+            if (!$scope.$$phase) {
               return $scope.$apply($scope.wrapperStyle);
-            });
+            }
           };
         })(this);
         loadSources = function(data) {
