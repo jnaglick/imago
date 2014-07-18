@@ -30,13 +30,13 @@ class imagoImage extends Directive
           mediasize : false
           width     : ''
           height    : ''
+          responsive: true
 
         angular.forEach @defaults, (value, key) =>
           @[key] = value
 
         angular.forEach $attrs, (value, key) =>
           @[key] = value
-
 
         sourcePromise.then (data) =>
           @watch()
@@ -200,5 +200,5 @@ class imagoImage extends Directive
 
         $scope.$on 'resizestop', () =>
           render(@data) if @responsive
-          
+
     }
