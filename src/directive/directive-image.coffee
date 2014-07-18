@@ -7,14 +7,15 @@ class imagoImage extends Directive
       templateUrl: '/imagoWidgets/image-widget.html'
       controller: ($scope, $element, $attrs, $transclude, $window, $log, $q, $timeout) ->
 
+        $scope.status = 'loading'
+
         sourcePromise = do () =>
           deffered = $q.defer()
 
           @watch = $scope.$watch $attrs['source'], (data) =>
             return unless data
-            @data = data
 
-            deffered.resolve(@data)
+            deffered.resolve(data)
 
           return deffered.promise
 
@@ -22,10 +23,10 @@ class imagoImage extends Directive
           align     : 'center center'
           sizemode  : 'fit'              # fit, crop
           hires     : true
+          responsive: true
           scale     : 1
           lazy      : true
           maxsize   : 2560
-          responsive: true
           mediasize : false
           width     : ''
           height    : ''
@@ -37,23 +38,22 @@ class imagoImage extends Directive
           @[key] = value
 
 
-        # $scope.$watch $attrs['source'], (data) =>
-        #   return unless data
-        #   # convert to int if its a number
-        #   @width =  parseInt @width if parseInt @width
-        #   @height = parseInt @height if parseInt @height
-        #
-        #   @data = data
-        #   render @data
-
         sourcePromise.then (data) =>
-          @watch
-          render data
+          @watch()
+          @data = data
+
+          if @lazy
+            $scope.$watch $attrs['visible'], (value) =>
+              render @data if value
+          else
+            render @data
 
         render = (data) =>
           unless data?.serving_url
             $element.remove()
             return
+
+          console.log $scope.visible
 
           if @dimensions
             $scope.$watch $attrs['dimensions'], (value) =>
@@ -69,9 +69,12 @@ class imagoImage extends Directive
               height: r[1]
             @assetRatio = r[0]/r[1]
 
-          unless @width and @height
-            @width = $element[0].clientWidth
-            @height = $element[0].clientHeight
+          if @width and @height
+            width = parseInt @width
+            height = parseInt @height
+          else
+            width = $element[0].clientWidth
+            height = $element[0].clientHeight
 
           # return $log.log('tried to render during rendering!!') if $scope.status is 'preloading'
 
@@ -109,9 +112,6 @@ class imagoImage extends Directive
           #   @height = $element[0].clientHeight
           #   # $log.log 'width and height dynamic', @width, @height
 
-
-          $scope.status = 'preloading'
-
           # unbind scrollstop listener for lazy loading
           # @window.off "scrollstop.#{@id}" if @lazy
 
@@ -126,27 +126,26 @@ class imagoImage extends Directive
           if @sizemode is 'crop'
             if @assetRatio <= wrapperRatio
               # $log.log 'crop full width'
-              servingSize = Math.round(Math.max(@width, @width / @assetRatio))
+              servingSize = Math.round(Math.max(width, width / @assetRatio))
             else
               # $log.log 'crop full height'
-              servingSize = Math.round(Math.max(@height, @height * @assetRatio))
+              servingSize = Math.round(Math.max(height, height * @assetRatio))
 
           # sizemode fit
           else
             # $log.log 'assetratio: ', @assetRatio, 'wrapperraito: ' , wrapperRatio
             if @assetRatio <= wrapperRatio
               # $log.log 'fit full height', @width, @height, @assetRatio, @height * assetRatio
-              servingSize = Math.round(Math.max(@height, @height * @assetRatio))
+              servingSize = Math.round(Math.max(height, height * @assetRatio))
             else
               # $log.log 'fit full width', @width, @height, @assetRatio, height / assetRatio
-              servingSize = Math.round(Math.max(@width, @width / @assetRatio))
+              servingSize = Math.round(Math.max(width, width / @assetRatio))
 
           servingSize = parseInt Math.min(servingSize * dpr, @maxsize), 10
 
           # make sure we only load a new size
           if servingSize is @servingSize
             # console.log 'same size exit'
-            $scope.status = 'loaded'
             return
 
           servingUrl = "#{ data.serving_url }=s#{ servingSize * @scale }"
@@ -156,8 +155,8 @@ class imagoImage extends Directive
           # $log.log 'servingURl', servingUrl
           $scope.imageStyle = {}
           unless @responsive
-            $scope.imageStyle.width = "#{parseInt @width,  10}px"
-            $scope.imageStyle.height = "#{parseInt @height, 10}px"
+            $scope.imageStyle.width = "#{parseInt width,  10}px"
+            $scope.imageStyle.height = "#{parseInt height, 10}px"
 
 
           img = angular.element('<img>')
@@ -177,8 +176,7 @@ class imagoImage extends Directive
           $scope.imageStyle['background-size'] = $scope.calcMediaSize()
 
         $scope.calcMediaSize = () =>
-          # for key, value of options
-          #   @[key] = value
+
           # $log.log 'calcMediaSize', @sizemode
           @width  = $element[0].clientWidth  or @width
           @height = $element[0].clientHeight or @height
@@ -202,8 +200,5 @@ class imagoImage extends Directive
 
         $scope.$on 'resizestop', () =>
           render(@data) if @responsive
-
-        $scope.$on 'scrollstop', () =>
-          # console.log 'scrollstop'
-          render(@data) if @lazy
+          
     }
