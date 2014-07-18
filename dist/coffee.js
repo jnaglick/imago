@@ -94,10 +94,10 @@ imagoImage = (function() {
           scale: 1,
           lazy: true,
           maxsize: 2560,
+          responsive: true,
           mediasize: false,
           width: '',
-          height: '',
-          responsive: true
+          height: ''
         };
         angular.forEach(this.defaults, (function(_this) {
           return function(value, key) {
@@ -109,10 +109,6 @@ imagoImage = (function() {
             return _this[key] = value;
           };
         })(this));
-        if ($attrs['no-resize']) {
-          $log.log('@noResize depricated will be removed soon, use responsive: false');
-          this.responsive = false;
-        }
         sourcePromise.then((function(_this) {
           return function(data) {
             _this.watch;
