@@ -1,6 +1,6 @@
 div(class="imagovideo {{optionsVideo.align}} {{optionsVideo.size}} {{optionsVideo.sizemode}}")
   .imagowrapper(ng-style="wrapperStyle" ng-click="videoActive = true")
-    a.playbig.fa.fa-play(ng-click="togglePlay()", ng-hide="optionsVideo.playing")
+    a.playbig.fa.fa-play(ng-click="togglePlay()", ng-class="{ playing : optionsVideo.playing}")
     video(ng-style="videoStyle", ng-show="videoActive")
       source(ng-repeat="format in videoFormats", src="{{format.src}}", data-size="{{format.size}}", data-codec="{{format.codec}}", type="{{format.type}}")
     .controls(ng-hide="!controls")
