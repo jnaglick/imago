@@ -345,7 +345,7 @@ unbindWindowEvents = function() {
   if (!_windowEventsHandlerBinded) {
     return;
   }
-  if (_windowInViewItems.length || _containersControllers.length) {
+  if (_windowInViewItems.length) {
     return;
   }
   _windowEventsHandlerBinded = false;

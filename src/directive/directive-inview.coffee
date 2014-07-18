@@ -53,7 +53,7 @@ bindWindowEvents = ->
 
 unbindWindowEvents = ->
 	return unless _windowEventsHandlerBinded
-	return if _windowInViewItems.length or _containersControllers.length
+	return if _windowInViewItems.length
 	_windowEventsHandlerBinded = no
 	angular.element(window).unbind 'checkInView click ready scroll resize', windowEventsHandler
 
