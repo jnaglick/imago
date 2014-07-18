@@ -73,6 +73,7 @@ imagoImage = (function() {
       templateUrl: '/imagoWidgets/image-widget.html',
       controller: function($scope, $element, $attrs, $transclude, $window, $log, $q, $timeout) {
         var render, sourcePromise;
+        $scope.status = 'loading';
         sourcePromise = (function(_this) {
           return function() {
             var deffered;
@@ -81,8 +82,7 @@ imagoImage = (function() {
               if (!data) {
                 return;
               }
-              _this.data = data;
-              return deffered.resolve(_this.data);
+              return deffered.resolve(data);
             });
             return deffered.promise;
           };
@@ -91,10 +91,10 @@ imagoImage = (function() {
           align: 'center center',
           sizemode: 'fit',
           hires: true,
+          responsive: true,
           scale: 1,
           lazy: true,
           maxsize: 2560,
-          responsive: true,
           mediasize: false,
           width: '',
           height: ''
@@ -111,17 +111,27 @@ imagoImage = (function() {
         })(this));
         sourcePromise.then((function(_this) {
           return function(data) {
-            _this.watch;
-            return render(data);
+            _this.watch();
+            _this.data = data;
+            if (_this.lazy) {
+              return $scope.$watch($attrs['visible'], function(value) {
+                if (value) {
+                  return render(_this.data);
+                }
+              });
+            } else {
+              return render(_this.data);
+            }
           };
         })(this));
         render = (function(_this) {
           return function(data) {
-            var dpr, img, r, servingSize, servingUrl, wrapperRatio;
+            var dpr, height, img, r, servingSize, servingUrl, width, wrapperRatio;
             if (!(data != null ? data.serving_url : void 0)) {
               $element.remove();
               return;
             }
+            console.log($scope.visible);
             if (_this.dimensions) {
               $scope.$watch($attrs['dimensions'], function(value) {
                 return angular.forEach(value, function(value, key) {
@@ -140,37 +150,38 @@ imagoImage = (function() {
               };
               _this.assetRatio = r[0] / r[1];
             }
-            if (!(_this.width && _this.height)) {
-              _this.width = $element[0].clientWidth;
-              _this.height = $element[0].clientHeight;
+            if (_this.width && _this.height) {
+              width = parseInt(_this.width);
+              height = parseInt(_this.height);
+            } else {
+              width = $element[0].clientWidth;
+              height = $element[0].clientHeight;
             }
-            $scope.status = 'preloading';
             wrapperRatio = _this.width / _this.height;
             dpr = _this.hires ? Math.ceil(window.devicePixelRatio) || 1 : 1;
             if (_this.sizemode === 'crop') {
               if (_this.assetRatio <= wrapperRatio) {
-                servingSize = Math.round(Math.max(_this.width, _this.width / _this.assetRatio));
+                servingSize = Math.round(Math.max(width, width / _this.assetRatio));
               } else {
-                servingSize = Math.round(Math.max(_this.height, _this.height * _this.assetRatio));
+                servingSize = Math.round(Math.max(height, height * _this.assetRatio));
               }
             } else {
               if (_this.assetRatio <= wrapperRatio) {
-                servingSize = Math.round(Math.max(_this.height, _this.height * _this.assetRatio));
+                servingSize = Math.round(Math.max(height, height * _this.assetRatio));
               } else {
-                servingSize = Math.round(Math.max(_this.width, _this.width / _this.assetRatio));
+                servingSize = Math.round(Math.max(width, width / _this.assetRatio));
               }
             }
             servingSize = parseInt(Math.min(servingSize * dpr, _this.maxsize), 10);
             if (servingSize === _this.servingSize) {
-              $scope.status = 'loaded';
               return;
             }
             servingUrl = "" + data.serving_url + "=s" + (servingSize * _this.scale);
             _this.servingSize = servingSize;
             $scope.imageStyle = {};
             if (!_this.responsive) {
-              $scope.imageStyle.width = "" + (parseInt(_this.width, 10)) + "px";
-              $scope.imageStyle.height = "" + (parseInt(_this.height, 10)) + "px";
+              $scope.imageStyle.width = "" + (parseInt(width, 10)) + "px";
+              $scope.imageStyle.height = "" + (parseInt(height, 10)) + "px";
             }
             img = angular.element('<img>');
             img.on('load', function(e) {
@@ -220,16 +231,9 @@ imagoImage = (function() {
             }
           };
         })(this));
-        $scope.$on('resizestop', (function(_this) {
+        return $scope.$on('resizestop', (function(_this) {
           return function() {
             if (_this.responsive) {
-              return render(_this.data);
-            }
-          };
-        })(this));
-        return $scope.$on('scrollstop', (function(_this) {
-          return function() {
-            if (_this.lazy) {
               return render(_this.data);
             }
           };
