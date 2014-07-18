@@ -117,18 +117,16 @@
     text-align: center
     cursor: pointer
     text-shadow: 0 5px 10px black
-    transition: opacity .25s ease-in-out
+    transition: opacity 0.25s ease-in-out
     opacity: 1
-    // &:before
-    //   vertical-align: middle
-    //   width:  160px
-    //   height: 160px
-    //   text-align: center
-    //   line-height: 160px
+  .playbig.ng-hide
+    opacity: 0
     &:hover
       color: darken(white, 20%)
     &:active
       color: white
+
+
 
   .controls
     position: absolute
@@ -141,7 +139,7 @@
     margin: 0
     padding: 0
     transition: opacity 0.5s ease-in-out
-    opacity: 0
+    opacity: 1
 
     > span,
     > a

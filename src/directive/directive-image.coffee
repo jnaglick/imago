@@ -25,16 +25,22 @@ class imagoImage extends Directive
           scale     : 1
           lazy      : true
           maxsize   : 2560
-          responsive: true
+          # noResize  : false deprecated
           mediasize : false
           width     : ''
           height    : ''
+          responsive: true
 
         angular.forEach @defaults, (value, key) =>
           @[key] = value
 
         angular.forEach $attrs, (value, key) =>
           @[key] = value
+
+
+        if $attrs['no-resize']
+          $log.log '@noResize depricated will be removed soon, use responsive: false'
+          @responsive = false
 
 
         # $scope.$watch $attrs['source'], (data) =>

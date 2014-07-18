@@ -21,6 +21,9 @@ class imagoVideo extends Directive
           height      : ''
           hires       : true
 
+        @timeLineEl = document.getElementsByTagName('input')[0]
+        $scope.seekTime = @timeLineEl.value = 0
+
         angular.forEach @defaults, (value, key) =>
           @[key] = value
 
@@ -45,10 +48,12 @@ class imagoVideo extends Directive
           @data = data
           render @data
 
+
         angular.element(@videoEl).bind 'timeupdate', (e) =>
-            $scope.seekTime = @videoEl.currentTime / @videoEl.duration * 100
-            updateTime @videoEl.currentTime
-            $scope.$apply()
+          $scope.seekTime = parseFloat((@videoEl.currentTime / @videoEl.duration) * 100)
+          # console.log 'timeupdate seektime ' ,$scope.seekTime
+          updateTime @videoEl.currentTime
+          $scope.$apply() if !$scope.$$phase
 
         angular.element(@videoEl).bind 'ended', (e) =>
           $scope.optionsVideo.playing = false
@@ -68,39 +73,44 @@ class imagoVideo extends Directive
           if @controls
             $scope.controls = angular.copy(@controls)
 
-          # use pvrovided dimentions.
-          if angular.isNumber(@width) and angular.isNumber(@height)
-            # console.log 'we have numbers for width and height', @width, @height
-
-
-          # fit width
-          else if @height is 'auto' and angular.isNumber(@width)
-            @height = @width / @assetRatio
-            $scope.wrapperStyle.height = parseInt @height
-            # console.log 'fit width', @width, @height
-
-          # fit height
-          else if @width is 'auto' and angular.isNumber(@height)
-            @width = @height * @assetRatio
-            $scope.wrapperStyle.width  = parseInt @width
-            # console.log 'fit height', @width, @height , $scope.wrapperStyle
-
-          # we want dynamic resizing without css.
-          # like standard image behaviour. will get a height according to the width
-          else if @width is 'auto' and @height is 'auto'
-            @width  = $element[0].clientWidth
-            @height = @width / @assetRatio
-            $scope.wrapperStyle.height = parseInt @height
-            # $log.log 'both auto', @width, @height
-
-          # width and height dynamic, needs to be defined via css
-          # either width height or position
-          else
-            @width  = $element[0].clientWidth
+          unless @width and @height
+            @width = $element[0].clientWidth
             @height = $element[0].clientHeight
-            # console.log 'fit width', @width, @height
+            # console.log 'height' ,@height, 'width ' ,@width
 
-          $scope.wrapperStyle['background-position'] = "#{@align}"
+          # # use pvrovided dimentions.
+          # if angular.isNumber(@width) and angular.isNumber(@height)
+          #   # console.log 'we have numbers for width and height', @width, @height
+
+
+          # # fit width
+          # else if @height is 'auto' and angular.isNumber(@width)
+          #   @height = @width / @assetRatio
+          #   $scope.wrapperStyle.height = parseInt @height
+          #   # console.log 'fit width', @width, @height
+
+          # # fit height
+          # else if @width is 'auto' and angular.isNumber(@height)
+          #   @width = @height * @assetRatio
+          #   $scope.wrapperStyle.width  = parseInt @width
+          #   # console.log 'fit height', @width, @height , $scope.wrapperStyle
+
+          # # we want dynamic resizing without css.
+          # # like standard image behaviour. will get a height according to the width
+          # else if @width is 'auto' and @height is 'auto'
+          #   @width  = $element[0].clientWidth
+          #   @height = @width / @assetRatio
+          #   $scope.wrapperStyle.height = parseInt @height
+          #   # $log.log 'both auto', @width, @height
+
+          # # width and height dynamic, needs to be defined via css
+          # # either width height or position
+          # else
+          #   @width  = $element[0].clientWidth
+          #   @height = $element[0].clientHeight
+          #   # console.log 'fit width', @width, @height
+
+          $scope.wrapperStyle.backgroundPosition = "#{@align}"
 
           $scope.optionsVideo = @
 
@@ -116,17 +126,17 @@ class imagoVideo extends Directive
           @serving_url = data.serving_url
           @serving_url += "=s#{ Math.ceil(Math.min(Math.max(@width, @height) * dpr, 1600)) }"
 
-          $scope.wrapperStyle["background-image"]  = "url(#{@serving_url})"
-          $scope.wrapperStyle["background-repeat"] = "no-repeat"
-          $scope.wrapperStyle["background-size"]   = "auto 100%"
+          $scope.wrapperStyle.backgroundImage  = "url(#{@serving_url})"
+          $scope.wrapperStyle.backgroundRepeat = "no-repeat"
+          $scope.wrapperStyle.backgroundSize  = "auto 100%"
 
-          $scope.wrapperStyle["width"]  = if angular.isNumber(@orgWidth)  then @orgWidth  else ($element[0].clientWidth or parseInt @width)
-          $scope.wrapperStyle["height"] = if angular.isNumber(@orgHeight) then @orgHeight else ($element[0].clientHeight or parseInt @height)
+          $scope.wrapperStyle.width  = if angular.isNumber(@orgWidth)  then @orgWidth  else ($element[0].clientWidth or parseInt @width)
+          $scope.wrapperStyle.height = if angular.isNumber(@orgHeight) then @orgHeight else ($element[0].clientHeight or parseInt @height)
 
           $scope.videoStyle =
-            "autoplay" :   $scope.optionsVideo["autoplay"]
-            "preload" :    $scope.optionsVideo["preload"]
-            "autobuffer" : $scope.optionsVideo["autobuffer"]
+            "autoplay" :   $scope.optionsVideo.autoplay
+            "preload" :    $scope.optionsVideo.preload
+            "autobuffer" : $scope.optionsVideo.autobuffer
             "x-webkit-airplay" : 'allow'
             "webkitAllowFullscreen" : 'true'
 
@@ -149,20 +159,22 @@ class imagoVideo extends Directive
           result = calc.join ":"
           $scope.time = result
 
-        $scope.play = =>
-          @videoEl.play()
-          $scope.optionsVideo.playing = true
+        # $scope.play = =>
+        #   @videoEl.play()
+        #   $scope.optionsVideo.playing = true
 
         $scope.togglePlay = =>
-
           unless @videoEl.paused
-            $scope.pause()
+            @videoEl.pause()
+            $scope.optionsVideo.playing = false
           else
-            $scope.play()
-
-        $scope.pause = =>
-          @videoEl.pause()
-          $scope.optionsVideo.playing = false
+            console.log 'play'
+            @videoEl.play()
+            $scope.optionsVideo.playing = true
+            $scope.$apply() if !$scope.$$phase
+        # $scope.pause = =>
+        #   @videoEl.pause()
+        #   $scope.optionsVideo.playing = false
 
         setSize = (size) ->
           console.log '******** setSize, nothing here'
@@ -183,10 +195,8 @@ class imagoVideo extends Directive
 
           $scope.videoFormats.reverse()
 
-        $scope.seek = (e) =>
-          seek = parseFloat(e / 100)
-          $scope.seekTime = parseFloat(@videoEl.duration * seek)
-          @videoEl.currentTime = angular.copy($scope.seekTime)
+        $scope.seek = (time) =>
+          @videoEl.currentTime = parseFloat(time/100 * @videoEl.duration)
 
         $scope.onVolumeChange = (e) =>
           @videoEl.volume = parseFloat(e / 100)
@@ -291,7 +301,7 @@ class imagoVideo extends Directive
               ws.height = "#{ height }px"
               ws.width  = "#{ parseInt( height * @assetRatio, 10) }px"
 
-          $timeout () -> $scope.$apply $scope.wrapperStyle #if !$scope.$$phase
+          $scope.$apply $scope.wrapperStyle if !$scope.$$phase
 
         loadSources = (data) ->
           $scope.videoFormats = []
