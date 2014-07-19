@@ -66,28 +66,19 @@ angular.module('imago.widgets.angular').directive('imagoContact', ['imagoSubmit'
 var imagoImage;
 
 imagoImage = (function() {
-  function imagoImage() {
+  function imagoImage($window, $q) {
     return {
       replace: true,
       scope: true,
       templateUrl: '/imagoWidgets/image-widget.html',
-      controller: function($scope, $element, $attrs, $transclude, $window, $log, $q, $timeout) {
-        var render, sourcePromise;
-        $scope.status = 'loading';
-        sourcePromise = (function(_this) {
-          return function() {
-            var deffered;
-            deffered = $q.defer();
-            _this.watch = $scope.$watch($attrs['source'], function(data) {
-              if (!data) {
-                return;
-              }
-              return deffered.resolve(data);
-            });
-            return deffered.promise;
-          };
-        })(this)();
-        this.defaults = {
+      controller: function($scope, $element, $attrs) {
+        return $scope.status = 'loading';
+      },
+      link: function(scope, element, attrs) {
+        var defaults, key, opts, render, source, sourcePromise, value, visiblePromise;
+        opts = {};
+        source = {};
+        defaults = {
           align: 'center center',
           sizemode: 'fit',
           hires: true,
@@ -100,28 +91,54 @@ imagoImage = (function() {
           height: '',
           responsive: true
         };
-        angular.forEach(this.defaults, (function(_this) {
-          return function(value, key) {
-            return _this[key] = value;
+        for (key in defaults) {
+          value = defaults[key];
+          opts[key] = value;
+        }
+        for (key in attrs) {
+          value = attrs[key];
+          opts[key] = value;
+        }
+        if (opts.lazy) {
+          visiblePromise = (function(_this) {
+            return function() {
+              var deffered;
+              deffered = $q.defer();
+              _this.visibleFunc = scope.$watch(attrs['visibility'], function(value) {
+                if (!value) {
+                  return;
+                }
+                return deffered.resolve(value);
+              });
+              return deffered.promise;
+            };
+          })(this)();
+        }
+        sourcePromise = (function(_this) {
+          return function() {
+            var deffered;
+            deffered = $q.defer();
+            _this.watch = scope.$watch(attrs['source'], function(data) {
+              if (!data) {
+                return;
+              }
+              return deffered.resolve(data);
+            });
+            return deffered.promise;
           };
-        })(this));
-        angular.forEach($attrs, (function(_this) {
-          return function(value, key) {
-            return _this[key] = value;
-          };
-        })(this));
+        })(this)();
         sourcePromise.then((function(_this) {
           return function(data) {
-            _this.watch();
-            _this.data = data;
-            if (_this.lazy) {
-              return $scope.$watch($attrs['visible'], function(value) {
-                if (value) {
-                  return render(_this.data);
-                }
+            if (!attrs['watch']) {
+              _this.watch();
+            }
+            source = data;
+            if (opts.lazy) {
+              return visiblePromise.then(function(value) {
+                return render(source);
               });
             } else {
-              return render(_this.data);
+              return render(data);
             }
           };
         })(this));
@@ -129,95 +146,91 @@ imagoImage = (function() {
           return function(data) {
             var dpr, height, img, r, servingSize, servingUrl, width, wrapperRatio;
             if (!(data != null ? data.serving_url : void 0)) {
-              $element.remove();
+              element.remove();
               return;
             }
-            console.log($scope.visible);
-            if (_this.dimensions) {
-              $scope.$watch($attrs['dimensions'], function(value) {
+            if (opts.dimensions && attrs['dimensions']) {
+              scope.$watch(attrs['dimensions'], function(value) {
                 return angular.forEach(value, function(value, key) {
-                  return _this[key] = value;
+                  return opts[key] = value;
                 });
               });
             }
-            if (!$scope.elementStyle) {
-              $scope.elementStyle = {};
+            if (!scope.elementStyle) {
+              scope.elementStyle = {};
             }
             if (angular.isString(data.resolution)) {
               r = data.resolution.split('x');
-              _this.resolution = {
+              opts.resolution = {
                 width: r[0],
                 height: r[1]
               };
-              _this.assetRatio = r[0] / r[1];
+              opts.assetRatio = r[0] / r[1];
             }
-            if (_this.width && _this.height) {
-              width = parseInt(_this.width);
-              height = parseInt(_this.height);
+            if (opts.width && opts.height) {
+              width = parseInt(opts.width);
+              height = parseInt(opts.height);
             } else {
-              width = $element[0].clientWidth;
-              height = $element[0].clientHeight;
+              width = element[0].clientWidth;
+              height = element[0].clientHeight;
             }
-            wrapperRatio = _this.width / _this.height;
-            dpr = _this.hires ? Math.ceil(window.devicePixelRatio) || 1 : 1;
-            if (_this.sizemode === 'crop') {
-              if (_this.assetRatio <= wrapperRatio) {
-                servingSize = Math.round(Math.max(width, width / _this.assetRatio));
+            wrapperRatio = opts.width / opts.height;
+            dpr = opts.hires ? Math.ceil($window.devicePixelRatio) || 1 : 1;
+            if (opts.sizemode === 'crop') {
+              if (opts.assetRatio <= wrapperRatio) {
+                servingSize = Math.round(Math.max(width, width / opts.assetRatio));
               } else {
-                servingSize = Math.round(Math.max(height, height * _this.assetRatio));
+                servingSize = Math.round(Math.max(height, height * opts.assetRatio));
               }
             } else {
-              if (_this.assetRatio <= wrapperRatio) {
-                servingSize = Math.round(Math.max(height, height * _this.assetRatio));
+              if (opts.assetRatio <= wrapperRatio) {
+                servingSize = Math.round(Math.max(height, height * opts.assetRatio));
               } else {
-                servingSize = Math.round(Math.max(width, width / _this.assetRatio));
+                servingSize = Math.round(Math.max(width, width / opts.assetRatio));
               }
             }
-            servingSize = parseInt(Math.min(servingSize * dpr, _this.maxsize), 10);
-            if (servingSize === _this.servingSize) {
-              return;
-            }
-            servingUrl = "" + data.serving_url + "=s" + (servingSize * _this.scale);
-            _this.servingSize = servingSize;
-            $scope.imageStyle = {};
-            if (!_this.responsive) {
-              $scope.imageStyle.width = "" + (parseInt(width, 10)) + "px";
-              $scope.imageStyle.height = "" + (parseInt(height, 10)) + "px";
+            servingSize = parseInt(Math.min(servingSize * dpr, opts.maxsize), 10);
+            servingUrl = "" + data.serving_url + "=s" + (servingSize * opts.scale);
+            opts.servingSize = servingSize;
+            scope.imageStyle = {};
+            if (!opts.responsive) {
+              scope.imageStyle.width = "" + (parseInt(width, 10)) + "px";
+              scope.imageStyle.height = "" + (parseInt(height, 10)) + "px";
             }
             img = angular.element('<img>');
             img.on('load', function(e) {
-              $scope.imageStyle.backgroundImage = "url(" + servingUrl + ")";
-              $scope.imageStyle.backgroundSize = $scope.calcMediaSize();
-              $scope.imageStyle.backgroundPosition = _this.align;
-              $scope.imageStyle.display = 'inline-block';
-              $scope.status = 'loaded';
-              return $scope.$apply();
+              scope.imageStyle.backgroundImage = "url(" + servingUrl + ")";
+              scope.imageStyle.backgroundSize = scope.calcMediaSize();
+              scope.imageStyle.backgroundPosition = opts.align;
+              scope.imageStyle.display = 'inline-block';
+              scope.status = 'loaded';
+              return scope.$apply();
             });
             return img[0].src = servingUrl;
           };
         })(this);
-        $scope.onResize = (function(_this) {
+        scope.onResize = (function(_this) {
           return function() {
-            return $scope.imageStyle['background-size'] = $scope.calcMediaSize();
+            return scope.imageStyle['background-size'] = scope.calcMediaSize();
           };
         })(this);
-        $scope.calcMediaSize = (function(_this) {
+        scope.calcMediaSize = (function(_this) {
           return function() {
             var wrapperRatio;
-            _this.width = $element[0].clientWidth || _this.width;
-            _this.height = $element[0].clientHeight || _this.height;
-            if (!(_this.width && _this.height)) {
+            opts.width = element[0].clientWidth || opts.width;
+            opts.height = element[0].clientHeight || opts.height;
+            if (!(opts.width && opts.height)) {
               return;
             }
-            wrapperRatio = _this.width / _this.height;
-            if (_this.sizemode === 'crop') {
-              if (_this.assetRatio < wrapperRatio) {
+            wrapperRatio = opts.width / opts.height;
+            if (opts.sizemode === 'crop') {
+              if (opts.assetRatio < wrapperRatio) {
                 return "100% auto";
               } else {
                 return "auto 100%";
               }
             } else {
-              if (_this.assetRatio > wrapperRatio) {
+              if (opts.assetRatio > wrapperRatio) {
                 return "100% auto";
               } else {
                 return "auto 100%";
@@ -225,17 +238,17 @@ imagoImage = (function() {
             }
           };
         })(this);
-        $scope.$on('resizelimit', (function(_this) {
+        scope.$on('resizelimit', (function(_this) {
           return function() {
-            if (_this.responsive) {
-              return $scope.onResize();
+            if (opts.responsive) {
+              return scope.onResize();
             }
           };
         })(this));
-        return $scope.$on('resizestop', (function(_this) {
+        return scope.$on('resizestop', (function(_this) {
           return function() {
-            if (_this.responsive) {
-              return render(_this.data);
+            if (opts.responsive) {
+              return render(source);
             }
           };
         })(this));
@@ -247,7 +260,7 @@ imagoImage = (function() {
 
 })();
 
-angular.module('imago.widgets.angular').directive('imagoImage', [imagoImage]);
+angular.module('imago.widgets.angular').directive('imagoImage', ['$window', '$q', imagoImage]);
 
 var addWindowInViewItem, bindWindowEvents, checkInView, debounce, getBoundingClientRect, getViewportHeight, inView, removeWindowInViewItem, triggerInViewCallback, unbindWindowEvents, windowCheckInViewDebounced, windowEventsHandler, _windowEventsHandlerBinded, _windowInViewItems;
 
