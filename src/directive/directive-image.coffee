@@ -43,7 +43,7 @@ class imagoImage extends Directive
           visiblePromise = do () =>
             deffered = $q.defer()
 
-            @visibleFunc = scope.$watch attrs['visibility'], (value) =>
+            @visibleFunc = scope.$watch attrs['visible'], (value) =>
               return unless value
               deffered.resolve(value)
 

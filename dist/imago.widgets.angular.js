@@ -108,7 +108,7 @@ imagoImage = (function() {
             return function() {
               var deffered;
               deffered = $q.defer();
-              _this.visibleFunc = scope.$watch(attrs['visibility'], function(value) {
+              _this.visibleFunc = scope.$watch(attrs['visible'], function(value) {
                 if (!value) {
                   return;
                 }
