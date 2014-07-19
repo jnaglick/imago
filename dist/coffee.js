@@ -268,10 +268,8 @@ inView = (function() {
   function inView($parse) {
     return {
       restrict: 'A',
-      require: '?^inViewContainer',
       link: function(scope, element, attrs, containerController) {
         var inViewFunc, item, performCheckDebounced;
-        console.log('containerController: ', containerController);
         if (!attrs.inView) {
           return;
         }

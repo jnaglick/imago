@@ -2,9 +2,8 @@ class inView extends Directive
 	constructor: ($parse) ->
 		return {
 			restrict: 'A'
-			require: '?^inViewContainer'
 			link: (scope, element, attrs, containerController) ->
-				console.log 'containerController: ', containerController
+				# console.log 'containerController: ', containerController
 				return unless attrs.inView
 				inViewFunc = $parse(attrs.inView)
 				item =
