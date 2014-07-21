@@ -35,9 +35,7 @@ class imagoImage extends Directive
         for key, value of attrs
           opts[key] = value
 
-
         #####
-
 
         if opts.lazy
           visiblePromise = do () =>
@@ -45,6 +43,7 @@ class imagoImage extends Directive
 
             @visibleFunc = scope.$watch attrs['visible'], (value) =>
               return unless value
+              scope.inView = value
               deffered.resolve(value)
 
             return deffered.promise
@@ -66,9 +65,6 @@ class imagoImage extends Directive
           source = data
 
           if opts.lazy
-            # scope.$watch attrs['visibility'], (value) =>
-            #   return unless value
-            #   render source
             visiblePromise.then (value) =>
               # @visibleFunc()
               render source
@@ -204,7 +200,7 @@ class imagoImage extends Directive
 
         scope.onResize = () =>
           # console.log 'onResize func'
-          scope.imageStyle['background-size'] = scope.calcMediaSize()
+          scope.imageStyle['backgroundSize'] = scope.calcMediaSize()
 
         scope.calcMediaSize = () =>
 
@@ -226,10 +222,15 @@ class imagoImage extends Directive
 
         scope.$on 'resizelimit', () =>
           #console.log 'resizelimit' ,opts.responsive
-
-          scope.onResize() if opts.responsive
+          if opts.lazy
+            scope.onResize() if opts.responsive and scope.inView
+          else
+            scope.onResize() if opts.responsive
 
         scope.$on 'resizestop', () =>
-          render(source) if opts.responsive
+          if opts.lazy
+            render(source) if opts.responsive and scope.inView
+          else
+            render(source) if opts.responsive
 
     }

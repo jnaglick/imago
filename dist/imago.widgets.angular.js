@@ -112,6 +112,7 @@ imagoImage = (function() {
                 if (!value) {
                   return;
                 }
+                scope.inView = value;
                 return deffered.resolve(value);
               });
               return deffered.promise;
@@ -215,7 +216,7 @@ imagoImage = (function() {
         })(this);
         scope.onResize = (function(_this) {
           return function() {
-            return scope.imageStyle['background-size'] = scope.calcMediaSize();
+            return scope.imageStyle['backgroundSize'] = scope.calcMediaSize();
           };
         })(this);
         scope.calcMediaSize = (function(_this) {
@@ -244,15 +245,27 @@ imagoImage = (function() {
         })(this);
         scope.$on('resizelimit', (function(_this) {
           return function() {
-            if (opts.responsive) {
-              return scope.onResize();
+            if (opts.lazy) {
+              if (opts.responsive && scope.inView) {
+                return scope.onResize();
+              }
+            } else {
+              if (opts.responsive) {
+                return scope.onResize();
+              }
             }
           };
         })(this));
         return scope.$on('resizestop', (function(_this) {
           return function() {
-            if (opts.responsive) {
-              return render(source);
+            if (opts.lazy) {
+              if (opts.responsive && scope.inView) {
+                return render(source);
+              }
+            } else {
+              if (opts.responsive) {
+                return render(source);
+              }
             }
           };
         })(this));
