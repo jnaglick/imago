@@ -6,7 +6,7 @@ class imagoImage extends Directive
       replace: true
       scope: true
       templateUrl: '/imagoWidgets/image-widget.html'
-      controller: ($scope, $element, $attrs) ->
+      controller: ($scope) ->
 
         $scope.status = 'loading'
 
@@ -77,8 +77,6 @@ class imagoImage extends Directive
             element.remove()
             return
 
-          # console.log scope.visible
-
           if opts.dimensions and attrs['dimensions']
             scope.$watch attrs['dimensions'], (value) =>
               angular.forEach value, (value, key) =>
@@ -92,9 +90,6 @@ class imagoImage extends Directive
               width:  r[0]
               height: r[1]
             opts.assetRatio = r[0]/r[1]
-
-          # TODO: Not sure about this solution below:
-          # the widget may get less flexible / Sebastian
 
           if opts.width and opts.height
             width = parseInt opts.width
@@ -142,7 +137,7 @@ class imagoImage extends Directive
           # unbind scrollstop listener for lazy loading
           # opts.window.off "scrollstop.#{opts.id}" if opts.lazy
 
-          wrapperRatio = opts.width / opts.height
+          wrapperRatio = width / height
 
           # $log.log 'width, height, wrapperRatio, opts.assetRatio', opts.width, opts.height, wrapperRatio, assetRatio
           # debugger
@@ -188,9 +183,9 @@ class imagoImage extends Directive
 
           img = angular.element('<img>')
           img.on 'load', (e) =>
-            scope.imageStyle.backgroundImage    = "url(#{servingUrl})"
-            scope.imageStyle.backgroundSize    = scope.calcMediaSize()
-            scope.imageStyle.backgroundPosition = opts.align
+            scope.imageStyle.backgroundImage     = "url(#{servingUrl})"
+            scope.imageStyle.backgroundSize      = scope.calcMediaSize()
+            scope.imageStyle.backgroundPosition  = opts.align
             scope.imageStyle.display             = 'inline-block'
             scope.status = 'loaded'
             scope.$apply()

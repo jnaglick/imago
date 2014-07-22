@@ -71,7 +71,7 @@ imagoImage = (function() {
       replace: true,
       scope: true,
       templateUrl: '/imagoWidgets/image-widget.html',
-      controller: function($scope, $element, $attrs) {
+      controller: function($scope) {
         return $scope.status = 'loading';
       },
       link: function(scope, element, attrs) {
@@ -175,7 +175,7 @@ imagoImage = (function() {
               width = element[0].clientWidth;
               height = element[0].clientHeight;
             }
-            wrapperRatio = opts.width / opts.height;
+            wrapperRatio = width / height;
             dpr = opts.hires ? Math.ceil($window.devicePixelRatio) || 1 : 1;
             if (opts.sizemode === 'crop') {
               if (opts.assetRatio <= wrapperRatio) {
