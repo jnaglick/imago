@@ -481,105 +481,114 @@ angular.module('imago.widgets.angular').directive('inView', ['$parse', inView]);
 var imagoSlider;
 
 imagoSlider = (function() {
-  function imagoSlider() {
+  function imagoSlider($q, imagoPanel) {
     return {
       replace: true,
       scope: true,
       transclude: true,
       templateUrl: '/imagoWidgets/slider-widget.html',
-      controller: function($scope, $element, $attrs, $window, imagoPanel) {
-        var prepareSlides, source;
-        source = $attrs.source || 'assets';
-        $scope.$watch(source, function(assetsData) {
-          if (assetsData) {
-            if (!angular.isArray(assetsData)) {
-              return imagoPanel.getData(assetsData.path).then(function(response) {
-                assetsData = response[0].items;
-                return prepareSlides(assetsData);
-              });
-            } else {
-              return prepareSlides(assetsData);
-            }
-          }
+      controller: function($scope) {
+        $scope.confSlider = {};
+        this.defaults = {
+          animation: 'fade',
+          sizemode: 'fit',
+          current: 0,
+          enablekeys: true,
+          enablearrows: true,
+          enablehtml: true,
+          subslides: false,
+          loop: true,
+          noResize: false,
+          current: 0,
+          lazy: false,
+          align: 'center center'
+        };
+        return angular.forEach(this.defaults, function(value, key) {
+          return $scope.confSlider[key] = value;
         });
-        prepareSlides = function(assetsData) {
-          var item, _i, _len, _ref;
-          $scope.loadedData = true;
-          $scope.slideSource = [];
-          $scope.dimensions = {
-            width: $element[0].clientWidth,
-            height: $element[0].clientHeight
+      },
+      link: function(scope, element, attrs, $window) {
+        var prepareSlides, self, sourcePromise;
+        self = {};
+        angular.forEach(attrs, function(value, key) {
+          return scope.confSlider[key] = value;
+        });
+        sourcePromise = (function(_this) {
+          return function() {
+            var deffered;
+            deffered = $q.defer();
+            self.watch = scope.$watch(attrs['source'], function(data) {
+              if (!data) {
+                return;
+              }
+              return deffered.resolve(data);
+            });
+            return deffered.promise;
           };
-          for (_i = 0, _len = assetsData.length; _i < _len; _i++) {
-            item = assetsData[_i];
+        })(this)();
+        sourcePromise.then((function(_this) {
+          return function(data) {
+            if (!data) {
+              return;
+            }
+            console.log(self);
+            debugger;
+            return self.watch()(!attrs['watch'] ? !angular.isArray(data) ? imagoPanel.getData(data.path).then(function(response) {
+              data = response[0].items;
+              return prepareSlides(data);
+            }) : prepareSlides(data) : void 0);
+          };
+        })(this));
+        prepareSlides = function(data) {
+          var item, _i, _len, _ref;
+          scope.loadedData = true;
+          scope.slideSource = [];
+          scope.dimensions = {
+            width: element[0].clientWidth,
+            height: element[0].clientHeight
+          };
+          for (_i = 0, _len = data.length; _i < _len; _i++) {
+            item = data[_i];
             if (item.serving_url) {
-              $scope.slideSource.push(item);
+              scope.slideSource.push(item);
             }
           }
-          if (((_ref = $scope.slideSource) != null ? _ref.length : void 0) <= 1 || !$scope.slideSource) {
-            $scope.confSlider.enablearrows = false;
-            $scope.confSlider.enablekeys = false;
+          if (((_ref = scope.slideSource) != null ? _ref.length : void 0) <= 1 || !scope.slideSource) {
+            scope.confSlider.enablearrows = false;
+            scope.confSlider.enablekeys = false;
           }
-          return $scope.currentIndex = 0;
+          return scope.currentIndex = 0;
         };
-        $scope.setCurrentSlideIndex = function(index) {
-          return $scope.currentIndex = index;
+        scope.setCurrentSlideIndex = function(index) {
+          return scope.currentIndex = index;
         };
-        $scope.isCurrentSlideIndex = function(index) {
-          return $scope.currentIndex === index;
+        scope.isCurrentSlideIndex = function(index) {
+          return scope.currentIndex === index;
         };
-        $scope.goPrev = function() {
-          return $scope.currentIndex = $scope.currentIndex < $scope.slideSource.length - 1 ? ++$scope.currentIndex : 0;
+        scope.goPrev = function() {
+          return scope.currentIndex = scope.currentIndex < scope.slideSource.length - 1 ? ++scope.currentIndex : 0;
         };
-        $scope.goNext = function() {
-          return $scope.currentIndex = $scope.currentIndex > 0 ? --$scope.currentIndex : $scope.slideSource.length - 1;
+        scope.goNext = function() {
+          return scope.currentIndex = scope.currentIndex > 0 ? --scope.currentIndex : scope.slideSource.length - 1;
         };
-        $scope.getLast = function() {
-          return $scope.slideSource.length - 1;
+        scope.getLast = function() {
+          return scope.slideSource.length - 1;
         };
         return angular.element($window).on('keydown', function(e) {
-          if (!$scope.confSlider.enablekeys) {
+          if (!scope.confSlider.enablekeys) {
             return;
           }
           switch (e.keyCode) {
             case 37:
-              return $scope.$apply(function() {
-                return $scope.goPrev();
+              return scope.$apply(function() {
+                return scope.goPrev();
               });
             case 39:
-              return $scope.$apply(function() {
-                return $scope.goNext();
+              return scope.$apply(function() {
+                return scope.goNext();
               });
           }
         });
-      },
-      compile: function(tElement, tAttrs, transclude) {
-        return {
-          pre: function(scope, iElement, iAttrs, controller) {
-            scope.confSlider = {};
-            this.defaults = {
-              animation: 'fade',
-              sizemode: 'fit',
-              current: 0,
-              enablekeys: true,
-              enablearrows: true,
-              enablehtml: true,
-              subslides: false,
-              loop: true,
-              noResize: false,
-              current: 0,
-              lazy: false,
-              align: 'center center'
-            };
-            angular.forEach(this.defaults, function(value, key) {
-              return scope.confSlider[key] = value;
-            });
-            angular.forEach(iAttrs, function(value, key) {
-              return scope.confSlider[key] = value;
-            });
-            return scope.elementStyle = scope.confSlider.animation;
-          }
-        };
       }
     };
   }
@@ -588,7 +597,7 @@ imagoSlider = (function() {
 
 })();
 
-angular.module('imago.widgets.angular').directive('imagoSlider', [imagoSlider]);
+angular.module('imago.widgets.angular').directive('imagoSlider', ['$q', 'imagoPanel', imagoSlider]);
 
 var imagoVideo;
 
