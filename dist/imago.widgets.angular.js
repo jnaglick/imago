@@ -474,7 +474,7 @@ angular.module('imago.widgets.angular').directive('inView', ['$parse', inView]);
 var imagoSlider;
 
 imagoSlider = (function() {
-  function imagoSlider($q, imagoPanel) {
+  function imagoSlider($q, $window, imagoPanel) {
     return {
       replace: true,
       scope: true,
@@ -500,7 +500,7 @@ imagoSlider = (function() {
           return $scope.confSlider[key] = value;
         });
       },
-      link: function(scope, element, attrs, $window) {
+      link: function(scope, element, attrs) {
         var prepareSlides, self, sourcePromise;
         self = {};
         angular.forEach(attrs, function(value, key) {
@@ -524,12 +524,17 @@ imagoSlider = (function() {
             if (!data) {
               return;
             }
-            console.log(self);
-            debugger;
-            return self.watch()(!attrs['watch'] ? !angular.isArray(data) ? imagoPanel.getData(data.path).then(function(response) {
-              data = response[0].items;
+            if (!attrs['watch']) {
+              self.watch();
+            }
+            if (!angular.isArray(data)) {
+              return imagoPanel.getData(data.path).then(function(response) {
+                data = response[0].items;
+                return prepareSlides(data);
+              });
+            } else {
               return prepareSlides(data);
-            }) : prepareSlides(data) : void 0);
+            }
           };
         })(this));
         prepareSlides = function(data) {
@@ -590,7 +595,7 @@ imagoSlider = (function() {
 
 })();
 
-angular.module('imago.widgets.angular').directive('imagoSlider', ['$q', 'imagoPanel', imagoSlider]);
+angular.module('imago.widgets.angular').directive('imagoSlider', ['$q', '$window', 'imagoPanel', imagoSlider]);
 
 var imagoVideo;
 

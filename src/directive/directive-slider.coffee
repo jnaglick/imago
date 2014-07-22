@@ -1,6 +1,6 @@
 class imagoSlider extends Directive
 
-  constructor: ($q, imagoPanel) ->
+  constructor: ($q, $window, imagoPanel) ->
     return {
       replace: true
       scope: true
@@ -26,7 +26,7 @@ class imagoSlider extends Directive
         angular.forEach @defaults, (value, key) ->
           $scope.confSlider[key] = value
 
-      link: (scope, element, attrs, $window) ->
+      link: (scope, element, attrs) ->
         self = {}
 
         angular.forEach attrs, (value, key) ->
@@ -36,22 +36,20 @@ class imagoSlider extends Directive
           deffered = $q.defer()
           self.watch = scope.$watch attrs['source'], (data) =>
             return unless data
-
             deffered.resolve(data)
 
           return deffered.promise
 
         sourcePromise.then (data) =>
           return unless data
-          console.log self
-          debugger
           self.watch() unless attrs['watch']
-            unless angular.isArray(data)
-              imagoPanel.getData(data.path).then (response) ->
-                data = response[0].items
-                prepareSlides(data)
-            else
+
+          unless angular.isArray(data)
+            imagoPanel.getData(data.path).then (response) ->
+              data = response[0].items
               prepareSlides(data)
+          else
+            prepareSlides(data)
 
         prepareSlides = (data) ->
           scope.loadedData = true
