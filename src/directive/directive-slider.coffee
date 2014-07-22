@@ -71,12 +71,10 @@ class imagoSlider extends Directive
 
         scope.setCurrentSlideIndex = (index) ->
           scope.currentIndex = index
+          getSiblings()
 
-        scope.showFunction = (index) ->
+        scope.displaySlides = (index) ->
           return true if index is scope.currentIndex or scope.nextIndex or scope.prevIndex
-
-        scope.isCurrentSlideIndex = (index) ->
-          return scope.currentIndex is index
 
         scope.goNext = () ->
           scope.currentIndex = if (scope.currentIndex < scope.slideSource.length - 1) then ++scope.currentIndex else 0
@@ -86,12 +84,12 @@ class imagoSlider extends Directive
           scope.currentIndex = if (scope.currentIndex > 0) then --scope.currentIndex else scope.slideSource.length - 1
           getSiblings()
 
-        scope.getLast = () ->
-          scope.slideSource.length - 1
-
         getSiblings = () ->
           scope.nextIndex = if scope.currentIndex is scope.sliderLength then 0 else scope.currentIndex + 1
           scope.prevIndex = if scope.currentIndex is 0 then scope.sliderLength else scope.currentIndex - 1
+
+        scope.getLast = () ->
+          scope.slideSource.length - 1
 
         angular.element($window).on 'keydown', (e) ->
           return unless scope.confSlider.enablekeys

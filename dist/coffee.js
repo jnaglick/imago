@@ -556,15 +556,13 @@ imagoSlider = (function() {
           return getSiblings();
         };
         scope.setCurrentSlideIndex = function(index) {
-          return scope.currentIndex = index;
+          scope.currentIndex = index;
+          return getSiblings();
         };
-        scope.showFunction = function(index) {
+        scope.displaySlides = function(index) {
           if (index === scope.currentIndex || scope.nextIndex || scope.prevIndex) {
             return true;
           }
-        };
-        scope.isCurrentSlideIndex = function(index) {
-          return scope.currentIndex === index;
         };
         scope.goNext = function() {
           scope.currentIndex = scope.currentIndex < scope.slideSource.length - 1 ? ++scope.currentIndex : 0;
@@ -574,12 +572,12 @@ imagoSlider = (function() {
           scope.currentIndex = scope.currentIndex > 0 ? --scope.currentIndex : scope.slideSource.length - 1;
           return getSiblings();
         };
-        scope.getLast = function() {
-          return scope.slideSource.length - 1;
-        };
         getSiblings = function() {
           scope.nextIndex = scope.currentIndex === scope.sliderLength ? 0 : scope.currentIndex + 1;
           return scope.prevIndex = scope.currentIndex === 0 ? scope.sliderLength : scope.currentIndex - 1;
+        };
+        scope.getLast = function() {
+          return scope.slideSource.length - 1;
         };
         return angular.element($window).on('keydown', function(e) {
           if (!scope.confSlider.enablekeys) {

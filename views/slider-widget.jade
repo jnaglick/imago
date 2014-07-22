@@ -12,7 +12,7 @@ div(ng-class="elementStyle")
           ng-click="goNext()")
     .slide(ng-class="{'active': $index === currentIndex, 'nextslide': $index === nextIndex, 'prevslide': $index === prevIndex}",
           ng-repeat="slide in slideSource",
-          ng-show="showFunction($index)")
+          ng-show="displaySlides($index)")
       div(imago-image,
           dimensions="dimensions",
           source="slide",
