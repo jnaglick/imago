@@ -6,11 +6,12 @@ class imagoImage extends Directive
       replace: true
       scope: true
       templateUrl: '/imagoWidgets/image-widget.html'
-      controller: ($scope) ->
+      controller: ($scope, $element, $attrs) ->
 
         $scope.status = 'loading'
 
       link: (scope, element, attrs) ->
+        self = {}
 
         opts = {}
 
@@ -35,15 +36,15 @@ class imagoImage extends Directive
         for key, value of attrs
           opts[key] = value
 
+
         #####
+
 
         if opts.lazy
           visiblePromise = do () =>
             deffered = $q.defer()
-
-            @visibleFunc = scope.$watch attrs['visible'], (value) =>
+            self.visibleFunc = scope.$watch attrs['visible'], (value) =>
               return unless value
-              scope.inView = value
               deffered.resolve(value)
 
             return deffered.promise
@@ -52,7 +53,7 @@ class imagoImage extends Directive
         sourcePromise = do () =>
           deffered = $q.defer()
 
-          @watch = scope.$watch attrs['source'], (data) =>
+          self.watch = scope.$watch attrs['source'], (data) =>
             return unless data
 
             deffered.resolve(data)
@@ -61,12 +62,12 @@ class imagoImage extends Directive
 
 
         sourcePromise.then (data) =>
-          @watch() unless attrs['watch']
+          self.watch() unless attrs['watch']
           source = data
 
           if opts.lazy
             visiblePromise.then (value) =>
-              # @visibleFunc()
+              self.visibleFunc()
               render source
           else
             render data
@@ -76,6 +77,8 @@ class imagoImage extends Directive
           unless data?.serving_url
             element.remove()
             return
+
+          # console.log scope.visible
 
           if opts.dimensions and attrs['dimensions']
             scope.$watch attrs['dimensions'], (value) =>
@@ -90,6 +93,9 @@ class imagoImage extends Directive
               width:  r[0]
               height: r[1]
             opts.assetRatio = r[0]/r[1]
+
+          # TODO: Not sure about this solution below:
+          # the widget may get less flexible / Sebastian
 
           if opts.width and opts.height
             width = parseInt opts.width
@@ -183,9 +189,9 @@ class imagoImage extends Directive
 
           img = angular.element('<img>')
           img.on 'load', (e) =>
-            scope.imageStyle.backgroundImage     = "url(#{servingUrl})"
-            scope.imageStyle.backgroundSize      = scope.calcMediaSize()
-            scope.imageStyle.backgroundPosition  = opts.align
+            scope.imageStyle.backgroundImage    = "url(#{servingUrl})"
+            scope.imageStyle.backgroundSize    = scope.calcMediaSize()
+            scope.imageStyle.backgroundPosition = opts.align
             scope.imageStyle.display             = 'inline-block'
             scope.status = 'loaded'
             scope.$apply()
@@ -195,7 +201,7 @@ class imagoImage extends Directive
 
         scope.onResize = () =>
           # console.log 'onResize func'
-          scope.imageStyle['backgroundSize'] = scope.calcMediaSize()
+          scope.imageStyle['background-size'] = scope.calcMediaSize()
 
         scope.calcMediaSize = () =>
 
@@ -217,15 +223,9 @@ class imagoImage extends Directive
 
         scope.$on 'resizelimit', () =>
           #console.log 'resizelimit' ,opts.responsive
-          if opts.lazy
-            scope.onResize() if opts.responsive and scope.inView
-          else
-            scope.onResize() if opts.responsive
+          scope.onResize() if opts.responsive
 
         scope.$on 'resizestop', () =>
-          if opts.lazy
-            render(source) if opts.responsive and scope.inView
-          else
-            render(source) if opts.responsive
+          render(source) if opts.responsive
 
     }

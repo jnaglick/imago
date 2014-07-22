@@ -71,11 +71,12 @@ imagoImage = (function() {
       replace: true,
       scope: true,
       templateUrl: '/imagoWidgets/image-widget.html',
-      controller: function($scope) {
+      controller: function($scope, $element, $attrs) {
         return $scope.status = 'loading';
       },
       link: function(scope, element, attrs) {
-        var defaults, key, opts, render, source, sourcePromise, value, visiblePromise;
+        var defaults, key, opts, render, self, source, sourcePromise, value, visiblePromise;
+        self = {};
         opts = {};
         source = {};
         defaults = {
@@ -104,11 +105,10 @@ imagoImage = (function() {
             return function() {
               var deffered;
               deffered = $q.defer();
-              _this.visibleFunc = scope.$watch(attrs['visible'], function(value) {
+              self.visibleFunc = scope.$watch(attrs['visible'], function(value) {
                 if (!value) {
                   return;
                 }
-                scope.inView = value;
                 return deffered.resolve(value);
               });
               return deffered.promise;
@@ -119,7 +119,7 @@ imagoImage = (function() {
           return function() {
             var deffered;
             deffered = $q.defer();
-            _this.watch = scope.$watch(attrs['source'], function(data) {
+            self.watch = scope.$watch(attrs['source'], function(data) {
               if (!data) {
                 return;
               }
@@ -131,11 +131,12 @@ imagoImage = (function() {
         sourcePromise.then((function(_this) {
           return function(data) {
             if (!attrs['watch']) {
-              _this.watch();
+              self.watch();
             }
             source = data;
             if (opts.lazy) {
               return visiblePromise.then(function(value) {
+                self.visibleFunc();
                 return render(source);
               });
             } else {
@@ -212,7 +213,7 @@ imagoImage = (function() {
         })(this);
         scope.onResize = (function(_this) {
           return function() {
-            return scope.imageStyle['backgroundSize'] = scope.calcMediaSize();
+            return scope.imageStyle['background-size'] = scope.calcMediaSize();
           };
         })(this);
         scope.calcMediaSize = (function(_this) {
@@ -241,27 +242,15 @@ imagoImage = (function() {
         })(this);
         scope.$on('resizelimit', (function(_this) {
           return function() {
-            if (opts.lazy) {
-              if (opts.responsive && scope.inView) {
-                return scope.onResize();
-              }
-            } else {
-              if (opts.responsive) {
-                return scope.onResize();
-              }
+            if (opts.responsive) {
+              return scope.onResize();
             }
           };
         })(this));
         return scope.$on('resizestop', (function(_this) {
           return function() {
-            if (opts.lazy) {
-              if (opts.responsive && scope.inView) {
-                return render(source);
-              }
-            } else {
-              if (opts.responsive) {
-                return render(source);
-              }
+            if (opts.responsive) {
+              return render(source);
             }
           };
         })(this));
