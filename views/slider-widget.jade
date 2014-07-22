@@ -9,9 +9,9 @@ div(ng-class="elementStyle")
           ng-click="goPrev()")
     .next(ng-show="confSlider.enablearrows && loadedData",
           ng-click="goNext()")
-    .slide(ng-class="{'active':isCurrentSlideIndex($index)}",
+    .slide(ng-class="{'active': $index === currentIndex, 'next': $index === nextIndex, 'prev': $index === prevIndex}",
           ng-repeat="slide in slideSource",
-          ng-hide="!isCurrentSlideIndex($index)")
+          ng-show="showFunction($index)")
       div(imago-image,
           dimensions="dimensions",
           source="slide",

@@ -551,10 +551,18 @@ imagoSlider = (function() {
             scope.confSlider.enablearrows = false;
             scope.confSlider.enablekeys = false;
           }
-          return scope.currentIndex = 0;
+          scope.currentIndex = 0;
+          return scope.sliderLength = scope.slideSource.length - 1;
         };
         scope.setCurrentSlideIndex = function(index) {
           return scope.currentIndex = index;
+        };
+        scope.showFunction = function(index) {
+          scope.nextIndex = scope.currentIndex === scope.sliderLength ? 0 : scope.currentIndex + 1;
+          scope.prevIndex = scope.currentIndex === 0 ? scope.sliderLength : scope.currentIndex - 1;
+          if (index === scope.currentIndex || scope.nextIndex || scope.prevIndex) {
+            return true;
+          }
         };
         scope.isCurrentSlideIndex = function(index) {
           return scope.currentIndex === index;

@@ -65,12 +65,17 @@ class imagoSlider extends Directive
               scope.confSlider.enablearrows = false
               scope.confSlider.enablekeys   = false
 
-          # @id = imagoUtils.uuid()
-
           scope.currentIndex = 0
+          scope.sliderLength = scope.slideSource.length - 1
 
         scope.setCurrentSlideIndex = (index) ->
           scope.currentIndex = index
+
+        scope.showFunction = (index) ->
+          scope.nextIndex = if scope.currentIndex is scope.sliderLength then 0 else scope.currentIndex + 1
+          scope.prevIndex = if scope.currentIndex is 0 then scope.sliderLength else scope.currentIndex - 1
+
+          return true if index is scope.currentIndex or scope.nextIndex or scope.prevIndex
 
         scope.isCurrentSlideIndex = (index) ->
           return scope.currentIndex is index
