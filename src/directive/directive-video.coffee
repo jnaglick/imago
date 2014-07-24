@@ -1,13 +1,13 @@
 class imagoVideo extends Directive
 
   constructor: ($q, $window, imagoUtils, $timeout) ->
+    videoOpts = {}
     return {
       replace: true
       scope: true
       templateUrl: '/imagoWidgets/video-widget.html'
       controller: ($scope, $element, $attrs, $transclude) ->
 
-        $scope.videoOpts = {}
         $scope.player = $element.find('video')[0]
 
         defaults =
@@ -25,17 +25,15 @@ class imagoVideo extends Directive
           hires       : true
 
         angular.forEach defaults, (value, key) =>
-          $scope.videoOpts[key] = value
+          videoOpts[key] = value
 
         @player = $scope.player
-
-        return @
 
       link: (scope, element, attrs) ->
         self = {}
 
         angular.forEach attrs, (value, key) =>
-          scope.videoOpts[key] = value
+          videoOpts[key] = value
 
         # TODO: Remember users preference by localStorage
         sourcePromise = do () =>
@@ -65,15 +63,16 @@ class imagoVideo extends Directive
         render = (data) =>
 
           scope.wrapperStyle = {} unless scope.wrapperStyle
+          scope.controls = videoOpts.controls
 
           if angular.isString(data.resolution)
             r = data.resolution.split('x')
             resolution =
               width:  r[0]
               height: r[1]
-            assetRatio = r[0]/r[1]
+            videoOpts.assetRatio = r[0]/r[1]
 
-          if scope.videoOpts.width and scope.videoOpts.height
+          if videoOpts.width and videoOpts.height
             width = parseInt opts.width
             height = parseInt opts.height
           else
@@ -81,24 +80,24 @@ class imagoVideo extends Directive
             height = element[0].clientHeight
             # console.log 'height' ,@height, 'width ' ,@width
 
-          scope.wrapperStyle.backgroundPosition = "#{scope.videoOpts.align}"
-
           dpr = if @hires then Math.ceil(window.devicePixelRatio) or 1 else 1
 
 
           serving_url = data.serving_url
           serving_url += "=s#{ Math.ceil(Math.min(Math.max(width, height) * dpr, 1600)) }"
 
-          scope.wrapperStyle.backgroundImage  = "url(#{serving_url})"
-          scope.wrapperStyle.backgroundRepeat = "no-repeat"
-          scope.wrapperStyle.backgroundSize  = "auto 100%"
 
-          scope.videoStyle =
-            "autoplay" :   scope.videoOpts.autoplay
-            "preload" :    scope.videoOpts.preload
-            "autobuffer" : scope.videoOpts.autobuffer
-            "x-webkit-airplay" : 'allow'
-            "webkitAllowFullscreen" : 'true'
+          scope.wrapperStyle =
+            'size':                 videoOpts.size
+            'sizemode':             videoOpts.sizemode
+            'background-position':  videoOpts.align
+            'backgroundImage':      "url(#{serving_url})"
+            'backgroundRepeat':     "no-repeat"
+
+          scope.player.setAttribute("autoplay", videoOpts.autoplay)
+          scope.player.setAttribute("preload", videoOpts.preload)
+          scope.player.setAttribute("x-webkit-airplay", "allow")
+          scope.player.setAttribute("webkitAllowFullscreen", true)
 
           scope.videoFormats = []
           codecs  = ['mp4', 'webm']
@@ -116,85 +115,75 @@ class imagoVideo extends Directive
           resize()
 
         resize = =>
-          return unless scope.videoOpts
+          return unless videoOpts
 
-          vs = scope.videoStyle
-          ws = scope.wrapperStyle
+          videoStyle = {}
 
-          if scope.videoOpts.sizemode is 'crop'
-            width  = element[0].clientWidth
-            height = element[0].clientHeight
-            wrapperRatio = width / height
-            if scope.videoOpts.assetRatio < wrapperRatio
+          width  = element[0].clientWidth
+          height = element[0].clientHeight
+          wrapperRatio = width / height
+
+          if videoOpts.sizemode is 'crop'
+            if videoOpts.assetRatio < wrapperRatio
               # log 'full width'
               if imagoUtils.isiOS()
-                  vs.width  = '100%'
-                  vs.height = '100%'
-                if scope.videoOpts.align is 'center center'
-                  vs.top  = '0'
-                  vs.left = '0'
+                  videoStyle.width  = '100%'
+                  videoStyle.height = '100%'
+                if videoOpts.align is 'center center'
+                  videoStyle.top  = '0'
+                  videoStyle.left = '0'
               else
-                  vs.width  = '100%'
-                  vs.height = 'auto'
-                if scope.videoOpts.align is 'center center'
-                  vs.top  = '50%'
-                  vs.left = 'auto'
-                  vs.marginTop  = "-#{ (@width / @assetRatio / 2) }px"
-                  vs.marginLeft = '0px'
+                  videoStyle.width  = '100%'
+                  videoStyle.height = 'auto'
+                if videoOpts.align is 'center center'
+                  videoStyle.top  = '50%'
+                  videoStyle.left = 'auto'
+                  videoStyle.marginTop  = "-#{ (@width / @assetRatio / 2) }px"
+                  videoStyle.marginLeft = '0px'
 
-              ws.backgroundSize = '100% auto'
-              ws.backgroundPosition = @align
+              scope.wrapperStyle.backgroundSize = '100% auto'
 
             else
               # log 'full height'
               if imagoUtils.isiOS()
-                  vs.width = '100%'
-                  vs.height= '100%'
-                if scope.videoOpts.align is 'center center'
-                  vs.top  = '0'
-                  vs.left = '0'
+                  videoStyle.width = '100%'
+                  videoStyle.height= '100%'
+                if videoOpts.align is 'center center'
+                  videoStyle.top  = '0'
+                  videoStyle.left = '0'
               else
-                  vs.width  = 'auto'
-                  vs.height = '100%'
+                  videoStyle.width  = 'auto'
+                  videoStyle.height = '100%'
 
-                if scope.videoOpts.align is 'center center'
-                  vs.top  = 'auto'
-                  vs.left = '50%'
-                  vs.marginTop  = '0px'
-                  vs.marginLeft = "-#{ parseInt(@height * @assetRatio / 2, 10) }px"
+                if videoOpts.align is 'center center'
+                  videoStyle.top  = 'auto'
+                  videoStyle.left = '50%'
+                  videoStyle.marginTop  = '0px'
+                  videoStyle.marginLeft = "-#{ parseInt(@height * @assetRatio / 2, 10) }px"
 
-              ws.backgroundSize = 'auto 100%'
-              ws.backgroundPosition = @align
+              scope.wrapperStyle.backgroundSize = 'auto 100%'
 
-
-          else if scope.videoOpts.sizemode is 'fit'
+          else if videoOpts.sizemode is 'fit'
             # console.log 'fit'
-            width  = element[0].clientWidth
-            height = element[0].clientHeight
-
-            wrapperRatio = width / height
-
-            if scope.videoOpts.assetRatio > wrapperRatio
-              # console.log  'assetRatio > wrapperRatio'
-              vs.width  = '100%'
-              vs.height = if imagoUtils.isiOS() then '100%' else 'auto'
-              ws.backgroundSize = '100% auto'
-              ws.backgroundPosition = @align
-              ws.width  = "#{ width }px"
-              ws.height = "#{ parseInt(width / @assetRatio, 10) }px"
+            if videoOpts.assetRatio > wrapperRatio
+              # console.log  'assetRatio > wrapperRatio', videoOpts.assetRatio, wrapperRatio
+              videoStyle.width  = '100%'
+              videoStyle.height = if imagoUtils.isiOS() then '100%' else 'auto'
+              scope.wrapperStyle.backgroundSize = '100% auto'
+              scope.wrapperStyle.width  = "#{ width }px"
+              scope.wrapperStyle.height = "#{ parseInt(width / @assetRatio, 10) }px"
             else
-              # console.log  'assetRatio = ', @assetRatio , ' < wrapperRatio'
-              vs.width  = if imagoUtils.isiOS() then '100%' else 'auto'
-              vs.height = '100%'
-              ws.backgroundSize = 'auto 100%'
-              ws.backgroundPosition = @align
-              ws.height = "#{ height }px"
-              ws.width  = "#{ parseInt( height * @assetRatio, 10) }px"
+              # console.log  'assetRatio = ', videoOpts.assetRatio , wrapperRatio
+              videoStyle.width  = if imagoUtils.isiOS() then '100%' else 'auto'
+              videoStyle.height = '100%'
+              scope.wrapperStyle.backgroundSize = 'auto 100%'
+              scope.wrapperStyle.height = "#{ height }px"
+              scope.wrapperStyle.width  = "#{ parseInt( height * @assetRatio, 10) }px"
 
+          scope.videoStyle = videoStyle
 
         detectCodec = ->
           return unless scope.player.canPlayType
-          #
           codecs =
             mp4:  'video/mp4; codecs="mp4v.20.8"'
             mp4:  'video/mp4; codecs="avc1.42E01E"'
@@ -206,18 +195,12 @@ class imagoVideo extends Directive
             if scope.player.canPlayType value
               return key
 
-        # scope.toggleSize = ->
-        #   if scope.optionsVideo.size is 'hd'
-        #     scope.optionsVideo.size = 'sd'
-        #   else
-        #     scope.optionsVideo.size = 'hd'
-        #
-        #   scope.videoFormats.reverse()
-
         scope.togglePlay = =>
-          unless scope.player.paused
+          if scope.player.paused
+            scope.isPlaying = true
             scope.player.play()
           else
+            scope.isPlaying = false
             scope.player.pause()
 
 

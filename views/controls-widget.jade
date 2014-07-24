@@ -1,9 +1,9 @@
-.controls(ng-hide="!controls")
-  a.play.fa.fa-play(ng-click="togglePlay()", ng-hide="optionsVideo.playing")
-  a.pause.fa.fa-pause(ng-click="togglePlay()", ng-show="optionsVideo.playing")
+.controls
+  a.play.fa.fa-play(ng-click="togglePlay()", ng-hide="isPlaying")
+  a.pause.fa.fa-pause(ng-click="togglePlay()", ng-show="isPlaying")
   span.time {{time}}
   span.seekbar
-    input.seek(type='range' ng-model="seekTime" ng-change="seek(seekTime)")
+    input.seek(type='range' ng-model="currentTime" ng-change="test(currentTime)")
   a.size(ng-click="toggleSize()") hd
   span.volume
     span.fa.fa-volume-up.icon-volume-up(ng-click="volumeUp()")

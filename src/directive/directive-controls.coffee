@@ -5,11 +5,17 @@ class imagoControls extends Directive
       replace: true
       require: '^imagoVideo'
       templateUrl: '/imagoWidgets/controls-widget.html'
-      link: (scope, element, attrs, videoController) ->
+      link: (scope, element, attrs, player) ->
 
-        scope.time = '00:00'
-        scope.seekTime = 0
-        scope.volumeInput = 100
+        videoPlayer = angular.element(player)
+
+        videoPlayer.bind 'loadedmetadata', () ->
+          scope.duration = player.duration
+          scope.currentTime = player.currentTime
+
+        # scope.time = '00:00'
+        # scope.seekTime = 0
+        # scope.volumeInput = 100
 
         # updateTime = (sec) ->
         #   calc = []
@@ -26,6 +32,14 @@ class imagoControls extends Directive
         # pad = (num)->
           # return "0" + num  if num < 10
           # num
+
+        scope.toggleSize = ->
+          if scope.optionsVideo.size is 'hd'
+            scope.optionsVideo.size = 'sd'
+          else
+            scope.optionsVideo.size = 'hd'
+
+          scope.videoFormats.reverse()
 
         scope.seek = (time) =>
           scope.player.currentTime = parseFloat(time/100 * scope.player.duration)
