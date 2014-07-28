@@ -9,40 +9,28 @@ class imagoControls extends Directive
 
         videoPlayer = angular.element(player)
 
-        videoPlayer.bind 'loadedmetadata', () ->
+        videoPlayer.bind 'loadeddata', () ->
           scope.duration = player.duration
+          scope.currentTime = 0
+          scope.$apply()
+
+        videoPlayer.bind 'timeupdate', (e) ->
           scope.currentTime = player.currentTime
+          scope.$apply()
 
-        # scope.time = '00:00'
-        # scope.seekTime = 0
-        # scope.volumeInput = 100
+        scope.seek = (value) ->
+          player.currentTime = value
 
-        # updateTime = (sec) ->
-        #   calc = []
-        #   minutes = Math.floor(sec / 60)
-        #   hours = Math.floor(sec / 3600)
-        #   seconds = (if (sec is 0) then 0 else (sec % 60))
-        #   seconds = Math.round(seconds)
-        #   calc.push pad(hours)  if hours > 0
-        #   calc.push pad(minutes)
-        #   calc.push pad(seconds)
-        #   result = calc.join ":"
-        #   scope.time = result
+        # scope.toggleSize = ->
+        #   if scope.optionsVideo.size is 'hd'
+        #     scope.optionsVideo.size = 'sd'
+        #   else
+        #     scope.optionsVideo.size = 'hd'
+        #
+        #   scope.videoFormats.reverse()
 
-        # pad = (num)->
-          # return "0" + num  if num < 10
-          # num
-
-        scope.toggleSize = ->
-          if scope.optionsVideo.size is 'hd'
-            scope.optionsVideo.size = 'sd'
-          else
-            scope.optionsVideo.size = 'hd'
-
-          scope.videoFormats.reverse()
-
-        scope.seek = (time) =>
-          scope.player.currentTime = parseFloat(time/100 * scope.player.duration)
+        # scope.seek = (time) =>
+        #   scope.player.currentTime = parseFloat(time/100 * scope.player.duration)
 
         scope.onVolumeChange = (e) =>
           scope.player.volume = parseFloat(e / 100)

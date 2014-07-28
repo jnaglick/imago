@@ -74,23 +74,18 @@ imagoControls = (function() {
       link: function(scope, element, attrs, player) {
         var videoPlayer;
         videoPlayer = angular.element(player);
-        videoPlayer.bind('loadedmetadata', function() {
+        videoPlayer.bind('loadeddata', function() {
           scope.duration = player.duration;
-          return scope.currentTime = player.currentTime;
+          scope.currentTime = 0;
+          return scope.$apply();
         });
-        scope.toggleSize = function() {
-          if (scope.optionsVideo.size === 'hd') {
-            scope.optionsVideo.size = 'sd';
-          } else {
-            scope.optionsVideo.size = 'hd';
-          }
-          return scope.videoFormats.reverse();
+        videoPlayer.bind('timeupdate', function(e) {
+          scope.currentTime = player.currentTime;
+          return scope.$apply();
+        });
+        scope.seek = function(value) {
+          return player.currentTime = value;
         };
-        scope.seek = (function(_this) {
-          return function(time) {
-            return scope.player.currentTime = parseFloat(time / 100 * scope.player.duration);
-          };
-        })(this);
         scope.onVolumeChange = (function(_this) {
           return function(e) {
             return scope.player.volume = parseFloat(e / 100);
@@ -726,6 +721,12 @@ imagoVideo = (function() {
             return deffered.promise;
           };
         })(this)();
+        angular.element(scope.player).bind('ended', (function(_this) {
+          return function(e) {
+            scope.player.currentTime = 0;
+            return scope.isPlaying = false;
+          };
+        })(this));
         sourcePromise.then((function(_this) {
           return function(data) {
             var source;
@@ -1564,3 +1565,38 @@ Meta = (function() {
 })();
 
 angular.module('imago.widgets.angular').filter('meta', [Meta]);
+
+var Time;
+
+Time = (function() {
+  function Time() {
+    return function(input) {
+      var calc, hours, minutes, pad, seconds;
+      if (!input) {
+        return;
+      }
+      pad = function(num) {
+        if (num < 10) {
+          return "0" + num;
+        }
+        return num;
+      };
+      calc = [];
+      minutes = Math.floor(input / 60);
+      hours = Math.floor(input / 3600);
+      seconds = (input === 0 ? 0 : input % 60);
+      seconds = Math.round(seconds);
+      if (hours > 0) {
+        calc.push(pad(hours));
+      }
+      calc.push(pad(minutes));
+      calc.push(pad(seconds));
+      return calc.join(":");
+    };
+  }
+
+  return Time;
+
+})();
+
+angular.module('imago.widgets.angular').filter('time', [Time]);

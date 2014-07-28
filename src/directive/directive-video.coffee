@@ -46,13 +46,10 @@ class imagoVideo extends Directive
 
           return deffered.promise
 
-        # angular.element(@videoEl).bind 'timeupdate', (e) =>
-        #   $scope.seekTime = parseFloat((@videoEl.currentTime / @videoEl.duration) * 100)
-        #   # console.log 'timeupdate seektime ' ,$scope.seekTime
-        #   updateTime @videoEl.currentTime
-        #
-        # angular.element(@videoEl).bind 'ended', (e) =>
-        #   $scope.optionsVideo.playing = false
+        angular.element(scope.player).bind 'ended', (e) =>
+          scope.player.currentTime = 0
+          scope.isPlaying = false
+
 
         sourcePromise.then (data) =>
           return unless data
