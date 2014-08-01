@@ -37,8 +37,16 @@ class imagoVideo extends Directive
         angular.forEach attrs, (value, key) =>
           videoOpts[key] = value
 
-
         # TODO: Remember users preference by localStorage
+        if videoOpts.lazy
+          visiblePromise = do () =>
+            deffered = $q.defer()
+            self.visibleFunc = scope.$watch attrs['visible'], (value) =>
+              return unless value
+              deffered.resolve(value)
+
+            return deffered.promise
+
         sourcePromise = do () =>
           deffered = $q.defer()
 
@@ -62,7 +70,12 @@ class imagoVideo extends Directive
             videoOpts.assetRatio = r[0]/r[1]
 
           scope.loading = false
-          render self.source
+          if videoOpts.lazy
+            visiblePromise.then (value) =>
+              self.visibleFunc()
+              render self.source
+          else
+            render self.source
 
         render = (data) =>
           scope.wrapperStyle = {} unless scope.wrapperStyle

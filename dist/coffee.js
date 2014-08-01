@@ -689,7 +689,7 @@ imagoVideo = (function() {
         })(this));
       },
       link: function(scope, element, attrs) {
-        var defaults, detectCodec, render, resize, self, sourcePromise, videoOpts;
+        var defaults, detectCodec, render, resize, self, sourcePromise, videoOpts, visiblePromise;
         self = {};
         videoOpts = {};
         defaults = {
@@ -715,6 +715,21 @@ imagoVideo = (function() {
             return videoOpts[key] = value;
           };
         })(this));
+        if (videoOpts.lazy) {
+          visiblePromise = (function(_this) {
+            return function() {
+              var deffered;
+              deffered = $q.defer();
+              self.visibleFunc = scope.$watch(attrs['visible'], function(value) {
+                if (!value) {
+                  return;
+                }
+                return deffered.resolve(value);
+              });
+              return deffered.promise;
+            };
+          })(this)();
+        }
         sourcePromise = (function(_this) {
           return function() {
             var deffered;
@@ -744,7 +759,14 @@ imagoVideo = (function() {
               videoOpts.assetRatio = r[0] / r[1];
             }
             scope.loading = false;
-            return render(self.source);
+            if (videoOpts.lazy) {
+              return visiblePromise.then(function(value) {
+                self.visibleFunc();
+                return render(self.source);
+              });
+            } else {
+              return render(self.source);
+            }
           };
         })(this));
         render = (function(_this) {
