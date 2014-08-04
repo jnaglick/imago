@@ -9,6 +9,7 @@ class imagoImage extends Directive
       controller: ($scope, $element, $attrs) ->
 
         $scope.status = 'loading'
+        $scope.imageStyle = {}
 
       link: (scope, element, attrs) ->
         self = {}
@@ -28,7 +29,6 @@ class imagoImage extends Directive
           mediasize : false
           width     : ''
           height    : ''
-          responsive: true
 
         for key, value of defaults
           opts[key] = value
@@ -36,9 +36,7 @@ class imagoImage extends Directive
         for key, value of attrs
           opts[key] = value
 
-
         #####
-
 
         if opts.lazy
           visiblePromise = do () =>
@@ -181,7 +179,6 @@ class imagoImage extends Directive
           opts.servingSize = servingSize
 
           # $log.log 'servingURl', servingUrl
-          scope.imageStyle = {}
           unless opts.responsive
             scope.imageStyle.width = "#{parseInt width,  10}px"
             scope.imageStyle.height = "#{parseInt height, 10}px"
@@ -189,19 +186,15 @@ class imagoImage extends Directive
 
           img = angular.element('<img>')
           img.on 'load', (e) =>
-            scope.imageStyle.backgroundImage    = "url(#{servingUrl})"
-            scope.imageStyle.backgroundSize    = scope.calcMediaSize()
-            scope.imageStyle.backgroundPosition = opts.align
+            scope.imageStyle.backgroundImage     = "url(#{servingUrl})"
+            scope.imageStyle.backgroundSize      = scope.calcMediaSize()
+            scope.imageStyle.backgroundPosition  = opts.align
             scope.imageStyle.display             = 'inline-block'
-            scope.status = 'loaded'
+            scope.status                         = 'loaded'
             scope.$apply()
             # console.log 'scope.imageStyle', scope.imageStyle
 
           img[0].src = servingUrl
-
-        scope.onResize = () =>
-          # console.log 'onResize func'
-          scope.imageStyle['background-size'] = scope.calcMediaSize()
 
         scope.calcMediaSize = () =>
 
@@ -220,6 +213,9 @@ class imagoImage extends Directive
             # $log.log 'opts.sizemode fit', opts.assetRatio, wrapperRatio
             if opts.assetRatio > wrapperRatio then "100% auto" else "auto 100%"
 
+        scope.onResize = () =>
+          # console.log 'onResize func'
+          scope.imageStyle['background-size'] = scope.calcMediaSize()
 
         scope.$on 'resizelimit', () =>
           #console.log 'resizelimit' ,opts.responsive

@@ -175,6 +175,7 @@ class imagoVideo extends Directive
 
           scope.videoStyle = videoStyle
 
+
         detectCodec = ->
           return unless scope.player.canPlayType
           codecs =
@@ -209,5 +210,5 @@ class imagoVideo extends Directive
 
         # we should only do this if the video changes actually size
         scope.$on 'resizelimit', () ->
-          render(self.source)
+          scope.$apply( resize )
     }

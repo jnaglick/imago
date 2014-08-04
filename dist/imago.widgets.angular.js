@@ -2,7 +2,7 @@ angular.module("ImagoWidgetsTemplates", []).run(["$templateCache", function($tem
 $templateCache.put("/imagoWidgets/controls-widget.html","<div class=\"controls\"><a ng-click=\"togglePlay()\" ng-hide=\"isPlaying\" class=\"play fa fa-play\"></a><a ng-click=\"togglePlay()\" ng-show=\"isPlaying\" class=\"pause fa fa-pause\"></a><span class=\"time\">{{currentTime | time}}</span><span class=\"seekbar\"><input type=\"range\" ng-model=\"currentTime\" min=\"0\" max=\"{{duration}}\" ng-change=\"seek(currentTime)\" class=\"seek\"/></span><a ng-click=\"toggleSize()\" class=\"size\">{{wrapperStyle.size}}</a><span class=\"volume\"><span ng-click=\"volumeUp()\" class=\"fa fa-volume-up icon-volume-up\"></span><input type=\"range\" ng-model=\"volumeInput\" ng-change=\"onVolumeChange(volumeInput)\"/><span ng-click=\"volumeDown()\" class=\"fa fa-volume-down icon-volume-down\"></span></span><a ng-click=\"fullScreen()\" class=\"fullscreen fa fa-expand\"></a><a class=\"screen fa fa-compress\"></a></div>");
 $templateCache.put("/imagoWidgets/image-widget.html","<div in-view=\"visible = $inview\" ng-style=\"elementStyle\" ng-class=\"status\" visible=\"visible\" class=\"imagoimage imagowrapper\"><div ng-style=\"imageStyle\" class=\"image\"></div><div class=\"loading\"><div class=\"spin\"></div><div class=\"spin2\"></div></div></div>");
 $templateCache.put("/imagoWidgets/slider-widget.html","<div ng-class=\"elementStyle\"><div ng-transclude=\"ng-transclude\"></div><div ng-style=\"sliderStyle\" ng-swipe-left=\"goPrev()\" ng-swipe-right=\"goNext()\" class=\"nexslider {{confSlider.animation}}\"><div ng-show=\"confSlider.enablearrows &amp;&amp; loadedData\" ng-click=\"goPrev()\" class=\"prev\"></div><div ng-show=\"confSlider.enablearrows &amp;&amp; loadedData\" ng-click=\"goNext()\" class=\"next\"></div><div ng-class=\"{\'active\': $index === currentIndex, \'nextslide\': $index === nextIndex, \'prevslide\': $index === prevIndex}\" ng-repeat=\"slide in slideSource\" ng-show=\"displaySlides($index)\" class=\"slide\"><div imago-image=\"imago-image\" dimensions=\"dimensions\" source=\"slide\" sizemode=\"{{ $parent.confSlider.sizemode }}\"></div></div></div></div>");
-$templateCache.put("/imagoWidgets/video-widget.html","<div ng-class=\"{loading: loading}\" in-view=\"visible = $inview\" visible=\"visible\" class=\"imagovideo {{wrapperStyle.backgroundPosition}} {{wrapperStyle.size}} {{wrapperStyle.sizemode}}\"><div ng-style=\"wrapperStyle\" ng-class=\"{playing: isPlaying}\" class=\"imagowrapper\"><a ng-click=\"togglePlay()\" ng-class=\"{playing: isPlaying}\" class=\"playbig fa fa-play\"></a><video ng-style=\"videoStyle\"><source ng-repeat=\"format in videoFormats\" src=\"{{format.src}}\" data-size=\"{{format.size}}\" data-codec=\"{{format.codec}}\" type=\"{{format.type}}\"/></video><div imago-controls=\"imago-controls\" ng-style=\"controlStyle\" ng-if=\"controls\" ng-show=\"hasPlayed\"></div></div></div>");}]);
+$templateCache.put("/imagoWidgets/video-widget.html","<div ng-class=\"{loading: loading}\" in-view=\"visible = $inview\" visible=\"visible\" class=\"imagovideo {{wrapperStyle.backgroundPosition}} {{wrapperStyle.size}} {{wrapperStyle.sizemode}}\"><div ng-style=\"wrapperStyle\" ng-class=\"{playing: isPlaying}\" class=\"imagowrapper\"><a ng-hide=\"loading\" ng-click=\"togglePlay()\" ng-class=\"{playing: isPlaying}\" class=\"playbig fa fa-play\"></a><video ng-style=\"videoStyle\"><source ng-repeat=\"format in videoFormats\" src=\"{{format.src}}\" data-size=\"{{format.size}}\" data-codec=\"{{format.codec}}\" type=\"{{format.type}}\"/></video><div imago-controls=\"imago-controls\" ng-style=\"controlStyle\" ng-if=\"controls\" ng-show=\"hasPlayed\"></div></div></div>");}]);
 var App;
 
 App = (function() {
@@ -143,7 +143,8 @@ imagoImage = (function() {
       scope: true,
       templateUrl: '/imagoWidgets/image-widget.html',
       controller: function($scope, $element, $attrs) {
-        return $scope.status = 'loading';
+        $scope.status = 'loading';
+        return $scope.imageStyle = {};
       },
       link: function(scope, element, attrs) {
         var defaults, key, opts, render, self, source, sourcePromise, value, visiblePromise;
@@ -160,8 +161,7 @@ imagoImage = (function() {
           maxsize: 2560,
           mediasize: false,
           width: '',
-          height: '',
-          responsive: true
+          height: ''
         };
         for (key in defaults) {
           value = defaults[key];
@@ -265,7 +265,6 @@ imagoImage = (function() {
             servingSize = parseInt(Math.min(servingSize * dpr, opts.maxsize), 10);
             servingUrl = "" + data.serving_url + "=s" + (servingSize * opts.scale);
             opts.servingSize = servingSize;
-            scope.imageStyle = {};
             if (!opts.responsive) {
               scope.imageStyle.width = "" + (parseInt(width, 10)) + "px";
               scope.imageStyle.height = "" + (parseInt(height, 10)) + "px";
@@ -280,11 +279,6 @@ imagoImage = (function() {
               return scope.$apply();
             });
             return img[0].src = servingUrl;
-          };
-        })(this);
-        scope.onResize = (function(_this) {
-          return function() {
-            return scope.imageStyle['background-size'] = scope.calcMediaSize();
           };
         })(this);
         scope.calcMediaSize = (function(_this) {
@@ -309,6 +303,11 @@ imagoImage = (function() {
                 return "auto 100%";
               }
             }
+          };
+        })(this);
+        scope.onResize = (function(_this) {
+          return function() {
+            return scope.imageStyle['background-size'] = scope.calcMediaSize();
           };
         })(this);
         scope.$on('resizelimit', (function(_this) {
@@ -924,7 +923,7 @@ imagoVideo = (function() {
           return scope.videoFormats.reverse();
         };
         return scope.$on('resizelimit', function() {
-          return render(self.source);
+          return scope.$apply(resize);
         });
       }
     };

@@ -138,7 +138,8 @@ imagoImage = (function() {
       scope: true,
       templateUrl: '/imagoWidgets/image-widget.html',
       controller: function($scope, $element, $attrs) {
-        return $scope.status = 'loading';
+        $scope.status = 'loading';
+        return $scope.imageStyle = {};
       },
       link: function(scope, element, attrs) {
         var defaults, key, opts, render, self, source, sourcePromise, value, visiblePromise;
@@ -155,8 +156,7 @@ imagoImage = (function() {
           maxsize: 2560,
           mediasize: false,
           width: '',
-          height: '',
-          responsive: true
+          height: ''
         };
         for (key in defaults) {
           value = defaults[key];
@@ -260,7 +260,6 @@ imagoImage = (function() {
             servingSize = parseInt(Math.min(servingSize * dpr, opts.maxsize), 10);
             servingUrl = "" + data.serving_url + "=s" + (servingSize * opts.scale);
             opts.servingSize = servingSize;
-            scope.imageStyle = {};
             if (!opts.responsive) {
               scope.imageStyle.width = "" + (parseInt(width, 10)) + "px";
               scope.imageStyle.height = "" + (parseInt(height, 10)) + "px";
@@ -275,11 +274,6 @@ imagoImage = (function() {
               return scope.$apply();
             });
             return img[0].src = servingUrl;
-          };
-        })(this);
-        scope.onResize = (function(_this) {
-          return function() {
-            return scope.imageStyle['background-size'] = scope.calcMediaSize();
           };
         })(this);
         scope.calcMediaSize = (function(_this) {
@@ -304,6 +298,11 @@ imagoImage = (function() {
                 return "auto 100%";
               }
             }
+          };
+        })(this);
+        scope.onResize = (function(_this) {
+          return function() {
+            return scope.imageStyle['background-size'] = scope.calcMediaSize();
           };
         })(this);
         scope.$on('resizelimit', (function(_this) {
@@ -919,7 +918,7 @@ imagoVideo = (function() {
           return scope.videoFormats.reverse();
         };
         return scope.$on('resizelimit', function() {
-          return render(self.source);
+          return scope.$apply(resize);
         });
       }
     };

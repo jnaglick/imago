@@ -1,7 +1,7 @@
 div(class="imagovideo {{wrapperStyle.backgroundPosition}} {{wrapperStyle.size}} {{wrapperStyle.sizemode}}" ng-class="{loading: loading}" in-view="visible = $inview"
 visible="visible")
   .imagowrapper(ng-style="wrapperStyle" ng-class="{playing: isPlaying}")
-    a.playbig.fa.fa-play(ng-click="togglePlay()", ng-class="{playing: isPlaying}")
+    a.playbig.fa.fa-play(ng-hide="loading" ng-click="togglePlay()", ng-class="{playing: isPlaying}")
     video(ng-style="videoStyle")
       source(ng-repeat="format in videoFormats", src="{{format.src}}", data-size="{{format.size}}", data-codec="{{format.codec}}", type="{{format.type}}")
     div(imago-controls ng-style="controlStyle" ng-if="controls" ng-show="hasPlayed")
