@@ -1565,9 +1565,8 @@ angular.module('imago.widgets.angular').factory('imagoUtils', [imagoUtils]);
 var imagoModel;
 
 imagoModel = (function() {
-  function imagoModel($q, $rootScope, $filter, imagoUtils) {
+  function imagoModel($http, $q, $rootScope, $filter, imagoUtils) {
     this.list = {};
-    this.tenant = '';
     this.search = function(query) {
       var params;
       params = this.objListToDict(query);
@@ -1577,6 +1576,9 @@ imagoModel = (function() {
       var data, promises;
       if (!query) {
         query = $location.$$path;
+      }
+      if (!query) {
+        return console.log("Panel: query is empty, aborting " + query);
       }
       if (angular.isString(query)) {
         query = [
@@ -1915,7 +1917,7 @@ imagoModel = (function() {
 
 })();
 
-angular.module('imago.widgets.angular').service('imagoModel', ['$q', '$rootScope', '$filter', 'imagoUtils', imagoModel]);
+angular.module('imago.widgets.angular').service('imagoModel', ['$http', '$q', '$rootScope', '$filter', 'imagoUtils', imagoModel]);
 
 var Meta;
 

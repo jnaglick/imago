@@ -1,12 +1,14 @@
 class imagoModel extends Service
 
-  constructor: ($q, $rootScope, $filter, imagoUtils) ->
+  constructor: ($http, $q, $rootScope, $filter, imagoUtils) ->
     #imagoPanel rename to imagoFetch?
 
+    # TODO should the data fetched from getData be stored here?
     @list = {}
 
-    @tenant = ''
-    # tenant is available throughout the app
+    # @tenant = ''
+    # TODO isn't tenant available throughout the app?
+    # TODO Is there a way we can delegate public and private functions?
 
     @search = (query) ->
       # console.log 'search...', query
@@ -14,16 +16,16 @@ class imagoModel extends Service
       return $http.post(@getSearchUrl(), angular.toJson(params))
 
     @getData = (query) ->
+      # TODO This makes the return unless query redundant
       query = $location.$$path unless query
       # console.log 'query in getData', query
-      # return console.log "Panel: query is empty, aborting #{query}" unless query
+      return console.log "Panel: query is empty, aborting #{query}" unless query
       # return if path is @path
       if angular.isString query
         query =
           [path: query]
 
       query = imagoUtils.toArray query
-
 
       promises = []
       data = []
@@ -36,6 +38,7 @@ class imagoModel extends Service
           if response.length is 1 and response[0].kind is 'Collection'
             data.push response[0]
           else
+            # TODO aren't the responses already formatted this way
             result =
               items : response
               count : response.length
@@ -47,6 +50,7 @@ class imagoModel extends Service
       $q.all(promises).then =>
         return data
 
+    # TODO find better name for this and it's argument / clean it up
     @objListToDict = (obj_or_list) ->
       querydict = {}
       if angular.isArray(obj_or_list)
@@ -67,9 +71,11 @@ class imagoModel extends Service
           querydict[key] = querydict[key][0]
       querydict
 
+    # TODO we should probably just set this as a variable
     @getSearchUrl = ->
       if (data is 'online' and debug) then "http://#{tenant}.imagoapp.com/api/v3/search" else "/api/v3/search"
 
+    # TODO how can we use thse on the client side so the model is more cohesive?
     @find = (id) =>
       _.find @list.assets, '_id' : id
 
