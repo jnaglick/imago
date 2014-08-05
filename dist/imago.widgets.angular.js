@@ -950,9 +950,6 @@ imagoPanel = (function() {
         if (!query) {
           query = $location.$$path;
         }
-        if (!query) {
-          return console.log("Panel: query is empty, aborting " + query);
-        }
         if (angular.isString(query)) {
           query = [
             {
@@ -979,11 +976,11 @@ imagoPanel = (function() {
             }));
           };
         })(this));
-        return $q.all(promises).then(((function(_this) {
-          return function(response) {
+        return $q.all(promises).then((function(_this) {
+          return function() {
             return data;
           };
-        })(this)));
+        })(this));
       },
       objListToDict: function(obj_or_list) {
         var elem, key, querydict, value, _i, _j, _len, _len1, _ref;
@@ -1012,7 +1009,6 @@ imagoPanel = (function() {
         }
         return querydict;
       },
-      getMeta: function(field) {},
       getSearchUrl: function() {
         if (data === 'online' && debug) {
           return "http://" + tenant + ".imagoapp.com/api/v3/search";
@@ -1569,9 +1565,85 @@ angular.module('imago.widgets.angular').factory('imagoUtils', [imagoUtils]);
 var imagoModel;
 
 imagoModel = (function() {
-  function imagoModel($q, $rootScope, $filter, imagoRest, imagoUtils) {
+  function imagoModel($q, $rootScope, $filter, imagoUtils) {
     this.list = {};
     this.tenant = '';
+    this.search = function(query) {
+      var params;
+      params = this.objListToDict(query);
+      return $http.post(this.getSearchUrl(), angular.toJson(params));
+    };
+    this.getData = function(query) {
+      var data, promises;
+      if (!query) {
+        query = $location.$$path;
+      }
+      if (angular.isString(query)) {
+        query = [
+          {
+            path: query
+          }
+        ];
+      }
+      query = imagoUtils.toArray(query);
+      promises = [];
+      data = [];
+      angular.forEach(query, (function(_this) {
+        return function(value) {
+          return promises.push(_this.search(value).success(function(response) {
+            var result;
+            if (response.length === 1 && response[0].kind === 'Collection') {
+              return data.push(response[0]);
+            } else {
+              result = {
+                items: response,
+                count: response.length
+              };
+              return data.push(result);
+            }
+          }));
+        };
+      })(this));
+      return $q.all(promises).then((function(_this) {
+        return function() {
+          return data;
+        };
+      })(this));
+    };
+    this.objListToDict = function(obj_or_list) {
+      var elem, key, querydict, value, _i, _j, _len, _len1, _ref;
+      querydict = {};
+      if (angular.isArray(obj_or_list)) {
+        for (_i = 0, _len = obj_or_list.length; _i < _len; _i++) {
+          elem = obj_or_list[_i];
+          for (key in elem) {
+            value = elem[key];
+            querydict[key] || (querydict[key] = []);
+            querydict[key].push(value);
+          }
+        }
+      } else {
+        for (key in obj_or_list) {
+          value = obj_or_list[key];
+          querydict[key] = angular.isArray(value) ? value : [value];
+        }
+      }
+      _ref = ['page', 'pagesize'];
+      for (_j = 0, _len1 = _ref.length; _j < _len1; _j++) {
+        key = _ref[_j];
+        if (querydict.hasOwnProperty(key)) {
+          querydict[key] = querydict[key][0];
+        }
+      }
+      return querydict;
+    };
+    this.getSearchUrl = function() {
+      if (data === 'online' && debug) {
+        return "http://" + tenant + ".imagoapp.com/api/v3/search";
+      } else {
+        return "/api/v3/search";
+      }
+    };
     this.find = (function(_this) {
       return function(id) {
         return _.find(_this.list.assets, {
@@ -1843,7 +1915,7 @@ imagoModel = (function() {
 
 })();
 
-angular.module('imago.widgets.angular').service('imagoModel', ['$q', '$rootScope', '$filter', 'imagoRest', 'imagoUtils', imagoModel]);
+angular.module('imago.widgets.angular').service('imagoModel', ['$q', '$rootScope', '$filter', 'imagoUtils', imagoModel]);
 
 var Meta;
 
