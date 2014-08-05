@@ -1561,6 +1561,285 @@ imagoUtils = (function() {
 
 angular.module('imago.widgets.angular').factory('imagoUtils', [imagoUtils]);
 
+var imagoModel;
+
+imagoModel = (function() {
+  function imagoModel($q, $rootScope, $filter, imagoRest, imagoUtils) {
+    this.list = {};
+    this.tenant = '';
+    this.find = (function(_this) {
+      return function(id) {
+        return _.find(_this.list.assets, {
+          '_id': id
+        });
+      };
+    })(this);
+    this.findIdx = (function(_this) {
+      return function(id) {
+        return _.findIndex(_this.list.assets, {
+          '_id': id
+        });
+      };
+    })(this);
+    this.create = (function(_this) {
+      return function(asset) {
+        if (!asset._id) {
+          return;
+        }
+        return _this.list.assets.unshift(asset);
+      };
+    })(this);
+    this.update = (function(_this) {
+      return function(asset) {
+        var filter, id, order, result, _i, _len, _results;
+        if (!asset._id) {
+          return;
+        }
+        id = {
+          _id: asset._id
+        };
+        filter = $filter('filter')(_this.list.assets, id);
+        if (filter.length === 0) {
+          return;
+        }
+        _results = [];
+        for (_i = 0, _len = filter.length; _i < _len; _i++) {
+          result = filter[_i];
+          order = _this.list.assets.indexOf(result);
+          _results.push(_this.list.assets[order] = asset);
+        }
+        return _results;
+      };
+    })(this);
+    this["delete"] = (function(_this) {
+      return function(id) {
+        var filter, order, result, _i, _len, _results;
+        if (!id) {
+          return;
+        }
+        id = {
+          _id: id
+        };
+        filter = $filter('filter')(_this.list.assets, id);
+        if (filter.length === 0) {
+          return;
+        }
+        _results = [];
+        for (_i = 0, _len = filter.length; _i < _len; _i++) {
+          result = filter[_i];
+          order = _this.list.assets.indexOf(result);
+          _results.push(_this.list.assets.splice(order, 1));
+        }
+        return _results;
+      };
+    })(this);
+    this.move = (function(_this) {
+      return function(data) {
+        var asset, filter, id, order, result, _i, _len, _ref, _results;
+        _ref = data.assets;
+        _results = [];
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          asset = _ref[_i];
+          id = {
+            _id: asset._id
+          };
+          filter = $filter('filter')(_this.list.assets, id);
+          if (filter.length > 0) {
+            _results.push((function() {
+              var _j, _len1, _results1;
+              _results1 = [];
+              for (_j = 0, _len1 = filter.length; _j < _len1; _j++) {
+                result = filter[_j];
+                order = this.list.assets.indexOf(result);
+                _results1.push(this.list.assets.splice(order, 1));
+              }
+              return _results1;
+            }).call(_this));
+          } else {
+            _results.push(void 0);
+          }
+        }
+        return _results;
+      };
+    })(this);
+    this.paste = (function(_this) {
+      return function(assets, checkdups) {
+        var asset, exists, i, original_name, _i, _len, _results;
+        if (checkdups == null) {
+          checkdups = true;
+        }
+        _results = [];
+        for (_i = 0, _len = assets.length; _i < _len; _i++) {
+          asset = assets[_i];
+          if (!checkdups || !_this.checkDuplicate(asset.name)) {
+            _results.push(_this.list.assets.unshift(asset));
+          } else {
+            i = 1;
+            exists = true;
+            original_name = asset.name;
+            while (exists) {
+              exists = _this.checkDuplicate(asset.name);
+              asset.name = "" + original_name + "_" + i;
+              i++;
+            }
+            _results.push(_this.list.assets.unshift(asset));
+          }
+        }
+        return _results;
+      };
+    })(this);
+    this.reindexAll = (function(_this) {
+      return function() {
+        var asset, count, key, newList, ordered, orderedList, _i, _len, _ref;
+        if (_this.list.sortorder !== '-order') {
+          _this.list.sortorder = '-order';
+          imagoRest.asset.update(_this.list);
+        } else {
+          return;
+        }
+        newList = [];
+        count = _this.list.assets.length;
+        _ref = _this.list.assets;
+        for (key = _i = 0, _len = _ref.length; _i < _len; key = ++_i) {
+          asset = _ref[key];
+          asset.order = (count - key) * 1000;
+          ordered = {
+            _id: asset._id,
+            order: asset.order
+          };
+          newList.push(ordered);
+        }
+        orderedList = {
+          parent: _this.list._id,
+          assets: newList
+        };
+        return imagoRest.asset.batch(orderedList).then(function(result) {
+          return console.log('result batch updating', result);
+        });
+      };
+    })(this);
+    this.orderChanged = (function(_this) {
+      return function(start, finish, dropped) {
+        var asset, assets, count, next, orderedList, prev, _i, _len;
+        if (dropped < finish) {
+          finish = finish + 1;
+          prev = _this.list.assets[dropped - 1] ? _this.list.assets[dropped - 1].order : _this.list.assets[0] + 1000;
+          next = _this.list.assets[finish] ? _this.list.assets[finish].order : 0;
+          assets = _this.list.assets.slice(dropped, finish);
+        } else if (dropped > start) {
+          dropped = dropped + 1;
+          prev = _this.list.assets[start - 1] ? _this.list.assets[start - 1].order : _this.list.assets[0] + 1000;
+          next = _this.list.assets[dropped] ? _this.list.assets[dropped].order : 0;
+          assets = _this.list.assets.slice(start, dropped);
+        } else {
+          return;
+        }
+        console.log('prev', prev, 'next', next);
+        count = prev - 1000;
+        for (_i = 0, _len = assets.length; _i < _len; _i++) {
+          asset = assets[_i];
+          asset.order = count;
+          count = count - 1000;
+        }
+        orderedList = {
+          parent: _this.list._id,
+          assets: assets
+        };
+        console.log(assets);
+        return imagoRest.asset.batch(orderedList).then(function(result) {
+          return console.log('new order saved', result);
+        });
+      };
+    })(this);
+    this.reorder = (function(_this) {
+      return function() {
+        var list;
+        list = {
+          order: _this.list.sortorder,
+          assets: _this.list.assets
+        };
+        return _this.worker.postMessage(list);
+      };
+    })(this);
+    this.batchChange = (function(_this) {
+      return function(assets, save) {
+        var asset, idx, key, object, _base, _base1, _i, _len;
+        if (save == null) {
+          save = false;
+        }
+        for (_i = 0, _len = assets.length; _i < _len; _i++) {
+          asset = assets[_i];
+          idx = _this.findIdx(asset._id);
+          if (idx === -1) {
+            return;
+          }
+          if (_.isBoolean(asset.visible)) {
+            _this.list.assets[idx]['visible'] = asset.visible;
+          }
+          for (key in asset.meta) {
+            (_base = _this.list.assets[idx])['meta'] || (_base['meta'] = {});
+            (_base1 = _this.list.assets[idx]['meta'])[key] || (_base1[key] = {});
+            _this.list.assets[idx]['meta'][key]['value'] = asset.meta[key]['value'];
+          }
+        }
+        if (save) {
+          object = {
+            parent: _this.list._id,
+            assets: assets
+          };
+          return imagoRest.asset.batch(object);
+        }
+      };
+    })(this);
+    this.checkDuplicate = function(name) {
+      var asset, nameIfDuplicate, normalizeList, _i, _len, _ref;
+      if (!name) {
+        return;
+      }
+      nameIfDuplicate = name;
+      nameIfDuplicate = imagoUtils.normalize(nameIfDuplicate);
+      normalizeList = [];
+      _ref = this.list.assets;
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        asset = _ref[_i];
+        normalizeList.push(imagoUtils.normalize(asset.name));
+      }
+      if ($filter('filter')(normalizeList, nameIfDuplicate, true).length > 1) {
+        return true;
+      } else {
+        return false;
+      }
+    };
+    this.prepareCreation = (function(_this) {
+      return function(asset) {
+        if (!(asset.name || !_this.checkDuplicate(asset.name))) {
+          return;
+        }
+        asset.parent = _this.list._id;
+        asset._tenant = _this.list._tenant;
+        asset.order = (_this.list.assets.length === 0 ? 1000 : _this.list.assets[0].order + 1000);
+        return imagoRest.asset.create(asset);
+      };
+    })(this);
+    this.workerSort = (function(_this) {
+      return function() {
+        _this.worker = new Worker('/sortworker.js');
+        return _this.worker.addEventListener('message', function(e) {
+          return $rootScope.$apply(function() {
+            return _this.list.assets = e.data.assets;
+          });
+        }, false);
+      };
+    })(this)();
+    return this;
+  }
+
+  return imagoModel;
+
+})();
+
+angular.module('imago.widgets.angular').service('imagoModel', ['$q', '$rootScope', '$filter', 'imagoRest', 'imagoUtils', imagoModel]);
+
 var Meta;
 
 Meta = (function() {
