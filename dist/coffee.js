@@ -1765,12 +1765,11 @@ imagoModel = (function() {
     this.reindexAll = (function(_this) {
       return function() {
         var asset, count, key, newList, ordered, orderedList, _i, _len, _ref;
-        if (_this.list.sortorder !== '-order') {
-          _this.list.sortorder = '-order';
-          imagoRest.asset.update(_this.list);
-        } else {
+        if (_this.list.sortorder === '-order') {
           return;
         }
+        _this.list.sortorder === '-order';
+        _this.list.sortorder = '-order';
         newList = [];
         count = _this.list.assets.length;
         _ref = _this.list.assets;
@@ -1787,9 +1786,7 @@ imagoModel = (function() {
           parent: _this.list._id,
           assets: newList
         };
-        return imagoRest.asset.batch(orderedList).then(function(result) {
-          return console.log('result batch updating', result);
-        });
+        return orderedList;
       };
     })(this);
     this.orderChanged = (function(_this) {
@@ -1820,9 +1817,7 @@ imagoModel = (function() {
           assets: assets
         };
         console.log(assets);
-        return imagoRest.asset.batch(orderedList).then(function(result) {
-          return console.log('new order saved', result);
-        });
+        return orderedList;
       };
     })(this);
     this.reorder = (function(_this) {
@@ -1861,7 +1856,9 @@ imagoModel = (function() {
             parent: _this.list._id,
             assets: assets
           };
-          return imagoRest.asset.batch(object);
+          return object;
+        } else {
+          return false;
         }
       };
     })(this);
@@ -1892,7 +1889,7 @@ imagoModel = (function() {
         asset.parent = _this.list._id;
         asset._tenant = _this.list._tenant;
         asset.order = (_this.list.assets.length === 0 ? 1000 : _this.list.assets[0].order + 1000);
-        return imagoRest.asset.create(asset);
+        return asset;
       };
     })(this);
     this.workerSort = (function(_this) {

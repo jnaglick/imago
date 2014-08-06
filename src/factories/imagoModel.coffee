@@ -139,11 +139,11 @@ class imagoModel extends Service
 
     @reindexAll = () =>
 
-      unless @list.sortorder is '-order'
-        @list.sortorder = '-order'
-        imagoRest.asset.update @list
-      else
-        return
+      return if @list.sortorder is '-order'
+
+      @list.sortorder is '-order'
+      @list.sortorder = '-order'
+      # imagoRest.asset.update @list
 
       newList = []
 
@@ -161,9 +161,11 @@ class imagoModel extends Service
         parent : @list._id
         assets : newList
 
-      imagoRest.asset.batch(orderedList)
-        .then (result) ->
-          console.log 'result batch updating', result
+      return orderedList
+
+      # imagoRest.asset.batch(orderedList)
+      #   .then (result) ->
+      #     console.log 'result batch updating', result
 
     @orderChanged = (start, finish, dropped) =>
       if dropped < finish
@@ -196,9 +198,11 @@ class imagoModel extends Service
 
       console.log assets
 
-      imagoRest.asset.batch(orderedList)
-        .then (result) ->
-          console.log 'new order saved', result
+      return orderedList
+
+      # imagoRest.asset.batch(orderedList)
+      #   .then (result) ->
+      #     console.log 'new order saved', result
 
 
     @reorder = () =>
@@ -226,7 +230,11 @@ class imagoModel extends Service
           parent : @list._id
           assets : assets
 
-        imagoRest.asset.batch object
+        return object
+
+      else return false
+
+        # imagoRest.asset.batch object
 
 
     @checkDuplicate = (name) ->
@@ -248,7 +256,9 @@ class imagoModel extends Service
       asset._tenant = @list._tenant
       asset.order = (if @list.assets.length is 0 then 1000 else @list.assets[0].order + 1000)
 
-      return imagoRest.asset.create(asset)
+      return asset
+
+      # return imagoRest.asset.create(asset)
 
     @workerSort = do () =>
       @worker = new Worker('/sortworker.js')
