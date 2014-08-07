@@ -26,8 +26,11 @@ class imagoModel extends Service
       angular.forEach query, (value) =>
         promises.push @search(value).then (response) =>
           return unless response.data.length > 0
-
           @list[response.data[0].path] or= []
+
+          for asset in @list[response.data[0].path]
+            return if _.isEqual(asset, response.data[0])
+
           @list[response.data[0].path].push response.data[0]
 
       $q.all(promises).then =>

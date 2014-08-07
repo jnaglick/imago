@@ -732,72 +732,6 @@ imagoVideo = (function() {
 
 angular.module('imago.widgets.angular').directive('imagoVideo', ['$q', '$window', 'imagoUtils', '$timeout', imagoVideo]);
 
-var Meta;
-
-Meta = (function() {
-  function Meta() {
-    return function(input) {
-      var resources;
-      if (!input) {
-        return;
-      }
-      resources = input.split('.');
-      if (resources.length !== 2) {
-        console.log('Not enough data for meta');
-        return;
-      }
-      if (!this[resources[0]]) {
-        return;
-      }
-      if (this[resources[0]].meta[resources[1]].value.type) {
-        return this[resources[0]].meta[resources[1]].value.value;
-      } else {
-        return this[resources[0]].meta[resources[1]].value;
-      }
-    };
-  }
-
-  return Meta;
-
-})();
-
-angular.module('imago.widgets.angular').filter('meta', [Meta]);
-
-var Time;
-
-Time = (function() {
-  function Time() {
-    return function(input) {
-      var calc, hours, minutes, pad, seconds;
-      if (!input) {
-        return;
-      }
-      pad = function(num) {
-        if (num < 10) {
-          return "0" + num;
-        }
-        return num;
-      };
-      calc = [];
-      minutes = Math.floor(input / 60);
-      hours = Math.floor(input / 3600);
-      seconds = (input === 0 ? 0 : input % 60);
-      seconds = Math.round(seconds);
-      if (hours > 0) {
-        calc.push(pad(hours));
-      }
-      calc.push(pad(minutes));
-      calc.push(pad(seconds));
-      return calc.join(":");
-    };
-  }
-
-  return Time;
-
-})();
-
-angular.module('imago.widgets.angular').filter('time', [Time]);
-
 var imagoModel;
 
 imagoModel = (function() {
@@ -824,11 +758,18 @@ imagoModel = (function() {
       angular.forEach(query, (function(_this) {
         return function(value) {
           return promises.push(_this.search(value).then(function(response) {
-            var _base, _name;
+            var asset, _base, _i, _len, _name, _ref;
             if (!(response.data.length > 0)) {
               return;
             }
             (_base = _this.list)[_name = response.data[0].path] || (_base[_name] = []);
+            _ref = _this.list[response.data[0].path];
+            for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+              asset = _ref[_i];
+              if (_.isEqual(asset, response.data[0])) {
+                return;
+              }
+            }
             return _this.list[response.data[0].path].push(response.data[0]);
           }));
         };
@@ -1796,3 +1737,69 @@ imagoUtils = (function() {
 })();
 
 angular.module('imago.widgets.angular').factory('imagoUtils', [imagoUtils]);
+
+var Meta;
+
+Meta = (function() {
+  function Meta() {
+    return function(input) {
+      var resources;
+      if (!input) {
+        return;
+      }
+      resources = input.split('.');
+      if (resources.length !== 2) {
+        console.log('Not enough data for meta');
+        return;
+      }
+      if (!this[resources[0]]) {
+        return;
+      }
+      if (this[resources[0]].meta[resources[1]].value.type) {
+        return this[resources[0]].meta[resources[1]].value.value;
+      } else {
+        return this[resources[0]].meta[resources[1]].value;
+      }
+    };
+  }
+
+  return Meta;
+
+})();
+
+angular.module('imago.widgets.angular').filter('meta', [Meta]);
+
+var Time;
+
+Time = (function() {
+  function Time() {
+    return function(input) {
+      var calc, hours, minutes, pad, seconds;
+      if (!input) {
+        return;
+      }
+      pad = function(num) {
+        if (num < 10) {
+          return "0" + num;
+        }
+        return num;
+      };
+      calc = [];
+      minutes = Math.floor(input / 60);
+      hours = Math.floor(input / 3600);
+      seconds = (input === 0 ? 0 : input % 60);
+      seconds = Math.round(seconds);
+      if (hours > 0) {
+        calc.push(pad(hours));
+      }
+      calc.push(pad(minutes));
+      calc.push(pad(seconds));
+      return calc.join(":");
+    };
+  }
+
+  return Time;
+
+})();
+
+angular.module('imago.widgets.angular').filter('time', [Time]);
