@@ -28,6 +28,8 @@ class imagoModel extends Service
           return unless response.data.length > 0
           @list[response.data[0].path] or= []
 
+          response.data[0].page = value.page if value.page
+
           for asset in @list[response.data[0].path]
             return if angular.equals(asset, response.data[0])
 
@@ -55,6 +57,9 @@ class imagoModel extends Service
 
     @findAsset = (path, index) =>
       return @list[path][index or 0]
+
+    @findByAttr = (path, attr) =>
+      _.find @list[path], attr
 
     @find = (id, path = $location.$$path) =>
       _.find @list[path].assets, '_id' : id
