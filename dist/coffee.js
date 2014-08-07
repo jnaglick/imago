@@ -756,7 +756,11 @@ imagoModel = (function() {
             if (!(response.data.length > 0)) {
               return;
             }
-            return _this.list[response.data[0].path] = response.data;
+            if (!_this.list[response.data[0]].path) {
+              return _this.list[response.data[0].path] = response.data;
+            } else {
+              return _this.list[response.data[0].path].push(response.data[0]);
+            }
           }));
         };
       })(this));
