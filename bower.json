@@ -1,0 +1,20 @@
+{
+    "name": "imago.widgets.angular",
+    "version": "1.0.62",
+    "homepage": "https://github.com/Nex9/imago.widgets.angular",
+    "authors": [
+        "Nex9"
+    ],
+    "license": "MIT",
+    "private": true,
+    "dependencies": {
+        "angular-inview": "*"
+    },
+    "ignore": [
+        "**/.*",
+        "node_modules",
+        "bower_components",
+        "test",
+        "tests"
+    ]
+}

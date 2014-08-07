@@ -329,209 +329,6 @@ imagoImage = (function() {
 
 angular.module('imago.widgets.angular').directive('imagoImage', ['$window', '$q', imagoImage]);
 
-var addWindowInViewItem, bindWindowEvents, checkInView, debounce, getBoundingClientRect, getViewportHeight, inView, removeWindowInViewItem, triggerInViewCallback, unbindWindowEvents, windowCheckInViewDebounced, windowEventsHandler, _windowEventsHandlerBinded, _windowInViewItems;
-
-inView = (function() {
-  function inView($parse) {
-    return {
-      restrict: 'A',
-      link: function(scope, element, attrs, containerController) {
-        var inViewFunc, item, performCheckDebounced;
-        if (!attrs.inView) {
-          return;
-        }
-        inViewFunc = $parse(attrs.inView);
-        item = {
-          element: element,
-          wasInView: false,
-          offset: 0,
-          callback: function($inview, $inviewpart) {
-            return scope.$apply((function(_this) {
-              return function() {
-                return inViewFunc(scope, {
-                  '$element': element[0],
-                  '$inview': $inview,
-                  '$inviewpart': $inviewpart
-                });
-              };
-            })(this));
-          }
-        };
-        performCheckDebounced = windowCheckInViewDebounced;
-        addWindowInViewItem(item);
-        performCheckDebounced();
-        if (attrs.inViewOffset != null) {
-          attrs.$observe('inViewOffset', function(offset) {
-            item.offset = scope.$eval(offset) || 0;
-            return performCheckDebounced();
-          });
-        }
-        return scope.$on('$destroy', function() {
-          return removeWindowInViewItem(item);
-        });
-      }
-    };
-  }
-
-  return inView;
-
-})();
-
-_windowInViewItems = [];
-
-addWindowInViewItem = function(item) {
-  _windowInViewItems.push(item);
-  return bindWindowEvents();
-};
-
-removeWindowInViewItem = function(item) {
-  var i;
-  _windowInViewItems = (function() {
-    var _i, _len, _results;
-    _results = [];
-    for (_i = 0, _len = _windowInViewItems.length; _i < _len; _i++) {
-      i = _windowInViewItems[_i];
-      if (i !== item) {
-        _results.push(i);
-      }
-    }
-    return _results;
-  })();
-  return unbindWindowEvents();
-};
-
-_windowEventsHandlerBinded = false;
-
-windowEventsHandler = function() {
-  if (_windowInViewItems.length) {
-    return windowCheckInViewDebounced();
-  }
-};
-
-bindWindowEvents = function() {
-  if (_windowEventsHandlerBinded) {
-    return;
-  }
-  _windowEventsHandlerBinded = true;
-  return angular.element(window).bind('checkInView click ready scroll resize', windowEventsHandler);
-};
-
-unbindWindowEvents = function() {
-  if (!_windowEventsHandlerBinded) {
-    return;
-  }
-  if (_windowInViewItems.length) {
-    return;
-  }
-  _windowEventsHandlerBinded = false;
-  return angular.element(window).unbind('checkInView click ready scroll resize', windowEventsHandler);
-};
-
-triggerInViewCallback = function(item, inview, isTopVisible, isBottomVisible) {
-  var el, inviewpart;
-  if (inview) {
-    el = item.element[0];
-    inviewpart = (isTopVisible && 'top') || (isBottomVisible && 'bottom') || 'both';
-    if (!(item.wasInView && item.wasInView === inviewpart && el.offsetTop === item.lastOffsetTop)) {
-      item.lastOffsetTop = el.offsetTop;
-      item.wasInView = inviewpart;
-      return item.callback(true, inviewpart);
-    }
-  } else if (item.wasInView) {
-    item.wasInView = false;
-    return item.callback(false);
-  }
-};
-
-checkInView = function(items, container) {
-  var bounds, element, item, viewport, _i, _j, _len, _len1, _ref, _ref1, _ref2, _ref3, _results;
-  viewport = {
-    top: 0,
-    bottom: getViewportHeight()
-  };
-  if (container && container !== window) {
-    bounds = getBoundingClientRect(container);
-    if (bounds.top > viewport.bottom || bounds.bottom < viewport.top) {
-      for (_i = 0, _len = items.length; _i < _len; _i++) {
-        item = items[_i];
-        triggerInViewCallback(item, false);
-      }
-      return;
-    }
-    if (bounds.top > viewport.top) {
-      viewport.top = bounds.top;
-    }
-    if (bounds.bottom < viewport.bottom) {
-      viewport.bottom = bounds.bottom;
-    }
-  }
-  _results = [];
-  for (_j = 0, _len1 = items.length; _j < _len1; _j++) {
-    item = items[_j];
-    element = item.element[0];
-    bounds = getBoundingClientRect(element);
-    bounds.top += (_ref = (_ref1 = item.offset) != null ? _ref1[0] : void 0) != null ? _ref : item.offset;
-    bounds.bottom += (_ref2 = (_ref3 = item.offset) != null ? _ref3[1] : void 0) != null ? _ref2 : item.offset;
-    if (bounds.top < viewport.bottom && bounds.bottom >= viewport.top) {
-      _results.push(triggerInViewCallback(item, true, bounds.bottom > viewport.bottom, bounds.top < viewport.top));
-    } else {
-      _results.push(triggerInViewCallback(item, false));
-    }
-  }
-  return _results;
-};
-
-getViewportHeight = function() {
-  var height, mode, _ref;
-  height = window.innerHeight;
-  if (height) {
-    return height;
-  }
-  mode = document.compatMode;
-  if (mode || !(typeof $ !== "undefined" && $ !== null ? (_ref = $.support) != null ? _ref.boxModel : void 0 : void 0)) {
-    height = mode === 'CSS1Compat' ? document.documentElement.clientHeight : document.body.clientHeight;
-  }
-  return height;
-};
-
-getBoundingClientRect = function(element) {
-  var el, parent, top;
-  top = 0;
-  el = element;
-  while (el) {
-    top += el.offsetTop;
-    el = el.offsetParent;
-  }
-  parent = element.parentElement;
-  while (parent) {
-    if (parent.scrollTop != null) {
-      top -= parent.scrollTop;
-    }
-    parent = parent.parentElement;
-  }
-  return {
-    top: top,
-    bottom: top + element.offsetHeight
-  };
-};
-
-debounce = function(f, t) {
-  var timer;
-  timer = null;
-  return function() {
-    if (timer != null) {
-      clearTimeout(timer);
-    }
-    return timer = setTimeout(f, t != null ? t : 100);
-  };
-};
-
-windowCheckInViewDebounced = debounce(function() {
-  return checkInView(_windowInViewItems);
-});
-
-angular.module('imago.widgets.angular').directive('inView', ['$parse', inView]);
-
 var imagoSlider;
 
 imagoSlider = (function() {
@@ -929,6 +726,360 @@ imagoVideo = (function() {
 })();
 
 angular.module('imago.widgets.angular').directive('imagoVideo', ['$q', '$window', 'imagoUtils', '$timeout', imagoVideo]);
+
+var imagoModel;
+
+imagoModel = (function() {
+  function imagoModel($http, $q, $rootScope, $filter, imagoUtils) {
+    this.list = {};
+    this.search = function(query) {
+      var params;
+      params = this.objListToDict(query);
+      return $http.post(this.getSearchUrl(), angular.toJson(params));
+    };
+    this.getData = function(query) {
+      var data, promises;
+      if (!query) {
+        query = $location.$$path;
+      }
+      if (!query) {
+        return console.log("Panel: query is empty, aborting " + query);
+      }
+      if (angular.isString(query)) {
+        query = [
+          {
+            path: query
+          }
+        ];
+      }
+      query = imagoUtils.toArray(query);
+      promises = [];
+      data = [];
+      angular.forEach(query, (function(_this) {
+        return function(value) {
+          return promises.push(_this.search(value).success(function(response) {
+            var result;
+            if (response.length === 1 && response[0].kind === 'Collection') {
+              return data.push(response[0]);
+            } else {
+              result = {
+                items: response,
+                count: response.length
+              };
+              return data.push(result);
+            }
+          }));
+        };
+      })(this));
+      return $q.all(promises).then((function(_this) {
+        return function() {
+          return data;
+        };
+      })(this));
+    };
+    this.objListToDict = function(obj_or_list) {
+      var elem, key, querydict, value, _i, _j, _len, _len1, _ref;
+      querydict = {};
+      if (angular.isArray(obj_or_list)) {
+        for (_i = 0, _len = obj_or_list.length; _i < _len; _i++) {
+          elem = obj_or_list[_i];
+          for (key in elem) {
+            value = elem[key];
+            querydict[key] || (querydict[key] = []);
+            querydict[key].push(value);
+          }
+        }
+      } else {
+        for (key in obj_or_list) {
+          value = obj_or_list[key];
+          querydict[key] = angular.isArray(value) ? value : [value];
+        }
+      }
+      _ref = ['page', 'pagesize'];
+      for (_j = 0, _len1 = _ref.length; _j < _len1; _j++) {
+        key = _ref[_j];
+        if (querydict.hasOwnProperty(key)) {
+          querydict[key] = querydict[key][0];
+        }
+      }
+      return querydict;
+    };
+    this.getSearchUrl = function() {
+      if (data === 'online' && debug) {
+        return "http://" + tenant + ".imagoapp.com/api/v3/search";
+      } else {
+        return "/api/v3/search";
+      }
+    };
+    this.find = (function(_this) {
+      return function(id) {
+        return _.find(_this.list.assets, {
+          '_id': id
+        });
+      };
+    })(this);
+    this.findIdx = (function(_this) {
+      return function(id) {
+        return _.findIndex(_this.list.assets, {
+          '_id': id
+        });
+      };
+    })(this);
+    this.create = (function(_this) {
+      return function(asset) {
+        if (!asset._id) {
+          return;
+        }
+        return _this.list.assets.unshift(asset);
+      };
+    })(this);
+    this.update = (function(_this) {
+      return function(asset) {
+        var filter, id, order, result, _i, _len, _results;
+        if (!asset._id) {
+          return;
+        }
+        id = {
+          _id: asset._id
+        };
+        filter = $filter('filter')(_this.list.assets, id);
+        if (filter.length === 0) {
+          return;
+        }
+        _results = [];
+        for (_i = 0, _len = filter.length; _i < _len; _i++) {
+          result = filter[_i];
+          order = _this.list.assets.indexOf(result);
+          _results.push(_this.list.assets[order] = asset);
+        }
+        return _results;
+      };
+    })(this);
+    this["delete"] = (function(_this) {
+      return function(id) {
+        var filter, order, result, _i, _len, _results;
+        if (!id) {
+          return;
+        }
+        id = {
+          _id: id
+        };
+        filter = $filter('filter')(_this.list.assets, id);
+        if (filter.length === 0) {
+          return;
+        }
+        _results = [];
+        for (_i = 0, _len = filter.length; _i < _len; _i++) {
+          result = filter[_i];
+          order = _this.list.assets.indexOf(result);
+          _results.push(_this.list.assets.splice(order, 1));
+        }
+        return _results;
+      };
+    })(this);
+    this.move = (function(_this) {
+      return function(data) {
+        var asset, filter, id, order, result, _i, _len, _ref, _results;
+        _ref = data.assets;
+        _results = [];
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          asset = _ref[_i];
+          id = {
+            _id: asset._id
+          };
+          filter = $filter('filter')(_this.list.assets, id);
+          if (filter.length > 0) {
+            _results.push((function() {
+              var _j, _len1, _results1;
+              _results1 = [];
+              for (_j = 0, _len1 = filter.length; _j < _len1; _j++) {
+                result = filter[_j];
+                order = this.list.assets.indexOf(result);
+                _results1.push(this.list.assets.splice(order, 1));
+              }
+              return _results1;
+            }).call(_this));
+          } else {
+            _results.push(void 0);
+          }
+        }
+        return _results;
+      };
+    })(this);
+    this.paste = (function(_this) {
+      return function(assets, checkdups) {
+        var asset, exists, i, original_name, _i, _len, _results;
+        if (checkdups == null) {
+          checkdups = true;
+        }
+        _results = [];
+        for (_i = 0, _len = assets.length; _i < _len; _i++) {
+          asset = assets[_i];
+          if (!checkdups || !_this.checkDuplicate(asset.name)) {
+            _results.push(_this.list.assets.unshift(asset));
+          } else {
+            i = 1;
+            exists = true;
+            original_name = asset.name;
+            while (exists) {
+              exists = _this.checkDuplicate(asset.name);
+              asset.name = "" + original_name + "_" + i;
+              i++;
+            }
+            _results.push(_this.list.assets.unshift(asset));
+          }
+        }
+        return _results;
+      };
+    })(this);
+    this.reindexAll = (function(_this) {
+      return function() {
+        var asset, count, key, newList, ordered, orderedList, _i, _len, _ref;
+        if (_this.list.sortorder === '-order') {
+          return;
+        }
+        _this.list.sortorder === '-order';
+        _this.list.sortorder = '-order';
+        newList = [];
+        count = _this.list.assets.length;
+        _ref = _this.list.assets;
+        for (key = _i = 0, _len = _ref.length; _i < _len; key = ++_i) {
+          asset = _ref[key];
+          asset.order = (count - key) * 1000;
+          ordered = {
+            _id: asset._id,
+            order: asset.order
+          };
+          newList.push(ordered);
+        }
+        orderedList = {
+          parent: _this.list._id,
+          assets: newList
+        };
+        return orderedList;
+      };
+    })(this);
+    this.orderChanged = (function(_this) {
+      return function(start, finish, dropped) {
+        var asset, assets, count, next, orderedList, prev, _i, _len;
+        if (dropped < finish) {
+          finish = finish + 1;
+          prev = _this.list.assets[dropped - 1] ? _this.list.assets[dropped - 1].order : _this.list.assets[0] + 1000;
+          next = _this.list.assets[finish] ? _this.list.assets[finish].order : 0;
+          assets = _this.list.assets.slice(dropped, finish);
+        } else if (dropped > start) {
+          dropped = dropped + 1;
+          prev = _this.list.assets[start - 1] ? _this.list.assets[start - 1].order : _this.list.assets[0] + 1000;
+          next = _this.list.assets[dropped] ? _this.list.assets[dropped].order : 0;
+          assets = _this.list.assets.slice(start, dropped);
+        } else {
+          return;
+        }
+        console.log('prev', prev, 'next', next);
+        count = prev - 1000;
+        for (_i = 0, _len = assets.length; _i < _len; _i++) {
+          asset = assets[_i];
+          asset.order = count;
+          count = count - 1000;
+        }
+        orderedList = {
+          parent: _this.list._id,
+          assets: assets
+        };
+        console.log(assets);
+        return orderedList;
+      };
+    })(this);
+    this.reorder = (function(_this) {
+      return function() {
+        var list;
+        list = {
+          order: _this.list.sortorder,
+          assets: _this.list.assets
+        };
+        return _this.worker.postMessage(list);
+      };
+    })(this);
+    this.batchChange = (function(_this) {
+      return function(assets, save) {
+        var asset, idx, key, object, _base, _base1, _i, _len;
+        if (save == null) {
+          save = false;
+        }
+        for (_i = 0, _len = assets.length; _i < _len; _i++) {
+          asset = assets[_i];
+          idx = _this.findIdx(asset._id);
+          if (idx === -1) {
+            return;
+          }
+          if (_.isBoolean(asset.visible)) {
+            _this.list.assets[idx]['visible'] = asset.visible;
+          }
+          for (key in asset.meta) {
+            (_base = _this.list.assets[idx])['meta'] || (_base['meta'] = {});
+            (_base1 = _this.list.assets[idx]['meta'])[key] || (_base1[key] = {});
+            _this.list.assets[idx]['meta'][key]['value'] = asset.meta[key]['value'];
+          }
+        }
+        if (save) {
+          object = {
+            parent: _this.list._id,
+            assets: assets
+          };
+          return object;
+        } else {
+          return false;
+        }
+      };
+    })(this);
+    this.checkDuplicate = function(name) {
+      var asset, nameIfDuplicate, normalizeList, _i, _len, _ref;
+      if (!name) {
+        return;
+      }
+      nameIfDuplicate = name;
+      nameIfDuplicate = imagoUtils.normalize(nameIfDuplicate);
+      normalizeList = [];
+      _ref = this.list.assets;
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        asset = _ref[_i];
+        normalizeList.push(imagoUtils.normalize(asset.name));
+      }
+      if ($filter('filter')(normalizeList, nameIfDuplicate, true).length > 1) {
+        return true;
+      } else {
+        return false;
+      }
+    };
+    this.prepareCreation = (function(_this) {
+      return function(asset) {
+        if (!(asset.name || !_this.checkDuplicate(asset.name))) {
+          return;
+        }
+        asset.parent = _this.list._id;
+        asset._tenant = _this.list._tenant;
+        asset.order = (_this.list.assets.length === 0 ? 1000 : _this.list.assets[0].order + 1000);
+        return asset;
+      };
+    })(this);
+    this.workerSort = (function(_this) {
+      return function() {
+        _this.worker = new Worker('/sortworker.js');
+        return _this.worker.addEventListener('message', function(e) {
+          return $rootScope.$apply(function() {
+            return _this.list.assets = e.data.assets;
+          });
+        }, false);
+      };
+    })(this)();
+    return this;
+  }
+
+  return imagoModel;
+
+})();
+
+angular.module('imago.widgets.angular').service('imagoModel', ['$http', '$q', '$rootScope', '$filter', 'imagoUtils', imagoModel]);
 
 var imagoPanel;
 
@@ -1556,360 +1707,6 @@ imagoUtils = (function() {
 })();
 
 angular.module('imago.widgets.angular').factory('imagoUtils', [imagoUtils]);
-
-var imagoModel;
-
-imagoModel = (function() {
-  function imagoModel($http, $q, $rootScope, $filter, imagoUtils) {
-    this.list = {};
-    this.search = function(query) {
-      var params;
-      params = this.objListToDict(query);
-      return $http.post(this.getSearchUrl(), angular.toJson(params));
-    };
-    this.getData = function(query) {
-      var data, promises;
-      if (!query) {
-        query = $location.$$path;
-      }
-      if (!query) {
-        return console.log("Panel: query is empty, aborting " + query);
-      }
-      if (angular.isString(query)) {
-        query = [
-          {
-            path: query
-          }
-        ];
-      }
-      query = imagoUtils.toArray(query);
-      promises = [];
-      data = [];
-      angular.forEach(query, (function(_this) {
-        return function(value) {
-          return promises.push(_this.search(value).success(function(response) {
-            var result;
-            if (response.length === 1 && response[0].kind === 'Collection') {
-              return data.push(response[0]);
-            } else {
-              result = {
-                items: response,
-                count: response.length
-              };
-              return data.push(result);
-            }
-          }));
-        };
-      })(this));
-      return $q.all(promises).then((function(_this) {
-        return function() {
-          return data;
-        };
-      })(this));
-    };
-    this.objListToDict = function(obj_or_list) {
-      var elem, key, querydict, value, _i, _j, _len, _len1, _ref;
-      querydict = {};
-      if (angular.isArray(obj_or_list)) {
-        for (_i = 0, _len = obj_or_list.length; _i < _len; _i++) {
-          elem = obj_or_list[_i];
-          for (key in elem) {
-            value = elem[key];
-            querydict[key] || (querydict[key] = []);
-            querydict[key].push(value);
-          }
-        }
-      } else {
-        for (key in obj_or_list) {
-          value = obj_or_list[key];
-          querydict[key] = angular.isArray(value) ? value : [value];
-        }
-      }
-      _ref = ['page', 'pagesize'];
-      for (_j = 0, _len1 = _ref.length; _j < _len1; _j++) {
-        key = _ref[_j];
-        if (querydict.hasOwnProperty(key)) {
-          querydict[key] = querydict[key][0];
-        }
-      }
-      return querydict;
-    };
-    this.getSearchUrl = function() {
-      if (data === 'online' && debug) {
-        return "http://" + tenant + ".imagoapp.com/api/v3/search";
-      } else {
-        return "/api/v3/search";
-      }
-    };
-    this.find = (function(_this) {
-      return function(id) {
-        return _.find(_this.list.assets, {
-          '_id': id
-        });
-      };
-    })(this);
-    this.findIdx = (function(_this) {
-      return function(id) {
-        return _.findIndex(_this.list.assets, {
-          '_id': id
-        });
-      };
-    })(this);
-    this.create = (function(_this) {
-      return function(asset) {
-        if (!asset._id) {
-          return;
-        }
-        return _this.list.assets.unshift(asset);
-      };
-    })(this);
-    this.update = (function(_this) {
-      return function(asset) {
-        var filter, id, order, result, _i, _len, _results;
-        if (!asset._id) {
-          return;
-        }
-        id = {
-          _id: asset._id
-        };
-        filter = $filter('filter')(_this.list.assets, id);
-        if (filter.length === 0) {
-          return;
-        }
-        _results = [];
-        for (_i = 0, _len = filter.length; _i < _len; _i++) {
-          result = filter[_i];
-          order = _this.list.assets.indexOf(result);
-          _results.push(_this.list.assets[order] = asset);
-        }
-        return _results;
-      };
-    })(this);
-    this["delete"] = (function(_this) {
-      return function(id) {
-        var filter, order, result, _i, _len, _results;
-        if (!id) {
-          return;
-        }
-        id = {
-          _id: id
-        };
-        filter = $filter('filter')(_this.list.assets, id);
-        if (filter.length === 0) {
-          return;
-        }
-        _results = [];
-        for (_i = 0, _len = filter.length; _i < _len; _i++) {
-          result = filter[_i];
-          order = _this.list.assets.indexOf(result);
-          _results.push(_this.list.assets.splice(order, 1));
-        }
-        return _results;
-      };
-    })(this);
-    this.move = (function(_this) {
-      return function(data) {
-        var asset, filter, id, order, result, _i, _len, _ref, _results;
-        _ref = data.assets;
-        _results = [];
-        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-          asset = _ref[_i];
-          id = {
-            _id: asset._id
-          };
-          filter = $filter('filter')(_this.list.assets, id);
-          if (filter.length > 0) {
-            _results.push((function() {
-              var _j, _len1, _results1;
-              _results1 = [];
-              for (_j = 0, _len1 = filter.length; _j < _len1; _j++) {
-                result = filter[_j];
-                order = this.list.assets.indexOf(result);
-                _results1.push(this.list.assets.splice(order, 1));
-              }
-              return _results1;
-            }).call(_this));
-          } else {
-            _results.push(void 0);
-          }
-        }
-        return _results;
-      };
-    })(this);
-    this.paste = (function(_this) {
-      return function(assets, checkdups) {
-        var asset, exists, i, original_name, _i, _len, _results;
-        if (checkdups == null) {
-          checkdups = true;
-        }
-        _results = [];
-        for (_i = 0, _len = assets.length; _i < _len; _i++) {
-          asset = assets[_i];
-          if (!checkdups || !_this.checkDuplicate(asset.name)) {
-            _results.push(_this.list.assets.unshift(asset));
-          } else {
-            i = 1;
-            exists = true;
-            original_name = asset.name;
-            while (exists) {
-              exists = _this.checkDuplicate(asset.name);
-              asset.name = "" + original_name + "_" + i;
-              i++;
-            }
-            _results.push(_this.list.assets.unshift(asset));
-          }
-        }
-        return _results;
-      };
-    })(this);
-    this.reindexAll = (function(_this) {
-      return function() {
-        var asset, count, key, newList, ordered, orderedList, _i, _len, _ref;
-        if (_this.list.sortorder === '-order') {
-          return;
-        }
-        _this.list.sortorder === '-order';
-        _this.list.sortorder = '-order';
-        newList = [];
-        count = _this.list.assets.length;
-        _ref = _this.list.assets;
-        for (key = _i = 0, _len = _ref.length; _i < _len; key = ++_i) {
-          asset = _ref[key];
-          asset.order = (count - key) * 1000;
-          ordered = {
-            _id: asset._id,
-            order: asset.order
-          };
-          newList.push(ordered);
-        }
-        orderedList = {
-          parent: _this.list._id,
-          assets: newList
-        };
-        return orderedList;
-      };
-    })(this);
-    this.orderChanged = (function(_this) {
-      return function(start, finish, dropped) {
-        var asset, assets, count, next, orderedList, prev, _i, _len;
-        if (dropped < finish) {
-          finish = finish + 1;
-          prev = _this.list.assets[dropped - 1] ? _this.list.assets[dropped - 1].order : _this.list.assets[0] + 1000;
-          next = _this.list.assets[finish] ? _this.list.assets[finish].order : 0;
-          assets = _this.list.assets.slice(dropped, finish);
-        } else if (dropped > start) {
-          dropped = dropped + 1;
-          prev = _this.list.assets[start - 1] ? _this.list.assets[start - 1].order : _this.list.assets[0] + 1000;
-          next = _this.list.assets[dropped] ? _this.list.assets[dropped].order : 0;
-          assets = _this.list.assets.slice(start, dropped);
-        } else {
-          return;
-        }
-        console.log('prev', prev, 'next', next);
-        count = prev - 1000;
-        for (_i = 0, _len = assets.length; _i < _len; _i++) {
-          asset = assets[_i];
-          asset.order = count;
-          count = count - 1000;
-        }
-        orderedList = {
-          parent: _this.list._id,
-          assets: assets
-        };
-        console.log(assets);
-        return orderedList;
-      };
-    })(this);
-    this.reorder = (function(_this) {
-      return function() {
-        var list;
-        list = {
-          order: _this.list.sortorder,
-          assets: _this.list.assets
-        };
-        return _this.worker.postMessage(list);
-      };
-    })(this);
-    this.batchChange = (function(_this) {
-      return function(assets, save) {
-        var asset, idx, key, object, _base, _base1, _i, _len;
-        if (save == null) {
-          save = false;
-        }
-        for (_i = 0, _len = assets.length; _i < _len; _i++) {
-          asset = assets[_i];
-          idx = _this.findIdx(asset._id);
-          if (idx === -1) {
-            return;
-          }
-          if (_.isBoolean(asset.visible)) {
-            _this.list.assets[idx]['visible'] = asset.visible;
-          }
-          for (key in asset.meta) {
-            (_base = _this.list.assets[idx])['meta'] || (_base['meta'] = {});
-            (_base1 = _this.list.assets[idx]['meta'])[key] || (_base1[key] = {});
-            _this.list.assets[idx]['meta'][key]['value'] = asset.meta[key]['value'];
-          }
-        }
-        if (save) {
-          object = {
-            parent: _this.list._id,
-            assets: assets
-          };
-          return object;
-        } else {
-          return false;
-        }
-      };
-    })(this);
-    this.checkDuplicate = function(name) {
-      var asset, nameIfDuplicate, normalizeList, _i, _len, _ref;
-      if (!name) {
-        return;
-      }
-      nameIfDuplicate = name;
-      nameIfDuplicate = imagoUtils.normalize(nameIfDuplicate);
-      normalizeList = [];
-      _ref = this.list.assets;
-      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        asset = _ref[_i];
-        normalizeList.push(imagoUtils.normalize(asset.name));
-      }
-      if ($filter('filter')(normalizeList, nameIfDuplicate, true).length > 1) {
-        return true;
-      } else {
-        return false;
-      }
-    };
-    this.prepareCreation = (function(_this) {
-      return function(asset) {
-        if (!(asset.name || !_this.checkDuplicate(asset.name))) {
-          return;
-        }
-        asset.parent = _this.list._id;
-        asset._tenant = _this.list._tenant;
-        asset.order = (_this.list.assets.length === 0 ? 1000 : _this.list.assets[0].order + 1000);
-        return asset;
-      };
-    })(this);
-    this.workerSort = (function(_this) {
-      return function() {
-        _this.worker = new Worker('/sortworker.js');
-        return _this.worker.addEventListener('message', function(e) {
-          return $rootScope.$apply(function() {
-            return _this.list.assets = e.data.assets;
-          });
-        }, false);
-      };
-    })(this)();
-    return this;
-  }
-
-  return imagoModel;
-
-})();
-
-angular.module('imago.widgets.angular').service('imagoModel', ['$http', '$q', '$rootScope', '$filter', 'imagoUtils', imagoModel]);
 
 var Meta;
 
