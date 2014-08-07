@@ -763,6 +763,9 @@ imagoModel = (function() {
               return;
             }
             (_base = _this.list)[_name = response.data[0].path] || (_base[_name] = []);
+            if (value.page) {
+              response.data[0].page = value.page;
+            }
             _ref = _this.list[response.data[0].path];
             for (_i = 0, _len = _ref.length; _i < _len; _i++) {
               asset = _ref[_i];
@@ -810,6 +813,11 @@ imagoModel = (function() {
     this.findAsset = (function(_this) {
       return function(path, index) {
         return _this.list[path][index || 0];
+      };
+    })(this);
+    this.findByAttr = (function(_this) {
+      return function(path, attr) {
+        return _.find(_this.list[path], attr);
       };
     })(this);
     this.find = (function(_this) {
