@@ -753,14 +753,12 @@ imagoModel = (function() {
       angular.forEach(query, (function(_this) {
         return function(value) {
           return promises.push(_this.search(value).then(function(response) {
+            var _base, _name;
             if (!(response.data.length > 0)) {
               return;
             }
-            if (!_this.list[response.data[0]].path) {
-              return _this.list[response.data[0].path] = response.data;
-            } else {
-              return _this.list[response.data[0].path].push(response.data[0]);
-            }
+            (_base = _this.list)[_name = response.data[0].path] || (_base[_name] = []);
+            return _this.list[response.data[0].path].push(response.data[0]);
           }));
         };
       })(this));
