@@ -738,7 +738,7 @@ imagoModel = (function() {
   function imagoModel($http, $location, $q, $rootScope, $filter, imagoUtils) {
     this.list = {};
     this.tenant = '';
-    this.searchURl = data === 'online' && debug ? "http://" + tenant + ".imagoapp.com/api/v3/search" : "/api/v3/search";
+    this.searchUrl = data === 'online' && debug ? "http://" + tenant + ".imagoapp.com/api/v3/search" : "/api/v3/search";
     this.search = function(query) {
       var params;
       params = this.formatQuery(query);
@@ -746,9 +746,6 @@ imagoModel = (function() {
     };
     this.getData = function(query, cache) {
       var promises;
-      if (!query) {
-        query = $location.$$path;
-      }
       if (angular.isString(query)) {
         query = [
           {
@@ -761,10 +758,10 @@ imagoModel = (function() {
       angular.forEach(query, (function(_this) {
         return function(value) {
           return promises.push(_this.search(value).then(function(response) {
-            if (!(response.length > 0)) {
+            if (!(response.data.length > 0)) {
               return;
             }
-            return _this.list[response.data.path] = response.data;
+            return _this.list[response.data[0].path] = response.data;
           }));
         };
       })(this));

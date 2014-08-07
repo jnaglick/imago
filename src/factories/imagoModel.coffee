@@ -6,7 +6,7 @@ class imagoModel extends Service
 
     @tenant = ''
 
-    @searchURl = if (data is 'online' and debug) then "http://#{tenant}.imagoapp.com/api/v3/search" else "/api/v3/search"
+    @searchUrl = if (data is 'online' and debug) then "http://#{tenant}.imagoapp.com/api/v3/search" else "/api/v3/search"
 
     @search = (query) ->
       # console.log 'search...', query
@@ -14,8 +14,7 @@ class imagoModel extends Service
       return $http.post(@searchUrl, angular.toJson(params))
 
     @getData = (query, cache) ->
-      query = $location.$$path unless query
-
+      # query = $location.$$path unless query
       if angular.isString query
         query =
           [path: query]
@@ -26,8 +25,8 @@ class imagoModel extends Service
 
       angular.forEach query, (value) =>
         promises.push @search(value).then (response) =>
-          return unless response.length > 0
-          @list[response.data.path] = response.data
+          return unless response.data.length > 0
+          @list[response.data[0].path] = response.data
 
       $q.all(promises).then =>
         return true
