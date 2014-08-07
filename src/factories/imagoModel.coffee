@@ -232,14 +232,4 @@ class imagoModel extends Service
 
       # return imagoRest.asset.create(asset)
 
-    @createWorker = do () =>
-      @worker = new Worker('/sortworker.js')
-
-    @workerSort (e, path = $location.$$path)=>
-      $rootScope.$apply () =>
-        @list[path].assets = e.data.assets
-
-
-    @worker.addEventListener 'message', @workerSort, false
-
     return @
