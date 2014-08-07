@@ -732,6 +732,72 @@ imagoVideo = (function() {
 
 angular.module('imago.widgets.angular').directive('imagoVideo', ['$q', '$window', 'imagoUtils', '$timeout', imagoVideo]);
 
+var Meta;
+
+Meta = (function() {
+  function Meta() {
+    return function(input) {
+      var resources;
+      if (!input) {
+        return;
+      }
+      resources = input.split('.');
+      if (resources.length !== 2) {
+        console.log('Not enough data for meta');
+        return;
+      }
+      if (!this[resources[0]]) {
+        return;
+      }
+      if (this[resources[0]].meta[resources[1]].value.type) {
+        return this[resources[0]].meta[resources[1]].value.value;
+      } else {
+        return this[resources[0]].meta[resources[1]].value;
+      }
+    };
+  }
+
+  return Meta;
+
+})();
+
+angular.module('imago.widgets.angular').filter('meta', [Meta]);
+
+var Time;
+
+Time = (function() {
+  function Time() {
+    return function(input) {
+      var calc, hours, minutes, pad, seconds;
+      if (!input) {
+        return;
+      }
+      pad = function(num) {
+        if (num < 10) {
+          return "0" + num;
+        }
+        return num;
+      };
+      calc = [];
+      minutes = Math.floor(input / 60);
+      hours = Math.floor(input / 3600);
+      seconds = (input === 0 ? 0 : input % 60);
+      seconds = Math.round(seconds);
+      if (hours > 0) {
+        calc.push(pad(hours));
+      }
+      calc.push(pad(minutes));
+      calc.push(pad(seconds));
+      return calc.join(":");
+    };
+  }
+
+  return Time;
+
+})();
+
+angular.module('imago.widgets.angular').filter('time', [Time]);
+
 var imagoModel;
 
 imagoModel = (function() {
@@ -800,6 +866,11 @@ imagoModel = (function() {
       }
       return querydict;
     };
+    this.findAsset = (function(_this) {
+      return function(path, index) {
+        return _this.list[path][index || 0];
+      };
+    })(this);
     this.find = (function(_this) {
       return function(id, path) {
         if (path == null) {
@@ -1725,69 +1796,3 @@ imagoUtils = (function() {
 })();
 
 angular.module('imago.widgets.angular').factory('imagoUtils', [imagoUtils]);
-
-var Meta;
-
-Meta = (function() {
-  function Meta() {
-    return function(input) {
-      var resources;
-      if (!input) {
-        return;
-      }
-      resources = input.split('.');
-      if (resources.length !== 2) {
-        console.log('Not enough data for meta');
-        return;
-      }
-      if (!this[resources[0]]) {
-        return;
-      }
-      if (this[resources[0]].meta[resources[1]].value.type) {
-        return this[resources[0]].meta[resources[1]].value.value;
-      } else {
-        return this[resources[0]].meta[resources[1]].value;
-      }
-    };
-  }
-
-  return Meta;
-
-})();
-
-angular.module('imago.widgets.angular').filter('meta', [Meta]);
-
-var Time;
-
-Time = (function() {
-  function Time() {
-    return function(input) {
-      var calc, hours, minutes, pad, seconds;
-      if (!input) {
-        return;
-      }
-      pad = function(num) {
-        if (num < 10) {
-          return "0" + num;
-        }
-        return num;
-      };
-      calc = [];
-      minutes = Math.floor(input / 60);
-      hours = Math.floor(input / 3600);
-      seconds = (input === 0 ? 0 : input % 60);
-      seconds = Math.round(seconds);
-      if (hours > 0) {
-        calc.push(pad(hours));
-      }
-      calc.push(pad(minutes));
-      calc.push(pad(seconds));
-      return calc.join(":");
-    };
-  }
-
-  return Time;
-
-})();
-
-angular.module('imago.widgets.angular').filter('time', [Time]);

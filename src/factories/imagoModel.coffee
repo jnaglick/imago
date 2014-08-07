@@ -50,6 +50,9 @@ class imagoModel extends Service
           querydict[key] = querydict[key][0]
       querydict
 
+    @findAsset = (path, index) =>
+      return @list[path][index or 0]
+
     @find = (id, path = $location.$$path) =>
       _.find @list[path].assets, '_id' : id
 
