@@ -13,6 +13,11 @@ class imagoModel extends Service
       params = @formatQuery query
       return $http.post(@searchUrl, angular.toJson(params))
 
+    # TODO ISSUE: This getData set up is only good if we get exactly one object back.
+    #      If the post returns an array with multiple objects each with their own path
+    #      the current getData would only add the first object in the array, and if we looped
+    #      over the array we'd add a new property onto list for each object in response.data
+    #      Maybe we should find a different approach to naming the 'keys' in @list
     @getData = (query, cache) ->
       # query = $location.$$path unless query
       if angular.isString query
