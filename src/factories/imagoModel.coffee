@@ -29,7 +29,7 @@ class imagoModel extends Service
           @list[response.data[0].path] or= []
 
           for asset in @list[response.data[0].path]
-            return if _.isEqual(asset, response.data[0])
+            return if angular.equals(asset, response.data[0])
 
           @list[response.data[0].path].push response.data[0]
 

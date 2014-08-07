@@ -766,7 +766,7 @@ imagoModel = (function() {
             _ref = _this.list[response.data[0].path];
             for (_i = 0, _len = _ref.length; _i < _len; _i++) {
               asset = _ref[_i];
-              if (_.isEqual(asset, response.data[0])) {
+              if (angular.equals(asset, response.data[0])) {
                 return;
               }
             }
