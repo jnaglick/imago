@@ -30,11 +30,6 @@ class imagoModel extends Service
           @list[response.data[0].path] or= []
           @list[response.data[0].path].push response.data[0]
 
-          # unless @list[response.data[0]].path
-          #   @list[response.data[0].path] = response.data
-          # else
-          #   @list[response.data[0].path].push response.data[0]
-
       $q.all(promises).then =>
         return true
 
