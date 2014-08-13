@@ -6,7 +6,7 @@ class imagoModel extends Service
 
   tenant: ''
 
-  searchUrl: (data is 'online' and debug) then "http://#{tenant}.imagoapp.com/api/v3/search" else "/api/v3/search"
+  searchUrl: if (data is 'online' and debug) then "http://#{tenant}.imagoapp.com/api/v3/search" else "/api/v3/search"
 
   search: (query) ->
     # console.log 'search...', query
