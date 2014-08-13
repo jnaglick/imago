@@ -2,63 +2,67 @@ class imagoModel extends Service
 
   constructor: ($http, $location, $q, $rootScope, $filter, imagoUtils) ->
 
-    @list = {}
+  data: []
 
-    @tenant = ''
+  tenant: ''
 
-    @searchUrl = if (data is 'online' and debug) then "http://#{tenant}.imagoapp.com/api/v3/search" else "/api/v3/search"
+  searchUrl: (data is 'online' and debug) then "http://#{tenant}.imagoapp.com/api/v3/search" else "/api/v3/search"
 
-    @search = (query) ->
-      # console.log 'search...', query
-      params = @formatQuery query
-      return $http.post(@searchUrl, angular.toJson(params))
+  search: (query) ->
+    # console.log 'search...', query
+    params = @formatQuery query
+    return $http.post(@searchUrl, angular.toJson(params))
 
     # TODO ISSUE: This getData set up is only good if we get exactly one object back.
     #      If the post returns an array with multiple objects each with their own path
     #      the current getData would only add the first object in the array, and if we looped
     #      over the array we'd add a new property onto list for each object in response.data
-    #      Maybe we should find a different approach to naming the 'keys' in @list
-    @getData = (query, cache) ->
-      # query = $location.$$path unless query
-      if angular.isString query
-        query =
-          [path: query]
+    #      Maybe we should find a different approach to naming the 'keys' in @list.
 
-      query = imagoUtils.toArray query
+  getData: (query, cache) ->
+    # query = $location.$$path unless query
+    if angular.isString query
+      query =
+        [path: query]
 
-      promises = []
+    query = imagoUtils.toArray query
 
-      angular.forEach query, (value) =>
-        promises.push @search(value).then (response) =>
-          return unless response.data.length > 0
-          @list[response.data[0].path] or= []
+    promises = []
 
-          response.data[0].page = value.page if value.page
+    angular.forEach query, (value) =>
+      promises.push @search(value).then (response) =>
+        return unless response.data.length > 0
 
-          for asset in @list[response.data[0].path]
-            return if angular.equals(asset, response.data[0])
+        response.data[0].page = value.page if value.page
 
-          @list[response.data[0].path].push response.data[0]
+        for data in response.data
+          for asset in @data
+            continue if angular.equals(asset, data)
+             @create data
 
-      $q.all(promises).then =>
-        return true
+    $q.all(promises).then (data) =>
+      return data
 
-    @formatQuery = (query) ->
-      querydict = {}
-      if angular.isArray(query)
-        for elem in query
-          for key of elem
-            value = elem[key]
-            querydict[key] or= []
-            querydict[key].push(value)
-      else
-        for key of query
-          value = query[key]
-          querydict[key] = if angular.isArray(value) then value else [value]
-      for key in ['page', 'pagesize']
-        if querydict.hasOwnProperty(key)
-          querydict[key] = querydict[key][0]
-      querydict
+  formatQuery: (query) ->
+    querydict = {}
+    if angular.isArray(query)
+      for elem in query
+        for key of elem
+          value = elem[key]
+          querydict[key] or= []
+          querydict[key].push(value)
+    else
+      for key of query
+        value = query[key]
+        querydict[key] = if angular.isArray(value) then value else [value]
+    for key in ['page', 'pagesize']
+      if querydict.hasOwnProperty(key)
+        querydict[key] = querydict[key][0]
+    querydict
+
+  create: (data) ->
+    #create model here and save to @data
+    
 
     @findAsset = (path, index) =>
       return @list[path][index or 0]
