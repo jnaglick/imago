@@ -1,6 +1,6 @@
 class imagoModel extends Service
 
-  constructor: ($http, $location, $q, $rootScope, $filter, imagoUtils) ->
+  constructor: (@$http, @$location, @$q, @$filter, @imagoUtils) ->
 
   data: []
 
@@ -11,7 +11,7 @@ class imagoModel extends Service
   search: (query) ->
     # console.log 'search...', query
     params = @formatQuery query
-    return $http.post(@searchUrl, angular.toJson(params))
+    return @$http.post(@searchUrl, angular.toJson(params))
 
     # TODO ISSUE: This getData set up is only good if we get exactly one object back.
     #      If the post returns an array with multiple objects each with their own path
@@ -20,12 +20,12 @@ class imagoModel extends Service
     #      Maybe we should find a different approach to naming the 'keys' in @list.
 
   getData: (query, cache) ->
-    # query = $location.$$path unless query
+    # query = @$location.$$path unless query
     if angular.isString query
       query =
         [path: query]
 
-    query = imagoUtils.toArray query
+    query = @imagoUtils.toArray query
 
     promises = []
 
@@ -40,7 +40,7 @@ class imagoModel extends Service
             continue if angular.equals(asset, data)
              @create data
 
-    $q.all(promises).then (data) =>
+    @$q.all(promises).then (data) =>
       return data
 
   formatQuery: (query) ->
@@ -62,7 +62,7 @@ class imagoModel extends Service
 
   create: (data) ->
     #create model here and save to @data
-    
+
 
     @findAsset = (path, index) =>
       return @list[path][index or 0]
@@ -70,53 +70,53 @@ class imagoModel extends Service
     @findByAttr = (path, attr) =>
       _.find @list[path], attr
 
-    @find = (id, path = $location.$$path) =>
+    @find = (id, path = @$location.$$path) =>
       _.find @list[path].assets, '_id' : id
 
-    @findIdx = (id, path = $location.$$path) =>
+    @findIdx = (id, path = @$location.$$path) =>
       _.findIndex @list[path].assets, '_id' : id
 
-    @create = (asset, path = $location.$$path) =>
+    @create = (asset, path = @$location.$$path) =>
       return unless asset._id
       @list[path].assets.unshift asset
 
-    @update = (asset, path = $location.$$path) =>
+    @update = (asset, path = @$location.$$path) =>
       return unless asset._id
 
       id =
         _id: asset._id
 
-      filter = $filter('filter')(@list[path].assets, id)
+      filter = @$filter('filter')(@list[path].assets, id)
 
       return if filter.length is 0
       for result in filter
         order = @list[path].assets.indexOf result
         @list[path].assets[order] = asset
 
-    @delete = (id, path = $location.$$path) =>
+    @delete = (id, path = @$location.$$path) =>
       return unless id
 
       id =
         _id: id
 
-      filter = $filter('filter')(@list[path].assets, id)
+      filter = @$filter('filter')(@list[path].assets, id)
       return if filter.length is 0
       for result in filter
         order = @list[path].assets.indexOf result
         @list[path].assets.splice order, 1
 
-    @move = (data, path = $location.$$path) =>
+    @move = (data, path = @$location.$$path) =>
       for asset in data.assets
         id =
           _id: asset._id
 
-        filter = $filter('filter')(@list[path].assets, id)
+        filter = @$filter('filter')(@list[path].assets, id)
         if filter.length > 0
           for result in filter
             order = @list[path].assets.indexOf result
             @list[path].assets.splice order, 1
 
-    @paste = (assets, checkdups=true, path = $location.$$path) =>
+    @paste = (assets, checkdups=true, path = @$location.$$path) =>
       for asset in assets
         if not checkdups or not @checkDuplicate(asset.name)
           @list[path].assets.unshift asset
@@ -131,7 +131,7 @@ class imagoModel extends Service
 
           @list[path].assets.unshift asset
 
-    @reindexAll = (path = $location.$$path) =>
+    @reindexAll = (path = @$location.$$path) =>
 
       return if @list[path].sortorder is '-order'
 
@@ -161,7 +161,7 @@ class imagoModel extends Service
       #   .then (result) ->
       #     console.log 'result batch updating', result
 
-    @orderChanged = (start, finish, dropped, path = $location.$$path) =>
+    @orderChanged = (start, finish, dropped, path = @$location.$$path) =>
       if dropped < finish
         finish = finish+1
         prev = if @list[path].assets[dropped-1] then @list[path].assets[dropped-1].order else @list[path].assets[0]+1000
@@ -199,14 +199,14 @@ class imagoModel extends Service
       #     console.log 'new order saved', result
 
 
-    @reorder = (path = $location.$$path) =>
+    @reorder = (path = @$location.$$path) =>
       list =
         order : @list[path].sortorder
         assets: @list[path].assets
 
       @worker.postMessage list
 
-    @batchChange = (assets, save = false, path = $location.$$path) =>
+    @batchChange = (assets, save = false, path = @$location.$$path) =>
       for asset in assets
         idx = @findIdx(asset._id)
         return if idx is -1
@@ -230,19 +230,19 @@ class imagoModel extends Service
 
         # imagoRest.asset.batch object
 
-    @checkDuplicate = (name, path = $location.$$path) ->
+    @checkDuplicate = (name, path = @$location.$$path) ->
       return unless name
       nameIfDuplicate = name
-      nameIfDuplicate = imagoUtils.normalize nameIfDuplicate
+      nameIfDuplicate = @imagoUtils.normalize nameIfDuplicate
 
       normalizeList = []
 
       for asset in @list[path].assets
-        normalizeList.push imagoUtils.normalize asset.name
+        normalizeList.push @imagoUtils.normalize asset.name
 
-      if $filter('filter')(normalizeList, nameIfDuplicate, true).length > 1 then return true  else return false
+      if @$filter('filter')(normalizeList, nameIfDuplicate, true).length > 1 then return true  else return false
 
-    @prepareCreation = (asset, path = $location.$$path) =>
+    @prepareCreation = (asset, path = @$location.$$path) =>
       return unless asset.name or not @checkDuplicate asset.name
 
       asset.parent = @list[path]._id
