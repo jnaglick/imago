@@ -747,7 +747,7 @@ imagoModel = (function() {
     this.paste = __bind(this.paste, this);
     this.move = __bind(this.move, this);
     this["delete"] = __bind(this["delete"], this);
-    this.create = __bind(this.create, this);
+    this.prependAsset = __bind(this.prependAsset, this);
     this.findIdx = __bind(this.findIdx, this);
     this.find = __bind(this.find, this);
     this.findByAttr = __bind(this.findByAttr, this);
@@ -757,7 +757,7 @@ imagoModel = (function() {
 
   imagoModel.prototype.tenant = '';
 
-  imagoModel.prototype.searchUrl = data && data === 'online' && debug ? "http://" + tenant + ".imagoapp.com/api/v3/search" : "/api/v3/search";
+  imagoModel.prototype.searchUrl = data === 'online' && debug ? "http://" + tenant + ".imagoapp.com/api/v3/search" : "/api/v3/search";
 
   imagoModel.prototype.search = function(query) {
     var params;
@@ -880,7 +880,7 @@ imagoModel = (function() {
     }
   };
 
-  imagoModel.prototype.create = function(asset, path) {
+  imagoModel.prototype.prependAsset = function(asset, path) {
     if (path == null) {
       path = this.$location.$$path;
     }

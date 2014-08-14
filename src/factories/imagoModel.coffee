@@ -85,7 +85,7 @@ class imagoModel extends Service
             #instead of calling create on the collections children
             # I just push them straight to @data
             @data.push _.defaults(methods, item)
-            
+
     # returns collection + methods without it's items
     return @data.push _.defaults(methods, data)
 
@@ -97,7 +97,7 @@ class imagoModel extends Service
 
   findIdx: (id, path = @$location.$$path) =>
 
-  create: (asset, path = @$location.$$path) =>
+  prependAsset: (asset, path = @$location.$$path) =>
     return unless asset._id
     @list[path].assets.unshift asset
 
