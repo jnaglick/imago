@@ -841,14 +841,7 @@ imagoModel = (function() {
   };
 
   imagoModel.prototype.create = function(data) {
-    var methods, model;
-    if (data.items) {
-      data = _.omit(data, 'items', function(items) {
-        return _(items).forEach(function(item) {
-          return this.create(item);
-        });
-      });
-    }
+    var methods;
     methods = {
       findParent: function() {
         return _.find(this.data, {
@@ -863,8 +856,14 @@ imagoModel = (function() {
         });
       }
     };
-    this.data.push(model = _.defaults(methods, data));
-    return model;
+    if (data.items) {
+      data = _.omit(data, 'items', function(items) {
+        return _(items).forEach(function(item) {
+          return this.data.push(_.defaults(methods, item));
+        });
+      });
+    }
+    return this.data.push(_.defaults(methods, data));
   };
 
   imagoModel.prototype.findByAttr = function(path, attr) {

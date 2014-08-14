@@ -65,16 +65,6 @@ class imagoModel extends Service
   create: (data) ->
     #create model here and save to @data
 
-    # removes items and calls @create for each item in items, then
-    # then saves data without it's items so it can continue.
-    # Not sure if remove the items and calling create before
-    # saving the parent is a good idea
-    # trying to use lodash as much as possible to be consistent
-    if data.items
-      data = _.omit data, 'items', (items) ->
-          _(items).forEach (item) ->
-            @create item
-
     # ditched find child because that will be covered by findId or findbyattr
     methods =
       findParent: ->
@@ -83,9 +73,21 @@ class imagoModel extends Service
       findChildren: ->
         _.find(@data, {parent: {_id: @id}})
 
-    @data.push model = _.defaults(methods, data)
+    # removes items and calls @create for each item in items, then
+    # then saves data without it's items so it can continue.
+    # Not sure if remove the items and calling create before
+    # saving the parent is a good idea
+    # trying to use lodash as much as possible to be consistent
 
-    return model
+    if data.items
+      data = _.omit data, 'items', (items) ->
+          _(items).forEach (item) ->
+            #instead of calling create on the collections children
+            # I just push them straight to @data
+            @data.push _.defaults(methods, item)
+            
+    # returns collection + methods without it's items
+    return @data.push _.defaults(methods, data)
 
   findByAttr: (path, attr) =>
     _.find @list[path], attr
