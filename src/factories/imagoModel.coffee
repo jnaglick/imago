@@ -68,7 +68,7 @@ class imagoModel extends Service
     # ditched find child because that will be covered by findId or findbyattr
     methods =
       findParent: ->
-        _.find(@data, {id: @id})
+        _.find(@data, {_id: @id})
 
       findChildren: ->
         _.find(@data, {parent: @id})
