@@ -37,7 +37,7 @@ class imagoModel extends Service
 
         for data in response.data
           for asset in @data
-            continue if angular.equals(asset, data)
+            return unless angular.equals(asset, data)
              # if this returns the model
              @create data
 
