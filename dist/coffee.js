@@ -751,6 +751,8 @@ imagoModel = (function() {
     this.findIdx = __bind(this.findIdx, this);
     this.find = __bind(this.find, this);
     this.findByAttr = __bind(this.findByAttr, this);
+    this.findParent = __bind(this.findParent, this);
+    this.findChildren = __bind(this.findChildren, this);
   }
 
   imagoModel.prototype.data = [];
@@ -836,28 +838,31 @@ imagoModel = (function() {
   };
 
   imagoModel.prototype.create = function(data) {
-    var methods, model;
-    methods = {
-      findParent: function() {
-        return _.find(this.data, {
-          _id: this.id
-        });
-      },
-      findChildren: function() {
-        return _.find(this.data, {
-          parent: this.id
-        });
-      }
-    };
+    var model;
     if (data.assets) {
-      data = _.omit(data, 'assets', function(items) {
-        return _(items).forEach(function(item) {
-          return this.data.push(_.defaults(methods, item));
-        });
-      });
+      _.forEach(data.assets, (function(_this) {
+        return function(asset) {
+          return _this.data.push(asset);
+        };
+      })(this));
+      this.data.push(model = _.omit(data, 'assets'));
+      return model;
+    } else {
+      this.data.push(data);
+      return data;
     }
-    this.data.push(model = _.defaults(methods, data));
-    return model;
+  };
+
+  imagoModel.prototype.findChildren = function(asset) {
+    return _.where(this.data, {
+      parent: asset._id
+    });
+  };
+
+  imagoModel.prototype.findParent = function(asset) {
+    return _.find(this.data, {
+      _id: asset.parent
+    });
   };
 
   imagoModel.prototype.findByAttr = function(path, attr) {

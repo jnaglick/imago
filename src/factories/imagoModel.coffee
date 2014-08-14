@@ -63,33 +63,20 @@ class imagoModel extends Service
     querydict
 
   create: (data) ->
-    #create model here and save to @data
-
-    # ditched find child because that will be covered by findId or findbyattr
-    methods =
-      findParent: ->
-        _.find(@data, {_id: @id})
-
-      findChildren: ->
-        _.find(@data, {parent: @id})
-
-    # removes items and calls @create for each item in items, then
-    # then saves data without it's items so it can continue.
-    # Not sure if remove the items and calling create before
-    # saving the parent is a good idea
-    # trying to use lodash as much as possible to be consistent
-
     if data.assets
-      data = _.omit data, 'assets', (items) ->
-          _(items).forEach (item) ->
-            #instead of calling create on the collections children
-            # I just push them straight to @data
-            @data.push _.defaults(methods, item)
+      _.forEach data.assets, (asset) =>
+        @data.push asset
+      @data.push model = _.omit data, 'assets'
+      return model
+    else
+      @data.push data
+      return data
 
-    # returns collection + methods without it's items
-    @data.push model = _.defaults(methods, data)
+  findChildren: (asset) =>
+    _.where @data, {parent: asset._id}
 
-    return model
+  findParent: (asset) =>
+    _.find @data, {_id: asset.parent}
 
   findByAttr: (path, attr) =>
     _.find @list[path], attr
