@@ -856,8 +856,8 @@ imagoModel = (function() {
         });
       }
     };
-    if (data.items) {
-      data = _.omit(data, 'items', function(items) {
+    if (data.assets) {
+      data = _.omit(data, 'assets', function(items) {
         return _(items).forEach(function(item) {
           return this.data.push(_.defaults(methods, item));
         });

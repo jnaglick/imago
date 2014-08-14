@@ -79,8 +79,8 @@ class imagoModel extends Service
     # saving the parent is a good idea
     # trying to use lodash as much as possible to be consistent
 
-    if data.items
-      data = _.omit data, 'items', (items) ->
+    if data.assets
+      data = _.omit data, 'assets', (items) ->
           _(items).forEach (item) ->
             #instead of calling create on the collections children
             # I just push them straight to @data
