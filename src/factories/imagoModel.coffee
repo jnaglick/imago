@@ -68,10 +68,10 @@ class imagoModel extends Service
     # ditched find child because that will be covered by findId or findbyattr
     methods =
       findParent: ->
-        _.find(@data, {_id: @id})
+        _.find(@data, {id: @id})
 
       findChildren: ->
-        _.find(@data, {parent: {_id: @id}})
+        _.find(@data, {parent: @id})
 
     # removes items and calls @create for each item in items, then
     # then saves data without it's items so it can continue.

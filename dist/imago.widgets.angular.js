@@ -845,14 +845,12 @@ imagoModel = (function() {
     methods = {
       findParent: function() {
         return _.find(this.data, {
-          _id: this.id
+          id: this.id
         });
       },
       findChildren: function() {
         return _.find(this.data, {
-          parent: {
-            _id: this.id
-          }
+          parent: this.id
         });
       }
     };
