@@ -87,7 +87,9 @@ class imagoModel extends Service
             @data.push _.defaults(methods, item)
 
     # returns collection + methods without it's items
-    return @data.push _.defaults(methods, data)
+    @data.push model = _.defaults(methods, data)
+
+    return model
 
   findByAttr: (path, attr) =>
     _.find @list[path], attr

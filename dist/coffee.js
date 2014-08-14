@@ -836,7 +836,7 @@ imagoModel = (function() {
   };
 
   imagoModel.prototype.create = function(data) {
-    var methods;
+    var methods, model;
     methods = {
       findParent: function() {
         return _.find(this.data, {
@@ -858,7 +858,8 @@ imagoModel = (function() {
         });
       });
     }
-    return this.data.push(_.defaults(methods, data));
+    this.data.push(model = _.defaults(methods, data));
+    return model;
   };
 
   imagoModel.prototype.findByAttr = function(path, attr) {
