@@ -759,6 +759,8 @@ imagoModel = (function() {
 
   imagoModel.prototype.tenant = '';
 
+  imagoModel.prototype.currentCollection = '';
+
   imagoModel.prototype.searchUrl = data === 'online' && debug ? "http://" + tenant + ".imagoapp.com/api/v3/search" : "/api/v3/search";
 
   imagoModel.prototype.search = function(query) {

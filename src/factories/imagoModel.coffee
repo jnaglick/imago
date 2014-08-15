@@ -6,6 +6,8 @@ class imagoModel extends Service
 
   tenant: ''
 
+  currentCollection: ''
+
   searchUrl: if (data is 'online' and debug) then "http://#{tenant}.imagoapp.com/api/v3/search" else "/api/v3/search"
 
   search: (query) ->
@@ -78,13 +80,14 @@ class imagoModel extends Service
   findParent: (asset) =>
     _.find @data, {_id: asset.parent}
 
-  findByAttr: (path, attr) =>
-    _.find @list[path], attr
+  findByAttr: (attr) =>
+    _.find @data, attr
 
-  find: (id, path = @$location.$$path) =>
-    _.find @list[path].assets, '_id' : id
+  find: (id) =>
+    _.find @data, '_id' : id
 
-  findIdx: (id, path = @$location.$$path) =>
+  findIdx: (id) =>
+    _.findIndex @data, id
 
   prependAsset: (asset, path = @$location.$$path) =>
     return unless asset._id
@@ -96,24 +99,25 @@ class imagoModel extends Service
     id =
       _id: asset._id
 
-    filter = @$filter('filter')(@list[path].assets, id)
+    filter = @findByAttr id
 
     return if filter.length is 0
     for result in filter
       order = @list[path].assets.indexOf result
       @list[path].assets[order] = asset
 
-  delete: (id, path = @$location.$$path) =>
+  delete: (id) =>
     return unless id
 
     id =
       _id: id
 
-    filter = @$filter('filter')(@list[path].assets, id)
+    filter = @findByAttr id
     return if filter.length is 0
     for result in filter
-      order = @list[path].assets.indexOf result
-      @list[path].assets.splice order, 1
+      console.log 'result', result
+      order = _.findIdx result._id
+      @data.splice order, 1
 
   move: (data, path = @$location.$$path) =>
     for asset in data.assets
