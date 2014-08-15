@@ -89,11 +89,11 @@ class imagoModel extends Service
   findIdx: (id) =>
     _.findIndex @data, id
 
-  prependAsset: (asset, path = @$location.$$path) =>
+  add: (asset) =>
     return unless asset._id
-    @list[path].assets.unshift asset
+    @data.push asset
 
-  update = (asset, path = @$location.$$path) =>
+  update = (asset) =>
     return unless asset._id
 
     id =
@@ -103,8 +103,8 @@ class imagoModel extends Service
 
     return if filter.length is 0
     for result in filter
-      order = @list[path].assets.indexOf result
-      @list[path].assets[order] = asset
+      order = _.findIdx result._id
+      @data[order] = asset
 
   delete: (id) =>
     return unless id
@@ -119,21 +119,21 @@ class imagoModel extends Service
       order = _.findIdx result._id
       @data.splice order, 1
 
-  move: (data, path = @$location.$$path) =>
+  move: (data) =>
     for asset in data.assets
       id =
         _id: asset._id
 
-      filter = @$filter('filter')(@list[path].assets, id)
+      filter = @$filter('filter')(@data, id)
       if filter.length > 0
         for result in filter
-          order = @list[path].assets.indexOf result
-          @list[path].assets.splice order, 1
+          order = _.findIdx result._id
+          @data.splice order, 1
 
-  paste: (assets, checkdups=true, path = @$location.$$path) =>
+  paste: (assets, checkdups=true) =>
     for asset in assets
-      if not checkdups or not @checkDuplicate(asset.name)
-        @list[path].assets.unshift asset
+      if not checkdups or not @checkDuplicate(asset.name, assets)
+        @data.push asset
       else
         i = 1
         exists = true
@@ -143,7 +143,7 @@ class imagoModel extends Service
           asset.name = "#{original_name}_#{i}"
           i++
 
-        @list[path].assets.unshift asset
+        @data.push asset
 
   reindexAll:  (path = @$location.$$path) =>
 
@@ -244,24 +244,28 @@ class imagoModel extends Service
 
       # imagoRest.asset.batch object
 
-  checkDuplicate: (name, path = @$location.$$path) ->
+  checkDuplicate: (name, assets) =>
     return unless name
     nameIfDuplicate = name
     nameIfDuplicate = @imagoUtils.normalize nameIfDuplicate
 
     normalizeList = []
 
-    for asset in @list[path].assets
+    for asset in assets
       normalizeList.push @imagoUtils.normalize asset.name
 
     if @$filter('filter')(normalizeList, nameIfDuplicate, true).length > 1 then return true  else return false
 
-  prepareCreation: (asset, path = @$location.$$path) =>
-    return unless asset.name or not @checkDuplicate asset.name
+  prepareCreation: (asset, parent) =>
+    return unless asset.name
 
-    asset.parent = @list[path]._id
-    asset._tenant = @list[path]._tenant
-    asset.order = (if @list[path].assets.length is 0 then 1000 else @list[path].assets[0].order + 1000)
+    assets = @findChildren _id : parent
+
+    return unless @checkDuplicate asset.name
+
+    asset.parent = parent
+    asset._tenant = @data.tenant
+    asset.order = (if assets.length is 0 then 1000 else assets[0].order + 1000)
 
     return asset
 

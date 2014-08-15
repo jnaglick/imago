@@ -745,6 +745,7 @@ imagoModel = (function() {
     this.$filter = $filter;
     this.imagoUtils = imagoUtils;
     this.prepareCreation = __bind(this.prepareCreation, this);
+    this.checkDuplicate = __bind(this.checkDuplicate, this);
     this.batchChange = __bind(this.batchChange, this);
     this.reorder = __bind(this.reorder, this);
     this.orderChanged = __bind(this.orderChanged, this);
@@ -752,7 +753,7 @@ imagoModel = (function() {
     this.paste = __bind(this.paste, this);
     this.move = __bind(this.move, this);
     this["delete"] = __bind(this["delete"], this);
-    this.prependAsset = __bind(this.prependAsset, this);
+    this.add = __bind(this.add, this);
     this.findIdx = __bind(this.findIdx, this);
     this.find = __bind(this.find, this);
     this.findByAttr = __bind(this.findByAttr, this);
@@ -872,88 +873,72 @@ imagoModel = (function() {
     });
   };
 
-  imagoModel.prototype.findByAttr = function(path, attr) {
-    return _.find(this.list[path], attr);
+  imagoModel.prototype.findByAttr = function(attr) {
+    return _.find(this.data, attr);
   };
 
-  imagoModel.prototype.find = function(id, path) {
-    if (path == null) {
-      path = this.$location.$$path;
-    }
-    return _.find(this.list[path].assets, {
+  imagoModel.prototype.find = function(id) {
+    return _.find(this.data, {
       '_id': id
     });
   };
 
-  imagoModel.prototype.findIdx = function(id, path) {
-    if (path == null) {
-      path = this.$location.$$path;
-    }
+  imagoModel.prototype.findIdx = function(id) {
+    return _.findIndex(this.data, id);
   };
 
-  imagoModel.prototype.prependAsset = function(asset, path) {
-    if (path == null) {
-      path = this.$location.$$path;
-    }
+  imagoModel.prototype.add = function(asset) {
     if (!asset._id) {
       return;
     }
-    return this.list[path].assets.unshift(asset);
+    return this.data.push(asset);
   };
 
-  update = function(asset, path) {
+  update = function(asset) {
     var filter, id, order, result, _i, _len, _results;
-    if (path == null) {
-      path = imagoModel.$location.$$path;
-    }
     if (!asset._id) {
       return;
     }
     id = {
       _id: asset._id
     };
-    filter = imagoModel.$filter('filter')(imagoModel.list[path].assets, id);
+    filter = imagoModel.findByAttr(id);
     if (filter.length === 0) {
       return;
     }
     _results = [];
     for (_i = 0, _len = filter.length; _i < _len; _i++) {
       result = filter[_i];
-      order = imagoModel.list[path].assets.indexOf(result);
-      _results.push(imagoModel.list[path].assets[order] = asset);
+      order = _.findIdx(result._id);
+      _results.push(imagoModel.data[order] = asset);
     }
     return _results;
   };
 
-  imagoModel.prototype["delete"] = function(id, path) {
+  imagoModel.prototype["delete"] = function(id) {
     var filter, order, result, _i, _len, _results;
-    if (path == null) {
-      path = this.$location.$$path;
-    }
     if (!id) {
       return;
     }
     id = {
       _id: id
     };
-    filter = this.$filter('filter')(this.list[path].assets, id);
+    filter = this.findByAttr(id);
     if (filter.length === 0) {
       return;
     }
     _results = [];
     for (_i = 0, _len = filter.length; _i < _len; _i++) {
       result = filter[_i];
-      order = this.list[path].assets.indexOf(result);
-      _results.push(this.list[path].assets.splice(order, 1));
+      console.log('result', result);
+      order = _.findIdx(result._id);
+      _results.push(this.data.splice(order, 1));
     }
     return _results;
   };
 
-  imagoModel.prototype.move = function(data, path) {
+  imagoModel.prototype.move = function(data) {
     var asset, filter, id, order, result, _i, _len, _ref, _results;
-    if (path == null) {
-      path = this.$location.$$path;
-    }
     _ref = data.assets;
     _results = [];
     for (_i = 0, _len = _ref.length; _i < _len; _i++) {
@@ -961,15 +946,15 @@ imagoModel = (function() {
       id = {
         _id: asset._id
       };
-      filter = this.$filter('filter')(this.list[path].assets, id);
+      filter = this.$filter('filter')(this.data, id);
       if (filter.length > 0) {
         _results.push((function() {
           var _j, _len1, _results1;
           _results1 = [];
           for (_j = 0, _len1 = filter.length; _j < _len1; _j++) {
             result = filter[_j];
-            order = this.list[path].assets.indexOf(result);
-            _results1.push(this.list[path].assets.splice(order, 1));
+            order = _.findIdx(result._id);
+            _results1.push(this.data.splice(order, 1));
           }
           return _results1;
         }).call(this));
@@ -980,19 +965,16 @@ imagoModel = (function() {
     return _results;
   };
 
-  imagoModel.prototype.paste = function(assets, checkdups, path) {
+  imagoModel.prototype.paste = function(assets, checkdups) {
     var asset, exists, i, original_name, _i, _len, _results;
     if (checkdups == null) {
       checkdups = true;
     }
-    if (path == null) {
-      path = this.$location.$$path;
-    }
     _results = [];
     for (_i = 0, _len = assets.length; _i < _len; _i++) {
       asset = assets[_i];
-      if (!checkdups || !this.checkDuplicate(asset.name)) {
-        _results.push(this.list[path].assets.unshift(asset));
+      if (!checkdups || !this.checkDuplicate(asset.name, assets)) {
+        _results.push(this.data.push(asset));
       } else {
         i = 1;
         exists = true;
@@ -1002,7 +984,7 @@ imagoModel = (function() {
           asset.name = "" + original_name + "_" + i;
           i++;
         }
-        _results.push(this.list[path].assets.unshift(asset));
+        _results.push(this.data.push(asset));
       }
     }
     return _results;
@@ -1116,20 +1098,16 @@ imagoModel = (function() {
     }
   };
 
-  imagoModel.prototype.checkDuplicate = function(name, path) {
-    var asset, nameIfDuplicate, normalizeList, _i, _len, _ref;
-    if (path == null) {
-      path = this.$location.$$path;
-    }
+  imagoModel.prototype.checkDuplicate = function(name, assets) {
+    var asset, nameIfDuplicate, normalizeList, _i, _len;
     if (!name) {
       return;
     }
     nameIfDuplicate = name;
     nameIfDuplicate = this.imagoUtils.normalize(nameIfDuplicate);
     normalizeList = [];
-    _ref = this.list[path].assets;
-    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-      asset = _ref[_i];
+    for (_i = 0, _len = assets.length; _i < _len; _i++) {
+      asset = assets[_i];
       normalizeList.push(this.imagoUtils.normalize(asset.name));
     }
     if (this.$filter('filter')(normalizeList, nameIfDuplicate, true).length > 1) {
@@ -1139,16 +1117,20 @@ imagoModel = (function() {
     }
   };
 
-  imagoModel.prototype.prepareCreation = function(asset, path) {
-    if (path == null) {
-      path = this.$location.$$path;
-    }
-    if (!(asset.name || !this.checkDuplicate(asset.name))) {
+  imagoModel.prototype.prepareCreation = function(asset, parent) {
+    var assets;
+    if (!asset.name) {
       return;
     }
-    asset.parent = this.list[path]._id;
-    asset._tenant = this.list[path]._tenant;
-    asset.order = (this.list[path].assets.length === 0 ? 1000 : this.list[path].assets[0].order + 1000);
+    assets = this.findChildren({
+      _id: parent
+    });
+    if (!this.checkDuplicate(asset.name)) {
+      return;
+    }
+    asset.parent = parent;
+    asset._tenant = this.data.tenant;
+    asset.order = (assets.length === 0 ? 1000 : assets[0].order + 1000);
     return asset;
   };
 
