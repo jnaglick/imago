@@ -248,7 +248,7 @@ class imagoModel extends Service
     return unless @checkDuplicate asset.name
 
     asset.parent = parent
-    asset._tenant = @data.tenant
+    asset._tenant = @tenant
     asset.order = (if assets.length is 0 then 1000 else assets[0].order + 1000)
 
     return asset

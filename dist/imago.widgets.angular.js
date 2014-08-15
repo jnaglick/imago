@@ -874,7 +874,7 @@ imagoModel = (function() {
   };
 
   imagoModel.prototype.findByAttr = function(attr) {
-    return _.find(this.data, attr);
+    return _.where(this.data, attr);
   };
 
   imagoModel.prototype.find = function(id) {
@@ -1084,7 +1084,7 @@ imagoModel = (function() {
       return;
     }
     asset.parent = parent;
-    asset._tenant = this.data.tenant;
+    asset._tenant = this.tenant;
     asset.order = (assets.length === 0 ? 1000 : assets[0].order + 1000);
     return asset;
   };
