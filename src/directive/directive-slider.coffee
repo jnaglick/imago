@@ -1,6 +1,6 @@
 class imagoSlider extends Directive
 
-  constructor: ($q, $window, imagoPanel) ->
+  constructor: ($q, $window, imagoModel) ->
     return {
       replace: true
       scope: true
@@ -45,8 +45,8 @@ class imagoSlider extends Directive
           self.watch() unless attrs['watch']
 
           unless angular.isArray(data)
-            imagoPanel.getData(data.path).then (response) ->
-              data = response[0].items
+            imagoModel.getData(data.path).then (response) ->
+              data = imagoModel.findChildren(response[0])
               prepareSlides(data)
           else
             prepareSlides(data)

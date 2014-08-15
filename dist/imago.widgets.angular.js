@@ -337,7 +337,7 @@ angular.module('imago.widgets.angular').directive('imagoImage', ['$window', '$q'
 var imagoSlider;
 
 imagoSlider = (function() {
-  function imagoSlider($q, $window, imagoPanel) {
+  function imagoSlider($q, $window, imagoModel) {
     return {
       replace: true,
       scope: true,
@@ -391,8 +391,8 @@ imagoSlider = (function() {
               self.watch();
             }
             if (!angular.isArray(data)) {
-              return imagoPanel.getData(data.path).then(function(response) {
-                data = response[0].items;
+              return imagoModel.getData(data.path).then(function(response) {
+                data = imagoModel.findChildren(response[0]);
                 return prepareSlides(data);
               });
             } else {
@@ -469,7 +469,7 @@ imagoSlider = (function() {
 
 })();
 
-angular.module('imago.widgets.angular').directive('imagoSlider', ['$q', '$window', 'imagoPanel', imagoSlider]);
+angular.module('imago.widgets.angular').directive('imagoSlider', ['$q', '$window', 'imagoModel', imagoSlider]);
 
 var imagoVideo;
 
