@@ -81,7 +81,7 @@ class imagoModel extends Service
     _.find @data, {_id: asset.parent}
 
   findByAttr: (attr) =>
-    _.find @data, attr
+    _.where @data, attr
 
   find: (id) =>
     _.find @data, '_id' : id
@@ -95,40 +95,21 @@ class imagoModel extends Service
 
   update = (asset) =>
     return unless asset._id
-
-    id =
-      _id: asset._id
-
-    filter = @findByAttr id
-
-    return if filter.length is 0
-    for result in filter
-      order = _.findIdx result._id
-      @data[order] = asset
+    @data[_.indexOf(@data, asset)] = asset
 
   delete: (id) =>
     return unless id
-
-    id =
-      _id: id
-
-    filter = @findByAttr id
-    return if filter.length is 0
-    for result in filter
-      console.log 'result', result
-      order = _.findIdx result._id
-      @data.splice order, 1
+    #returns an array without the asset of id
+    @data = _.reject(@data, { _id: id })
 
   move: (data) =>
-    for asset in data.assets
-      id =
-        _id: asset._id
-
-      filter = @$filter('filter')(@data, id)
-      if filter.length > 0
-        for result in filter
-          order = _.findIdx result._id
-          @data.splice order, 1
+    # I'm not sure if thise will work as intended
+    # finds assets of a collection then reorders them
+    # and returns the reordered array
+    assets = @findChildren(data)
+    _.forEach assets, (asset) =>
+        order = _.indexOf assets, asset
+        assets.splice order, 1
 
   paste: (assets, checkdups=true) =>
     for asset in assets
@@ -213,10 +194,13 @@ class imagoModel extends Service
     #     console.log 'new order saved', result
 
 
-  reorder: (path = @$location.$$path) =>
+  reorder: (id) =>
+    # not sure if this fucks up the reorder let me know.
+    # we could also do this by path.
+    model = @findById(id)
     list =
-      order : @list[path].sortorder
-      assets: @list[path].assets
+      order : model.sortorder
+      assets: @findChildren(model)
 
     @worker.postMessage list
 

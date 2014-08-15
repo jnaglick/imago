@@ -895,74 +895,31 @@ imagoModel = (function() {
   };
 
   update = function(asset) {
-    var filter, id, order, result, _i, _len, _results;
     if (!asset._id) {
       return;
     }
-    id = {
-      _id: asset._id
-    };
-    filter = imagoModel.findByAttr(id);
-    if (filter.length === 0) {
-      return;
-    }
-    _results = [];
-    for (_i = 0, _len = filter.length; _i < _len; _i++) {
-      result = filter[_i];
-      order = _.findIdx(result._id);
-      _results.push(imagoModel.data[order] = asset);
-    }
-    return _results;
+    return imagoModel.data[_.indexOf(imagoModel.data, asset)] = asset;
   };
 
   imagoModel.prototype["delete"] = function(id) {
-    var filter, order, result, _i, _len, _results;
     if (!id) {
       return;
     }
-    id = {
+    return this.data = _.reject(this.data, {
       _id: id
-    };
-    filter = this.findByAttr(id);
-    if (filter.length === 0) {
-      return;
-    }
-    _results = [];
-    for (_i = 0, _len = filter.length; _i < _len; _i++) {
-      result = filter[_i];
-      console.log('result', result);
-      order = _.findIdx(result._id);
-      _results.push(this.data.splice(order, 1));
-    }
-    return _results;
+    });
   };
 
   imagoModel.prototype.move = function(data) {
-    var asset, filter, id, order, result, _i, _len, _ref, _results;
-    _ref = data.assets;
-    _results = [];
-    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-      asset = _ref[_i];
-      id = {
-        _id: asset._id
+    var assets;
+    assets = this.findChildren(data);
+    return _.forEach(assets, (function(_this) {
+      return function(asset) {
+        var order;
+        order = _.indexOf(assets, asset);
+        return assets.splice(order, 1);
       };
-      filter = this.$filter('filter')(this.data, id);
-      if (filter.length > 0) {
-        _results.push((function() {
-          var _j, _len1, _results1;
-          _results1 = [];
-          for (_j = 0, _len1 = filter.length; _j < _len1; _j++) {
-            result = filter[_j];
-            order = _.findIdx(result._id);
-            _results1.push(this.data.splice(order, 1));
-          }
-          return _results1;
-        }).call(this));
-      } else {
-        _results.push(void 0);
-      }
-    }
-    return _results;
+    })(this));
   };
 
   imagoModel.prototype.paste = function(assets, checkdups) {
@@ -1052,14 +1009,12 @@ imagoModel = (function() {
     return orderedList;
   };
 
-  imagoModel.prototype.reorder = function(path) {
-    var list;
-    if (path == null) {
-      path = this.$location.$$path;
-    }
+  imagoModel.prototype.reorder = function(id) {
+    var list, model;
+    model = this.findById(id);
     list = {
-      order: this.list[path].sortorder,
-      assets: this.list[path].assets
+      order: model.sortorder,
+      assets: this.findChildren(model)
     };
     return this.worker.postMessage(list);
   };
