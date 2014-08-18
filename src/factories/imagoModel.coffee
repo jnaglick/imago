@@ -1,6 +1,6 @@
 class imagoModel extends Service
   # I converted everything to the new syntax, but didn't refact the methods
-  constructor: (@$http, @$location, @$q, @$filter, @imagoUtils) ->
+  constructor: (@$rootScope, @$http, @$location, @$q, @$filter, @imagoUtils) ->
 
   data: []
 
@@ -75,7 +75,6 @@ class imagoModel extends Service
       return data
 
   findChildren: (asset) =>
-    console.log 'fired'
     _.where @data, {parent: asset._id}
 
   findParent: (asset) =>
@@ -92,16 +91,19 @@ class imagoModel extends Service
 
   add: (asset) =>
     return unless asset._id
-    @data.push asset
+    @data.unshift asset
+    @$rootScope.$broadcast 'assets:update'
 
   update = (asset) =>
     return unless asset._id
-    @data[_.indexOf(@data, asset)] = asset
+    @data[@findIdx(asset._id)] = asset
+    @$rootScope.$broadcast 'assets:update'
 
   delete: (id) =>
     return unless id
     # returns an array without the asset of id
     @data = _.reject(@data, { _id: id })
+    @$rootScope.$broadcast 'assets:update'
 
   move: (data) =>
     # I'm not sure if thise will work as intended
@@ -115,7 +117,7 @@ class imagoModel extends Service
   paste: (assets, checkdups=true) =>
     for asset in assets
       if not checkdups or not @isDuplicated(asset.name, assets)
-        @data.push asset
+        @data.unshift asset
       else
         i = 1
         exists = true
@@ -125,33 +127,33 @@ class imagoModel extends Service
           asset.name = "#{original_name}_#{i}"
           i++
 
-        @data.push asset
+        @data.unshift asset
 
-  reindexAll:  (path = @$location.$$path) =>
+  # reindexAll:  (path = @$location.$$path) =>
 
-    return if @list[path].sortorder is '-order'
+  #   return if @list[path].sortorder is '-order'
 
-    @list[path].sortorder is '-order'
-    @list[path].sortorder = '-order'
-    # imagoRest.asset.update @list
+  #   @list[path].sortorder is '-order'
+  #   @list[path].sortorder = '-order'
+  #   # imagoRest.asset.update @list
 
-    newList = []
+  #   newList = []
 
-    count = @list[path].assets.length
+  #   count = @list[path].assets.length
 
-    for asset, key in @list[path].assets
-      asset.order = (count-key) * 1000
-      ordered = {
-        _id: asset._id
-        order: asset.order
-      }
-      newList.push ordered
+  #   for asset, key in @list[path].assets
+  #     asset.order = (count-key) * 1000
+  #     ordered = {
+  #       _id: asset._id
+  #       order: asset.order
+  #     }
+  #     newList.push ordered
 
-    orderedList =
-      parent : @list[path]._id
-      assets : newList
+  #   orderedList =
+  #     parent : @list[path]._id
+  #     assets : newList
 
-    return orderedList
+  #   return orderedList
 
     # imagoRest.asset.batch(orderedList)
     #   .then (result) ->
@@ -247,5 +249,3 @@ class imagoModel extends Service
     asset.order = (if assets.length is 0 then 1000 else assets[0].order + 1000)
 
     return asset
-
-    # return imagoRest.asset.create(asset)
