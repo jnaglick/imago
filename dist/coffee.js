@@ -836,8 +836,8 @@ imagoModel = (function() {
   };
 
   imagoModel.prototype.create = function(data) {
-    if (data.items) {
-      _.forEach(data.items, (function(_this) {
+    if (data.assets) {
+      _.forEach(data.assets, (function(_this) {
         return function(asset) {
           if (_this.find(asset.id)) {
             return;

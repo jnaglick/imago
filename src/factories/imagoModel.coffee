@@ -65,8 +65,8 @@ class imagoModel extends Service
     querydict
 
   create: (data) ->
-    if data.items
-      _.forEach data.items, (asset) =>
+    if data.assets
+      _.forEach data.assets, (asset) =>
         return if @find(asset.id)
         @data.push asset
       @data.push data = _.omit data, 'items' unless @find(data.id)
