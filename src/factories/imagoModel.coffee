@@ -21,7 +21,7 @@ class imagoModel extends Service
     #      over the array we'd add a new property onto list for each object in response.data
     #      Maybe we should find a different approach to naming the 'keys' in @list.
 
-  getData: (query, cache) ->
+  getData: (query, cache) =>
     # query = @$location.$$path unless query
     if angular.isString query
       query =
@@ -31,20 +31,21 @@ class imagoModel extends Service
 
     promises = []
 
-    angular.forEach query, (value) =>
+    _.forEach query, (value) =>
       promises.push @search(value).then (response) =>
         return unless response.data.length > 0
 
-        response.data[0].page = value.page if value.page
+        if value.page
+          _.forEach response.data, (data) =>
+            data.page = value.page
 
-        for data in response.data
-          for asset in @data
-            return unless angular.equals(asset, data)
-             # if this returns the model
-             @create data
+        _.forEach response.data, (data) =>
+          @create data unless !!@find(data.id)
+
 
     @$q.all(promises).then (data) =>
       # What does data equal here.
+      data = _.flatten data
       return data
 
   formatQuery: (query) ->
