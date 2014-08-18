@@ -65,15 +65,14 @@ class imagoModel extends Service
     querydict
 
   create: (data) ->
-    return @find(data.id) if @find(data.id)
-
-    if data.assets
-      _.forEach data.assets, (asset) =>
+    if data.items
+      _.forEach data.items, (asset) =>
+        return if @find(asset.id)
         @data.push asset
-      @data.push model = _.omit data, 'assets'
-      return model
+      @data.push data = _.omit data, 'items' unless @find(data.id)
+      return data
     else
-      @data.push data
+      @data.push data unless @find(data.id)
       return data
 
   findChildren: (asset) =>

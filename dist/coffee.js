@@ -836,20 +836,23 @@ imagoModel = (function() {
   };
 
   imagoModel.prototype.create = function(data) {
-    var model;
-    if (this.find(data.id)) {
-      return this.find(data.id);
-    }
-    if (data.assets) {
-      _.forEach(data.assets, (function(_this) {
+    if (data.items) {
+      _.forEach(data.items, (function(_this) {
         return function(asset) {
+          if (_this.find(asset.id)) {
+            return;
+          }
           return _this.data.push(asset);
         };
       })(this));
-      this.data.push(model = _.omit(data, 'assets'));
-      return model;
+      if (!this.find(data.id)) {
+        this.data.push(data = _.omit(data, 'items'));
+      }
+      return data;
     } else {
-      this.data.push(data);
+      if (!this.find(data.id)) {
+        this.data.push(data);
+      }
       return data;
     }
   };
