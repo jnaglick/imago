@@ -39,8 +39,7 @@ class imagoModel extends Service
           _.forEach response.data, (data) =>
             data.page = value.page
 
-        _.forEach response.data, (data) =>
-          @create data unless !!@find(data.id)
+        _.forEach response.data, (data) => @create data
 
 
     @$q.all(promises).then (data) =>
@@ -66,6 +65,8 @@ class imagoModel extends Service
     querydict
 
   create: (data) ->
+    return unless !!@find(data)
+    
     if data.assets
       _.forEach data.assets, (asset) =>
         @data.push asset
