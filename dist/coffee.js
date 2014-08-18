@@ -754,6 +754,7 @@ imagoModel = (function() {
     this.findByAttr = __bind(this.findByAttr, this);
     this.findParent = __bind(this.findParent, this);
     this.findChildren = __bind(this.findChildren, this);
+    this.getData = __bind(this.getData, this);
   }
 
   imagoModel.prototype.data = [];
@@ -781,32 +782,26 @@ imagoModel = (function() {
     }
     query = this.imagoUtils.toArray(query);
     promises = [];
-    angular.forEach(query, (function(_this) {
+    _.forEach(query, (function(_this) {
       return function(value) {
         return promises.push(_this.search(value).then(function(response) {
-          var asset, data, _i, _j, _len, _len1, _ref, _ref1;
           if (!(response.data.length > 0)) {
             return;
           }
           if (value.page) {
-            response.data[0].page = value.page;
+            _.forEach(response.data, function(data) {
+              return data.page = value.page;
+            });
           }
-          _ref = response.data;
-          for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-            data = _ref[_i];
-            _ref1 = _this.data;
-            for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
-              asset = _ref1[_j];
-              if (!angular.equals(asset, data)) {
-                return _this.create(data);
-              }
-            }
-          }
+          return _.forEach(response.data, function(data) {
+            return _this.create(data);
+          });
         }));
       };
     })(this));
     return this.$q.all(promises).then((function(_this) {
       return function(data) {
+        data = _.flatten(data);
         return data;
       };
     })(this));
@@ -842,6 +837,9 @@ imagoModel = (function() {
 
   imagoModel.prototype.create = function(data) {
     var model;
+    if (this.find(data.id)) {
+      return;
+    }
     if (data.assets) {
       _.forEach(data.assets, (function(_this) {
         return function(asset) {
