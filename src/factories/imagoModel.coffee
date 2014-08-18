@@ -6,7 +6,7 @@ class imagoModel extends Service
 
   tenant: ''
 
-  currentCollection: ''
+  currentCollection: undefined
 
   searchUrl: if (data is 'online' and debug) then "http://#{tenant}.imagoapp.com/api/v3/search" else "/api/v3/search"
 
@@ -75,6 +75,7 @@ class imagoModel extends Service
       return data
 
   findChildren: (asset) =>
+    console.log 'fired'
     _.where @data, {parent: asset._id}
 
   findParent: (asset) =>
@@ -87,7 +88,7 @@ class imagoModel extends Service
     _.find @data, '_id' : id
 
   findIdx: (id) =>
-    _.findIndex @data, id
+    _.findIndex @data, '_id' : id
 
   add: (asset) =>
     return unless asset._id
@@ -99,7 +100,7 @@ class imagoModel extends Service
 
   delete: (id) =>
     return unless id
-    #returns an array without the asset of id
+    # returns an array without the asset of id
     @data = _.reject(@data, { _id: id })
 
   move: (data) =>
@@ -113,14 +114,14 @@ class imagoModel extends Service
 
   paste: (assets, checkdups=true) =>
     for asset in assets
-      if not checkdups or not @checkDuplicate(asset.name, assets)
+      if not checkdups or not @isDuplicated(asset.name, assets)
         @data.push asset
       else
         i = 1
         exists = true
         original_name = asset.name
         while exists
-          exists = @checkDuplicate(asset.name)
+          exists = @isDuplicated(asset.name)
           asset.name = "#{original_name}_#{i}"
           i++
 
@@ -156,42 +157,36 @@ class imagoModel extends Service
     #   .then (result) ->
     #     console.log 'result batch updating', result
 
-  orderChanged:  (start, finish, dropped, path = @$location.$$path) =>
+  orderChanged:  (start, finish, dropped, collectionId) =>
+    sortCollection = @findChildren _id : collectionId
+
     if dropped < finish
       finish = finish+1
-      prev = if @list[path].assets[dropped-1] then @list[path].assets[dropped-1].order else @list[path].assets[0]+1000
-      next = if @list[path].assets[finish] then @list[path].assets[finish].order else 0
-      assets = @list[path].assets.slice dropped, finish
+      prev = if sortCollection[dropped-1] then sortCollection[dropped-1].order else sortCollection[0].order+1000
+      next = if sortCollection[finish] then sortCollection[finish].order else 0
+      assets = sortCollection.slice dropped, finish
 
     else if dropped > start
       dropped = dropped+1
-      prev = if @list[path].assets[start-1] then @list[path].assets[start-1].order else @list[path].assets[0]+1000
-      next = if @list[path].assets[dropped] then @list[path].assets[dropped].order else 0
-      assets = @list[path].assets.slice start, dropped
+      prev = if sortCollection[start-1] then sortCollection[start-1].order else sortCollection[0].order+1000
+      next = if sortCollection[dropped] then sortCollection[dropped].order else 0
+      assets = sortCollection.slice start, dropped
 
     else
       return
 
     console.log 'prev', prev, 'next', next
 
-    count = prev - 1000
+    count = prev-1000
 
     for asset in assets
       asset.order = count
       count = count-1000
-      # console.log 'order', asset.order, 'name', asset.name
 
     orderedList =
-      parent: @list[path]._id
       assets: assets
 
-    console.log assets
-
     return orderedList
-
-    # imagoRest.asset.batch(orderedList)
-    #   .then (result) ->
-    #     console.log 'new order saved', result
 
 
   reorder: (id) =>
@@ -204,31 +199,31 @@ class imagoModel extends Service
 
     @worker.postMessage list
 
-  batchChange: (assets, save = false, path = @$location.$$path) =>
+  batchChange: (assets, save = false) =>
+
     for asset in assets
       idx = @findIdx(asset._id)
+
       return if idx is -1
 
       if _.isBoolean(asset.visible)
-        @list[path].assets[idx]['visible'] = asset.visible
+        @data[idx]['visible'] = asset.visible
 
       for key of asset.meta
-        @list[path].assets[idx]['meta'] or= {}
-        @list[path].assets[idx]['meta'][key] or= {}
-        @list[path].assets[idx]['meta'][key]['value'] = asset.meta[key]['value']
+        @data[idx]['meta'] or= {}
+        @data[idx]['meta'][key] or= {}
+        @data[idx]['meta'][key]['value'] = asset.meta[key]['value']
 
     if save
       object =
-        parent : @list[path]._id
         assets : assets
 
       return object
 
     else return false
 
-      # imagoRest.asset.batch object
+  isDuplicated: (name, assets) =>
 
-  checkDuplicate: (name, assets) =>
     return unless name
     nameIfDuplicate = name
     nameIfDuplicate = @imagoUtils.normalize nameIfDuplicate
@@ -245,7 +240,7 @@ class imagoModel extends Service
 
     assets = @findChildren _id : parent
 
-    return unless @checkDuplicate asset.name
+    return if @isDuplicated asset.name, assets
 
     asset.parent = parent
     asset._tenant = @tenant
