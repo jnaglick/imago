@@ -871,7 +871,6 @@ imagoModel = (function() {
           } else if (oldAsset && !_.isEqual(oldAsset, asset)) {
             return _this.update(asset);
           } else {
-            asset.parent = data._id;
             return _this.data.unshift(asset);
           }
         };

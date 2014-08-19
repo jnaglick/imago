@@ -74,7 +74,6 @@ class imagoModel extends Service
         else if oldAsset and not _.isEqual(oldAsset, asset)
           @update(asset)
         else
-          asset.parent = data._id
           @data.unshift asset
     if _.isEqual(oldData, data)
       return data
