@@ -772,6 +772,7 @@ imagoModel = (function() {
     this.findByAttr = __bind(this.findByAttr, this);
     this.findParent = __bind(this.findParent, this);
     this.findChildren = __bind(this.findChildren, this);
+    this.create = __bind(this.create, this);
     this.getData = __bind(this.getData, this);
   }
 
@@ -854,23 +855,34 @@ imagoModel = (function() {
   };
 
   imagoModel.prototype.create = function(data) {
+    var oldData;
+    oldData = this.find(data._id) || false;
     if (data.assets) {
       _.forEach(data.assets, (function(_this) {
         return function(asset) {
-          if (_this.find(asset.id)) {
-            return;
+          var oldAsset;
+          oldAsset = _this.find(asset._id) || false;
+          if (_.isEqual(oldAsset, asset)) {
+
+          } else if (oldAsset && !_.isEqual(oldAsset, asset)) {
+            return _this.update(asset);
+          } else {
+            asset.parent = data._id;
+            return _this.data.push(asset);
           }
-          return _this.data.push(asset);
         };
       })(this));
-      if (!this.find(data.id)) {
-        this.data.push(data = _.omit(data, 'items'));
-      }
+    }
+    if (_.isEqual(oldData, data)) {
+      return data;
+    } else if (oldData && !_.isEqual(oldData, data)) {
+      this.update(data);
       return data;
     } else {
-      if (!this.find(data.id)) {
-        this.data.push(data);
+      if (data.items) {
+        data = _.omit(data, 'assets');
       }
+      this.data.push(data);
       return data;
     }
   };

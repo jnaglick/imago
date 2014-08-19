@@ -64,15 +64,26 @@ class imagoModel extends Service
         querydict[key] = querydict[key][0]
     querydict
 
-  create: (data) ->
+  create: (data) =>
+    oldData = @find(data._id) or false
     if data.assets
       _.forEach data.assets, (asset) =>
-        return if @find(asset.id)
-        @data.push asset
-      @data.push data = _.omit data, 'items' unless @find(data.id)
+        oldAsset = @find(asset._id) or false
+        if _.isEqual(oldAsset, asset)
+          return
+        else if oldAsset and not _.isEqual(oldAsset, asset)
+          @update(asset)
+        else
+          asset.parent = data._id
+          @data.push asset
+    if _.isEqual(oldData, data)
+      return data
+    else if oldData and not _.isEqual(oldData, data)
+      @update(data)
       return data
     else
-      @data.push data unless @find(data.id)
+      data = _.omit data, 'assets' if data.items
+      @data.push data
       return data
 
   findChildren: (asset) =>
