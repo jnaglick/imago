@@ -754,8 +754,6 @@ var imagoModel,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 
 imagoModel = (function() {
-  var update;
-
   function imagoModel($rootScope, $http, $location, $q, $filter, imagoUtils) {
     this.$rootScope = $rootScope;
     this.$http = $http;
@@ -771,6 +769,7 @@ imagoModel = (function() {
     this.paste = __bind(this.paste, this);
     this.move = __bind(this.move, this);
     this["delete"] = __bind(this["delete"], this);
+    this.update = __bind(this.update, this);
     this.add = __bind(this.add, this);
     this.findIdx = __bind(this.findIdx, this);
     this.find = __bind(this.find, this);
@@ -873,7 +872,7 @@ imagoModel = (function() {
             return _this.update(asset);
           } else {
             asset.parent = data._id;
-            return _this.data.push(asset);
+            return _this.data.unshift(asset);
           }
         };
       })(this));
@@ -887,7 +886,7 @@ imagoModel = (function() {
       if (data.items) {
         data = _.omit(data, 'assets');
       }
-      this.data.push(data);
+      this.data.unshift(data);
       return data;
     }
   };
@@ -928,12 +927,12 @@ imagoModel = (function() {
     return this.$rootScope.$broadcast('assets:update');
   };
 
-  update = function(asset) {
+  imagoModel.prototype.update = function(asset) {
     if (!asset._id) {
       return;
     }
-    imagoModel.data[imagoModel.findIdx(asset._id)] = asset;
-    return imagoModel.$rootScope.$broadcast('assets:update');
+    this.data[this.findIdx(asset._id)] = asset;
+    return this.$rootScope.$broadcast('assets:update');
   };
 
   imagoModel.prototype["delete"] = function(id) {

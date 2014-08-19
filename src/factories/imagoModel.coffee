@@ -75,7 +75,7 @@ class imagoModel extends Service
           @update(asset)
         else
           asset.parent = data._id
-          @data.push asset
+          @data.unshift asset
     if _.isEqual(oldData, data)
       return data
     else if oldData and not _.isEqual(oldData, data)
@@ -83,7 +83,7 @@ class imagoModel extends Service
       return data
     else
       data = _.omit data, 'assets' if data.items
-      @data.push data
+      @data.unshift data
       return data
 
   findChildren: (asset) =>
@@ -106,7 +106,7 @@ class imagoModel extends Service
     @data.unshift asset
     @$rootScope.$broadcast 'assets:update'
 
-  update = (asset) =>
+  update: (asset) =>
     return unless asset._id
     @data[@findIdx(asset._id)] = asset
     @$rootScope.$broadcast 'assets:update'
