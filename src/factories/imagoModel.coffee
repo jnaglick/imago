@@ -170,20 +170,19 @@ class imagoModel extends Service
     #   .then (result) ->
     #     console.log 'result batch updating', result
 
-  orderChanged:  (start, finish, dropped, collectionId) =>
-    sortCollection = @findChildren _id : collectionId
+  orderChanged:  (start, finish, dropped, list) =>
 
     if dropped < finish
       finish = finish+1
-      prev = if sortCollection[dropped-1] then sortCollection[dropped-1].order else sortCollection[0].order+1000
-      next = if sortCollection[finish] then sortCollection[finish].order else 0
-      assets = sortCollection.slice dropped, finish
+      prev = if list[dropped-1] then list[dropped-1].order else list[0].order+1000
+      next = if list[finish] then list[finish].order else 0
+      assets = list.slice dropped, finish
 
     else if dropped > start
       dropped = dropped+1
-      prev = if sortCollection[start-1] then sortCollection[start-1].order else sortCollection[0].order+1000
-      next = if sortCollection[dropped] then sortCollection[dropped].order else 0
-      assets = sortCollection.slice start, dropped
+      prev = if list[start-1] then list[start-1].order else list[0].order+1000
+      next = if list[dropped] then list[dropped].order else 0
+      assets = list.slice start, dropped
 
     else
       return

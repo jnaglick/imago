@@ -976,21 +976,18 @@ imagoModel = (function() {
     return _results;
   };
 
-  imagoModel.prototype.orderChanged = function(start, finish, dropped, collectionId) {
-    var asset, assets, count, next, orderedList, prev, sortCollection, _i, _len;
-    sortCollection = this.findChildren({
-      _id: collectionId
-    });
+  imagoModel.prototype.orderChanged = function(start, finish, dropped, list) {
+    var asset, assets, count, next, orderedList, prev, _i, _len;
     if (dropped < finish) {
       finish = finish + 1;
-      prev = sortCollection[dropped - 1] ? sortCollection[dropped - 1].order : sortCollection[0].order + 1000;
-      next = sortCollection[finish] ? sortCollection[finish].order : 0;
-      assets = sortCollection.slice(dropped, finish);
+      prev = list[dropped - 1] ? list[dropped - 1].order : list[0].order + 1000;
+      next = list[finish] ? list[finish].order : 0;
+      assets = list.slice(dropped, finish);
     } else if (dropped > start) {
       dropped = dropped + 1;
-      prev = sortCollection[start - 1] ? sortCollection[start - 1].order : sortCollection[0].order + 1000;
-      next = sortCollection[dropped] ? sortCollection[dropped].order : 0;
-      assets = sortCollection.slice(start, dropped);
+      prev = list[start - 1] ? list[start - 1].order : list[0].order + 1000;
+      next = list[dropped] ? list[dropped].order : 0;
+      assets = list.slice(start, dropped);
     } else {
       return;
     }
