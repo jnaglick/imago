@@ -74,7 +74,7 @@ class imagoModel extends Service
         else if oldAsset and not _.isEqual(oldAsset, asset)
           @update(asset)
         else
-          @data.unshift asset
+          @data.push asset
     if _.isEqual(oldData, data)
       return data
     else if oldData and not _.isEqual(oldData, data)
@@ -82,7 +82,7 @@ class imagoModel extends Service
       return data
     else
       data = _.omit data, 'assets' if data.items
-      @data.unshift data
+      @data.push data
       return data
 
   findChildren: (asset) =>

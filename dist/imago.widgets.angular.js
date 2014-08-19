@@ -871,7 +871,7 @@ imagoModel = (function() {
           } else if (oldAsset && !_.isEqual(oldAsset, asset)) {
             return _this.update(asset);
           } else {
-            return _this.data.unshift(asset);
+            return _this.data.push(asset);
           }
         };
       })(this));
@@ -885,7 +885,7 @@ imagoModel = (function() {
       if (data.items) {
         data = _.omit(data, 'assets');
       }
-      this.data.unshift(data);
+      this.data.push(data);
       return data;
     }
   };
