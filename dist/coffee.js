@@ -760,6 +760,7 @@ imagoModel = (function() {
     this.isDuplicated = __bind(this.isDuplicated, this);
     this.batchChange = __bind(this.batchChange, this);
     this.orderChanged = __bind(this.orderChanged, this);
+    this.batchAddRemove = __bind(this.batchAddRemove, this);
     this.paste = __bind(this.paste, this);
     this.move = __bind(this.move, this);
     this["delete"] = __bind(this["delete"], this);
@@ -952,14 +953,15 @@ imagoModel = (function() {
   };
 
   imagoModel.prototype.paste = function(assets, checkdups) {
-    var asset, exists, i, original_name, _i, _len;
+    var asset, exists, i, original_name, _i, _len, _results;
     if (checkdups == null) {
       checkdups = true;
     }
+    _results = [];
     for (_i = 0, _len = assets.length; _i < _len; _i++) {
       asset = assets[_i];
       if (!checkdups || !this.isDuplicated(asset.name, assets)) {
-        this.data.unshift(asset);
+        _results.push(this.data.unshift(asset));
       } else {
         i = 1;
         exists = true;
@@ -969,24 +971,22 @@ imagoModel = (function() {
           asset.name = "" + original_name + "_" + i;
           i++;
         }
-        this.data.unshift(asset);
+        _results.push(this.data.unshift(asset));
       }
     }
-    return {
-      batchAddRemove: (function(_this) {
-        return function(assets) {
-          var _j, _len1;
-          for (_j = 0, _len1 = assets.length; _j < _len1; _j++) {
-            asset = assets[_j];
-            _this.data = _.reject(_this.data, {
-              _id: asset.id
-            });
-            _this.data.push(asset);
-          }
-          return _this.$rootScope.$broadcast('assets:update');
-        };
-      })(this)
-    };
+    return _results;
+  };
+
+  imagoModel.prototype.batchAddRemove = function(assets) {
+    var asset, _i, _len;
+    for (_i = 0, _len = assets.length; _i < _len; _i++) {
+      asset = assets[_i];
+      this.data = _.reject(this.data, {
+        _id: asset.id
+      });
+      this.data.push(asset);
+    }
+    return this.$rootScope.$broadcast('assets:update');
   };
 
   imagoModel.prototype.orderChanged = function(start, finish, dropped, list) {

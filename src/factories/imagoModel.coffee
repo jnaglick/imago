@@ -141,12 +141,12 @@ class imagoModel extends Service
 
         @data.unshift asset
 
-    batchAddRemove: (assets) =>
-      for asset in assets
-        @data = _.reject(@data, { _id: asset.id })
-        @data.push asset
+  batchAddRemove: (assets) =>
+    for asset in assets
+      @data = _.reject(@data, { _id: asset.id })
+      @data.push asset
 
-      @$rootScope.$broadcast 'assets:update'
+    @$rootScope.$broadcast 'assets:update'
 
   # reindexAll:  (path = @$location.$$path) =>
 
