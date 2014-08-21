@@ -1042,10 +1042,10 @@ imagoModel = (function() {
       if (_.isBoolean(asset.visible)) {
         this.data[idx]['visible'] = asset.visible;
       }
-      for (key in asset.meta) {
-        (_base = this.data[idx])['meta'] || (_base['meta'] = {});
-        (_base1 = this.data[idx]['meta'])[key] || (_base1[key] = {});
-        this.data[idx]['meta'][key]['value'] = asset.meta[key]['value'];
+      for (key in asset.fields) {
+        (_base = this.data[idx])['fields'] || (_base['fields'] = {});
+        (_base1 = this.data[idx]['fields'])[key] || (_base1[key] = {});
+        this.data[idx]['fields'][key]['value'] = asset.fields[key]['value'];
       }
     }
     if (save) {
@@ -1716,7 +1716,7 @@ imagoUtils = (function() {
         if (!asset.meta[attribute]) {
           return console.log("This asset does not contain a " + attribute + " attribute");
         }
-        return asset.meta[attribute].value;
+        return asset.fields[attribute].value;
       }
     };
   }

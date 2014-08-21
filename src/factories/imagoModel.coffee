@@ -229,10 +229,10 @@ class imagoModel extends Service
       if _.isBoolean(asset.visible)
         @data[idx]['visible'] = asset.visible
 
-      for key of asset.meta
-        @data[idx]['meta'] or= {}
-        @data[idx]['meta'][key] or= {}
-        @data[idx]['meta'][key]['value'] = asset.meta[key]['value']
+      for key of asset.fields
+        @data[idx]['fields'] or= {}
+        @data[idx]['fields'][key] or= {}
+        @data[idx]['fields'][key]['value'] = asset.fields[key]['value']
 
     if save
       object =
