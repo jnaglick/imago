@@ -209,16 +209,6 @@ class imagoModel extends Service
 
     return orderedList
 
-
-  reorder: (id) =>
-
-    model = @find(id)
-    list =
-      order : model.sortorder
-      assets: @findChildren(model)
-
-    return list
-
   batchChange: (assets, save = false) =>
 
     for asset in assets

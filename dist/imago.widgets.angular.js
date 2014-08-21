@@ -764,7 +764,6 @@ imagoModel = (function() {
     this.prepareCreation = __bind(this.prepareCreation, this);
     this.isDuplicated = __bind(this.isDuplicated, this);
     this.batchChange = __bind(this.batchChange, this);
-    this.reorder = __bind(this.reorder, this);
     this.orderChanged = __bind(this.orderChanged, this);
     this.paste = __bind(this.paste, this);
     this.move = __bind(this.move, this);
@@ -1021,16 +1020,6 @@ imagoModel = (function() {
       assets: assets
     };
     return orderedList;
-  };
-
-  imagoModel.prototype.reorder = function(id) {
-    var list, model;
-    model = this.find(id);
-    list = {
-      order: model.sortorder,
-      assets: this.findChildren(model)
-    };
-    return list;
   };
 
   imagoModel.prototype.batchChange = function(assets, save) {
