@@ -115,6 +115,7 @@ class imagoModel extends Service
     # returns an array without the asset of id
     @data = _.reject(@data, { _id: id })
     @$rootScope.$broadcast 'assets:update'
+    return @data
 
   move: (data) =>
     # I'm not sure if thise will work as intended
@@ -139,6 +140,13 @@ class imagoModel extends Service
           i++
 
         @data.unshift asset
+
+    batchAddRemove: (assets) =>
+      for asset in assets
+        @data = _.reject(@data, { _id: asset.id })
+        @data.push asset
+
+      @$rootScope.$broadcast 'assets:update'
 
   # reindexAll:  (path = @$location.$$path) =>
 
@@ -192,6 +200,7 @@ class imagoModel extends Service
     count = prev-1000
 
     for asset in assets
+      # console.log 'asset', asset.order, asset.name
       asset.order = count
       count = count-1000
 
@@ -202,14 +211,13 @@ class imagoModel extends Service
 
 
   reorder: (id) =>
-    # not sure if this fucks up the reorder let me know.
-    # we could also do this by path.
-    model = @findById(id)
+
+    model = @find(id)
     list =
       order : model.sortorder
       assets: @findChildren(model)
 
-    @worker.postMessage list
+    return list
 
   batchChange: (assets, save = false) =>
 

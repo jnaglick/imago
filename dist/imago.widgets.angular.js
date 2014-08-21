@@ -941,7 +941,8 @@ imagoModel = (function() {
     this.data = _.reject(this.data, {
       _id: id
     });
-    return this.$rootScope.$broadcast('assets:update');
+    this.$rootScope.$broadcast('assets:update');
+    return this.data;
   };
 
   imagoModel.prototype.move = function(data) {
@@ -957,15 +958,14 @@ imagoModel = (function() {
   };
 
   imagoModel.prototype.paste = function(assets, checkdups) {
-    var asset, exists, i, original_name, _i, _len, _results;
+    var asset, exists, i, original_name, _i, _len;
     if (checkdups == null) {
       checkdups = true;
     }
-    _results = [];
     for (_i = 0, _len = assets.length; _i < _len; _i++) {
       asset = assets[_i];
       if (!checkdups || !this.isDuplicated(asset.name, assets)) {
-        _results.push(this.data.unshift(asset));
+        this.data.unshift(asset);
       } else {
         i = 1;
         exists = true;
@@ -975,10 +975,24 @@ imagoModel = (function() {
           asset.name = "" + original_name + "_" + i;
           i++;
         }
-        _results.push(this.data.unshift(asset));
+        this.data.unshift(asset);
       }
     }
-    return _results;
+    return {
+      batchAddRemove: (function(_this) {
+        return function(assets) {
+          var _j, _len1;
+          for (_j = 0, _len1 = assets.length; _j < _len1; _j++) {
+            asset = assets[_j];
+            _this.data = _.reject(_this.data, {
+              _id: asset.id
+            });
+            _this.data.push(asset);
+          }
+          return _this.$rootScope.$broadcast('assets:update');
+        };
+      })(this)
+    };
   };
 
   imagoModel.prototype.orderChanged = function(start, finish, dropped, list) {
@@ -1011,12 +1025,12 @@ imagoModel = (function() {
 
   imagoModel.prototype.reorder = function(id) {
     var list, model;
-    model = this.findById(id);
+    model = this.find(id);
     list = {
       order: model.sortorder,
       assets: this.findChildren(model)
     };
-    return this.worker.postMessage(list);
+    return list;
   };
 
   imagoModel.prototype.batchChange = function(assets, save) {
