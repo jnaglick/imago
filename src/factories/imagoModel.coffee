@@ -141,6 +141,8 @@ class imagoModel extends Service
 
         @data.unshift asset
 
+    @$rootScope.$broadcast 'assets:update'
+
   batchAddRemove: (assets) =>
     for asset in assets
       @data = _.reject(@data, { _id: asset.id })
