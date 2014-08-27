@@ -1,5 +1,5 @@
 class imagoPanel extends Factory
-
+  #rename to imagoFetch?
   constructor: ($http, imagoUtils, $q, $location) ->
 
     return {
@@ -10,15 +10,15 @@ class imagoPanel extends Factory
         return $http.post(@getSearchUrl(), angular.toJson(params))
 
       getData: (query) ->
-        unless query then query = $location.$$path
+        query = $location.$$path unless query
         # console.log 'query in getData', query
-        return console.log "Panel: query is empty, aborting #{query}" unless query
+        # return console.log "Panel: query is empty, aborting #{query}" unless query
         # return if path is @path
-        if angular.isString(query)
+        if angular.isString query
           query =
             [path: query]
 
-        query = imagoUtils.toArray(query)
+        query = imagoUtils.toArray query
 
 
         promises = []
@@ -27,8 +27,7 @@ class imagoPanel extends Factory
         # console.log 'before', query
         angular.forEach query, (value) =>
           # console.log 'in foreach', value
-          promises.push @search(value).success((response) =>
-
+          promises.push @search(value).success (response) =>
             # if the data is one single item and its a collection
             if response.length is 1 and response[0].kind is 'Collection'
               data.push response[0]
@@ -37,15 +36,12 @@ class imagoPanel extends Factory
                 items : response
                 count : response.length
 
-              data.push(result)
+              data.push result
             # else construct a result object
             # {items : data, count : data.length}
-          )
-        $q.all(promises).then ((response)=>
+
+        $q.all(promises).then =>
           return data
-          # console.log response
-          # console.log data
-        )
 
       objListToDict: (obj_or_list) ->
         querydict = {}
@@ -66,9 +62,6 @@ class imagoPanel extends Factory
           if querydict.hasOwnProperty(key)
             querydict[key] = querydict[key][0]
         querydict
-
-      getMeta: (field) ->
-
 
       getSearchUrl: ->
         if (data is 'online' and debug) then "http://#{tenant}.imagoapp.com/api/v3/search" else "/api/v3/search"

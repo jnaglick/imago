@@ -1,19 +1,15 @@
 {
-    "name": "imago.widgets.theme",
-    "version": "1.0.0",
+    "name": "imago.widgets.angular",
+    "version": "1.0.62",
     "homepage": "https://github.com/Nex9/imago.widgets.angular",
     "authors": [
-        "Sebastian Moreno <sebastian@nex9.com>"
-    ],
-    "description": "Nex Widgets for AngularJS",
-    "main": "gulpfile.js",
-    "moduleType": [
-        "globals"
-    ],
-    "keywords": [
-        "Nex"
+        "Nex9"
     ],
     "license": "MIT",
+    "private": true,
+    "dependencies": {
+        "angular-inview": "*"
+    },
     "ignore": [
         "**/.*",
         "node_modules",

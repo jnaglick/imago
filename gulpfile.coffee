@@ -7,7 +7,6 @@ gulp            = require 'gulp'
 
 jade            = require 'gulp-jade'
 
-ngmin           = require 'gulp-ngmin'
 ngClassify      = require 'gulp-ng-classify'
 
 plumber         = require 'gulp-plumber'
@@ -50,7 +49,26 @@ gulp.task "coffee", ->
     )
     .pipe ngClassify(
       appName: 'imago.widgets.angular'
+      animation:
+        format: 'camelCase'
+        prefix: ''
+      constant:
+        format: 'camelCase'
+        prefix: ''
+      controller:
+        format: 'camelCase'
+        suffix: ''
       factory:
+        format: 'camelCase'
+      filter:
+        format: 'camelCase'
+      provider:
+        format: 'camelCase'
+        suffix: ''
+      service:
+        format: 'camelCase'
+        suffix: ''
+      value:
         format: 'camelCase'
       )
     .pipe coffee(
@@ -104,9 +122,8 @@ gulp.task "b", ["build"]
 
 minify = ->
   gulp.src "#{dest}/#{targets.js}"
-    .pipe ngmin()
     .pipe uglify()
-    .pipe concat targets.jsMin
+    .pipe concat targets.js
     .pipe gulp.dest dest
 
 gulp.task "minify", ['build'], minify

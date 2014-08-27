@@ -1,0 +1,13 @@
+.controls
+  a.play.fa.fa-play(ng-click="togglePlay()", ng-hide="isPlaying")
+  a.pause.fa.fa-pause(ng-click="togglePlay()", ng-show="isPlaying")
+  span.time {{currentTime | time}}
+  span.seekbar
+    input.seek(type='range' ng-model="currentTime" min="0" max="{{duration}}" ng-change="seek(currentTime)")
+  a.size(ng-click="toggleSize()") {{wrapperStyle.size}}
+  span.volume
+    span.fa.fa-volume-up.icon-volume-up(ng-click="volumeUp()")
+    input(type='range', ng-model="volumeInput", ng-change="onVolumeChange(volumeInput)")
+    span.fa.fa-volume-down.icon-volume-down(ng-click="volumeDown()")
+  a.fullscreen.fa.fa-expand(ng-click="fullScreen()")
+  a.screen.fa.fa-compress

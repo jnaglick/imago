@@ -11,6 +11,7 @@
     transition: opacity 0.1s ease-in-out
     background-repeat: no-repeat
 
+
   &.loaded
     .image
       opacity: 1
@@ -39,14 +40,11 @@
       opacity: 1
 
   &.fit
-    // background: red
     display: flex
     flex-direction: column
-    width: 100%
-    height: 100%
     .imagowrapper
-      video
-        margin: 0 auto
+      width: 100%
+      height: 100%
 
     &.center
       justify-content: center
@@ -66,8 +64,8 @@
 
   // video will always extend to 100% width and height
   &.crop
-    width:  100%
-    height: 100%
+    // width:  100%
+    // height: 100%
 
     .imagowrapper
       width:  100%
@@ -113,18 +111,16 @@
     text-align: center
     cursor: pointer
     text-shadow: 0 5px 10px black
-    transition: opacity .25s ease-in-out
+    transition: opacity 0.25s ease-in-out
     opacity: 1
-    // &:before
-    //   vertical-align: middle
-    //   width:  160px
-    //   height: 160px
-    //   text-align: center
-    //   line-height: 160px
+  .playbig.playing
+    opacity: 0
     &:hover
       color: darken(white, 20%)
     &:active
       color: white
+
+
 
   .controls
     position: absolute
@@ -294,8 +290,8 @@
         &:hover
           +bg-gradient(darken(white, 0%), darken(white, 20%))
 
-.imagovideo.playing
-  background: none
+.imagowrapper.playing
+  background: none !important
   .playbig
     opacity: 0
   .controls

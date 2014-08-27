@@ -1,193 +1,227 @@
 class imagoImage extends Directive
 
-  constructor: ->
+  constructor: ($window, $q) ->
+
     return {
       replace: true
       scope: true
       templateUrl: '/imagoWidgets/image-widget.html'
-      controller: ($scope, $element, $attrs, $transclude, $window, $log, $q, $timeout) ->
+      controller: ($scope, $element, $attrs) ->
 
-        @defaults =
+        $scope.status = 'loading'
+        $scope.imageStyle = {}
+
+      link: (scope, element, attrs) ->
+        self = {}
+
+        opts = {}
+
+        source = {}
+
+        defaults =
           align     : 'center center'
           sizemode  : 'fit'              # fit, crop
           hires     : true
+          responsive: true
           scale     : 1
           lazy      : true
           maxsize   : 2560
-          # noResize  : false deprecated
           mediasize : false
           width     : ''
           height    : ''
-          responsive: true
+
+        for key, value of defaults
+          opts[key] = value
+
+        for key, value of attrs
+          opts[key] = value
+
+        #####
+
+        if opts.lazy
+          visiblePromise = do () =>
+            deffered = $q.defer()
+            self.visibleFunc = scope.$watch attrs['visible'], (value) =>
+              return unless value
+              deffered.resolve(value)
+
+            return deffered.promise
 
 
-        angular.forEach @defaults, (value, key) =>
-          @[key] = value
+        sourcePromise = do () =>
+          deffered = $q.defer()
 
-        angular.forEach $attrs, (value, key) =>
-          @[key] = value
+          self.watch = scope.$watch attrs['source'], (data) =>
+            return unless data
 
-        if $attrs['no-resize']
-          $log.log '@noResize depricated will be removed soon, use responsive: false'
-          @responsive = false
+            deffered.resolve(data)
 
-        $scope.$watch $attrs['source'], (data) =>
-          return unless data
+          return deffered.promise
 
-          if $scope.$parent.width
-            @width = $scope.$parent.width
-          if $scope.$parent.height
-            @height = $scope.$parent.height
-            
-          @data = data
-          render @data
+
+        sourcePromise.then (data) =>
+          self.watch() unless attrs['watch']
+          source = data
+
+          if opts.lazy
+            visiblePromise.then (value) =>
+              self.visibleFunc()
+              render source
+          else
+            render data
 
         render = (data) =>
 
           unless data?.serving_url
-            $element.remove()
+            element.remove()
             return
 
-          $scope.elementStyle = {} unless $scope.elementStyle
+          # console.log scope.visible
 
+          if opts.dimensions and attrs['dimensions']
+            scope.$watch attrs['dimensions'], (value) =>
+              angular.forEach value, (value, key) =>
+                opts[key] = value
+
+          scope.elementStyle = {} unless scope.elementStyle
+          #console.log 'elementStyle ' , scope.elementStyle
           if angular.isString(data.resolution)
             r = data.resolution.split('x')
-            @resolution =
+            opts.resolution =
               width:  r[0]
               height: r[1]
-            @assetRatio = r[0]/r[1]
+            opts.assetRatio = r[0]/r[1]
 
-          # return $log.log('tried to render during rendering!!') if $scope.status is 'preloading'
+          # TODO: Not sure about this solution below:
+          # the widget may get less flexible / Sebastian
 
-          # console.log '@assetRatio', @assetRatio
+          if opts.width and opts.height
+            width = parseInt opts.width
+            height = parseInt opts.height
+          else
+            width = element[0].clientWidth
+            height = element[0].clientHeight
+
+          # return $log.log('tried to render during rendering!!') if scope.status is 'preloading'
+
+          # console.log 'opts.assetRatio', opts.assetRatio
 
           # use pvrovided dimentions.
-          if angular.isNumber(@width) and angular.isNumber(@height)
-            # $log.log 'fixed size', @width, @height
-
-          # fit width
-          else if @height is 'auto' and angular.isNumber(@width)
-            @height = @width / @assetRatio
-            $scope.elementStyle.height = parseInt @height
-            # $log.log 'fit width', @width, @height
-
-          # fit height
-          else if @width is 'auto' and angular.isNumber(@height)
-            @width = @height * @assetRatio
-            $scope.elementStyle.width = parseInt @width
-            # $log.log 'fit height', @width, @height
-
-          # we want dynamic resizing without css.
-          # like standard image behaviour. will get a height according to the width
-          else if @width is 'auto' and @height is 'auto'
-            @width  = $element[0].clientWidth
-            @height = @width / @assetRatio
-            $scope.elementStyle.height = parseInt @height
-            # $log.log 'both auto', @width, @height
-
-          # width and height dynamic, needs to be defined via css
-          # either width height or position
-          else
-            @width  = $element[0].clientWidth
-            @height = $element[0].clientHeight
-            # $log.log 'width and height dynamic', @width, @height
-
-
-          $scope.status = 'preloading'
+          # if angular.isNumber(opts.width) and angular.isNumber(opts.height)
+          #   #$log.log 'fixed size', opts.width, opts.height
+          #
+          # # fit width
+          # else if opts.height is 'auto' and angular.isNumber(opts.width)
+          #   opts.height = opts.width / opts.assetRatio
+          #   scope.elementStyle.height = parseInt opts.height
+          #   #$log.log 'fit width', opts.width, opts.height
+          #
+          # # fit height
+          # else if opts.width is 'auto' and angular.isNumber(opts.height)
+          #
+          #   opts.width = opts.height * opts.assetRatio
+          #   scope.elementStyle.width = parseInt opts.width
+          #   #$log.log 'fit height', opts.width, opts.height
+          #
+          # # we want dynamic resizing without css.
+          # # like standard image behaviour. will get a height according to the width
+          # else if opts.width is 'auto' and opts.height is 'auto'
+          #   opts.width  = element[0].clientWidth
+          #   opts.height = opts.width / opts.assetRatio
+          #   scope.elementStyle.height = parseInt opts.height
+          #   # $log.log 'both auto', opts.width, opts.height
+          #
+          # # width and height dynamic, needs to be defined via css
+          # # either width height or position
+          # else
+          #   opts.width  = element[0].clientWidth
+          #   opts.height = element[0].clientHeight
+          #   # $log.log 'width and height dynamic', opts.width, opts.height
 
           # unbind scrollstop listener for lazy loading
-          # @window.off "scrollstop.#{@id}" if @lazy
+          # opts.window.off "scrollstop.#{opts.id}" if opts.lazy
 
-          wrapperRatio = @width / @height
+          wrapperRatio = width / height
 
-          # $log.log 'width, height, wrapperRatio, @assetRatio', @width, @height, wrapperRatio, assetRatio
+          # $log.log 'width, height, wrapperRatio, opts.assetRatio', opts.width, opts.height, wrapperRatio, assetRatio
           # debugger
 
-          dpr = if @hires then Math.ceil(window.devicePixelRatio) or 1 else 1
+          dpr = if opts.hires then Math.ceil($window.devicePixelRatio) or 1 else 1
 
           # $log.log 'width, height', width, height
-          if @sizemode is 'crop'
-            if @assetRatio <= wrapperRatio
+          if opts.sizemode is 'crop'
+            if opts.assetRatio <= wrapperRatio
               # $log.log 'crop full width'
-              servingSize = Math.round(Math.max(@width, @width / @assetRatio))
+              servingSize = Math.round(Math.max(width, width / opts.assetRatio))
             else
               # $log.log 'crop full height'
-              servingSize = Math.round(Math.max(@height, @height * @assetRatio))
+              servingSize = Math.round(Math.max(height, height * opts.assetRatio))
 
           # sizemode fit
           else
-            # $log.log 'ratios', @assetRatio, wrapperRatio
-            if @assetRatio <= wrapperRatio
-              # $log.log 'fit full height', @width, @height, @assetRatio, @height * assetRatio
-              servingSize = Math.round(Math.max(@height, @height * @assetRatio))
+            # $log.log 'assetratio: ', opts.assetRatio, 'wrapperraito: ' , wrapperRatio
+            if opts.assetRatio <= wrapperRatio
+              # $log.log 'fit full height', opts.width, opts.height, opts.assetRatio, opts.height * assetRatio
+              servingSize = Math.round(Math.max(height, height * opts.assetRatio))
             else
-              # $log.log 'fit full width', @width, @height, @assetRatio, height / assetRatio
-              servingSize = Math.round(Math.max(@width, @width / @assetRatio))
+              # $log.log 'fit full width', opts.width, opts.height, opts.assetRatio, height / assetRatio
+              servingSize = Math.round(Math.max(width, width / opts.assetRatio))
 
-          servingSize = parseInt Math.min(servingSize * dpr, @maxsize), 10
+          servingSize = parseInt Math.min(servingSize * dpr, opts.maxsize), 10
 
           # make sure we only load a new size
-          if servingSize is @servingSize
+          # if servingSize is opts.servingSize
             # console.log 'same size exit'
-            $scope.status = 'loaded'
-            return
+            # return
 
-          servingUrl = "#{ data.serving_url }=s#{ servingSize * @scale }"
+          servingUrl = "#{ data.serving_url }=s#{ servingSize * opts.scale }"
 
-          @servingSize = servingSize
+          opts.servingSize = servingSize
 
           # $log.log 'servingURl', servingUrl
-          $scope.imageStyle = {}
+          unless opts.responsive
+            scope.imageStyle.width = "#{parseInt width,  10}px"
+            scope.imageStyle.height = "#{parseInt height, 10}px"
 
-          unless @responsive
-            $scope.imageStyle['width']  = "#{parseInt @width,  10}px"
-            $scope.imageStyle['height'] = "#{parseInt @height, 10}px"
 
           img = angular.element('<img>')
           img.on 'load', (e) =>
-            $scope.imageStyle['background-image']    = "url(#{servingUrl})"
-            $scope.imageStyle['background-size']     = $scope.calcMediaSize()
-            $scope.imageStyle['background-position'] = @align
-            $scope.imageStyle['display']             = 'inline-block'
-            $scope.status = 'loaded'
-            $scope.$apply()
-            # console.log '$scope.imageStyle', $scope.imageStyle
+            scope.imageStyle.backgroundImage     = "url(#{servingUrl})"
+            scope.imageStyle.backgroundSize      = scope.calcMediaSize()
+            scope.imageStyle.backgroundPosition  = opts.align
+            scope.imageStyle.display             = 'inline-block'
+            scope.status                         = 'loaded'
+            scope.$apply()
+            # console.log 'scope.imageStyle', scope.imageStyle
 
           img[0].src = servingUrl
 
+        scope.calcMediaSize = () =>
 
-        $scope.onResize = () =>
-          $scope.imageStyle['background-size'] = $scope.calcMediaSize()
+          # $log.log 'calcMediaSize', opts.sizemode
+          opts.width  = element[0].clientWidth  or opts.width
+          opts.height = element[0].clientHeight or opts.height
 
-        $scope.calcMediaSize = () =>
-          # console.log 'calcMediaSize'
-          # for key, value of options
-          #   @[key] = value
+          # $log.log 'calcMediaSize: opts.width, opts.height', opts.width, opts.height
+          return unless opts.width and opts.height
 
-          # $log.log 'calcMediaSize', @sizemode
-          @width  = $element[0].clientWidth  or @width
-          @height = $element[0].clientHeight or @height
-          # $log.log 'calcMediaSize: @width, @height', @width, @height
-          return unless @width and @height
-
-          wrapperRatio = @width / @height
-          if @sizemode is 'crop'
-            # $log.log '@sizemode crop', @assetRatio, wrapperRatio
-            if @assetRatio < wrapperRatio then "100% auto" else "auto 100%"
+          wrapperRatio = opts.width / opts.height
+          if opts.sizemode is 'crop'
+            # $log.log 'opts.sizemode crop', opts.assetRatio, wrapperRatio
+            if opts.assetRatio < wrapperRatio then "100% auto" else "auto 100%"
           else
-            # $log.log '@sizemode fit', @assetRatio, wrapperRatio
-            if @assetRatio > wrapperRatio then "100% auto" else "auto 100%"
+            # $log.log 'opts.sizemode fit', opts.assetRatio, wrapperRatio
+            if opts.assetRatio > wrapperRatio then "100% auto" else "auto 100%"
 
+        scope.onResize = () =>
+          # console.log 'onResize func'
+          scope.imageStyle['background-size'] = scope.calcMediaSize()
 
-        $scope.$on 'resizelimit', () =>
-          # console.log 'resizelimit'
-          $scope.onResize if @responsive
+        scope.$on 'resizelimit', () =>
+          #console.log 'resizelimit' ,opts.responsive
+          scope.onResize() if opts.responsive
 
-        $scope.$on 'resizestop', () =>
-          # console.log 'resizestop'
-          render(@data) if @responsive
+        scope.$on 'resizestop', () =>
+          render(source) if opts.responsive
 
-        $scope.$on 'scrollstop', () =>
-          # console.log 'scrollstop'
-          render(@data) if @lazy
     }

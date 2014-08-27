@@ -1,95 +1,105 @@
 class imagoSlider extends Directive
 
-  constructor: ->
+  constructor: ($q, $window, imagoModel) ->
     return {
       replace: true
-      scope: false
+      scope: true
       transclude: true
       templateUrl: '/imagoWidgets/slider-widget.html'
-      controller: ($scope, $element, $attrs, $window, imagoPanel) ->
+      controller: ($scope) ->
+        $scope.confSlider = {}
 
-        source = $attrs.source or 'assets'
+        @defaults =
+          animation:    'fade'
+          sizemode:     'fit'
+          current:      0
+          enablekeys:   true
+          enablearrows: true
+          enablehtml:   true
+          subslides:    false
+          loop:         true
+          noResize:     false
+          current:      0
+          lazy:         false
+          align:         'center center'
 
-        $scope.$watch source, (assetsData) ->
-          if assetsData
-            unless angular.isArray(assetsData)
-              imagoPanel.getData(assetsData.path).then (response) ->
-                assetsData = response[0].items
-                prepareSlides(assetsData)
-            else
-              prepareSlides(assetsData)
+        angular.forEach @defaults, (value, key) ->
+          $scope.confSlider[key] = value
 
-        prepareSlides = (assetsData) ->
-          $scope.loadedData = true
-          $scope.slideSource = []
+      link: (scope, element, attrs) ->
+        self = {}
 
-          $scope.height = $element[0].clientHeight
-          $scope.width = $element[0].clientWidth
+        angular.forEach attrs, (value, key) ->
+          scope.confSlider[key] = value
 
-          #If slider has one slide
-          for item in assetsData
+        sourcePromise = do () =>
+          deffered = $q.defer()
+          self.watch = scope.$watch attrs['source'], (data) =>
+            return unless data
+            deffered.resolve(data)
+
+          return deffered.promise
+
+        sourcePromise.then (data) =>
+          return unless data
+          self.watch() unless attrs['watch']
+
+          unless angular.isArray(data)
+            imagoModel.getData(data.path).then (response) ->
+              data = imagoModel.findChildren(response[0])
+              prepareSlides(data)
+          else
+            prepareSlides(data)
+
+        prepareSlides = (data) ->
+          scope.loadedData = true
+          scope.slideSource = []
+
+          scope.dimensions = {width: element[0].clientWidth, height: element[0].clientHeight}
+
+          for item in data
             if item.serving_url
-              $scope.slideSource.push item
+              scope.slideSource.push item
 
-          if $scope.slideSource?.length <= 1 or !$scope.slideSource
-              $scope.confSlider.enablearrows = false
-              $scope.confSlider.enablekeys   = false
+          if scope.slideSource?.length <= 1 or !scope.slideSource
+              scope.confSlider.enablearrows = false
+              scope.confSlider.enablekeys   = false
 
-          # @id = imagoUtils.uuid()
+          scope.currentIndex = 0
+          scope.sliderLength = scope.slideSource.length - 1
+          getSiblings()
 
-          $scope.currentIndex = 0
+        scope.setCurrentSlideIndex = (index) ->
+          scope.currentIndex = index
+          getSiblings()
 
-        $scope.setCurrentSlideIndex = (index) ->
-          $scope.currentIndex = index
+        scope.displaySlides = (index) ->
+          return true if index is scope.currentIndex or scope.nextIndex or scope.prevIndex
 
-        $scope.isCurrentSlideIndex = (index) ->
-          return $scope.currentIndex is index
+        scope.goNext = () ->
+          scope.currentIndex = if (scope.currentIndex < scope.slideSource.length - 1) then ++scope.currentIndex else 0
+          getSiblings()
 
-        $scope.goPrev = () ->
-          $scope.currentIndex = if ($scope.currentIndex < $scope.slideSource.length - 1) then ++$scope.currentIndex else 0
+        scope.goPrev = () ->
+          scope.currentIndex = if (scope.currentIndex > 0) then --scope.currentIndex else scope.slideSource.length - 1
+          getSiblings()
 
-        $scope.goNext = () ->
-          $scope.currentIndex = if ($scope.currentIndex > 0) then --$scope.currentIndex else $scope.slideSource.length - 1
+        getSiblings = () ->
+          scope.nextIndex = if scope.currentIndex is scope.sliderLength then 0 else scope.currentIndex + 1
+          scope.prevIndex = if scope.currentIndex is 0 then scope.sliderLength else scope.currentIndex - 1
 
-        $scope.getLast = () ->
-          $scope.slideSource.length - 1
+        scope.getLast = () ->
+          scope.slideSource.length - 1
 
         angular.element($window).on 'keydown', (e) ->
-          return unless $scope.confSlider.enablekeys
+          return unless scope.confSlider.enablekeys
           switch e.keyCode
             when 37
-              $scope.$apply(()->
-                $scope.goPrev()
+              scope.$apply(()->
+                scope.goPrev()
               )
             when 39
-              $scope.$apply(()->
-                $scope.goNext()
+              scope.$apply(()->
+                scope.goNext()
               )
-
-      compile: (tElement, tAttrs, transclude) ->
-        pre: (scope, iElement, iAttrs, controller) ->
-
-          scope.confSlider = {}
-
-          @defaults =
-            animation:    'fade'
-            sizemode:     'fit'
-            current:      0
-            enablekeys:   true
-            enablearrows: true
-            enablehtml:   true
-            subslides:    false
-            loop:         true
-            noResize:     false
-            current:      0
-            lazy:         false
-            align:         'center center'
-
-          angular.forEach @defaults, (value, key) ->
-            scope.confSlider[key] = value
-
-          angular.forEach iAttrs, (value, key) ->
-            scope.confSlider[key] = value
-
-          scope.elementStyle = scope.confSlider.animation
-    }
+  }
