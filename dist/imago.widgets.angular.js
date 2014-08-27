@@ -16,6 +16,24 @@ App = (function() {
 
 angular.module('imago.widgets.angular', App());
 
+var imagoPage;
+
+imagoPage = (function() {
+  function imagoPage($scope, $state, imagoModel) {
+    var path;
+    path = '/';
+    imagoModel.getData(path).then(function(response) {
+      $scope.collection = response[0];
+      return $scope.assets = imagoModel.getChildren(response[0]);
+    });
+  }
+
+  return imagoPage;
+
+})();
+
+angular.module('imago.widgets.angular').controller('imagoPage', ['$scope', '$state', 'imagoModel', imagoPage]);
+
 var imagoCompile;
 
 imagoCompile = (function() {
@@ -732,24 +750,6 @@ imagoVideo = (function() {
 
 angular.module('imago.widgets.angular').directive('imagoVideo', ['$q', '$window', 'imagoUtils', '$timeout', imagoVideo]);
 
-var imagoPage;
-
-imagoPage = (function() {
-  function imagoPage($scope, $state, imagoModel) {
-    var path;
-    path = '/';
-    imagoModel.getData(path).then(function(response) {
-      $scope.collection = response[0];
-      return $scope.assets = imagoModel.getChildren(response[0]);
-    });
-  }
-
-  return imagoPage;
-
-})();
-
-angular.module('imago.widgets.angular').controller('imagoPage', ['$scope', '$state', 'imagoModel', imagoPage]);
-
 var imagoModel,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 
@@ -930,7 +930,7 @@ imagoModel = (function() {
     if (!asset._id) {
       return;
     }
-    this.data[this.findIdx(asset._id)] = asset;
+    this.data[this.findIdx(asset._id)] = _.assign(this.data[this.findIdx(asset._id)], asset);
     return this.$rootScope.$broadcast('assets:update');
   };
 

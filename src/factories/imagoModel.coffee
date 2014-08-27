@@ -107,7 +107,7 @@ class imagoModel extends Service
 
   update: (asset) =>
     return unless asset._id
-    @data[@findIdx(asset._id)] = asset
+    @data[@findIdx(asset._id)] = _.assign(@data[@findIdx(asset._id)], asset)
     @$rootScope.$broadcast 'assets:update'
 
   delete: (id) =>
