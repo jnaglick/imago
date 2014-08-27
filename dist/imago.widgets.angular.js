@@ -927,10 +927,12 @@ imagoModel = (function() {
   };
 
   imagoModel.prototype.update = function(asset) {
+    var idx;
     if (!asset._id) {
       return;
     }
-    this.data[this.findIdx(asset._id)] = _.assign(this.data[this.findIdx(asset._id)], asset);
+    idx = this.findIdx(asset._id);
+    this.data[idx] = _.assign(this.data[idx], asset);
     return this.$rootScope.$broadcast('assets:update');
   };
 
