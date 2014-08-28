@@ -74,7 +74,7 @@ class imagoModel extends Service
         else if oldAsset and not _.isEqual(oldAsset, asset)
           @update(asset)
         else
-          @data.unshift asset
+          @data.push asset
     if _.isEqual(oldData, data)
       return data
     else if oldData and not _.isEqual(oldData, data)
@@ -82,7 +82,7 @@ class imagoModel extends Service
       return data
     else
       data = _.omit data, 'assets' if data.items
-      @data.unshift data
+      @data.push data
       return data
 
   findChildren: (asset) =>
@@ -107,7 +107,8 @@ class imagoModel extends Service
 
   update: (asset) =>
     return unless asset._id
-    @data[@findIdx(asset._id)] = asset
+    idx = @findIdx(asset._id)
+    @data[idx] = _.assign(@data[idx], asset)
     @$rootScope.$broadcast 'assets:update'
 
   delete: (id) =>
@@ -115,6 +116,7 @@ class imagoModel extends Service
     # returns an array without the asset of id
     @data = _.reject(@data, { _id: id })
     @$rootScope.$broadcast 'assets:update'
+    return @data
 
   move: (data) =>
     # I'm not sure if thise will work as intended
@@ -139,6 +141,15 @@ class imagoModel extends Service
           i++
 
         @data.unshift asset
+
+    @$rootScope.$broadcast 'assets:update'
+
+  batchAddRemove: (assets) =>
+    for asset in assets
+      @data = _.reject(@data, { _id: asset.id })
+      @data.push asset
+
+    @$rootScope.$broadcast 'assets:update'
 
   # reindexAll:  (path = @$location.$$path) =>
 
@@ -170,20 +181,19 @@ class imagoModel extends Service
     #   .then (result) ->
     #     console.log 'result batch updating', result
 
-  orderChanged:  (start, finish, dropped, collectionId) =>
-    sortCollection = @findChildren _id : collectionId
+  orderChanged:  (start, finish, dropped, list) =>
 
     if dropped < finish
       finish = finish+1
-      prev = if sortCollection[dropped-1] then sortCollection[dropped-1].order else sortCollection[0].order+1000
-      next = if sortCollection[finish] then sortCollection[finish].order else 0
-      assets = sortCollection.slice dropped, finish
+      prev = if list[dropped-1] then list[dropped-1].order else list[0].order+1000
+      next = if list[finish] then list[finish].order else 0
+      assets = list.slice dropped, finish
 
     else if dropped > start
       dropped = dropped+1
-      prev = if sortCollection[start-1] then sortCollection[start-1].order else sortCollection[0].order+1000
-      next = if sortCollection[dropped] then sortCollection[dropped].order else 0
-      assets = sortCollection.slice start, dropped
+      prev = if list[start-1] then list[start-1].order else list[0].order+1000
+      next = if list[dropped] then list[dropped].order else 0
+      assets = list.slice start, dropped
 
     else
       return
@@ -193,6 +203,7 @@ class imagoModel extends Service
     count = prev-1000
 
     for asset in assets
+      # console.log 'asset', asset.order, asset.name
       asset.order = count
       count = count-1000
 
@@ -200,17 +211,6 @@ class imagoModel extends Service
       assets: assets
 
     return orderedList
-
-
-  reorder: (id) =>
-    # not sure if this fucks up the reorder let me know.
-    # we could also do this by path.
-    model = @findById(id)
-    list =
-      order : model.sortorder
-      assets: @findChildren(model)
-
-    @worker.postMessage list
 
   batchChange: (assets, save = false) =>
 
@@ -222,10 +222,10 @@ class imagoModel extends Service
       if _.isBoolean(asset.visible)
         @data[idx]['visible'] = asset.visible
 
-      for key of asset.meta
-        @data[idx]['meta'] or= {}
-        @data[idx]['meta'][key] or= {}
-        @data[idx]['meta'][key]['value'] = asset.meta[key]['value']
+      for key of asset.fields
+        @data[idx]['fields'] or= {}
+        @data[idx]['fields'][key] or= {}
+        @data[idx]['fields'][key]['value'] = asset.fields[key]['value']
 
     if save
       object =

@@ -11,7 +11,7 @@ class Meta extends Filter
 
       return unless this[resources[0]]
 
-      if this[resources[0]].meta[resources[1]].value.type
-        return this[resources[0]].meta[resources[1]].value.value
+      if this[resources[0]].fields[resources[1]].value.type
+        return this[resources[0]].fields[resources[1]].value.value
       else
-        return this[resources[0]].meta[resources[1]].value
+        return this[resources[0]].fields[resources[1]].value

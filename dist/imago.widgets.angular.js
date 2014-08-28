@@ -766,8 +766,8 @@ imagoModel = (function() {
     this.prepareCreation = __bind(this.prepareCreation, this);
     this.isDuplicated = __bind(this.isDuplicated, this);
     this.batchChange = __bind(this.batchChange, this);
-    this.reorder = __bind(this.reorder, this);
     this.orderChanged = __bind(this.orderChanged, this);
+    this.batchAddRemove = __bind(this.batchAddRemove, this);
     this.paste = __bind(this.paste, this);
     this.move = __bind(this.move, this);
     this["delete"] = __bind(this["delete"], this);
@@ -873,7 +873,7 @@ imagoModel = (function() {
           } else if (oldAsset && !_.isEqual(oldAsset, asset)) {
             return _this.update(asset);
           } else {
-            return _this.data.unshift(asset);
+            return _this.data.push(asset);
           }
         };
       })(this));
@@ -887,7 +887,7 @@ imagoModel = (function() {
       if (data.items) {
         data = _.omit(data, 'assets');
       }
-      this.data.unshift(data);
+      this.data.push(data);
       return data;
     }
   };
@@ -929,10 +929,12 @@ imagoModel = (function() {
   };
 
   imagoModel.prototype.update = function(asset) {
+    var idx;
     if (!asset._id) {
       return;
     }
-    this.data[this.findIdx(asset._id)] = asset;
+    idx = this.findIdx(asset._id);
+    this.data[idx] = _.assign(this.data[idx], asset);
     return this.$rootScope.$broadcast('assets:update');
   };
 
@@ -943,7 +945,8 @@ imagoModel = (function() {
     this.data = _.reject(this.data, {
       _id: id
     });
-    return this.$rootScope.$broadcast('assets:update');
+    this.$rootScope.$broadcast('assets:update');
+    return this.data;
   };
 
   imagoModel.prototype.move = function(data) {
@@ -959,15 +962,14 @@ imagoModel = (function() {
   };
 
   imagoModel.prototype.paste = function(assets, checkdups) {
-    var asset, exists, i, original_name, _i, _len, _results;
+    var asset, exists, i, original_name, _i, _len;
     if (checkdups == null) {
       checkdups = true;
     }
-    _results = [];
     for (_i = 0, _len = assets.length; _i < _len; _i++) {
       asset = assets[_i];
       if (!checkdups || !this.isDuplicated(asset.name, assets)) {
-        _results.push(this.data.unshift(asset));
+        this.data.unshift(asset);
       } else {
         i = 1;
         exists = true;
@@ -977,27 +979,36 @@ imagoModel = (function() {
           asset.name = "" + original_name + "_" + i;
           i++;
         }
-        _results.push(this.data.unshift(asset));
+        this.data.unshift(asset);
       }
     }
-    return _results;
+    return this.$rootScope.$broadcast('assets:update');
   };
 
-  imagoModel.prototype.orderChanged = function(start, finish, dropped, collectionId) {
-    var asset, assets, count, next, orderedList, prev, sortCollection, _i, _len;
-    sortCollection = this.findChildren({
-      _id: collectionId
-    });
+  imagoModel.prototype.batchAddRemove = function(assets) {
+    var asset, _i, _len;
+    for (_i = 0, _len = assets.length; _i < _len; _i++) {
+      asset = assets[_i];
+      this.data = _.reject(this.data, {
+        _id: asset.id
+      });
+      this.data.push(asset);
+    }
+    return this.$rootScope.$broadcast('assets:update');
+  };
+
+  imagoModel.prototype.orderChanged = function(start, finish, dropped, list) {
+    var asset, assets, count, next, orderedList, prev, _i, _len;
     if (dropped < finish) {
       finish = finish + 1;
-      prev = sortCollection[dropped - 1] ? sortCollection[dropped - 1].order : sortCollection[0].order + 1000;
-      next = sortCollection[finish] ? sortCollection[finish].order : 0;
-      assets = sortCollection.slice(dropped, finish);
+      prev = list[dropped - 1] ? list[dropped - 1].order : list[0].order + 1000;
+      next = list[finish] ? list[finish].order : 0;
+      assets = list.slice(dropped, finish);
     } else if (dropped > start) {
       dropped = dropped + 1;
-      prev = sortCollection[start - 1] ? sortCollection[start - 1].order : sortCollection[0].order + 1000;
-      next = sortCollection[dropped] ? sortCollection[dropped].order : 0;
-      assets = sortCollection.slice(start, dropped);
+      prev = list[start - 1] ? list[start - 1].order : list[0].order + 1000;
+      next = list[dropped] ? list[dropped].order : 0;
+      assets = list.slice(start, dropped);
     } else {
       return;
     }
@@ -1014,16 +1025,6 @@ imagoModel = (function() {
     return orderedList;
   };
 
-  imagoModel.prototype.reorder = function(id) {
-    var list, model;
-    model = this.findById(id);
-    list = {
-      order: model.sortorder,
-      assets: this.findChildren(model)
-    };
-    return this.worker.postMessage(list);
-  };
-
   imagoModel.prototype.batchChange = function(assets, save) {
     var asset, idx, key, object, _base, _base1, _i, _len;
     if (save == null) {
@@ -1038,10 +1039,10 @@ imagoModel = (function() {
       if (_.isBoolean(asset.visible)) {
         this.data[idx]['visible'] = asset.visible;
       }
-      for (key in asset.meta) {
-        (_base = this.data[idx])['meta'] || (_base['meta'] = {});
-        (_base1 = this.data[idx]['meta'])[key] || (_base1[key] = {});
-        this.data[idx]['meta'][key]['value'] = asset.meta[key]['value'];
+      for (key in asset.fields) {
+        (_base = this.data[idx])['fields'] || (_base['fields'] = {});
+        (_base1 = this.data[idx]['fields'])[key] || (_base1[key] = {});
+        this.data[idx]['fields'][key]['value'] = asset.fields[key]['value'];
       }
     }
     if (save) {
@@ -1712,7 +1713,7 @@ imagoUtils = (function() {
         if (!asset.meta[attribute]) {
           return console.log("This asset does not contain a " + attribute + " attribute");
         }
-        return asset.meta[attribute].value;
+        return asset.fields[attribute].value;
       }
     };
   }
@@ -1740,10 +1741,10 @@ Meta = (function() {
       if (!this[resources[0]]) {
         return;
       }
-      if (this[resources[0]].meta[resources[1]].value.type) {
-        return this[resources[0]].meta[resources[1]].value.value;
+      if (this[resources[0]].fields[resources[1]].value.type) {
+        return this[resources[0]].fields[resources[1]].value.value;
       } else {
-        return this[resources[0]].meta[resources[1]].value;
+        return this[resources[0]].fields[resources[1]].value;
       }
     };
   }

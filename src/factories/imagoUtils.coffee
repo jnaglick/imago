@@ -434,5 +434,5 @@ class imagoUtils extends Factory
 
       getMeta: (asset, attribute) ->
         return console.log "This asset does not contain a #{attribute} attribute" unless asset.meta[attribute]
-        return asset.meta[attribute].value
+        return asset.fields[attribute].value
     }
