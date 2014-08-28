@@ -224,7 +224,7 @@ $cropinner:  23px
     .inner
       border-radius: 1px
       position: absolute
-      background: white
+      background: darken(white, 5%)
       width: $cropinner
       height: $cropinner
       transition: all 0.15s ease
@@ -251,20 +251,4 @@ $cropinner:  23px
     &.right-bottom .inner
       transform: translate3d(21px,21px,0)
 
-
-.imago-upload
-  width: 45px
-  height: 45px
-  position: relative
-  border: none
-  background: red
-  display: inline-block
-  input[type="file"]
-    +pos()
-    cursor: pointer
-    opacity: 0
-
-
-.button,
-button
 
