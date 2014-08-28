@@ -444,11 +444,13 @@ imagoSlider = (function() {
             return true;
           }
         };
-        scope.goNext = function() {
+        scope.goNext = function($event) {
+          $event.stopPropagation();
           scope.currentIndex = scope.currentIndex < scope.slideSource.length - 1 ? ++scope.currentIndex : 0;
           return getSiblings();
         };
-        scope.goPrev = function() {
+        scope.goPrev = function($event) {
+          $event.stopPropagation();
           scope.currentIndex = scope.currentIndex > 0 ? --scope.currentIndex : scope.slideSource.length - 1;
           return getSiblings();
         };
