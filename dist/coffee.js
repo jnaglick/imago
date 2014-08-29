@@ -866,16 +866,16 @@ imagoModel = (function() {
           var oldAsset;
           oldAsset = _this.find(asset._id) || false;
           if (_.isEqual(oldAsset, asset)) {
-            return;
+
           } else if (oldAsset && !_.isEqual(oldAsset, asset)) {
-            _this.update(asset);
+            return _this.update(asset);
           } else {
-            _this.data.push(asset);
-          }
-          if (_this.base64Matcher.test(asset.serving_url)) {
-            return asset.base64 = true;
-          } else {
-            return asset.base64 = false;
+            if (_this.base64Matcher.test(asset.serving_url)) {
+              asset.base64 = true;
+            } else {
+              asset.base64 = false;
+            }
+            return _this.data.push(asset);
           }
         };
       })(this));

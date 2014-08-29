@@ -76,12 +76,11 @@ class imagoModel extends Service
         else if oldAsset and not _.isEqual(oldAsset, asset)
           @update(asset)
         else
+          if @base64Matcher.test(asset.serving_url)
+            asset.base64 = true
+          else
+            asset.base64 = false
           @data.push asset
-
-        if @base64Matcher.test(asset.serving_url)
-          asset.base64 = true
-        else
-          asset.base64 = false
 
     if _.isEqual(oldData, data)
       return data
