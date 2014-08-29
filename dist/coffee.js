@@ -785,8 +785,6 @@ imagoModel = (function() {
 
   imagoModel.prototype.searchUrl = data === 'online' && debug ? "http://" + tenant + ".imagoapp.com/api/v3/search" : "/api/v3/search";
 
-  imagoModel.prototype.base64Matcher = new RegExp("^([A-Za-z0-9+/]{4})*([A-Za-z0-9+/]{4}|[A-Za-z0-9+/]{3}=|[A-Za-z0-9+/]{2}==)$");
-
   imagoModel.prototype.search = function(query) {
     var params;
     params = this.formatQuery(query);
@@ -870,7 +868,7 @@ imagoModel = (function() {
           } else if (oldAsset && !_.isEqual(oldAsset, asset)) {
             return _this.update(asset);
           } else {
-            if (_this.base64Matcher.test(asset.serving_url)) {
+            if (asset.serving_url.indexOf('data:' === 0)) {
               console.log('base64 true');
               asset.base64 = true;
             } else {
@@ -927,7 +925,7 @@ imagoModel = (function() {
     if (!asset._id) {
       return;
     }
-    if (this.base64Matcher.test(asset.serving_url)) {
+    if (asset.serving_url.indexOf('data:' === 0)) {
       console.log('base64 true');
       asset.base64 = true;
     } else {

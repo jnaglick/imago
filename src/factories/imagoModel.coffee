@@ -10,8 +10,6 @@ class imagoModel extends Service
 
   searchUrl: if (data is 'online' and debug) then "http://#{tenant}.imagoapp.com/api/v3/search" else "/api/v3/search"
 
-  base64Matcher : new RegExp("^([A-Za-z0-9+/]{4})*([A-Za-z0-9+/]{4}|[A-Za-z0-9+/]{3}=|[A-Za-z0-9+/]{2}==)$")
-
   search: (query) ->
     # console.log 'search...', query
     params = @formatQuery query
@@ -76,7 +74,7 @@ class imagoModel extends Service
         else if oldAsset and not _.isEqual(oldAsset, asset)
           @update(asset)
         else
-          if @base64Matcher.test(asset.serving_url)
+          if asset.serving_url.indexOf 'data:' is 0
             console.log 'base64 true'
             asset.base64 = true
           else
@@ -110,7 +108,7 @@ class imagoModel extends Service
 
   add: (asset) =>
     return unless asset._id
-    if @base64Matcher.test(asset.serving_url)
+    if asset.serving_url.indexOf 'data:' is 0
       console.log 'base64 true'
       asset.base64 = true
     else
