@@ -866,14 +866,14 @@ imagoModel = (function() {
     if (data.assets) {
       _.forEach(data.assets, (function(_this) {
         return function(asset) {
-          var oldAsset;
+          var oldAsset, _ref;
           oldAsset = _this.find(asset._id) || false;
           if (_.isEqual(oldAsset, asset)) {
 
           } else if (oldAsset && !_.isEqual(oldAsset, asset)) {
             return _this.update(asset);
           } else {
-            if (asset.serving_url.indexOf('data:' === 0)) {
+            if ((_ref = asset.serving_url) != null ? _ref.indexOf('data:' === 0) : void 0) {
               console.log('base64 true');
               asset.base64 = true;
             } else {
@@ -927,10 +927,11 @@ imagoModel = (function() {
   };
 
   imagoModel.prototype.add = function(asset) {
+    var _ref;
     if (!asset._id) {
       return;
     }
-    if (asset.serving_url.indexOf('data:' === 0)) {
+    if ((_ref = asset.serving_url) != null ? _ref.indexOf('data:' === 0) : void 0) {
       console.log('base64 true');
       asset.base64 = true;
     } else {
