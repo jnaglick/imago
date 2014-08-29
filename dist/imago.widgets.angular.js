@@ -790,6 +790,8 @@ imagoModel = (function() {
 
   imagoModel.prototype.searchUrl = data === 'online' && debug ? "http://" + tenant + ".imagoapp.com/api/v3/search" : "/api/v3/search";
 
+  imagoModel.prototype.base64Matcher = new RegExp("^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=|[A-Za-z0-9+/]{4})$");
+
   imagoModel.prototype.search = function(query) {
     var params;
     params = this.formatQuery(query);
@@ -869,11 +871,16 @@ imagoModel = (function() {
           var oldAsset;
           oldAsset = _this.find(asset._id) || false;
           if (_.isEqual(oldAsset, asset)) {
-
+            return;
           } else if (oldAsset && !_.isEqual(oldAsset, asset)) {
-            return _this.update(asset);
+            _this.update(asset);
           } else {
-            return _this.data.push(asset);
+            _this.data.push(asset);
+          }
+          if (_this.base64Matcher.test(asset.serving_url)) {
+            return asset.base64 = true;
+          } else {
+            return asset.base64 = false;
           }
         };
       })(this));
@@ -924,6 +931,11 @@ imagoModel = (function() {
     if (!asset._id) {
       return;
     }
+    if (this.base64Matcher.test(asset.serving_url)) {
+      asset.base64 = true;
+    } else {
+      asset.base64 = false;
+    }
     this.data.unshift(asset);
     return this.$rootScope.$broadcast('assets:update');
   };
@@ -933,9 +945,12 @@ imagoModel = (function() {
     if (!asset._id) {
       return;
     }
+    if (asset.assets) {
+      delete asset.assets;
+    }
     idx = this.findIdx(asset._id);
     this.data[idx] = _.assign(this.data[idx], asset);
-    return this.$rootScope.$broadcast('assets:update');
+    return this.$rootScope.$broadcast('assets:update', asset);
   };
 
   imagoModel.prototype["delete"] = function(id) {
