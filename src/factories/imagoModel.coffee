@@ -248,7 +248,7 @@ class imagoModel extends Service
   isDuplicated: (name) =>
 
     return unless name
-    if @findByAttr({name: @imagoUtils.normalize(name)}).length > 1
+    if _.where(@findChildren(@currentCollection), {name: @imagoUtils.normalize(name)}).length > 1
       return true
     else
       return false
@@ -257,9 +257,7 @@ class imagoModel extends Service
   prepareCreation: (asset, parent) =>
     return unless asset.name
 
-    assets = @findChildren _id : parent
-
-    return if @isDuplicated asset.name, assets
+    return if @isDuplicated asset.name
 
     asset.parent = parent
     asset._tenant = @tenant

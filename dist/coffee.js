@@ -1068,7 +1068,7 @@ imagoModel = (function() {
     if (!name) {
       return;
     }
-    if (this.findByAttr({
+    if (_.where(this.findChildren(this.currentCollection), {
       name: this.imagoUtils.normalize(name)
     }).length > 1) {
       return true;
@@ -1078,14 +1078,10 @@ imagoModel = (function() {
   };
 
   imagoModel.prototype.prepareCreation = function(asset, parent) {
-    var assets;
     if (!asset.name) {
       return;
     }
-    assets = this.findChildren({
-      _id: parent
-    });
-    if (this.isDuplicated(asset.name, assets)) {
+    if (this.isDuplicated(asset.name)) {
       return;
     }
     asset.parent = parent;
