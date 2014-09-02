@@ -245,18 +245,14 @@ class imagoModel extends Service
 
     else return false
 
-  isDuplicated: (name, assets) =>
+  isDuplicated: (name) =>
 
     return unless name
-    nameIfDuplicate = name
-    nameIfDuplicate = @imagoUtils.normalize nameIfDuplicate
+    if @findByAttr({name: @imagoUtils.normalize(name)}).length > 1
+      return true
+    else
+      return false
 
-    normalizeList = []
-
-    for asset in assets
-      normalizeList.push @imagoUtils.normalize asset.name
-
-    if @$filter('filter')(normalizeList, nameIfDuplicate, true).length > 1 then return true  else return false
 
   prepareCreation: (asset, parent) =>
     return unless asset.name

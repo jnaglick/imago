@@ -29,992 +29,6 @@ imagoPage = (function() {
 
 angular.module('imago.widgets.angular').controller('imagoPage', ['$scope', '$state', 'imagoModel', imagoPage]);
 
-var imagoModel,
-  __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
-
-imagoModel = (function() {
-  function imagoModel($rootScope, $http, $location, $q, $filter, imagoUtils) {
-    this.$rootScope = $rootScope;
-    this.$http = $http;
-    this.$location = $location;
-    this.$q = $q;
-    this.$filter = $filter;
-    this.imagoUtils = imagoUtils;
-    this.prepareCreation = __bind(this.prepareCreation, this);
-    this.isDuplicated = __bind(this.isDuplicated, this);
-    this.batchChange = __bind(this.batchChange, this);
-    this.orderChanged = __bind(this.orderChanged, this);
-    this.batchAddRemove = __bind(this.batchAddRemove, this);
-    this.paste = __bind(this.paste, this);
-    this.move = __bind(this.move, this);
-    this["delete"] = __bind(this["delete"], this);
-    this.update = __bind(this.update, this);
-    this.add = __bind(this.add, this);
-    this.findIdx = __bind(this.findIdx, this);
-    this.find = __bind(this.find, this);
-    this.findByAttr = __bind(this.findByAttr, this);
-    this.findParent = __bind(this.findParent, this);
-    this.findChildren = __bind(this.findChildren, this);
-    this.create = __bind(this.create, this);
-    this.getData = __bind(this.getData, this);
-  }
-
-  imagoModel.prototype.data = [];
-
-  imagoModel.prototype.tenant = '';
-
-  imagoModel.prototype.currentCollection = void 0;
-
-  imagoModel.prototype.searchUrl = data === 'online' && debug ? "http://" + tenant + ".imagoapp.com/api/v3/search" : "/api/v3/search";
-
-  imagoModel.prototype.search = function(query) {
-    var params;
-    params = this.formatQuery(query);
-    return this.$http.post(this.searchUrl, angular.toJson(params));
-  };
-
-  imagoModel.prototype.getData = function(query, cache) {
-    var promises;
-    if (angular.isString(query)) {
-      query = [
-        {
-          path: query
-        }
-      ];
-    }
-    query = this.imagoUtils.toArray(query);
-    promises = [];
-    _.forEach(query, (function(_this) {
-      return function(value) {
-        return promises.push(_this.search(value).then(function(response) {
-          if (!(response.data.length > 0)) {
-            return;
-          }
-          if (value.page) {
-            _.forEach(response.data, function(data) {
-              return data.page = value.page;
-            });
-          }
-          return _.forEach(response.data, function(data) {
-            return _this.create(data);
-          });
-        }));
-      };
-    })(this));
-    return this.$q.all(promises).then((function(_this) {
-      return function(data) {
-        data = _.flatten(data);
-        return data;
-      };
-    })(this));
-  };
-
-  imagoModel.prototype.formatQuery = function(query) {
-    var elem, key, querydict, value, _i, _j, _len, _len1, _ref;
-    querydict = {};
-    if (angular.isArray(query)) {
-      for (_i = 0, _len = query.length; _i < _len; _i++) {
-        elem = query[_i];
-        for (key in elem) {
-          value = elem[key];
-          querydict[key] || (querydict[key] = []);
-          querydict[key].push(value);
-        }
-      }
-    } else {
-      for (key in query) {
-        value = query[key];
-        querydict[key] = angular.isArray(value) ? value : [value];
-      }
-    }
-    _ref = ['page', 'pagesize'];
-    for (_j = 0, _len1 = _ref.length; _j < _len1; _j++) {
-      key = _ref[_j];
-      if (querydict.hasOwnProperty(key)) {
-        querydict[key] = querydict[key][0];
-      }
-    }
-    return querydict;
-  };
-
-  imagoModel.prototype.create = function(data) {
-    var oldData;
-    oldData = this.find(data._id) || false;
-    if (data.assets) {
-      _.forEach(data.assets, (function(_this) {
-        return function(asset) {
-          var oldAsset, _ref;
-          oldAsset = _this.find(asset._id) || false;
-          if (_.isEqual(oldAsset, asset)) {
-
-          } else if (oldAsset && !_.isEqual(oldAsset, asset)) {
-            return _this.update(asset);
-          } else {
-            if ((_ref = asset.serving_url) != null ? _ref.indexOf('data:image' === 0) : void 0) {
-              asset.base64 = true;
-            } else {
-              asset.base64 = false;
-            }
-            return _this.data.push(asset);
-          }
-        };
-      })(this));
-    }
-    if (_.isEqual(oldData, data)) {
-      return data;
-    } else if (oldData && !_.isEqual(oldData, data)) {
-      this.update(data);
-      return data;
-    } else {
-      if (data.items) {
-        data = _.omit(data, 'assets');
-      }
-      this.data.push(data);
-      return data;
-    }
-  };
-
-  imagoModel.prototype.findChildren = function(asset) {
-    return _.where(this.data, {
-      parent: asset._id
-    });
-  };
-
-  imagoModel.prototype.findParent = function(asset) {
-    return _.find(this.data, {
-      _id: asset.parent
-    });
-  };
-
-  imagoModel.prototype.findByAttr = function(attr) {
-    return _.where(this.data, attr);
-  };
-
-  imagoModel.prototype.find = function(id) {
-    return _.find(this.data, {
-      '_id': id
-    });
-  };
-
-  imagoModel.prototype.findIdx = function(id) {
-    return _.findIndex(this.data, {
-      '_id': id
-    });
-  };
-
-  imagoModel.prototype.add = function(asset) {
-    var _ref;
-    if (!asset._id) {
-      return;
-    }
-    if ((_ref = asset.serving_url) != null ? _ref.indexOf('data:image' === 0) : void 0) {
-      asset.base64 = true;
-    } else {
-      asset.base64 = false;
-    }
-    this.data.unshift(asset);
-    return this.$rootScope.$broadcast('assets:update');
-  };
-
-  imagoModel.prototype.update = function(asset) {
-    var idx;
-    if (!asset._id) {
-      return;
-    }
-    if (asset.assets) {
-      delete asset.assets;
-    }
-    idx = this.findIdx(asset._id);
-    this.data[idx] = _.assign(this.data[idx], asset);
-    return this.$rootScope.$broadcast('assets:update', asset);
-  };
-
-  imagoModel.prototype["delete"] = function(id) {
-    if (!id) {
-      return;
-    }
-    this.data = _.reject(this.data, {
-      _id: id
-    });
-    this.$rootScope.$broadcast('assets:update');
-    return this.data;
-  };
-
-  imagoModel.prototype.move = function(data) {
-    var assets;
-    assets = this.findChildren(data);
-    return _.forEach(assets, (function(_this) {
-      return function(asset) {
-        var order;
-        order = _.indexOf(assets, asset);
-        return assets.splice(order, 1);
-      };
-    })(this));
-  };
-
-  imagoModel.prototype.paste = function(assets, checkdups) {
-    var asset, exists, i, original_name, _i, _len;
-    if (checkdups == null) {
-      checkdups = true;
-    }
-    for (_i = 0, _len = assets.length; _i < _len; _i++) {
-      asset = assets[_i];
-      if (!checkdups || !this.isDuplicated(asset.name, assets)) {
-        this.data.unshift(asset);
-      } else {
-        i = 1;
-        exists = true;
-        original_name = asset.name;
-        while (exists) {
-          exists = this.isDuplicated(asset.name);
-          asset.name = "" + original_name + "_" + i;
-          i++;
-        }
-        this.data.unshift(asset);
-      }
-    }
-    return this.$rootScope.$broadcast('assets:update');
-  };
-
-  imagoModel.prototype.batchAddRemove = function(assets) {
-    var asset, _i, _len;
-    for (_i = 0, _len = assets.length; _i < _len; _i++) {
-      asset = assets[_i];
-      this.data = _.reject(this.data, {
-        _id: asset.id
-      });
-      this.data.push(asset);
-    }
-    return this.$rootScope.$broadcast('assets:update');
-  };
-
-  imagoModel.prototype.orderChanged = function(start, finish, dropped, list) {
-    var asset, assets, count, next, orderedList, prev, _i, _len;
-    if (dropped < finish) {
-      finish = finish + 1;
-      prev = list[dropped - 1] ? list[dropped - 1].order : list[0].order + 1000;
-      next = list[finish] ? list[finish].order : 0;
-      assets = list.slice(dropped, finish);
-    } else if (dropped > start) {
-      dropped = dropped + 1;
-      prev = list[start - 1] ? list[start - 1].order : list[0].order + 1000;
-      next = list[dropped] ? list[dropped].order : 0;
-      assets = list.slice(start, dropped);
-    } else {
-      return;
-    }
-    console.log('prev', prev, 'next', next);
-    count = prev - 1000;
-    for (_i = 0, _len = assets.length; _i < _len; _i++) {
-      asset = assets[_i];
-      asset.order = count;
-      count = count - 1000;
-    }
-    orderedList = {
-      assets: assets
-    };
-    return orderedList;
-  };
-
-  imagoModel.prototype.batchChange = function(assets, save) {
-    var asset, idx, key, object, _base, _base1, _i, _len;
-    if (save == null) {
-      save = false;
-    }
-    for (_i = 0, _len = assets.length; _i < _len; _i++) {
-      asset = assets[_i];
-      idx = this.findIdx(asset._id);
-      if (idx === -1) {
-        return;
-      }
-      if (_.isBoolean(asset.visible)) {
-        this.data[idx]['visible'] = asset.visible;
-      }
-      for (key in asset.fields) {
-        (_base = this.data[idx])['fields'] || (_base['fields'] = {});
-        (_base1 = this.data[idx]['fields'])[key] || (_base1[key] = {});
-        this.data[idx]['fields'][key]['value'] = asset.fields[key]['value'];
-      }
-    }
-    if (save) {
-      object = {
-        assets: assets
-      };
-      return object;
-    } else {
-      return false;
-    }
-  };
-
-  imagoModel.prototype.isDuplicated = function(name, assets) {
-    var asset, nameIfDuplicate, normalizeList, _i, _len;
-    if (!name) {
-      return;
-    }
-    nameIfDuplicate = name;
-    nameIfDuplicate = this.imagoUtils.normalize(nameIfDuplicate);
-    normalizeList = [];
-    for (_i = 0, _len = assets.length; _i < _len; _i++) {
-      asset = assets[_i];
-      normalizeList.push(this.imagoUtils.normalize(asset.name));
-    }
-    if (this.$filter('filter')(normalizeList, nameIfDuplicate, true).length > 1) {
-      return true;
-    } else {
-      return false;
-    }
-  };
-
-  imagoModel.prototype.prepareCreation = function(asset, parent) {
-    var assets;
-    if (!asset.name) {
-      return;
-    }
-    assets = this.findChildren({
-      _id: parent
-    });
-    if (this.isDuplicated(asset.name, assets)) {
-      return;
-    }
-    asset.parent = parent;
-    asset._tenant = this.tenant;
-    asset.order = (assets.length === 0 ? 1000 : assets[0].order + 1000);
-    return asset;
-  };
-
-  return imagoModel;
-
-})();
-
-angular.module('imago.widgets.angular').service('imagoModel', ['$rootScope', '$http', '$location', '$q', '$filter', 'imagoUtils', imagoModel]);
-
-var imagoPanel;
-
-imagoPanel = (function() {
-  function imagoPanel($http, imagoUtils, $q, $location) {
-    return {
-      search: function(query) {
-        var params;
-        params = this.objListToDict(query);
-        return $http.post(this.getSearchUrl(), angular.toJson(params));
-      },
-      getData: function(query) {
-        var data, promises;
-        if (!query) {
-          query = $location.$$path;
-        }
-        if (angular.isString(query)) {
-          query = [
-            {
-              path: query
-            }
-          ];
-        }
-        query = imagoUtils.toArray(query);
-        promises = [];
-        data = [];
-        angular.forEach(query, (function(_this) {
-          return function(value) {
-            return promises.push(_this.search(value).success(function(response) {
-              var result;
-              if (response.length === 1 && response[0].kind === 'Collection') {
-                return data.push(response[0]);
-              } else {
-                result = {
-                  items: response,
-                  count: response.length
-                };
-                return data.push(result);
-              }
-            }));
-          };
-        })(this));
-        return $q.all(promises).then((function(_this) {
-          return function() {
-            return data;
-          };
-        })(this));
-      },
-      objListToDict: function(obj_or_list) {
-        var elem, key, querydict, value, _i, _j, _len, _len1, _ref;
-        querydict = {};
-        if (angular.isArray(obj_or_list)) {
-          for (_i = 0, _len = obj_or_list.length; _i < _len; _i++) {
-            elem = obj_or_list[_i];
-            for (key in elem) {
-              value = elem[key];
-              querydict[key] || (querydict[key] = []);
-              querydict[key].push(value);
-            }
-          }
-        } else {
-          for (key in obj_or_list) {
-            value = obj_or_list[key];
-            querydict[key] = angular.isArray(value) ? value : [value];
-          }
-        }
-        _ref = ['page', 'pagesize'];
-        for (_j = 0, _len1 = _ref.length; _j < _len1; _j++) {
-          key = _ref[_j];
-          if (querydict.hasOwnProperty(key)) {
-            querydict[key] = querydict[key][0];
-          }
-        }
-        return querydict;
-      },
-      getSearchUrl: function() {
-        if (data === 'online' && debug) {
-          return "http://" + tenant + ".imagoapp.com/api/v3/search";
-        } else {
-          return "/api/v3/search";
-        }
-      }
-    };
-  }
-
-  return imagoPanel;
-
-})();
-
-angular.module('imago.widgets.angular').factory('imagoPanel', ['$http', 'imagoUtils', '$q', '$location', imagoPanel]);
-
-var imagoSubmit,
-  __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
-
-imagoSubmit = (function() {
-  function imagoSubmit($http, imagoUtils) {
-    return {
-      getxsrf: function() {
-        var url;
-        url = data === 'online' && debug ? "http://" + tenant + ".imagoapp.com/api/v2/getxsrf" : "/api/v2/getxsrf";
-        return $http.get(url);
-      },
-      formToJson: function(form) {
-        var defaultFields, key, message, obj, value;
-        defaultFields = ['message', 'subscribe'];
-        obj = {};
-        message = '';
-        for (key in form) {
-          value = form[key];
-          if (__indexOf.call(defaultFields, key) < 0) {
-            message += "" + (imagoUtils.titleCase(key)) + ": " + value + "<br><br>";
-          }
-          obj[key] = value || '';
-        }
-        obj.message = message + imagoUtils.replaceNewLines(obj.message || '');
-        return angular.toJson(obj);
-      },
-      send: function(data) {
-        return this.getxsrf().then((function(_this) {
-          return function(response) {
-            var postUrl, xsrfHeader;
-            console.log('getxsrf success: ', response);
-            xsrfHeader = {
-              "Nex-Xsrf": response.data
-            };
-            postUrl = data === 'online' && debug ? "http://" + tenant + ".imagoapp.com/api/v2/contact" : "/api/v2/contact";
-            return $http.post(postUrl, _this.formToJson(data), {
-              headers: xsrfHeader
-            }).then(function(response) {
-              console.log('success: ', response);
-              return true;
-            }, function(error) {
-              console.log('error: ', error);
-              return false;
-            });
-          };
-        })(this), function(error) {
-          return console.log('getxsrf error: ', error);
-        });
-      }
-    };
-  }
-
-  return imagoSubmit;
-
-})();
-
-angular.module('imago.widgets.angular').factory('imagoSubmit', ['$http', 'imagoUtils', imagoSubmit]);
-
-var imagoUtils;
-
-imagoUtils = (function() {
-  function imagoUtils() {
-    var alphanum;
-    return {
-      KEYS: {
-        '16': 'onShift',
-        '18': 'onAlt',
-        '17': 'onCommand',
-        '91': 'onCommand',
-        '93': 'onCommand',
-        '224': 'onCommand',
-        '13': 'onEnter',
-        '32': 'onSpace',
-        '37': 'onLeft',
-        '38': 'onUp',
-        '39': 'onRight',
-        '40': 'onDown',
-        '46': 'onDelete',
-        '8': 'onBackspace',
-        '9': 'onTab',
-        '188': 'onComma',
-        '190': 'onPeriod',
-        '27': 'onEsc',
-        '186': 'onColon',
-        '65': 'onA',
-        '67': 'onC',
-        '86': 'onV',
-        '88': 'onX',
-        '68': 'onD',
-        '187': 'onEqual',
-        '189': 'onMinus'
-      },
-      SYMBOLS: {
-        EUR: '&#128;',
-        USD: '&#36;',
-        SEK: 'SEK',
-        YEN: '&#165;',
-        GBP: '&#163;',
-        GENERIC: '&#164;'
-      },
-      CURRENCY_MAPPING: {
-        "United Arab Emirates": "AED",
-        "Afghanistan": "AFN",
-        "Albania": "ALL",
-        "Armenia": "AMD",
-        "Angola": "AOA",
-        "Argentina": "ARS",
-        "Australia": "AUD",
-        "Aruba": "AWG",
-        "Azerbaijan": "AZN",
-        "Bosnia and Herzegovina": "BAM",
-        "Barbados": "BBD",
-        "Bangladesh": "BDT",
-        "Bulgaria": "BGN",
-        "Bahrain": "BHD",
-        "Burundi": "BIF",
-        "Bermuda": "BMD",
-        "Brunei": "BND",
-        "Bolivia": "BOB",
-        "Brazil": "BRL",
-        "Bahamas": "BSD",
-        "Bhutan": "BTN",
-        "Botswana": "BWP",
-        "Belarus": "BYR",
-        "Belize": "BZD",
-        "Canada": "CAD",
-        "Switzerland Franc": "CHF",
-        "Chile": "CLP",
-        "China": "CNY",
-        "Colombia": "COP",
-        "Costa Rica": "CRC",
-        "Cuba Convertible": "CUC",
-        "Cuba Peso": "CUP",
-        "Cape Verde": "CVE",
-        "Czech Republic": "CZK",
-        "Djibouti": "DJF",
-        "Denmark": "DKK",
-        "Dominican Republic": "DOP",
-        "Algeria": "DZD",
-        "Egypt": "EGP",
-        "Eritrea": "ERN",
-        "Ethiopia": "ETB",
-        "Autria": "EUR",
-        "Fiji": "FJD",
-        "United Kingdom": "GBP",
-        "Georgia": "GEL",
-        "Guernsey": "GGP",
-        "Ghana": "GHS",
-        "Gibraltar": "GIP",
-        "Gambia": "GMD",
-        "Guinea": "GNF",
-        "Guatemala": "GTQ",
-        "Guyana": "GYD",
-        "Hong Kong": "HKD",
-        "Honduras": "HNL",
-        "Croatia": "HRK",
-        "Haiti": "HTG",
-        "Hungary": "HUF",
-        "Indonesia": "IDR",
-        "Israel": "ILS",
-        "Isle of Man": "IMP",
-        "India": "INR",
-        "Iraq": "IQD",
-        "Iran": "IRR",
-        "Iceland": "ISK",
-        "Jersey": "JEP",
-        "Jamaica": "JMD",
-        "Jordan": "JOD",
-        "Japan": "JPY",
-        "Kenya": "KES",
-        "Kyrgyzstan": "KGS",
-        "Cambodia": "KHR",
-        "Comoros": "KMF",
-        "North Korea": "KPW",
-        "South Korea": "KRW",
-        "Kuwait": "KWD",
-        "Cayman Islands": "KYD",
-        "Kazakhstan": "KZT",
-        "Laos": "LAK",
-        "Lebanon": "LBP",
-        "Sri Lanka": "LKR",
-        "Liberia": "LRD",
-        "Lesotho": "LSL",
-        "Lithuania": "LTL",
-        "Latvia": "LVL",
-        "Libya": "LYD",
-        "Morocco": "MAD",
-        "Moldova": "MDL",
-        "Madagascar": "MGA",
-        "Macedonia": "MKD",
-        "Mongolia": "MNT",
-        "Macau": "MOP",
-        "Mauritania": "MRO",
-        "Mauritius": "MUR",
-        "Malawi": "MWK",
-        "Mexico": "MXN",
-        "Malaysia": "MYR",
-        "Mozambique": "MZN",
-        "Namibia": "NAD",
-        "Nigeria": "NGN",
-        "Nicaragua": "NIO",
-        "Norway": "NOK",
-        "Nepal": "NPR",
-        "New Zealand": "NZD",
-        "Oman": "OMR",
-        "Panama": "PAB",
-        "Peru": "PEN",
-        "Papua New Guinea": "PGK",
-        "Philippines": "PHP",
-        "Pakistan": "PKR",
-        "Poland": "PLN",
-        "Paraguay": "PYG",
-        "Qatar": "QAR",
-        "Romania": "RON",
-        "Serbia": "RSD",
-        "Russia": "RUB",
-        "Rwanda": "RWF",
-        "Saudi Arabia": "SAR",
-        "Solomon Islands": "SBD",
-        "Seychelles": "SCR",
-        "Sudan": "SDG",
-        "Sweden": "SEK",
-        "Singapore": "SGD",
-        "Saint Helena": "SHP",
-        "Suriname": "SRD",
-        "El Salvador": "SVC",
-        "Syria": "SYP",
-        "Swaziland": "SZL",
-        "Thailand": "THB",
-        "Tajikistan": "TJS",
-        "Turkmenistan": "TMT",
-        "Tunisia": "TND",
-        "Tonga": "TOP",
-        "Turkey": "TRY",
-        "Trinidad and Tobago": "TTD",
-        "Tuvalu": "TVD",
-        "Taiwan": "TWD",
-        "Tanzania": "TZS",
-        "Ukraine": "UAH",
-        "Uganda": "UGX",
-        "United States": "USD",
-        "Uruguay": "UYU",
-        "Uzbekistan": "UZS",
-        "Venezuela": "VEF",
-        "Vietnam": "VND",
-        "Vanuatu": "VUV",
-        "Samoa": "WST",
-        "Yemen": "YER",
-        "South Africa": "ZAR",
-        "Zambia": "ZMW",
-        "Zimbabwe": "ZWD",
-        "Austria": "EUR",
-        "Belgium": "EUR",
-        "Bulgaria": "EUR",
-        "Croatia": "EUR",
-        "Cyprus": "EUR",
-        "Czech Republic": "EUR",
-        "Denmark": "EUR",
-        "Estonia": "EUR",
-        "Finland": "EUR",
-        "France": "EUR",
-        "Germany": "EUR",
-        "Greece": "EUR",
-        "Hungary": "EUR",
-        "Ireland": "EUR",
-        "Italy": "EUR",
-        "Latvia": "EUR",
-        "Lithuania": "EUR",
-        "Luxembourg": "EUR",
-        "Malta": "EUR",
-        "Netherlands": "EUR",
-        "Poland": "EUR",
-        "Portugal": "EUR",
-        "Romania": "EUR",
-        "Slovakia": "EUR",
-        "Slovenia": "EUR",
-        "Spain": "EUR"
-      },
-      toType: function(obj) {
-        return {}.toString.call(obj).match(/\s([a-zA-Z]+)/)[1].toLowerCase();
-      },
-      requestAnimationFrame: (function() {
-        var request;
-        request = window.requestAnimationFrame || window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame || window.oRequestAnimationFrame || window.msRequestAnimationFrame || function(callback) {
-          return window.setTimeout(callback, 1000 / 60);
-        };
-        return function(callback) {
-          return request.call(window, callback);
-        };
-      })(),
-      cookie: function(name, value) {
-        var cookie, _i, _len, _ref;
-        if (!value) {
-          _ref = document.cookie.split(';');
-          for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-            cookie = _ref[_i];
-            if (cookie.indexOf(name) === 1) {
-              return cookie.split('=')[1];
-            }
-          }
-          return false;
-        }
-        return document.cookie = "" + name + "=" + value + "; path=/";
-      },
-      sha: function() {
-        var i, possible, text, _i;
-        text = '';
-        possible = 'abcdefghijklmnopqrstuvwxyz0123456789';
-        for (i = _i = 0; _i <= 56; i = ++_i) {
-          text += possible.charAt(Math.floor(Math.random() * possible.length));
-        }
-        return text;
-      },
-      uuid: function() {
-        var S4;
-        S4 = function() {
-          return (((1 + Math.random()) * 0x10000) | 0).toString(16).substring(1);
-        };
-        return S4() + S4() + "-" + S4() + "-" + S4() + "-" + S4() + "-" + S4() + S4() + S4();
-      },
-      urlify: function(query) {
-        return console.log('urlify');
-      },
-      queryfy: function(url) {
-        var facet, filter, key, query, value, _i, _len, _ref;
-        query = [];
-        _ref = url.split('+');
-        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-          filter = _ref[_i];
-          filter || (filter = 'collection:/');
-          facet = filter.split(':');
-          key = facet[0].toLowerCase();
-          value = decodeURIComponent(facet[1] || '');
-          facet = {};
-          facet[key] = value;
-          query.push(facet);
-        }
-        return query;
-      },
-      pluralize: function(str) {
-        return str + 's';
-      },
-      singularize: function(str) {
-        return str.replace(/s$/, '');
-      },
-      titleCase: function(str) {
-        if (typeof str !== 'string') {
-          return str;
-        }
-        return str.charAt(0).toUpperCase() + str.slice(1);
-      },
-      normalize: function(s) {
-        var mapping, r, str;
-        mapping = {
-          'ä': 'ae',
-          'ö': 'oe',
-          'ü': 'ue',
-          '&': 'and',
-          'é': 'e',
-          'ë': 'e',
-          'ï': 'i',
-          'è': 'e',
-          'à': 'a',
-          'ù': 'u',
-          'ç': 'c',
-          'ø': 'o'
-        };
-        s = s.toLowerCase();
-        r = new RegExp(Object.keys(mapping).join('|'), 'g');
-        str = s.trim().replace(r, function(s) {
-          return mapping[s];
-        }).toLowerCase();
-        return str.replace(/[',:;#]/g, '').replace(/[^\/\w]+/g, '-').replace(/\W?\/\W?/g, '\/').replace(/^-|-$/g, '');
-      },
-      alphaNumSort: alphanum = function(a, b) {
-        var aa, bb, c, chunkify, d, x;
-        chunkify = function(t) {
-          var i, j, m, n, tz, x, y;
-          tz = [];
-          x = 0;
-          y = -1;
-          n = 0;
-          i = void 0;
-          j = void 0;
-          while (i = (j = t.charAt(x++)).charCodeAt(0)) {
-            m = i === 46 || (i >= 48 && i <= 57);
-            if (m !== n) {
-              tz[++y] = "";
-              n = m;
-            }
-            tz[y] += j;
-          }
-          return tz;
-        };
-        aa = chunkify(a);
-        bb = chunkify(b);
-        x = 0;
-        while (aa[x] && bb[x]) {
-          if (aa[x] !== bb[x]) {
-            c = Number(aa[x]);
-            d = Number(bb[x]);
-            if (c === aa[x] && d === bb[x]) {
-              return c - d;
-            } else {
-              return (aa[x] > bb[x] ? 1 : -1);
-            }
-          }
-          x++;
-        }
-        return aa.length - bb.length;
-      },
-      isiOS: function() {
-        return !!navigator.userAgent.match(/iPad|iPhone|iPod/i);
-      },
-      isiPad: function() {
-        return !!navigator.userAgent.match(/iPad/i);
-      },
-      isiPhone: function() {
-        return !!navigator.userAgent.match(/iPhone/i);
-      },
-      isiPod: function() {
-        return !!navigator.userAgent.match(/iPod/i);
-      },
-      isChrome: function() {
-        return !!navigator.userAgent.match(/Chrome/i);
-      },
-      isIE: function() {
-        return !!navigator.userAgent.match(/MSIE/i);
-      },
-      isFirefox: function() {
-        return !!navigator.userAgent.match(/Firefox/i);
-      },
-      isSafari: function() {
-        return !!navigator.userAgent.match(/Safari/i) && !this.isChrome();
-      },
-      isEven: function(n) {
-        return this.isNumber(n) && (n % 2 === 0);
-      },
-      isOdd: function(n) {
-        return this.isNumber(n) && (n % 2 === 1);
-      },
-      isNumber: function(n) {
-        return n === parseFloat(n);
-      },
-      toFloat: function(value, decimal) {
-        var floats, ints;
-        if (decimal == null) {
-          decimal = 2;
-        }
-        if (!decimal) {
-          return value;
-        }
-        value = String(value).replace(/\D/g, '');
-        floats = value.slice(value.length - decimal);
-        while (floats.length < decimal) {
-          floats = '0' + floats;
-        }
-        ints = value.slice(0, value.length - decimal) || '0';
-        return "" + ints + "." + floats;
-      },
-      toPrice: function(value, currency) {
-        var price, symbol;
-        price = this.toFloat(value).replace(/(\d)(?=(\d{3})+\.)/g, '$1,');
-        symbol = this.getCurrencySymbol(currency);
-        return "" + symbol + " " + price;
-      },
-      isEmail: function(value) {
-        var pattern;
-        pattern = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-        return !!value.match(pattern);
-      },
-      getAssetKind: function(id) {
-        var kind;
-        if (id.indexOf('Collection-') === 0) {
-          kind = 'Collection';
-        } else if (id.indexOf('Proxy-') === 0) {
-          kind = 'Proxy';
-        } else if (id.indexOf('Order-') === 0) {
-          kind = 'Order';
-        } else if (id.indexOf('Generic') === 0) {
-          kind = 'Generic';
-        } else if (id.match(/[0-9a-z]{8}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{12}/)) {
-          kind = 'Image';
-        } else if (id.match(/[0-9a-z]{56}/)) {
-          kind = 'Video';
-        }
-        return kind;
-      },
-      getKeyName: function(e) {
-        return KEYS[e.which];
-      },
-      getURLParameter: function(name) {
-        var regex, results;
-        name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
-        regex = new RegExp("[\\?&]" + name + "=([^&#]*)");
-        results = regex.exec(location.search);
-        if (results == null) {
-          return "";
-        } else {
-          return decodeURIComponent(results[1].replace(/\+/g, " "));
-        }
-      },
-      inUsa: function(value) {
-        var _ref;
-        return (_ref = value != null ? value.toLowerCase() : void 0) === 'usa' || _ref === 'united states' || _ref === 'united states of america';
-      },
-      replaceNewLines: function(msg) {
-        return msg.replace(/(\r\n\r\n|\r\n|\n|\r)/gm, "<br>");
-      },
-      getCurrencySymbol: function(currency) {
-        return SYMBOLS[currency] || SYMBOLS.GENERIC;
-      },
-      getCurrency: function(country) {
-        return CURRENCY_MAPPING[country];
-      },
-      toArray: function(elem) {
-        if (angular.isArray(elem)) {
-          return elem;
-        } else {
-          return [elem];
-        }
-      },
-      getMeta: function(asset, attribute) {
-        if (!asset.meta[attribute]) {
-          return console.log("This asset does not contain a " + attribute + " attribute");
-        }
-        return asset.fields[attribute].value;
-      }
-    };
-  }
-
-  return imagoUtils;
-
-})();
-
-angular.module('imago.widgets.angular').factory('imagoUtils', [imagoUtils]);
-
 var imagoCompile;
 
 imagoCompile = (function() {
@@ -1732,6 +746,986 @@ imagoVideo = (function() {
 })();
 
 angular.module('imago.widgets.angular').directive('imagoVideo', ['$q', '$window', 'imagoUtils', '$timeout', imagoVideo]);
+
+var imagoModel,
+  __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
+
+imagoModel = (function() {
+  function imagoModel($rootScope, $http, $location, $q, $filter, imagoUtils) {
+    this.$rootScope = $rootScope;
+    this.$http = $http;
+    this.$location = $location;
+    this.$q = $q;
+    this.$filter = $filter;
+    this.imagoUtils = imagoUtils;
+    this.prepareCreation = __bind(this.prepareCreation, this);
+    this.isDuplicated = __bind(this.isDuplicated, this);
+    this.batchChange = __bind(this.batchChange, this);
+    this.orderChanged = __bind(this.orderChanged, this);
+    this.batchAddRemove = __bind(this.batchAddRemove, this);
+    this.paste = __bind(this.paste, this);
+    this.move = __bind(this.move, this);
+    this["delete"] = __bind(this["delete"], this);
+    this.update = __bind(this.update, this);
+    this.add = __bind(this.add, this);
+    this.findIdx = __bind(this.findIdx, this);
+    this.find = __bind(this.find, this);
+    this.findByAttr = __bind(this.findByAttr, this);
+    this.findParent = __bind(this.findParent, this);
+    this.findChildren = __bind(this.findChildren, this);
+    this.create = __bind(this.create, this);
+    this.getData = __bind(this.getData, this);
+  }
+
+  imagoModel.prototype.data = [];
+
+  imagoModel.prototype.tenant = '';
+
+  imagoModel.prototype.currentCollection = void 0;
+
+  imagoModel.prototype.searchUrl = data === 'online' && debug ? "http://" + tenant + ".imagoapp.com/api/v3/search" : "/api/v3/search";
+
+  imagoModel.prototype.search = function(query) {
+    var params;
+    params = this.formatQuery(query);
+    return this.$http.post(this.searchUrl, angular.toJson(params));
+  };
+
+  imagoModel.prototype.getData = function(query, cache) {
+    var promises;
+    if (angular.isString(query)) {
+      query = [
+        {
+          path: query
+        }
+      ];
+    }
+    query = this.imagoUtils.toArray(query);
+    promises = [];
+    _.forEach(query, (function(_this) {
+      return function(value) {
+        return promises.push(_this.search(value).then(function(response) {
+          if (!(response.data.length > 0)) {
+            return;
+          }
+          if (value.page) {
+            _.forEach(response.data, function(data) {
+              return data.page = value.page;
+            });
+          }
+          return _.forEach(response.data, function(data) {
+            return _this.create(data);
+          });
+        }));
+      };
+    })(this));
+    return this.$q.all(promises).then((function(_this) {
+      return function(data) {
+        data = _.flatten(data);
+        return data;
+      };
+    })(this));
+  };
+
+  imagoModel.prototype.formatQuery = function(query) {
+    var elem, key, querydict, value, _i, _j, _len, _len1, _ref;
+    querydict = {};
+    if (angular.isArray(query)) {
+      for (_i = 0, _len = query.length; _i < _len; _i++) {
+        elem = query[_i];
+        for (key in elem) {
+          value = elem[key];
+          querydict[key] || (querydict[key] = []);
+          querydict[key].push(value);
+        }
+      }
+    } else {
+      for (key in query) {
+        value = query[key];
+        querydict[key] = angular.isArray(value) ? value : [value];
+      }
+    }
+    _ref = ['page', 'pagesize'];
+    for (_j = 0, _len1 = _ref.length; _j < _len1; _j++) {
+      key = _ref[_j];
+      if (querydict.hasOwnProperty(key)) {
+        querydict[key] = querydict[key][0];
+      }
+    }
+    return querydict;
+  };
+
+  imagoModel.prototype.create = function(data) {
+    var oldData;
+    oldData = this.find(data._id) || false;
+    if (data.assets) {
+      _.forEach(data.assets, (function(_this) {
+        return function(asset) {
+          var oldAsset, _ref;
+          oldAsset = _this.find(asset._id) || false;
+          if (_.isEqual(oldAsset, asset)) {
+
+          } else if (oldAsset && !_.isEqual(oldAsset, asset)) {
+            return _this.update(asset);
+          } else {
+            if ((_ref = asset.serving_url) != null ? _ref.indexOf('data:image' === 0) : void 0) {
+              asset.base64 = true;
+            } else {
+              asset.base64 = false;
+            }
+            return _this.data.push(asset);
+          }
+        };
+      })(this));
+    }
+    if (_.isEqual(oldData, data)) {
+      return data;
+    } else if (oldData && !_.isEqual(oldData, data)) {
+      this.update(data);
+      return data;
+    } else {
+      if (data.items) {
+        data = _.omit(data, 'assets');
+      }
+      this.data.push(data);
+      return data;
+    }
+  };
+
+  imagoModel.prototype.findChildren = function(asset) {
+    return _.where(this.data, {
+      parent: asset._id
+    });
+  };
+
+  imagoModel.prototype.findParent = function(asset) {
+    return _.find(this.data, {
+      _id: asset.parent
+    });
+  };
+
+  imagoModel.prototype.findByAttr = function(attr) {
+    return _.where(this.data, attr);
+  };
+
+  imagoModel.prototype.find = function(id) {
+    return _.find(this.data, {
+      '_id': id
+    });
+  };
+
+  imagoModel.prototype.findIdx = function(id) {
+    return _.findIndex(this.data, {
+      '_id': id
+    });
+  };
+
+  imagoModel.prototype.add = function(asset) {
+    var _ref;
+    if (!asset._id) {
+      return;
+    }
+    if ((_ref = asset.serving_url) != null ? _ref.indexOf('data:image' === 0) : void 0) {
+      asset.base64 = true;
+    } else {
+      asset.base64 = false;
+    }
+    this.data.unshift(asset);
+    return this.$rootScope.$broadcast('assets:update');
+  };
+
+  imagoModel.prototype.update = function(asset) {
+    var idx;
+    if (!asset._id) {
+      return;
+    }
+    if (asset.assets) {
+      delete asset.assets;
+    }
+    idx = this.findIdx(asset._id);
+    this.data[idx] = _.assign(this.data[idx], asset);
+    return this.$rootScope.$broadcast('assets:update', asset);
+  };
+
+  imagoModel.prototype["delete"] = function(id) {
+    if (!id) {
+      return;
+    }
+    this.data = _.reject(this.data, {
+      _id: id
+    });
+    this.$rootScope.$broadcast('assets:update');
+    return this.data;
+  };
+
+  imagoModel.prototype.move = function(data) {
+    var assets;
+    assets = this.findChildren(data);
+    return _.forEach(assets, (function(_this) {
+      return function(asset) {
+        var order;
+        order = _.indexOf(assets, asset);
+        return assets.splice(order, 1);
+      };
+    })(this));
+  };
+
+  imagoModel.prototype.paste = function(assets, checkdups) {
+    var asset, exists, i, original_name, _i, _len;
+    if (checkdups == null) {
+      checkdups = true;
+    }
+    for (_i = 0, _len = assets.length; _i < _len; _i++) {
+      asset = assets[_i];
+      if (!checkdups || !this.isDuplicated(asset.name, assets)) {
+        this.data.unshift(asset);
+      } else {
+        i = 1;
+        exists = true;
+        original_name = asset.name;
+        while (exists) {
+          exists = this.isDuplicated(asset.name);
+          asset.name = "" + original_name + "_" + i;
+          i++;
+        }
+        this.data.unshift(asset);
+      }
+    }
+    return this.$rootScope.$broadcast('assets:update');
+  };
+
+  imagoModel.prototype.batchAddRemove = function(assets) {
+    var asset, _i, _len;
+    for (_i = 0, _len = assets.length; _i < _len; _i++) {
+      asset = assets[_i];
+      this.data = _.reject(this.data, {
+        _id: asset.id
+      });
+      this.data.push(asset);
+    }
+    return this.$rootScope.$broadcast('assets:update');
+  };
+
+  imagoModel.prototype.orderChanged = function(start, finish, dropped, list) {
+    var asset, assets, count, next, orderedList, prev, _i, _len;
+    if (dropped < finish) {
+      finish = finish + 1;
+      prev = list[dropped - 1] ? list[dropped - 1].order : list[0].order + 1000;
+      next = list[finish] ? list[finish].order : 0;
+      assets = list.slice(dropped, finish);
+    } else if (dropped > start) {
+      dropped = dropped + 1;
+      prev = list[start - 1] ? list[start - 1].order : list[0].order + 1000;
+      next = list[dropped] ? list[dropped].order : 0;
+      assets = list.slice(start, dropped);
+    } else {
+      return;
+    }
+    console.log('prev', prev, 'next', next);
+    count = prev - 1000;
+    for (_i = 0, _len = assets.length; _i < _len; _i++) {
+      asset = assets[_i];
+      asset.order = count;
+      count = count - 1000;
+    }
+    orderedList = {
+      assets: assets
+    };
+    return orderedList;
+  };
+
+  imagoModel.prototype.batchChange = function(assets, save) {
+    var asset, idx, key, object, _base, _base1, _i, _len;
+    if (save == null) {
+      save = false;
+    }
+    for (_i = 0, _len = assets.length; _i < _len; _i++) {
+      asset = assets[_i];
+      idx = this.findIdx(asset._id);
+      if (idx === -1) {
+        return;
+      }
+      if (_.isBoolean(asset.visible)) {
+        this.data[idx]['visible'] = asset.visible;
+      }
+      for (key in asset.fields) {
+        (_base = this.data[idx])['fields'] || (_base['fields'] = {});
+        (_base1 = this.data[idx]['fields'])[key] || (_base1[key] = {});
+        this.data[idx]['fields'][key]['value'] = asset.fields[key]['value'];
+      }
+    }
+    if (save) {
+      object = {
+        assets: assets
+      };
+      return object;
+    } else {
+      return false;
+    }
+  };
+
+  imagoModel.prototype.isDuplicated = function(name) {
+    if (!name) {
+      return;
+    }
+    if (this.findByAttr({
+      name: this.imagoUtils.normalize(name)
+    }).length > 1) {
+      return true;
+    } else {
+      return false;
+    }
+  };
+
+  imagoModel.prototype.prepareCreation = function(asset, parent) {
+    var assets;
+    if (!asset.name) {
+      return;
+    }
+    assets = this.findChildren({
+      _id: parent
+    });
+    if (this.isDuplicated(asset.name, assets)) {
+      return;
+    }
+    asset.parent = parent;
+    asset._tenant = this.tenant;
+    asset.order = (assets.length === 0 ? 1000 : assets[0].order + 1000);
+    return asset;
+  };
+
+  return imagoModel;
+
+})();
+
+angular.module('imago.widgets.angular').service('imagoModel', ['$rootScope', '$http', '$location', '$q', '$filter', 'imagoUtils', imagoModel]);
+
+var imagoPanel;
+
+imagoPanel = (function() {
+  function imagoPanel($http, imagoUtils, $q, $location) {
+    return {
+      search: function(query) {
+        var params;
+        params = this.objListToDict(query);
+        return $http.post(this.getSearchUrl(), angular.toJson(params));
+      },
+      getData: function(query) {
+        var data, promises;
+        if (!query) {
+          query = $location.$$path;
+        }
+        if (angular.isString(query)) {
+          query = [
+            {
+              path: query
+            }
+          ];
+        }
+        query = imagoUtils.toArray(query);
+        promises = [];
+        data = [];
+        angular.forEach(query, (function(_this) {
+          return function(value) {
+            return promises.push(_this.search(value).success(function(response) {
+              var result;
+              if (response.length === 1 && response[0].kind === 'Collection') {
+                return data.push(response[0]);
+              } else {
+                result = {
+                  items: response,
+                  count: response.length
+                };
+                return data.push(result);
+              }
+            }));
+          };
+        })(this));
+        return $q.all(promises).then((function(_this) {
+          return function() {
+            return data;
+          };
+        })(this));
+      },
+      objListToDict: function(obj_or_list) {
+        var elem, key, querydict, value, _i, _j, _len, _len1, _ref;
+        querydict = {};
+        if (angular.isArray(obj_or_list)) {
+          for (_i = 0, _len = obj_or_list.length; _i < _len; _i++) {
+            elem = obj_or_list[_i];
+            for (key in elem) {
+              value = elem[key];
+              querydict[key] || (querydict[key] = []);
+              querydict[key].push(value);
+            }
+          }
+        } else {
+          for (key in obj_or_list) {
+            value = obj_or_list[key];
+            querydict[key] = angular.isArray(value) ? value : [value];
+          }
+        }
+        _ref = ['page', 'pagesize'];
+        for (_j = 0, _len1 = _ref.length; _j < _len1; _j++) {
+          key = _ref[_j];
+          if (querydict.hasOwnProperty(key)) {
+            querydict[key] = querydict[key][0];
+          }
+        }
+        return querydict;
+      },
+      getSearchUrl: function() {
+        if (data === 'online' && debug) {
+          return "http://" + tenant + ".imagoapp.com/api/v3/search";
+        } else {
+          return "/api/v3/search";
+        }
+      }
+    };
+  }
+
+  return imagoPanel;
+
+})();
+
+angular.module('imago.widgets.angular').factory('imagoPanel', ['$http', 'imagoUtils', '$q', '$location', imagoPanel]);
+
+var imagoSubmit,
+  __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
+
+imagoSubmit = (function() {
+  function imagoSubmit($http, imagoUtils) {
+    return {
+      getxsrf: function() {
+        var url;
+        url = data === 'online' && debug ? "http://" + tenant + ".imagoapp.com/api/v2/getxsrf" : "/api/v2/getxsrf";
+        return $http.get(url);
+      },
+      formToJson: function(form) {
+        var defaultFields, key, message, obj, value;
+        defaultFields = ['message', 'subscribe'];
+        obj = {};
+        message = '';
+        for (key in form) {
+          value = form[key];
+          if (__indexOf.call(defaultFields, key) < 0) {
+            message += "" + (imagoUtils.titleCase(key)) + ": " + value + "<br><br>";
+          }
+          obj[key] = value || '';
+        }
+        obj.message = message + imagoUtils.replaceNewLines(obj.message || '');
+        return angular.toJson(obj);
+      },
+      send: function(data) {
+        return this.getxsrf().then((function(_this) {
+          return function(response) {
+            var postUrl, xsrfHeader;
+            console.log('getxsrf success: ', response);
+            xsrfHeader = {
+              "Nex-Xsrf": response.data
+            };
+            postUrl = data === 'online' && debug ? "http://" + tenant + ".imagoapp.com/api/v2/contact" : "/api/v2/contact";
+            return $http.post(postUrl, _this.formToJson(data), {
+              headers: xsrfHeader
+            }).then(function(response) {
+              console.log('success: ', response);
+              return true;
+            }, function(error) {
+              console.log('error: ', error);
+              return false;
+            });
+          };
+        })(this), function(error) {
+          return console.log('getxsrf error: ', error);
+        });
+      }
+    };
+  }
+
+  return imagoSubmit;
+
+})();
+
+angular.module('imago.widgets.angular').factory('imagoSubmit', ['$http', 'imagoUtils', imagoSubmit]);
+
+var imagoUtils;
+
+imagoUtils = (function() {
+  function imagoUtils() {
+    var alphanum;
+    return {
+      KEYS: {
+        '16': 'onShift',
+        '18': 'onAlt',
+        '17': 'onCommand',
+        '91': 'onCommand',
+        '93': 'onCommand',
+        '224': 'onCommand',
+        '13': 'onEnter',
+        '32': 'onSpace',
+        '37': 'onLeft',
+        '38': 'onUp',
+        '39': 'onRight',
+        '40': 'onDown',
+        '46': 'onDelete',
+        '8': 'onBackspace',
+        '9': 'onTab',
+        '188': 'onComma',
+        '190': 'onPeriod',
+        '27': 'onEsc',
+        '186': 'onColon',
+        '65': 'onA',
+        '67': 'onC',
+        '86': 'onV',
+        '88': 'onX',
+        '68': 'onD',
+        '187': 'onEqual',
+        '189': 'onMinus'
+      },
+      SYMBOLS: {
+        EUR: '&#128;',
+        USD: '&#36;',
+        SEK: 'SEK',
+        YEN: '&#165;',
+        GBP: '&#163;',
+        GENERIC: '&#164;'
+      },
+      CURRENCY_MAPPING: {
+        "United Arab Emirates": "AED",
+        "Afghanistan": "AFN",
+        "Albania": "ALL",
+        "Armenia": "AMD",
+        "Angola": "AOA",
+        "Argentina": "ARS",
+        "Australia": "AUD",
+        "Aruba": "AWG",
+        "Azerbaijan": "AZN",
+        "Bosnia and Herzegovina": "BAM",
+        "Barbados": "BBD",
+        "Bangladesh": "BDT",
+        "Bulgaria": "BGN",
+        "Bahrain": "BHD",
+        "Burundi": "BIF",
+        "Bermuda": "BMD",
+        "Brunei": "BND",
+        "Bolivia": "BOB",
+        "Brazil": "BRL",
+        "Bahamas": "BSD",
+        "Bhutan": "BTN",
+        "Botswana": "BWP",
+        "Belarus": "BYR",
+        "Belize": "BZD",
+        "Canada": "CAD",
+        "Switzerland Franc": "CHF",
+        "Chile": "CLP",
+        "China": "CNY",
+        "Colombia": "COP",
+        "Costa Rica": "CRC",
+        "Cuba Convertible": "CUC",
+        "Cuba Peso": "CUP",
+        "Cape Verde": "CVE",
+        "Czech Republic": "CZK",
+        "Djibouti": "DJF",
+        "Denmark": "DKK",
+        "Dominican Republic": "DOP",
+        "Algeria": "DZD",
+        "Egypt": "EGP",
+        "Eritrea": "ERN",
+        "Ethiopia": "ETB",
+        "Autria": "EUR",
+        "Fiji": "FJD",
+        "United Kingdom": "GBP",
+        "Georgia": "GEL",
+        "Guernsey": "GGP",
+        "Ghana": "GHS",
+        "Gibraltar": "GIP",
+        "Gambia": "GMD",
+        "Guinea": "GNF",
+        "Guatemala": "GTQ",
+        "Guyana": "GYD",
+        "Hong Kong": "HKD",
+        "Honduras": "HNL",
+        "Croatia": "HRK",
+        "Haiti": "HTG",
+        "Hungary": "HUF",
+        "Indonesia": "IDR",
+        "Israel": "ILS",
+        "Isle of Man": "IMP",
+        "India": "INR",
+        "Iraq": "IQD",
+        "Iran": "IRR",
+        "Iceland": "ISK",
+        "Jersey": "JEP",
+        "Jamaica": "JMD",
+        "Jordan": "JOD",
+        "Japan": "JPY",
+        "Kenya": "KES",
+        "Kyrgyzstan": "KGS",
+        "Cambodia": "KHR",
+        "Comoros": "KMF",
+        "North Korea": "KPW",
+        "South Korea": "KRW",
+        "Kuwait": "KWD",
+        "Cayman Islands": "KYD",
+        "Kazakhstan": "KZT",
+        "Laos": "LAK",
+        "Lebanon": "LBP",
+        "Sri Lanka": "LKR",
+        "Liberia": "LRD",
+        "Lesotho": "LSL",
+        "Lithuania": "LTL",
+        "Latvia": "LVL",
+        "Libya": "LYD",
+        "Morocco": "MAD",
+        "Moldova": "MDL",
+        "Madagascar": "MGA",
+        "Macedonia": "MKD",
+        "Mongolia": "MNT",
+        "Macau": "MOP",
+        "Mauritania": "MRO",
+        "Mauritius": "MUR",
+        "Malawi": "MWK",
+        "Mexico": "MXN",
+        "Malaysia": "MYR",
+        "Mozambique": "MZN",
+        "Namibia": "NAD",
+        "Nigeria": "NGN",
+        "Nicaragua": "NIO",
+        "Norway": "NOK",
+        "Nepal": "NPR",
+        "New Zealand": "NZD",
+        "Oman": "OMR",
+        "Panama": "PAB",
+        "Peru": "PEN",
+        "Papua New Guinea": "PGK",
+        "Philippines": "PHP",
+        "Pakistan": "PKR",
+        "Poland": "PLN",
+        "Paraguay": "PYG",
+        "Qatar": "QAR",
+        "Romania": "RON",
+        "Serbia": "RSD",
+        "Russia": "RUB",
+        "Rwanda": "RWF",
+        "Saudi Arabia": "SAR",
+        "Solomon Islands": "SBD",
+        "Seychelles": "SCR",
+        "Sudan": "SDG",
+        "Sweden": "SEK",
+        "Singapore": "SGD",
+        "Saint Helena": "SHP",
+        "Suriname": "SRD",
+        "El Salvador": "SVC",
+        "Syria": "SYP",
+        "Swaziland": "SZL",
+        "Thailand": "THB",
+        "Tajikistan": "TJS",
+        "Turkmenistan": "TMT",
+        "Tunisia": "TND",
+        "Tonga": "TOP",
+        "Turkey": "TRY",
+        "Trinidad and Tobago": "TTD",
+        "Tuvalu": "TVD",
+        "Taiwan": "TWD",
+        "Tanzania": "TZS",
+        "Ukraine": "UAH",
+        "Uganda": "UGX",
+        "United States": "USD",
+        "Uruguay": "UYU",
+        "Uzbekistan": "UZS",
+        "Venezuela": "VEF",
+        "Vietnam": "VND",
+        "Vanuatu": "VUV",
+        "Samoa": "WST",
+        "Yemen": "YER",
+        "South Africa": "ZAR",
+        "Zambia": "ZMW",
+        "Zimbabwe": "ZWD",
+        "Austria": "EUR",
+        "Belgium": "EUR",
+        "Bulgaria": "EUR",
+        "Croatia": "EUR",
+        "Cyprus": "EUR",
+        "Czech Republic": "EUR",
+        "Denmark": "EUR",
+        "Estonia": "EUR",
+        "Finland": "EUR",
+        "France": "EUR",
+        "Germany": "EUR",
+        "Greece": "EUR",
+        "Hungary": "EUR",
+        "Ireland": "EUR",
+        "Italy": "EUR",
+        "Latvia": "EUR",
+        "Lithuania": "EUR",
+        "Luxembourg": "EUR",
+        "Malta": "EUR",
+        "Netherlands": "EUR",
+        "Poland": "EUR",
+        "Portugal": "EUR",
+        "Romania": "EUR",
+        "Slovakia": "EUR",
+        "Slovenia": "EUR",
+        "Spain": "EUR"
+      },
+      toType: function(obj) {
+        return {}.toString.call(obj).match(/\s([a-zA-Z]+)/)[1].toLowerCase();
+      },
+      requestAnimationFrame: (function() {
+        var request;
+        request = window.requestAnimationFrame || window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame || window.oRequestAnimationFrame || window.msRequestAnimationFrame || function(callback) {
+          return window.setTimeout(callback, 1000 / 60);
+        };
+        return function(callback) {
+          return request.call(window, callback);
+        };
+      })(),
+      cookie: function(name, value) {
+        var cookie, _i, _len, _ref;
+        if (!value) {
+          _ref = document.cookie.split(';');
+          for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+            cookie = _ref[_i];
+            if (cookie.indexOf(name) === 1) {
+              return cookie.split('=')[1];
+            }
+          }
+          return false;
+        }
+        return document.cookie = "" + name + "=" + value + "; path=/";
+      },
+      sha: function() {
+        var i, possible, text, _i;
+        text = '';
+        possible = 'abcdefghijklmnopqrstuvwxyz0123456789';
+        for (i = _i = 0; _i <= 56; i = ++_i) {
+          text += possible.charAt(Math.floor(Math.random() * possible.length));
+        }
+        return text;
+      },
+      uuid: function() {
+        var S4;
+        S4 = function() {
+          return (((1 + Math.random()) * 0x10000) | 0).toString(16).substring(1);
+        };
+        return S4() + S4() + "-" + S4() + "-" + S4() + "-" + S4() + "-" + S4() + S4() + S4();
+      },
+      urlify: function(query) {
+        return console.log('urlify');
+      },
+      queryfy: function(url) {
+        var facet, filter, key, query, value, _i, _len, _ref;
+        query = [];
+        _ref = url.split('+');
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          filter = _ref[_i];
+          filter || (filter = 'collection:/');
+          facet = filter.split(':');
+          key = facet[0].toLowerCase();
+          value = decodeURIComponent(facet[1] || '');
+          facet = {};
+          facet[key] = value;
+          query.push(facet);
+        }
+        return query;
+      },
+      pluralize: function(str) {
+        return str + 's';
+      },
+      singularize: function(str) {
+        return str.replace(/s$/, '');
+      },
+      titleCase: function(str) {
+        if (typeof str !== 'string') {
+          return str;
+        }
+        return str.charAt(0).toUpperCase() + str.slice(1);
+      },
+      normalize: function(s) {
+        var mapping, r, str;
+        mapping = {
+          'ä': 'ae',
+          'ö': 'oe',
+          'ü': 'ue',
+          '&': 'and',
+          'é': 'e',
+          'ë': 'e',
+          'ï': 'i',
+          'è': 'e',
+          'à': 'a',
+          'ù': 'u',
+          'ç': 'c',
+          'ø': 'o'
+        };
+        s = s.toLowerCase();
+        r = new RegExp(Object.keys(mapping).join('|'), 'g');
+        str = s.trim().replace(r, function(s) {
+          return mapping[s];
+        }).toLowerCase();
+        return str.replace(/[',:;#]/g, '').replace(/[^\/\w]+/g, '-').replace(/\W?\/\W?/g, '\/').replace(/^-|-$/g, '');
+      },
+      alphaNumSort: alphanum = function(a, b) {
+        var aa, bb, c, chunkify, d, x;
+        chunkify = function(t) {
+          var i, j, m, n, tz, x, y;
+          tz = [];
+          x = 0;
+          y = -1;
+          n = 0;
+          i = void 0;
+          j = void 0;
+          while (i = (j = t.charAt(x++)).charCodeAt(0)) {
+            m = i === 46 || (i >= 48 && i <= 57);
+            if (m !== n) {
+              tz[++y] = "";
+              n = m;
+            }
+            tz[y] += j;
+          }
+          return tz;
+        };
+        aa = chunkify(a);
+        bb = chunkify(b);
+        x = 0;
+        while (aa[x] && bb[x]) {
+          if (aa[x] !== bb[x]) {
+            c = Number(aa[x]);
+            d = Number(bb[x]);
+            if (c === aa[x] && d === bb[x]) {
+              return c - d;
+            } else {
+              return (aa[x] > bb[x] ? 1 : -1);
+            }
+          }
+          x++;
+        }
+        return aa.length - bb.length;
+      },
+      isiOS: function() {
+        return !!navigator.userAgent.match(/iPad|iPhone|iPod/i);
+      },
+      isiPad: function() {
+        return !!navigator.userAgent.match(/iPad/i);
+      },
+      isiPhone: function() {
+        return !!navigator.userAgent.match(/iPhone/i);
+      },
+      isiPod: function() {
+        return !!navigator.userAgent.match(/iPod/i);
+      },
+      isChrome: function() {
+        return !!navigator.userAgent.match(/Chrome/i);
+      },
+      isIE: function() {
+        return !!navigator.userAgent.match(/MSIE/i);
+      },
+      isFirefox: function() {
+        return !!navigator.userAgent.match(/Firefox/i);
+      },
+      isSafari: function() {
+        return !!navigator.userAgent.match(/Safari/i) && !this.isChrome();
+      },
+      isEven: function(n) {
+        return this.isNumber(n) && (n % 2 === 0);
+      },
+      isOdd: function(n) {
+        return this.isNumber(n) && (n % 2 === 1);
+      },
+      isNumber: function(n) {
+        return n === parseFloat(n);
+      },
+      toFloat: function(value, decimal) {
+        var floats, ints;
+        if (decimal == null) {
+          decimal = 2;
+        }
+        if (!decimal) {
+          return value;
+        }
+        value = String(value).replace(/\D/g, '');
+        floats = value.slice(value.length - decimal);
+        while (floats.length < decimal) {
+          floats = '0' + floats;
+        }
+        ints = value.slice(0, value.length - decimal) || '0';
+        return "" + ints + "." + floats;
+      },
+      toPrice: function(value, currency) {
+        var price, symbol;
+        price = this.toFloat(value).replace(/(\d)(?=(\d{3})+\.)/g, '$1,');
+        symbol = this.getCurrencySymbol(currency);
+        return "" + symbol + " " + price;
+      },
+      isEmail: function(value) {
+        var pattern;
+        pattern = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+        return !!value.match(pattern);
+      },
+      getAssetKind: function(id) {
+        var kind;
+        if (id.indexOf('Collection-') === 0) {
+          kind = 'Collection';
+        } else if (id.indexOf('Proxy-') === 0) {
+          kind = 'Proxy';
+        } else if (id.indexOf('Order-') === 0) {
+          kind = 'Order';
+        } else if (id.indexOf('Generic') === 0) {
+          kind = 'Generic';
+        } else if (id.match(/[0-9a-z]{8}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{12}/)) {
+          kind = 'Image';
+        } else if (id.match(/[0-9a-z]{56}/)) {
+          kind = 'Video';
+        }
+        return kind;
+      },
+      getKeyName: function(e) {
+        return KEYS[e.which];
+      },
+      getURLParameter: function(name) {
+        var regex, results;
+        name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
+        regex = new RegExp("[\\?&]" + name + "=([^&#]*)");
+        results = regex.exec(location.search);
+        if (results == null) {
+          return "";
+        } else {
+          return decodeURIComponent(results[1].replace(/\+/g, " "));
+        }
+      },
+      inUsa: function(value) {
+        var _ref;
+        return (_ref = value != null ? value.toLowerCase() : void 0) === 'usa' || _ref === 'united states' || _ref === 'united states of america';
+      },
+      replaceNewLines: function(msg) {
+        return msg.replace(/(\r\n\r\n|\r\n|\n|\r)/gm, "<br>");
+      },
+      getCurrencySymbol: function(currency) {
+        return SYMBOLS[currency] || SYMBOLS.GENERIC;
+      },
+      getCurrency: function(country) {
+        return CURRENCY_MAPPING[country];
+      },
+      toArray: function(elem) {
+        if (angular.isArray(elem)) {
+          return elem;
+        } else {
+          return [elem];
+        }
+      },
+      getMeta: function(asset, attribute) {
+        if (!asset.meta[attribute]) {
+          return console.log("This asset does not contain a " + attribute + " attribute");
+        }
+        return asset.fields[attribute].value;
+      }
+    };
+  }
+
+  return imagoUtils;
+
+})();
+
+angular.module('imago.widgets.angular').factory('imagoUtils', [imagoUtils]);
 
 var Meta;
 
