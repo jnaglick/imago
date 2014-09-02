@@ -1078,12 +1078,14 @@ imagoModel = (function() {
   };
 
   imagoModel.prototype.prepareCreation = function(asset, parent) {
+    var assets;
     if (!asset.name) {
       return;
     }
     if (this.isDuplicated(asset.name)) {
       return;
     }
+    assets = this.findChildren(parent);
     asset.parent = parent;
     asset._tenant = this.tenant;
     asset.order = (assets.length === 0 ? 1000 : assets[0].order + 1000);
