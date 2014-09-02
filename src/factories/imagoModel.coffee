@@ -74,8 +74,7 @@ class imagoModel extends Service
         else if oldAsset and not _.isEqual(oldAsset, asset)
           @update(asset)
         else
-          if asset.serving_url?.indexOf 'data:' is 0
-            console.log 'base64 true'
+          if asset.serving_url?.indexOf 'data:image' is 0
             asset.base64 = true
           else
             asset.base64 = false
@@ -108,8 +107,7 @@ class imagoModel extends Service
 
   add: (asset) =>
     return unless asset._id
-    if asset.serving_url?.indexOf 'data:' is 0
-      console.log 'base64 true'
+    if asset.serving_url?.indexOf 'data:image' is 0
       asset.base64 = true
     else
       asset.base64 = false
