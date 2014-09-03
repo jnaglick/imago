@@ -1,17 +1,10 @@
 class Meta extends Filter
 
   constructor: () ->
-    return (input) ->
-      return unless input
+    return (input,value) ->
+      return unless input and value
 
-      resources = input.split('.')
-      unless resources.length is 2
-        console.log 'Not enough data for meta'
-        return
-
-      return unless this[resources[0]]
-
-      if this[resources[0]].fields[resources[1]].value.type
-        return this[resources[0]].fields[resources[1]].value.value
+      if input.fields[value].value.type
+        return input.fields[value].value.value
       else
-        return this[resources[0]].fields[resources[1]].value
+        return input.fields[value].value
