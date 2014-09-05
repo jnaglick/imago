@@ -114,12 +114,20 @@ class imagoModel extends Service
     @data.unshift asset
     @$rootScope.$broadcast 'assets:update'
 
-  update: (asset) =>
-    return unless asset._id
-    delete asset.assets if asset.assets
-    idx = @findIdx(asset._id)
-    @data[idx] = _.assign(@data[idx], asset)
-    @$rootScope.$broadcast 'assets:update', asset
+  update: (data) =>
+    if _.isObject(data)
+      return unless data._id
+      delete data.assets if data.assets
+      idx = @findIdx(data._id)
+      @data[idx] = _.assign(@data[idx], data)
+
+    else if _.isArray(data)
+      for asset in data
+        delete asset.assets if asset.assets
+        idx = @findIdx(asset._id)
+        @data[idx] = _.assign(@data[idx], asset)
+
+    @$rootScope.$broadcast 'assets:update', data
 
   delete: (id) =>
     return unless id
