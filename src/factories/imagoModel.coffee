@@ -253,26 +253,20 @@ class imagoModel extends Service
 
     else return false
 
-  isDuplicated: (name, assets) =>
+  isDuplicated: (name) =>
 
     return unless name
-    nameIfDuplicate = name
-    nameIfDuplicate = @imagoUtils.normalize nameIfDuplicate
+    if _.where(@findChildren(@currentCollection), {name: @imagoUtils.normalize(name)}).length > 1
+      return true
+    else
+      return false
 
-    normalizeList = []
-
-    for asset in assets
-      normalizeList.push @imagoUtils.normalize asset.name
-
-    if @$filter('filter')(normalizeList, nameIfDuplicate, true).length > 1 then return true  else return false
 
   prepareCreation: (asset, parent) =>
     return unless asset.name
+    return if @isDuplicated asset.name
 
-    assets = @findChildren _id : parent
-
-    return if @isDuplicated asset.name, assets
-
+    assets = @findChildren(parent)
     asset.parent = parent
     asset._tenant = @tenant
     asset.order = (if assets.length is 0 then 1000 else assets[0].order + 1000)
