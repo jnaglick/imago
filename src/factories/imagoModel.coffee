@@ -115,7 +115,7 @@ class imagoModel extends Service
     @$rootScope.$broadcast 'assets:update'
 
   update: (data) =>
-    if _.isObject(data)
+    if _.isPlainObject(data)
       return unless data._id
       delete data.assets if data.assets
       idx = @findIdx(data._id)

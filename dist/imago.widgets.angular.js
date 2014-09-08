@@ -941,7 +941,7 @@ imagoModel = (function() {
 
   imagoModel.prototype.update = function(data) {
     var asset, idx, _i, _len;
-    if (_.isObject(data)) {
+    if (_.isPlainObject(data)) {
       if (!data._id) {
         return;
       }
@@ -1080,19 +1080,13 @@ imagoModel = (function() {
     }
   };
 
-  imagoModel.prototype.isDuplicated = function(name, assets) {
-    var asset, nameIfDuplicate, normalizeList, _i, _len;
+  imagoModel.prototype.isDuplicated = function(name) {
     if (!name) {
       return;
     }
-    nameIfDuplicate = name;
-    nameIfDuplicate = this.imagoUtils.normalize(nameIfDuplicate);
-    normalizeList = [];
-    for (_i = 0, _len = assets.length; _i < _len; _i++) {
-      asset = assets[_i];
-      normalizeList.push(this.imagoUtils.normalize(asset.name));
-    }
-    if (this.$filter('filter')(normalizeList, nameIfDuplicate, true).length > 1) {
+    if (_.where(this.findChildren(this.currentCollection), {
+      name: this.imagoUtils.normalize(name)
+    }).length > 1) {
       return true;
     } else {
       return false;
@@ -1104,12 +1098,10 @@ imagoModel = (function() {
     if (!asset.name) {
       return;
     }
-    assets = this.findChildren({
-      _id: parent
-    });
-    if (this.isDuplicated(asset.name, assets)) {
+    if (this.isDuplicated(asset.name)) {
       return;
     }
+    assets = this.findChildren(parent);
     asset.parent = parent;
     asset._tenant = this.tenant;
     asset.order = (assets.length === 0 ? 1000 : assets[0].order + 1000);
@@ -1753,23 +1745,14 @@ var Meta;
 
 Meta = (function() {
   function Meta() {
-    return function(input) {
-      var resources;
-      if (!input) {
+    return function(input, value) {
+      if (!(input && value)) {
         return;
       }
-      resources = input.split('.');
-      if (resources.length !== 2) {
-        console.log('Not enough data for meta');
-        return;
-      }
-      if (!this[resources[0]]) {
-        return;
-      }
-      if (this[resources[0]].fields[resources[1]].value.type) {
-        return this[resources[0]].fields[resources[1]].value.value;
+      if (input.fields[value].value.type) {
+        return input.fields[value].value.value;
       } else {
-        return this[resources[0]].fields[resources[1]].value;
+        return input.fields[value].value;
       }
     };
   }
