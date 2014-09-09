@@ -169,6 +169,16 @@ class imagoModel extends Service
 
     @$rootScope.$broadcast 'assets:update'
 
+  reorder: (assets) =>
+    for asset in assets
+      idxAsset = @findIdx asset._id
+      idx = (if idxAsset > idx then idx else idxAsset)
+
+    args = [idx, assets.length].concat(assets)
+    Array.prototype.splice.apply(@data, args)
+
+    @$rootScope.$broadcast 'assets:update'
+
   # reindexAll:  (path = @$location.$$path) =>
 
   #   return if @list[path].sortorder is '-order'
@@ -254,8 +264,8 @@ class imagoModel extends Service
     else return false
 
   isDuplicated: (name) =>
+    return false unless name
 
-    return unless name
     if _.where(@findChildren(@currentCollection), {name: @imagoUtils.normalize(name)}).length > 1
       return true
     else

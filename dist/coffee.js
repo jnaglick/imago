@@ -762,6 +762,7 @@ imagoModel = (function() {
     this.isDuplicated = __bind(this.isDuplicated, this);
     this.batchChange = __bind(this.batchChange, this);
     this.orderChanged = __bind(this.orderChanged, this);
+    this.reorder = __bind(this.reorder, this);
     this.batchAddRemove = __bind(this.batchAddRemove, this);
     this.paste = __bind(this.paste, this);
     this.move = __bind(this.move, this);
@@ -1017,6 +1018,18 @@ imagoModel = (function() {
     return this.$rootScope.$broadcast('assets:update');
   };
 
+  imagoModel.prototype.reorder = function(assets) {
+    var args, asset, idx, idxAsset, _i, _len;
+    for (_i = 0, _len = assets.length; _i < _len; _i++) {
+      asset = assets[_i];
+      idxAsset = this.findIdx(asset._id);
+      idx = (idxAsset > idx ? idx : idxAsset);
+    }
+    args = [idx, assets.length].concat(assets);
+    Array.prototype.splice.apply(this.data, args);
+    return this.$rootScope.$broadcast('assets:update');
+  };
+
   imagoModel.prototype.orderChanged = function(start, finish, dropped, list) {
     var asset, assets, count, next, orderedList, prev, _i, _len;
     if (dropped < finish) {
@@ -1077,7 +1090,7 @@ imagoModel = (function() {
 
   imagoModel.prototype.isDuplicated = function(name) {
     if (!name) {
-      return;
+      return false;
     }
     if (_.where(this.findChildren(this.currentCollection), {
       name: this.imagoUtils.normalize(name)
