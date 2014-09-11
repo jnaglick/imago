@@ -20,7 +20,7 @@
         "gulp-plumber": "*",
         "gulp-uglify": "*",
         "gulp-util": "*",
-        "gulp-watch": "*",
+        "gulp-watch": "0.7.1",
         "gutil": "*"
     },
     "devDependencies": {
