@@ -272,13 +272,18 @@ class imagoModel extends Service
       return false
 
 
-  prepareCreation: (asset, parent) =>
+  prepareCreation: (asset, parent, order) =>
     return unless asset.name
     return if @isDuplicated asset.name
 
-    assets = @findChildren(parent)
     asset.parent = parent
     asset._tenant = @tenant
-    asset.order = (if assets.length is 0 then 1000 else assets[0].order + 1000)
+
+    if order
+      asset.order = order
+
+    else
+      assets = @findChildren(parent)
+      asset.order = (if assets.length is 0 then 1000 else assets[0].order + 1000)
 
     return asset
