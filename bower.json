@@ -6,7 +6,6 @@
         "Nex9"
     ],
     "license": "MIT",
-    "main": "",
     "private": true,
     "dependencies": {
         "angular-inview": "*"
