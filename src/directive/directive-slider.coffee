@@ -1,6 +1,6 @@
 class imagoSlider extends Directive
 
-  constructor: ($q, $window, imagoModel) ->
+  constructor: ($q, $document, imagoModel) ->
     return {
       replace: true
       scope: true
@@ -77,12 +77,10 @@ class imagoSlider extends Directive
           return true if index is scope.currentIndex or scope.nextIndex or scope.prevIndex
 
         scope.goNext = ($event) ->
-          $event.stopPropagation()
           scope.currentIndex = if (scope.currentIndex < scope.slideSource.length - 1) then ++scope.currentIndex else 0
           getSiblings()
 
         scope.goPrev = ($event) ->
-          $event.stopPropagation()
           scope.currentIndex = if (scope.currentIndex > 0) then --scope.currentIndex else scope.slideSource.length - 1
           getSiblings()
 
@@ -93,7 +91,7 @@ class imagoSlider extends Directive
         scope.getLast = () ->
           scope.slideSource.length - 1
 
-        angular.element($window).on 'keydown', (e) ->
+        $document.on 'keydown', (e) ->
           return unless scope.confSlider.enablekeys
           switch e.keyCode
             when 37

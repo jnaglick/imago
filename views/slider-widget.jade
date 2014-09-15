@@ -9,7 +9,8 @@ div(ng-class="elementStyle")
     .prev(ng-show="confSlider.enablearrows && loadedData",
           ng-click="goPrev($event)")
     .next(ng-show="confSlider.enablearrows && loadedData",
-          ng-click="goNext($event)")
+          ng-click="goNext($event)"
+          stop-propagation)
     .slide(ng-class="{'active': $index === currentIndex, 'nextslide': $index === nextIndex, 'prevslide': $index === prevIndex}",
           ng-repeat="slide in slideSource",
           ng-show="displaySlides($index)")

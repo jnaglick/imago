@@ -350,7 +350,7 @@ angular.module('imago.widgets.angular').directive('imagoImage', ['$window', '$q'
 var imagoSlider;
 
 imagoSlider = (function() {
-  function imagoSlider($q, $window, imagoModel) {
+  function imagoSlider($q, $document, imagoModel) {
     return {
       replace: true,
       scope: true,
@@ -445,12 +445,10 @@ imagoSlider = (function() {
           }
         };
         scope.goNext = function($event) {
-          $event.stopPropagation();
           scope.currentIndex = scope.currentIndex < scope.slideSource.length - 1 ? ++scope.currentIndex : 0;
           return getSiblings();
         };
         scope.goPrev = function($event) {
-          $event.stopPropagation();
           scope.currentIndex = scope.currentIndex > 0 ? --scope.currentIndex : scope.slideSource.length - 1;
           return getSiblings();
         };
@@ -461,7 +459,7 @@ imagoSlider = (function() {
         scope.getLast = function() {
           return scope.slideSource.length - 1;
         };
-        return angular.element($window).on('keydown', function(e) {
+        return $document.on('keydown', function(e) {
           if (!scope.confSlider.enablekeys) {
             return;
           }
@@ -484,7 +482,7 @@ imagoSlider = (function() {
 
 })();
 
-angular.module('imago.widgets.angular').directive('imagoSlider', ['$q', '$window', 'imagoModel', imagoSlider]);
+angular.module('imago.widgets.angular').directive('imagoSlider', ['$q', '$document', 'imagoModel', imagoSlider]);
 
 var imagoVideo;
 
