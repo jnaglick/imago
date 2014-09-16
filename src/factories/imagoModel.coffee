@@ -275,11 +275,12 @@ class imagoModel extends Service
       #TODO: Fix this while function
 
       if rename
+        assets = @findChildren(@currentCollection)
         i = 1
         exists = true
         original_name = name
         while exists
-          exists = (if _.where(@findChildren(@currentCollection), {name: name}).length > 0 then true else false)
+          exists = (if _.where(assets, {name: name}).length > 0 then true else false)
           console.log 'check', _.where(@findChildren(@currentCollection), {name: name}), 'name:', name, 'exists:', exists
           name = "#{original_name}_#{i}"
           i++

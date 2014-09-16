@@ -1109,7 +1109,7 @@ imagoModel = (function() {
   };
 
   imagoModel.prototype.isDuplicated = function(name, rename) {
-    var defer, exists, i, original_name;
+    var assets, defer, exists, i, original_name;
     if (rename == null) {
       rename = false;
     }
@@ -1122,11 +1122,12 @@ imagoModel = (function() {
       name: name
     }).length > 0) {
       if (rename) {
+        assets = this.findChildren(this.currentCollection);
         i = 1;
         exists = true;
         original_name = name;
         while (exists) {
-          exists = (_.where(this.findChildren(this.currentCollection), {
+          exists = (_.where(assets, {
             name: name
           }).length > 0 ? true : false);
           console.log('check', _.where(this.findChildren(this.currentCollection), {
