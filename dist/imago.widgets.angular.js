@@ -1113,36 +1113,74 @@ imagoModel = (function() {
     }
   };
 
-  imagoModel.prototype.isDuplicated = function(name) {
+  imagoModel.prototype.isDuplicated = function(name, rename) {
+    var defer, exists, i, original_name;
+    if (rename == null) {
+      rename = false;
+    }
+    defer = this.$q.defer();
     if (!name) {
-      return false;
+      defer.reject(name);
     }
+    name = this.imagoUtils.normalize(name);
     if (_.where(this.findChildren(this.currentCollection), {
-      name: this.imagoUtils.normalize(name)
-    }).length > 1) {
-      return true;
+      name: name
+    }).length > 0) {
+      if (rename) {
+        i = 1;
+        exists = true;
+        original_name = name;
+        while (exists) {
+          exists = (_.where(this.findChildren(this.currentCollection), {
+            name: name
+          }).length > 0 ? true : false);
+          console.log('check', _.where(this.findChildren(this.currentCollection), {
+            name: name
+          }), 'name:', name, 'exists:', exists);
+          name = "" + original_name + "_" + i;
+          i++;
+        }
+        defer.resolve(name);
+      } else {
+        defer.resolve(true);
+      }
     } else {
-      return false;
+      defer.resolve(false);
     }
+    return defer.promise;
   };
 
-  imagoModel.prototype.prepareCreation = function(asset, parent, order) {
-    var assets;
+  imagoModel.prototype.prepareCreation = function(asset, parent, order, rename) {
+    var defer;
+    if (rename == null) {
+      rename = false;
+    }
+    defer = this.$q.defer();
     if (!asset.name) {
-      return;
+      defer.reject(asset.name);
     }
-    if (this.isDuplicated(asset.name)) {
-      return;
-    }
-    asset.parent = parent;
-    asset._tenant = this.tenant;
-    if (order) {
-      asset.order = order;
-    } else {
-      assets = this.findChildren(parent);
-      asset.order = (assets.length === 0 ? 1000 : assets[0].order + 1000);
-    }
-    return asset;
+    this.isDuplicated(asset.name, rename).then((function(_this) {
+      return function(isDuplicated) {
+        var assets;
+        if (isDuplicated && _.isBoolean(isDuplicated)) {
+          return defer.resolve('duplicated');
+        } else {
+          if (_.isString(isDuplicated)) {
+            asset.name = isDuplicated;
+          }
+          if (order) {
+            asset.order = order;
+          } else {
+            assets = _this.findChildren(parent);
+            asset.order = (assets.length === 0 ? 1000 : assets[0].order + 1000);
+          }
+          asset.parent = parent;
+          asset._tenant = _this.tenant;
+          return defer.resolve(asset);
+        }
+      };
+    })(this));
+    return defer.promise;
   };
 
   return imagoModel;

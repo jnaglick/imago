@@ -263,27 +263,60 @@ class imagoModel extends Service
 
     else return false
 
-  isDuplicated: (name) =>
-    return false unless name
+  isDuplicated: (name, rename = false) =>
+    defer = @$q.defer()
 
-    if _.where(@findChildren(@currentCollection), {name: @imagoUtils.normalize(name)}).length > 1
-      return true
+    defer.reject(name) unless name
+
+    name = @imagoUtils.normalize(name)
+
+    if _.where(@findChildren(@currentCollection), {name: name}).length > 0
+
+      #TODO: Fix this while function
+
+      if rename
+        i = 1
+        exists = true
+        original_name = name
+        while exists
+          exists = (if _.where(@findChildren(@currentCollection), {name: name}).length > 0 then true else false)
+          console.log 'check', _.where(@findChildren(@currentCollection), {name: name}), 'name:', name, 'exists:', exists
+          name = "#{original_name}_#{i}"
+          i++
+
+        defer.resolve(name)
+      else
+        defer.resolve(true)
     else
-      return false
+      defer.resolve(false)
+
+    defer.promise
 
 
-  prepareCreation: (asset, parent, order) =>
-    return unless asset.name
-    return if @isDuplicated asset.name
+  prepareCreation: (asset, parent, order, rename = false) =>
+    defer = @$q.defer()
+    defer.reject(asset.name) unless asset.name
 
-    asset.parent = parent
-    asset._tenant = @tenant
+    @isDuplicated(asset.name, rename).then (isDuplicated) =>
 
-    if order
-      asset.order = order
+      if isDuplicated and _.isBoolean isDuplicated
+        defer.resolve('duplicated')
 
-    else
-      assets = @findChildren(parent)
-      asset.order = (if assets.length is 0 then 1000 else assets[0].order + 1000)
+      else
 
-    return asset
+        if _.isString isDuplicated
+          asset.name = isDuplicated
+
+        if order
+          asset.order = order
+
+        else
+          assets = @findChildren(parent)
+          asset.order = (if assets.length is 0 then 1000 else assets[0].order + 1000)
+
+        asset.parent = parent
+        asset._tenant = @tenant
+
+        defer.resolve asset
+
+    defer.promise
