@@ -150,13 +150,14 @@ class imagoModel extends Service
       if not checkdups or not @isDuplicated(asset.name, assets)
         @data.unshift asset
       else
+        assets = @findChildren(@currentCollection)
         i = 1
         exists = true
         original_name = asset.name
         while exists
-          exists = @isDuplicated(asset.name)
           asset.name = "#{original_name}_#{i}"
           i++
+          exists = (if _.where(assets, {name: asset.name}).length > 0 then true else false)
 
         @data.unshift asset
 

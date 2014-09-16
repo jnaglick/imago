@@ -1017,13 +1017,16 @@ imagoModel = (function() {
       if (!checkdups || !this.isDuplicated(asset.name, assets)) {
         this.data.unshift(asset);
       } else {
+        assets = this.findChildren(this.currentCollection);
         i = 1;
         exists = true;
         original_name = asset.name;
         while (exists) {
-          exists = this.isDuplicated(asset.name);
           asset.name = "" + original_name + "_" + i;
           i++;
+          exists = (_.where(assets, {
+            name: asset.name
+          }).length > 0 ? true : false);
         }
         this.data.unshift(asset);
       }
