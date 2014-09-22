@@ -102,8 +102,10 @@ class imagoModel extends Service
   find: (id) =>
     _.find @data, '_id' : id
 
-  findIdx: (id) =>
-    _.findIndex @data, '_id' : id
+  findIdx: (id, attribute = '_id') =>
+    parameter = {}
+    parameter[attribute] = id
+    _.findIndex @data, parameter
 
   add: (asset) =>
     return unless asset._id
@@ -114,18 +116,18 @@ class imagoModel extends Service
     @data.unshift asset
     @$rootScope.$broadcast 'assets:update'
 
-  update: (data) =>
+  update: (data, attribute = '_id') =>
     if _.isPlainObject(data)
-      return unless data._id
+      return unless data[attribute]
       delete data.assets if data.assets
-      idx = @findIdx(data._id)
+      idx = @findIdx(data[attribute])
       @data[idx] = _.assign(@data[idx], data)
 
     else if _.isArray(data)
       for asset in data
         delete asset.assets if asset.assets
-        idx = @findIdx(asset._id)
-        @data[idx] = _.assign(@data[idx], asset)
+        idx = @findIdx(asset[attribute])
+        _.assign(@data[idx], asset)
 
     @$rootScope.$broadcast 'assets:update', data
 
@@ -146,22 +148,30 @@ class imagoModel extends Service
         assets.splice order, 1
 
   paste: (assets, checkdups=true) =>
+    defer = @$q.defer()
+
+    assetsChildren = @findChildren(@currentCollection)
+
     for asset in assets
-      if not checkdups or not @isDuplicated(asset.name, assets)
+      if not checkdups or _.where(assetsChildren, {name: asset.name}).length is 0
         @data.unshift asset
+
       else
-        assets = @findChildren(@currentCollection)
         i = 1
         exists = true
         original_name = asset.name
         while exists
           asset.name = "#{original_name}_#{i}"
           i++
-          exists = (if _.where(assets, {name: asset.name}).length > 0 then true else false)
+          exists = (if _.where(assetsChildren, {name: asset.name}).length > 0 then true else false)
 
         @data.unshift asset
 
     @$rootScope.$broadcast 'assets:update'
+
+    defer.resolve assets
+
+    defer.promise
 
   batchAddRemove: (assets) =>
     for asset in assets
@@ -271,7 +281,14 @@ class imagoModel extends Service
 
     name = @imagoUtils.normalize(name)
 
-    if _.where(@findChildren(@currentCollection), {name: name}).length > 0
+    result =
+      count : 0
+      value : ''
+
+    assetsChildren = _.where(@findChildren(@currentCollection), {name: name})
+    result.count = assetsChildren.length
+
+    if assetsChildren.length > 0
 
       if rename
         assets = @findChildren(@currentCollection)
@@ -283,11 +300,17 @@ class imagoModel extends Service
           i++
           exists = (if _.where(assets, {name: name}).length > 0 then true else false)
 
-        defer.resolve(name)
+        result.value = name
+
+        defer.resolve(result)
+
       else
-        defer.resolve(true)
+        result.value = true
+        defer.resolve result
+
     else
-      defer.resolve(false)
+      result.value = false
+      defer.resolve result
 
     defer.promise
 
@@ -298,13 +321,13 @@ class imagoModel extends Service
 
     @isDuplicated(asset.name, rename).then (isDuplicated) =>
 
-      if isDuplicated and _.isBoolean isDuplicated
+      if isDuplicated.value and _.isBoolean isDuplicated.value
         defer.resolve('duplicated')
 
       else
 
-        if _.isString isDuplicated
-          asset.name = isDuplicated
+        if _.isString isDuplicated.value
+          asset.name = isDuplicated.value
 
         if order
           asset.order = order
