@@ -4,8 +4,6 @@ class imagoModel extends Service
 
   data: []
 
-  tenant: ''
-
   currentCollection: undefined
 
   searchUrl: if (data is 'online' and debug) then "http://#{tenant}.imagoapp.com/api/v3/search" else "/api/v3/search"
@@ -174,6 +172,7 @@ class imagoModel extends Service
     defer.promise
 
   batchAddRemove: (assets) =>
+
     for asset in assets
       @data = _.reject(@data, { _id: asset.id })
       @data.push asset
@@ -181,6 +180,7 @@ class imagoModel extends Service
     @$rootScope.$broadcast 'assets:update'
 
   reorder: (assets) =>
+
     for asset in assets
       idxAsset = @findIdx asset._id
       idx = (if idxAsset > idx then idx else idxAsset)
@@ -190,35 +190,24 @@ class imagoModel extends Service
 
     @$rootScope.$broadcast 'assets:update'
 
-  # reindexAll:  (path = @$location.$$path) =>
+  reindexAll:  (list) =>
 
-  #   return if @list[path].sortorder is '-order'
+    newList = []
 
-  #   @list[path].sortorder is '-order'
-  #   @list[path].sortorder = '-order'
-  #   # imagoRest.asset.update @list
+    count = list.length
 
-  #   newList = []
+    for asset, key in list
+      asset.order = (count-key) * 1000
+      ordered = {
+        _id: asset._id
+        order: asset.order
+      }
+      newList.push ordered
 
-  #   count = @list[path].assets.length
+    orderedList =
+      assets : newList
 
-  #   for asset, key in @list[path].assets
-  #     asset.order = (count-key) * 1000
-  #     ordered = {
-  #       _id: asset._id
-  #       order: asset.order
-  #     }
-  #     newList.push ordered
-
-  #   orderedList =
-  #     parent : @list[path]._id
-  #     assets : newList
-
-  #   return orderedList
-
-    # imagoRest.asset.batch(orderedList)
-    #   .then (result) ->
-    #     console.log 'result batch updating', result
+    return orderedList
 
   orderChanged:  (start, finish, dropped, list) =>
 

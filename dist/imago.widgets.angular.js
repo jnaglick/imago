@@ -787,6 +787,7 @@ imagoModel = (function() {
     this.isDuplicated = __bind(this.isDuplicated, this);
     this.batchChange = __bind(this.batchChange, this);
     this.orderChanged = __bind(this.orderChanged, this);
+    this.reindexAll = __bind(this.reindexAll, this);
     this.reorder = __bind(this.reorder, this);
     this.batchAddRemove = __bind(this.batchAddRemove, this);
     this.paste = __bind(this.paste, this);
@@ -804,8 +805,6 @@ imagoModel = (function() {
   }
 
   imagoModel.prototype.data = [];
-
-  imagoModel.prototype.tenant = '';
 
   imagoModel.prototype.currentCollection = void 0;
 
@@ -1068,6 +1067,25 @@ imagoModel = (function() {
     args = [idx, assets.length].concat(assets);
     Array.prototype.splice.apply(this.data, args);
     return this.$rootScope.$broadcast('assets:update');
+  };
+
+  imagoModel.prototype.reindexAll = function(list) {
+    var asset, count, key, newList, ordered, orderedList, _i, _len;
+    newList = [];
+    count = list.length;
+    for (key = _i = 0, _len = list.length; _i < _len; key = ++_i) {
+      asset = list[key];
+      asset.order = (count - key) * 1000;
+      ordered = {
+        _id: asset._id,
+        order: asset.order
+      };
+      newList.push(ordered);
+    }
+    orderedList = {
+      assets: newList
+    };
+    return orderedList;
   };
 
   imagoModel.prototype.orderChanged = function(start, finish, dropped, list) {
