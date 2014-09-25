@@ -72,7 +72,7 @@ class imagoModel extends Service
         else if oldAsset and not _.isEqual(oldAsset, asset)
           @update(asset)
         else
-          if asset.serving_url?.indexOf 'data:image' is 0
+          if asset.serving_url?.indexOf 'data' is 0
             asset.base64 = true
           else
             asset.base64 = false
@@ -106,13 +106,14 @@ class imagoModel extends Service
     _.findIndex @data, parameter
 
   add: (asset) =>
+    console.log 'new asset', asset
     return unless asset._id
     if asset.serving_url?.indexOf 'data:image' is 0
       asset.base64 = true
     else
       asset.base64 = false
     @data.unshift asset
-    @$rootScope.$broadcast 'assets:update'
+    @$rootScope.$broadcast 'assets:update', asset
 
   update: (data, attribute = '_id') =>
     if _.isPlainObject(data)
@@ -133,7 +134,7 @@ class imagoModel extends Service
     return unless id
     # returns an array without the asset of id
     @data = _.reject(@data, { _id: id })
-    @$rootScope.$broadcast 'assets:update'
+    @$rootScope.$broadcast 'assets:update', id
     return @data
 
   move: (data) =>
@@ -165,7 +166,7 @@ class imagoModel extends Service
 
         @data.unshift asset
 
-    @$rootScope.$broadcast 'assets:update'
+    @$rootScope.$broadcast 'assets:update', assets
 
     defer.resolve assets
 
@@ -177,7 +178,7 @@ class imagoModel extends Service
       @data = _.reject(@data, { _id: asset.id })
       @data.push asset
 
-    @$rootScope.$broadcast 'assets:update'
+    @$rootScope.$broadcast 'assets:update', assets
 
   reorder: (assets) =>
 
@@ -188,7 +189,7 @@ class imagoModel extends Service
     args = [idx, assets.length].concat(assets)
     Array.prototype.splice.apply(@data, args)
 
-    @$rootScope.$broadcast 'assets:update'
+    @$rootScope.$broadcast 'assets:update', assets
 
   reindexAll:  (list) =>
 

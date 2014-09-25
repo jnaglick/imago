@@ -888,7 +888,7 @@ imagoModel = (function() {
           } else if (oldAsset && !_.isEqual(oldAsset, asset)) {
             return _this.update(asset);
           } else {
-            if ((_ref = asset.serving_url) != null ? _ref.indexOf('data:image' === 0) : void 0) {
+            if ((_ref = asset.serving_url) != null ? _ref.indexOf('data' === 0) : void 0) {
               asset.base64 = true;
             } else {
               asset.base64 = false;
@@ -946,6 +946,7 @@ imagoModel = (function() {
 
   imagoModel.prototype.add = function(asset) {
     var _ref;
+    console.log('new asset', asset);
     if (!asset._id) {
       return;
     }
@@ -955,7 +956,7 @@ imagoModel = (function() {
       asset.base64 = false;
     }
     this.data.unshift(asset);
-    return this.$rootScope.$broadcast('assets:update');
+    return this.$rootScope.$broadcast('assets:update', asset);
   };
 
   imagoModel.prototype.update = function(data, attribute) {
@@ -992,7 +993,7 @@ imagoModel = (function() {
     this.data = _.reject(this.data, {
       _id: id
     });
-    this.$rootScope.$broadcast('assets:update');
+    this.$rootScope.$broadcast('assets:update', id);
     return this.data;
   };
 
@@ -1035,7 +1036,7 @@ imagoModel = (function() {
         this.data.unshift(asset);
       }
     }
-    this.$rootScope.$broadcast('assets:update');
+    this.$rootScope.$broadcast('assets:update', assets);
     defer.resolve(assets);
     return defer.promise;
   };
@@ -1049,7 +1050,7 @@ imagoModel = (function() {
       });
       this.data.push(asset);
     }
-    return this.$rootScope.$broadcast('assets:update');
+    return this.$rootScope.$broadcast('assets:update', assets);
   };
 
   imagoModel.prototype.reorder = function(assets) {
@@ -1061,7 +1062,7 @@ imagoModel = (function() {
     }
     args = [idx, assets.length].concat(assets);
     Array.prototype.splice.apply(this.data, args);
-    return this.$rootScope.$broadcast('assets:update');
+    return this.$rootScope.$broadcast('assets:update', assets);
   };
 
   imagoModel.prototype.reindexAll = function(list) {
