@@ -64,6 +64,6 @@ class imagoPanel extends Factory
         querydict
 
       getSearchUrl: ->
-        if (data is 'online' and debug) then "http://#{tenant}.imagoapp.com/api/v3/search" else "/api/v3/search"
+        if (data is 'online' and debug) then "#{window.location.protocol}//imagoapi.jit.su/api/search" else "/api/search"
 
     }

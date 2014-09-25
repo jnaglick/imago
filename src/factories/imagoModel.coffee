@@ -6,7 +6,7 @@ class imagoModel extends Service
 
   currentCollection: undefined
 
-  searchUrl: if (data is 'online' and debug) then "http://#{tenant}.imagoapp.com/api/v3/search" else "/api/v3/search"
+  searchUrl: if (data is 'online' and debug) then "#{window.location.protocol}//imagoapi.jit.su/api/search" else "/api/search"
 
   search: (query) ->
     # console.log 'search...', query
@@ -72,7 +72,7 @@ class imagoModel extends Service
         else if oldAsset and not _.isEqual(oldAsset, asset)
           @update(asset)
         else
-          if asset.serving_url?.indexOf 'data' is 0
+          if asset.serving_url?.indexOf 'data:image' is 0
             asset.base64 = true
           else
             asset.base64 = false
@@ -106,14 +106,13 @@ class imagoModel extends Service
     _.findIndex @data, parameter
 
   add: (asset) =>
-    console.log 'new asset', asset
     return unless asset._id
     if asset.serving_url?.indexOf 'data:image' is 0
       asset.base64 = true
     else
       asset.base64 = false
     @data.unshift asset
-    @$rootScope.$broadcast 'assets:update', asset
+    @$rootScope.$broadcast 'assets:update'
 
   update: (data, attribute = '_id') =>
     if _.isPlainObject(data)
@@ -134,7 +133,7 @@ class imagoModel extends Service
     return unless id
     # returns an array without the asset of id
     @data = _.reject(@data, { _id: id })
-    @$rootScope.$broadcast 'assets:update', id
+    @$rootScope.$broadcast 'assets:update'
     return @data
 
   move: (data) =>
@@ -166,7 +165,7 @@ class imagoModel extends Service
 
         @data.unshift asset
 
-    @$rootScope.$broadcast 'assets:update', assets
+    @$rootScope.$broadcast 'assets:update'
 
     defer.resolve assets
 
@@ -178,7 +177,7 @@ class imagoModel extends Service
       @data = _.reject(@data, { _id: asset.id })
       @data.push asset
 
-    @$rootScope.$broadcast 'assets:update', assets
+    @$rootScope.$broadcast 'assets:update'
 
   reorder: (assets) =>
 
@@ -189,7 +188,7 @@ class imagoModel extends Service
     args = [idx, assets.length].concat(assets)
     Array.prototype.splice.apply(@data, args)
 
-    @$rootScope.$broadcast 'assets:update', assets
+    @$rootScope.$broadcast 'assets:update'
 
   reindexAll:  (list) =>
 
