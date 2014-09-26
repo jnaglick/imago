@@ -29,7 +29,6 @@ class imagoPanel extends Factory
           # console.log 'in foreach', value
           promises.push @search(value).success (response) =>
             # if the data is one single item and its a collection
-            console.log 'response', response
             if _.isPlainObject response
               data.push response
 

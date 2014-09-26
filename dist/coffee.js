@@ -1249,7 +1249,6 @@ imagoPanel = (function() {
           return function(value) {
             return promises.push(_this.search(value).success(function(response) {
               var result;
-              console.log('response', response);
               if (_.isPlainObject(response)) {
                 return data.push(response);
               } else {
