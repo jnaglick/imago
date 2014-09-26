@@ -29,12 +29,14 @@ class imagoPanel extends Factory
           # console.log 'in foreach', value
           promises.push @search(value).success (response) =>
             # if the data is one single item and its a collection
-            if response.length is 1 and response[0].kind is 'Collection'
-              data.push response[0]
+            console.log 'response', response
+            if _.isPlainObject response
+              data.push response
+
             else
               result =
-                items : response
-                count : response.length
+                assets : response
+                count  : response.length
 
               data.push result
             # else construct a result object

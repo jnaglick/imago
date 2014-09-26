@@ -1254,11 +1254,12 @@ imagoPanel = (function() {
           return function(value) {
             return promises.push(_this.search(value).success(function(response) {
               var result;
-              if (response.length === 1 && response[0].kind === 'Collection') {
-                return data.push(response[0]);
+              console.log('response', response);
+              if (_.isPlainObject(response)) {
+                return data.push(response);
               } else {
                 result = {
-                  items: response,
+                  assets: response,
                   count: response.length
                 };
                 return data.push(result);
