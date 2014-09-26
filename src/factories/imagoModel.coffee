@@ -6,7 +6,7 @@ class imagoModel extends Service
 
   currentCollection: undefined
 
-  searchUrl: if (data is 'online' and debug) then "#{window.location.protocol}//imagoapi.jit.su/api/search" else "/api/search"
+  searchUrl: if (data is 'online' and debug) then "http://#{tenant}.imagoapp.com/api/v3/search" else "/api/v3/search"
 
   search: (query) ->
     # console.log 'search...', query
@@ -72,7 +72,7 @@ class imagoModel extends Service
         else if oldAsset and not _.isEqual(oldAsset, asset)
           @update(asset)
         else
-          if asset.serving_url?.indexOf 'data:image' is 0
+          if asset.serving_url?.indexOf 'data' is 0
             asset.base64 = true
           else
             asset.base64 = false
@@ -106,34 +106,34 @@ class imagoModel extends Service
     _.findIndex @data, parameter
 
   add: (asset) =>
-    return unless asset._id
     if asset.serving_url?.indexOf 'data:image' is 0
       asset.base64 = true
     else
       asset.base64 = false
     @data.unshift asset
-    @$rootScope.$broadcast 'assets:update'
+    @$rootScope.$broadcast 'assets:update', asset
 
   update: (data, attribute = '_id') =>
     if _.isPlainObject(data)
       return unless data[attribute]
       delete data.assets if data.assets
-      idx = @findIdx(data[attribute])
+      idx = @findIdx(data[attribute], attribute)
       @data[idx] = _.assign(@data[idx], data)
 
     else if _.isArray(data)
       for asset in data
         delete asset.assets if asset.assets
-        idx = @findIdx(asset[attribute])
+        idx = @findIdx(asset[attribute], attribute)
         _.assign(@data[idx], asset)
 
     @$rootScope.$broadcast 'assets:update', data
+
 
   delete: (id) =>
     return unless id
     # returns an array without the asset of id
     @data = _.reject(@data, { _id: id })
-    @$rootScope.$broadcast 'assets:update'
+    @$rootScope.$broadcast 'assets:update', id
     return @data
 
   move: (data) =>
@@ -165,7 +165,7 @@ class imagoModel extends Service
 
         @data.unshift asset
 
-    @$rootScope.$broadcast 'assets:update'
+    @$rootScope.$broadcast 'assets:update', assets
 
     defer.resolve assets
 
@@ -177,7 +177,7 @@ class imagoModel extends Service
       @data = _.reject(@data, { _id: asset.id })
       @data.push asset
 
-    @$rootScope.$broadcast 'assets:update'
+    @$rootScope.$broadcast 'assets:update', assets
 
   reorder: (assets) =>
 
@@ -188,7 +188,7 @@ class imagoModel extends Service
     args = [idx, assets.length].concat(assets)
     Array.prototype.splice.apply(@data, args)
 
-    @$rootScope.$broadcast 'assets:update'
+    @$rootScope.$broadcast 'assets:update', assets
 
   reindexAll:  (list) =>
 
@@ -326,7 +326,6 @@ class imagoModel extends Service
           asset.order = (if assets.length is 0 then 1000 else assets[0].order + 1000)
 
         asset.parent = parent
-        asset._tenant = @tenant
 
         defer.resolve asset
 

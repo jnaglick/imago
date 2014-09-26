@@ -11,6 +11,24 @@ App = (function() {
 
 angular.module('imago.widgets.angular', App());
 
+var imagoPage;
+
+imagoPage = (function() {
+  function imagoPage($scope, $state, imagoModel) {
+    var path;
+    path = '/';
+    imagoModel.getData(path).then(function(response) {
+      $scope.collection = response[0];
+      return $scope.assets = imagoModel.getChildren(response[0]);
+    });
+  }
+
+  return imagoPage;
+
+})();
+
+angular.module('imago.widgets.angular').controller('imagoPage', ['$scope', '$state', 'imagoModel', imagoPage]);
+
 var imagoCompile;
 
 imagoCompile = (function() {
@@ -749,24 +767,6 @@ StopPropagation = (function() {
 
 angular.module('imago.widgets.angular').directive('stopPropagation', [StopPropagation]);
 
-var imagoPage;
-
-imagoPage = (function() {
-  function imagoPage($scope, $state, imagoModel) {
-    var path;
-    path = '/';
-    imagoModel.getData(path).then(function(response) {
-      $scope.collection = response[0];
-      return $scope.assets = imagoModel.getChildren(response[0]);
-    });
-  }
-
-  return imagoPage;
-
-})();
-
-angular.module('imago.widgets.angular').controller('imagoPage', ['$scope', '$state', 'imagoModel', imagoPage]);
-
 var imagoModel,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 
@@ -803,7 +803,7 @@ imagoModel = (function() {
 
   imagoModel.prototype.currentCollection = void 0;
 
-  imagoModel.prototype.searchUrl = data === 'online' && debug ? "" + window.location.protocol + "//imagoapi.jit.su/api/search" : "/api/search";
+  imagoModel.prototype.searchUrl = data === 'online' && debug ? "http://" + tenant + ".imagoapp.com/api/v3/search" : "/api/v3/search";
 
   imagoModel.prototype.search = function(query) {
     var params;
@@ -888,7 +888,7 @@ imagoModel = (function() {
           } else if (oldAsset && !_.isEqual(oldAsset, asset)) {
             return _this.update(asset);
           } else {
-            if ((_ref = asset.serving_url) != null ? _ref.indexOf('data:image' === 0) : void 0) {
+            if ((_ref = asset.serving_url) != null ? _ref.indexOf('data' === 0) : void 0) {
               asset.base64 = true;
             } else {
               asset.base64 = false;
@@ -946,16 +946,13 @@ imagoModel = (function() {
 
   imagoModel.prototype.add = function(asset) {
     var _ref;
-    if (!asset._id) {
-      return;
-    }
     if ((_ref = asset.serving_url) != null ? _ref.indexOf('data:image' === 0) : void 0) {
       asset.base64 = true;
     } else {
       asset.base64 = false;
     }
     this.data.unshift(asset);
-    return this.$rootScope.$broadcast('assets:update');
+    return this.$rootScope.$broadcast('assets:update', asset);
   };
 
   imagoModel.prototype.update = function(data, attribute) {
@@ -970,7 +967,7 @@ imagoModel = (function() {
       if (data.assets) {
         delete data.assets;
       }
-      idx = this.findIdx(data[attribute]);
+      idx = this.findIdx(data[attribute], attribute);
       this.data[idx] = _.assign(this.data[idx], data);
     } else if (_.isArray(data)) {
       for (_i = 0, _len = data.length; _i < _len; _i++) {
@@ -978,7 +975,7 @@ imagoModel = (function() {
         if (asset.assets) {
           delete asset.assets;
         }
-        idx = this.findIdx(asset[attribute]);
+        idx = this.findIdx(asset[attribute], attribute);
         _.assign(this.data[idx], asset);
       }
     }
@@ -992,7 +989,7 @@ imagoModel = (function() {
     this.data = _.reject(this.data, {
       _id: id
     });
-    this.$rootScope.$broadcast('assets:update');
+    this.$rootScope.$broadcast('assets:update', id);
     return this.data;
   };
 
@@ -1035,7 +1032,7 @@ imagoModel = (function() {
         this.data.unshift(asset);
       }
     }
-    this.$rootScope.$broadcast('assets:update');
+    this.$rootScope.$broadcast('assets:update', assets);
     defer.resolve(assets);
     return defer.promise;
   };
@@ -1049,7 +1046,7 @@ imagoModel = (function() {
       });
       this.data.push(asset);
     }
-    return this.$rootScope.$broadcast('assets:update');
+    return this.$rootScope.$broadcast('assets:update', assets);
   };
 
   imagoModel.prototype.reorder = function(assets) {
@@ -1061,7 +1058,7 @@ imagoModel = (function() {
     }
     args = [idx, assets.length].concat(assets);
     Array.prototype.splice.apply(this.data, args);
-    return this.$rootScope.$broadcast('assets:update');
+    return this.$rootScope.$broadcast('assets:update', assets);
   };
 
   imagoModel.prototype.reindexAll = function(list) {
@@ -1210,7 +1207,6 @@ imagoModel = (function() {
             asset.order = (assets.length === 0 ? 1000 : assets[0].order + 1000);
           }
           asset.parent = parent;
-          asset._tenant = _this.tenant;
           return defer.resolve(asset);
         }
       };
