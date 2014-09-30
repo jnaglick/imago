@@ -1,6 +1,7 @@
+
 class imagoImage extends Directive
 
-  constructor: ($window, $q) ->
+  constructor: ($window, $q, $log) ->
 
     return {
       replace: true
@@ -37,6 +38,9 @@ class imagoImage extends Directive
           opts[key] = value
 
         #####
+
+        opts.initialWidth  = opts.width
+        opts.initialHeight = opts.height
 
         if opts.lazy
           visiblePromise = do () =>
@@ -95,51 +99,56 @@ class imagoImage extends Directive
           # TODO: Not sure about this solution below:
           # the widget may get less flexible / Sebastian
 
-          if opts.width and opts.height
-            width = parseInt opts.width
-            height = parseInt opts.height
-          else
-            width = element[0].clientWidth
-            height = element[0].clientHeight
+          # if opts.width and opts.height
+          #   width = parseInt opts.width
+          #   height = parseInt opts.height
+          # else
+          #   width = element[0].clientWidth
+          #   height = element[0].clientHeight
 
-          # return $log.log('tried to render during rendering!!') if scope.status is 'preloading'
+          return console.log('tried to render during rendering!!') if scope.status is 'preloading'
 
           # console.log 'opts.assetRatio', opts.assetRatio
 
           # use pvrovided dimentions.
-          # if angular.isNumber(opts.width) and angular.isNumber(opts.height)
-          #   #$log.log 'fixed size', opts.width, opts.height
+          if angular.isNumber(opts.width) and angular.isNumber(opts.height)
+            $log.log 'fixed size', opts.width, opts.height
+            width  = parseInt opts.width
+            height = parseInt opts.height
+
           #
           # # fit width
-          # else if opts.height is 'auto' and angular.isNumber(opts.width)
-          #   opts.height = opts.width / opts.assetRatio
-          #   scope.elementStyle.height = parseInt opts.height
-          #   #$log.log 'fit width', opts.width, opts.height
+          else if opts.height is 'auto' and angular.isNumber(opts.width)
+            height = opts.width / opts.assetRatio
+            scope.elementStyle.height = parseInt height
+            #$log.log 'fit width', opts.width, opts.height
           #
           # # fit height
-          # else if opts.width is 'auto' and angular.isNumber(opts.height)
-          #
-          #   opts.width = opts.height * opts.assetRatio
-          #   scope.elementStyle.width = parseInt opts.width
-          #   #$log.log 'fit height', opts.width, opts.height
+          else if opts.width is 'auto' and angular.isNumber(opts.height)
+
+            width = opts.height * opts.assetRatio
+            scope.elementStyle.width = parseInt width
+            #$log.log 'fit height', opts.width, opts.height
           #
           # # we want dynamic resizing without css.
           # # like standard image behaviour. will get a height according to the width
-          # else if opts.width is 'auto' and opts.height is 'auto'
-          #   opts.width  = element[0].clientWidth
-          #   opts.height = opts.width / opts.assetRatio
-          #   scope.elementStyle.height = parseInt opts.height
-          #   # $log.log 'both auto', opts.width, opts.height
+          else if opts.width is 'auto' and opts.height is 'auto'
+            width  = element[0].clientWidth
+            height = width / opts.assetRatio
+            scope.elementStyle.height = parseInt height
+            # $log.log 'both auto', opts.width, opts.height, width, height, opts.assetRatio
           #
           # # width and height dynamic, needs to be defined via css
           # # either width height or position
-          # else
-          #   opts.width  = element[0].clientWidth
-          #   opts.height = element[0].clientHeight
-          #   # $log.log 'width and height dynamic', opts.width, opts.height
+          else
+            width  = element[0].clientWidth
+            height = element[0].clientHeight
+            # $log.log 'width and height dynamic', opts.width, opts.height
 
           # unbind scrollstop listener for lazy loading
           # opts.window.off "scrollstop.#{opts.id}" if opts.lazy
+
+          scope.status = 'preloading'
 
           wrapperRatio = width / height
 
@@ -170,17 +179,18 @@ class imagoImage extends Directive
           servingSize = parseInt Math.min(servingSize * dpr, opts.maxsize), 10
 
           # make sure we only load a new size
-          # if servingSize is opts.servingSize
+          if servingSize is opts.servingSize
             # console.log 'same size exit'
-            # return
-
-          servingUrl = "#{ data.serving_url }=s#{ servingSize * opts.scale }"
+            scope.status = 'loaded'
+            return
 
           opts.servingSize = servingSize
 
+          servingUrl = "#{ data.serving_url }=s#{ servingSize * opts.scale }"
+
           # $log.log 'servingURl', servingUrl
           unless opts.responsive
-            scope.imageStyle.width = "#{parseInt width,  10}px"
+            scope.imageStyle.width  = "#{parseInt width,  10}px"
             scope.imageStyle.height = "#{parseInt height, 10}px"
 
 
@@ -223,5 +233,11 @@ class imagoImage extends Directive
 
         scope.$on 'resizestop', () =>
           render(source) if opts.responsive
+
+        angular.element($window).on "orientationchange", () =>
+          if opts.responsive
+            opts.width  = opts.initialWidth
+            opts.height = opts.initalHeight
+            render(source)
 
     }

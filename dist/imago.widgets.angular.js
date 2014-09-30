@@ -16,24 +16,6 @@ App = (function() {
 
 angular.module('imago.widgets.angular', App());
 
-var imagoPage;
-
-imagoPage = (function() {
-  function imagoPage($scope, $state, imagoModel) {
-    var path;
-    path = '/';
-    imagoModel.getData(path).then(function(response) {
-      $scope.collection = response[0];
-      return $scope.assets = imagoModel.getChildren(response[0]);
-    });
-  }
-
-  return imagoPage;
-
-})();
-
-angular.module('imago.widgets.angular').controller('imagoPage', ['$scope', '$state', 'imagoModel', imagoPage]);
-
 var imagoCompile;
 
 imagoCompile = (function() {
@@ -155,7 +137,7 @@ angular.module('imago.widgets.angular').directive('imagoControls', [imagoControl
 var imagoImage;
 
 imagoImage = (function() {
-  function imagoImage($window, $q) {
+  function imagoImage($window, $q, $log) {
     return {
       replace: true,
       scope: true,
@@ -189,6 +171,8 @@ imagoImage = (function() {
           value = attrs[key];
           opts[key] = value;
         }
+        opts.initialWidth = opts.width;
+        opts.initialHeight = opts.height;
         if (opts.lazy) {
           visiblePromise = (function(_this) {
             return function() {
@@ -258,13 +242,28 @@ imagoImage = (function() {
               };
               opts.assetRatio = r[0] / r[1];
             }
-            if (opts.width && opts.height) {
+            if (scope.status === 'preloading') {
+              return console.log('tried to render during rendering!!');
+            }
+            if (angular.isNumber(opts.width) && angular.isNumber(opts.height)) {
+              $log.log('fixed size', opts.width, opts.height);
               width = parseInt(opts.width);
               height = parseInt(opts.height);
+            } else if (opts.height === 'auto' && angular.isNumber(opts.width)) {
+              height = opts.width / opts.assetRatio;
+              scope.elementStyle.height = parseInt(height);
+            } else if (opts.width === 'auto' && angular.isNumber(opts.height)) {
+              width = opts.height * opts.assetRatio;
+              scope.elementStyle.width = parseInt(width);
+            } else if (opts.width === 'auto' && opts.height === 'auto') {
+              width = element[0].clientWidth;
+              height = width / opts.assetRatio;
+              scope.elementStyle.height = parseInt(height);
             } else {
               width = element[0].clientWidth;
               height = element[0].clientHeight;
             }
+            scope.status = 'preloading';
             wrapperRatio = width / height;
             dpr = opts.hires ? Math.ceil($window.devicePixelRatio) || 1 : 1;
             if (opts.sizemode === 'crop') {
@@ -281,8 +280,12 @@ imagoImage = (function() {
               }
             }
             servingSize = parseInt(Math.min(servingSize * dpr, opts.maxsize), 10);
-            servingUrl = "" + data.serving_url + "=s" + (servingSize * opts.scale);
+            if (servingSize === opts.servingSize) {
+              scope.status = 'loaded';
+              return;
+            }
             opts.servingSize = servingSize;
+            servingUrl = "" + data.serving_url + "=s" + (servingSize * opts.scale);
             if (!opts.responsive) {
               scope.imageStyle.width = "" + (parseInt(width, 10)) + "px";
               scope.imageStyle.height = "" + (parseInt(height, 10)) + "px";
@@ -335,9 +338,18 @@ imagoImage = (function() {
             }
           };
         })(this));
-        return scope.$on('resizestop', (function(_this) {
+        scope.$on('resizestop', (function(_this) {
           return function() {
             if (opts.responsive) {
+              return render(source);
+            }
+          };
+        })(this));
+        return angular.element($window).on("orientationchange", (function(_this) {
+          return function() {
+            if (opts.responsive) {
+              opts.width = opts.initialWidth;
+              opts.height = opts.initalHeight;
               return render(source);
             }
           };
@@ -350,7 +362,7 @@ imagoImage = (function() {
 
 })();
 
-angular.module('imago.widgets.angular').directive('imagoImage', ['$window', '$q', imagoImage]);
+angular.module('imago.widgets.angular').directive('imagoImage', ['$window', '$q', '$log', imagoImage]);
 
 var imagoSlider;
 
@@ -1851,6 +1863,24 @@ imagoUtils = (function() {
 })();
 
 angular.module('imago.widgets.angular').factory('imagoUtils', [imagoUtils]);
+
+var imagoPage;
+
+imagoPage = (function() {
+  function imagoPage($scope, $state, imagoModel) {
+    var path;
+    path = '/';
+    imagoModel.getData(path).then(function(response) {
+      $scope.collection = response[0];
+      return $scope.assets = imagoModel.getChildren(response[0]);
+    });
+  }
+
+  return imagoPage;
+
+})();
+
+angular.module('imago.widgets.angular').controller('imagoPage', ['$scope', '$state', 'imagoModel', imagoPage]);
 
 var Meta;
 
