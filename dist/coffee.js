@@ -379,6 +379,32 @@ imagoImage = (function() {
 
 angular.module('imago.widgets.angular').directive('imagoImage', ['$window', '$q', '$log', imagoImage]);
 
+var imagoSearch, _;
+
+_ = require('lodash');
+
+imagoSearch = (function() {
+  function imagoSearch(imagoModel) {
+    ({
+      controller: function() {
+        return this.keypress = function(e) {
+          var key;
+          if (e.ctrlKey || e.altKey || e.metaKey) {
+            return;
+          }
+          return key = e.which;
+        };
+      },
+      link: function(scope) {}
+    });
+  }
+
+  return imagoSearch;
+
+})();
+
+angular.module('imago.widgets.angular').directive('imagoSearch', ['imagoModel', imagoSearch]);
+
 var imagoSlider;
 
 imagoSlider = (function() {
@@ -835,12 +861,18 @@ imagoModel = (function() {
 
   imagoModel.prototype.currentCollection = void 0;
 
-  imagoModel.prototype.searchUrl = data === 'online' && debug ? "http://" + tenant + ".imagoapp.com/api/v3/search" : "/api/v3/search";
+  imagoModel.prototype.getSearchUrl = function() {
+    if (data === 'online' && debug) {
+      return "" + window.location.protocol + "//imagoapi-nex9.rhcloud.com/api/search";
+    } else {
+      return "/api/search";
+    }
+  };
 
   imagoModel.prototype.search = function(query) {
     var params;
     params = this.formatQuery(query);
-    return this.$http.post(this.searchUrl, angular.toJson(params));
+    return this.$http.post(this.getSearchUrl(), angular.toJson(params));
   };
 
   imagoModel.prototype.getData = function(query, cache) {
@@ -857,17 +889,13 @@ imagoModel = (function() {
     _.forEach(query, (function(_this) {
       return function(value) {
         return promises.push(_this.search(value).then(function(response) {
-          if (!(response.data.length > 0)) {
+          if (!response.data) {
             return;
           }
           if (value.page) {
-            _.forEach(response.data, function(data) {
-              return data.page = value.page;
-            });
+            response.data.page = value.page;
           }
-          return _.forEach(response.data, function(data) {
-            return _this.create(data);
-          });
+          return _this.create(response.data);
         }));
       };
     })(this));
