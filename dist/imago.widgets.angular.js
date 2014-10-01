@@ -663,7 +663,7 @@ imagoVideo = (function() {
                 continue;
               }
               scope.videoFormats.push({
-                "src": "http://" + tenant + ".imagoapp.com/assets/api/\nplay_redirect?uuid=" + data.id + "&codec=" + format.codec + "\n&quality=hd&max_size=" + format.size,
+                "src": "//imagoapi-nex9.rhcloud.com/api/\nplay_redirect?uuid=" + data.uuid + "&codec=" + format.codec + "\n&quality=hd&max_size=" + format.size,
                 "size": format.size,
                 "codec": format.codec,
                 "type": "video/" + codec
