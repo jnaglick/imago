@@ -46,7 +46,7 @@ class imagoImage extends Directive
           visiblePromise = do () =>
             deffered = $q.defer()
             self.visibleFunc = scope.$watch attrs['visible'], (value) =>
-              return unless value
+              return unless value is true
               deffered.resolve(value)
 
             return deffered.promise
@@ -67,6 +67,11 @@ class imagoImage extends Directive
           self.watch() unless attrs['watch']
           source = data
 
+          if opts.dimensions and attrs['dimensions']
+            scope.$watch attrs['dimensions'], (value) =>
+              angular.forEach value, (value, key) =>
+                opts[key] = value or 'auto'
+
           if opts.lazy
             visiblePromise.then (value) =>
               self.visibleFunc()
@@ -81,11 +86,6 @@ class imagoImage extends Directive
             return
 
           # console.log scope.visible
-
-          if opts.dimensions and attrs['dimensions']
-            scope.$watch attrs['dimensions'], (value) =>
-              angular.forEach value, (value, key) =>
-                opts[key] = value
 
           scope.elementStyle = {} unless scope.elementStyle
           #console.log 'elementStyle ' , scope.elementStyle
@@ -105,11 +105,9 @@ class imagoImage extends Directive
           # else
           #   width = element[0].clientWidth
           #   height = element[0].clientHeight
-
           return console.log('tried to render during rendering!!') if scope.status is 'preloading'
 
           # console.log 'opts.assetRatio', opts.assetRatio
-
           # use pvrovided dimentions.
           if angular.isNumber(opts.width) and angular.isNumber(opts.height)
             $log.log 'fixed size', opts.width, opts.height
@@ -119,14 +117,15 @@ class imagoImage extends Directive
           #
           # # fit width
           else if opts.height is 'auto' and angular.isNumber(opts.width)
-            height = opts.width / opts.assetRatio
+            height =  parseInt opts.width / opts.assetRatio
+            width  =  opts.width
             scope.elementStyle.height = parseInt height
             #$log.log 'fit width', opts.width, opts.height
           #
           # # fit height
           else if opts.width is 'auto' and angular.isNumber(opts.height)
-
-            width = opts.height * opts.assetRatio
+            height = opts.height
+            width  = opts.height * opts.assetRatio
             scope.elementStyle.width = parseInt width
             #$log.log 'fit height', opts.width, opts.height
           #
@@ -147,6 +146,7 @@ class imagoImage extends Directive
 
           # unbind scrollstop listener for lazy loading
           # opts.window.off "scrollstop.#{opts.id}" if opts.lazy
+
 
           scope.status = 'preloading'
 

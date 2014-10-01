@@ -11,6 +11,24 @@ App = (function() {
 
 angular.module('imago.widgets.angular', App());
 
+var imagoPage;
+
+imagoPage = (function() {
+  function imagoPage($scope, $state, imagoModel) {
+    var path;
+    path = '/';
+    imagoModel.getData(path).then(function(response) {
+      $scope.collection = response[0];
+      return $scope.assets = imagoModel.getChildren(response[0]);
+    });
+  }
+
+  return imagoPage;
+
+})();
+
+angular.module('imago.widgets.angular').controller('imagoPage', ['$scope', '$state', 'imagoModel', imagoPage]);
+
 var imagoCompile;
 
 imagoCompile = (function() {
@@ -174,7 +192,7 @@ imagoImage = (function() {
               var deffered;
               deffered = $q.defer();
               self.visibleFunc = scope.$watch(attrs['visible'], function(value) {
-                if (!value) {
+                if (value !== true) {
                   return;
                 }
                 return deffered.resolve(value);
@@ -202,6 +220,13 @@ imagoImage = (function() {
               self.watch();
             }
             source = data;
+            if (opts.dimensions && attrs['dimensions']) {
+              scope.$watch(attrs['dimensions'], function(value) {
+                return angular.forEach(value, function(value, key) {
+                  return opts[key] = value || 'auto';
+                });
+              });
+            }
             if (opts.lazy) {
               return visiblePromise.then(function(value) {
                 self.visibleFunc();
@@ -218,13 +243,6 @@ imagoImage = (function() {
             if (!(data != null ? data.serving_url : void 0)) {
               element.remove();
               return;
-            }
-            if (opts.dimensions && attrs['dimensions']) {
-              scope.$watch(attrs['dimensions'], function(value) {
-                return angular.forEach(value, function(value, key) {
-                  return opts[key] = value;
-                });
-              });
             }
             if (!scope.elementStyle) {
               scope.elementStyle = {};
@@ -245,9 +263,11 @@ imagoImage = (function() {
               width = parseInt(opts.width);
               height = parseInt(opts.height);
             } else if (opts.height === 'auto' && angular.isNumber(opts.width)) {
-              height = opts.width / opts.assetRatio;
+              height = parseInt(opts.width / opts.assetRatio);
+              width = opts.width;
               scope.elementStyle.height = parseInt(height);
             } else if (opts.width === 'auto' && angular.isNumber(opts.height)) {
+              height = opts.height;
               width = opts.height * opts.assetRatio;
               scope.elementStyle.width = parseInt(width);
             } else if (opts.width === 'auto' && opts.height === 'auto') {
@@ -1858,24 +1878,6 @@ imagoUtils = (function() {
 })();
 
 angular.module('imago.widgets.angular').factory('imagoUtils', [imagoUtils]);
-
-var imagoPage;
-
-imagoPage = (function() {
-  function imagoPage($scope, $state, imagoModel) {
-    var path;
-    path = '/';
-    imagoModel.getData(path).then(function(response) {
-      $scope.collection = response[0];
-      return $scope.assets = imagoModel.getChildren(response[0]);
-    });
-  }
-
-  return imagoPage;
-
-})();
-
-angular.module('imago.widgets.angular').controller('imagoPage', ['$scope', '$state', 'imagoModel', imagoPage]);
 
 var Meta;
 
