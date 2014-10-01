@@ -653,10 +653,10 @@ imagoVideo = (function() {
             scope.player.setAttribute("webkitAllowFullscreen", true);
             scope.videoFormats = [];
             codec = detectCodec();
-            data.formats.sort(function(a, b) {
+            data.fields.formats.sort(function(a, b) {
               return b.height - a.height;
             });
-            _ref = data.formats;
+            _ref = data.fields.formats;
             for (i = _i = 0, _len = _ref.length; _i < _len; i = ++_i) {
               format = _ref[i];
               if (codec !== format.codec) {

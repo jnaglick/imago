@@ -110,8 +110,8 @@ class imagoVideo extends Directive
 
           scope.videoFormats = []
           codec = detectCodec()
-          data.formats.sort( (a, b) -> return b.height - a.height )
-          for format, i in data.formats
+          data.fields.formats.sort( (a, b) -> return b.height - a.height )
+          for format, i in data.fields.formats
             continue unless codec is format.codec
             scope.videoFormats.push(
                 "src" : """http://#{tenant}.imagoapp.com/assets/api/
