@@ -18,7 +18,7 @@ class imagoModel extends Service
     return @$http.post(@getSearchUrl(), angular.toJson(params))
 
   getData: (query, cache) =>
-    # query = @$location.$$path unless query
+    query = @$location.path() unless query
     if angular.isString query
       query =
         [path: query]

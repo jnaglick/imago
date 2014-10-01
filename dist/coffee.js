@@ -853,6 +853,9 @@ imagoModel = (function() {
 
   imagoModel.prototype.getData = function(query, cache) {
     var promises;
+    if (!query) {
+      query = this.$location.path();
+    }
     if (angular.isString(query)) {
       query = [
         {
