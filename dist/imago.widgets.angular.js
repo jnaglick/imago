@@ -385,31 +385,7 @@ imagoImage = (function() {
 
 angular.module('imago.widgets.angular').directive('imagoImage', ['$window', '$q', '$log', imagoImage]);
 
-var imagoSearch, _;
 
-_ = require('lodash');
-
-imagoSearch = (function() {
-  function imagoSearch(imagoModel) {
-    ({
-      controller: function() {
-        return this.keypress = function(e) {
-          var key;
-          if (e.ctrlKey || e.altKey || e.metaKey) {
-            return;
-          }
-          return key = e.which;
-        };
-      },
-      link: function(scope) {}
-    });
-  }
-
-  return imagoSearch;
-
-})();
-
-angular.module('imago.widgets.angular').directive('imagoSearch', ['imagoModel', imagoSearch]);
 
 var imagoSlider;
 

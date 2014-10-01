@@ -1,12 +1,9 @@
+# class imagoSearch extends Directive
 
-_ = require('lodash')
+#   constructor: (imagoModel) ->
+#     controller: () ->
 
-class imagoSearch extends Directive
-
-  constructor: (imagoModel) ->
-    controller: () ->
-
-      @keypress = (e) ->
-        return if e.ctrlKey or e.altKey or e.metaKey
-        key = e.which
-    link: (scope) ->
+#       @keypress = (e) ->
+#         return if e.ctrlKey or e.altKey or e.metaKey
+#         key = e.which
+#     link: (scope) ->
