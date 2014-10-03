@@ -437,7 +437,7 @@ class imagoUtils extends Factory
         return asset.fields[attribute].value
 
       isBaseString: (string) ->
-        return !!string.match(@isBaseRegex)
+        return !!string.match(@isBaseRegex) if string
 
       isBaseRegex: /^\s*data:([a-z]+\/[a-z]+(;[a-z\-]+\=[a-z\-]+)?)?(;base64)?,[a-z0-9\!\$\&\'\,\(\)\*\+\,\;\=\-\.\_\~\:\@\/\?\%\s]*\s*$/i
 
