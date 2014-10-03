@@ -1792,9 +1792,10 @@ imagoUtils = (function() {
         return asset.fields[attribute].value;
       },
       isBaseString: function(string) {
-        if (string) {
-          return !!string.match(this.isBaseRegex);
+        if (string == null) {
+          string = '';
         }
+        return !!string.match(this.isBaseRegex);
       },
       isBaseRegex: /^\s*data:([a-z]+\/[a-z]+(;[a-z\-]+\=[a-z\-]+)?)?(;base64)?,[a-z0-9\!\$\&\'\,\(\)\*\+\,\;\=\-\.\_\~\:\@\/\?\%\s]*\s*$/i
     };
