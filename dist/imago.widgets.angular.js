@@ -17,24 +17,6 @@ App = (function() {
 
 angular.module('imago.widgets.angular', App());
 
-var imagoPage;
-
-imagoPage = (function() {
-  function imagoPage($scope, $state, imagoModel) {
-    var path;
-    path = '/';
-    imagoModel.getData(path).then(function(response) {
-      $scope.collection = response[0];
-      return $scope.assets = imagoModel.getChildren(response[0]);
-    });
-  }
-
-  return imagoPage;
-
-})();
-
-angular.module('imago.widgets.angular').controller('imagoPage', ['$scope', '$state', 'imagoModel', imagoPage]);
-
 var imagoCompile;
 
 imagoCompile = (function() {
@@ -156,7 +138,7 @@ angular.module('imago.widgets.angular').directive('imagoControls', [imagoControl
 var imagoImage;
 
 imagoImage = (function() {
-  function imagoImage($window, $q, $log) {
+  function imagoImage($window, $q, $log, imagoUtils) {
     return {
       replace: true,
       scope: true,
@@ -265,7 +247,6 @@ imagoImage = (function() {
               return console.log('tried to render during rendering!!');
             }
             if (angular.isNumber(opts.width) && angular.isNumber(opts.height)) {
-              $log.log('fixed size', opts.width, opts.height);
               width = parseInt(opts.width);
               height = parseInt(opts.height);
             } else if (opts.height === 'auto' && angular.isNumber(opts.width)) {
@@ -306,7 +287,11 @@ imagoImage = (function() {
               return;
             }
             opts.servingSize = servingSize;
-            servingUrl = "" + data.serving_url + "=s" + (servingSize * opts.scale);
+            if (imagoUtils.isBaseString(data.serving_url)) {
+              servingUrl = data.serving_url;
+            } else {
+              servingUrl = "" + data.serving_url + "=s" + (servingSize * opts.scale);
+            }
             if (!opts.responsive) {
               scope.imageStyle.width = "" + (parseInt(width, 10)) + "px";
               scope.imageStyle.height = "" + (parseInt(height, 10)) + "px";
@@ -383,7 +368,7 @@ imagoImage = (function() {
 
 })();
 
-angular.module('imago.widgets.angular').directive('imagoImage', ['$window', '$q', '$log', imagoImage]);
+angular.module('imago.widgets.angular').directive('imagoImage', ['$window', '$q', '$log', 'imagoUtils', imagoImage]);
 
 
 
@@ -807,6 +792,24 @@ StopPropagation = (function() {
 
 angular.module('imago.widgets.angular').directive('stopPropagation', [StopPropagation]);
 
+var imagoPage;
+
+imagoPage = (function() {
+  function imagoPage($scope, $state, imagoModel) {
+    var path;
+    path = '/';
+    imagoModel.getData(path).then(function(response) {
+      $scope.collection = response[0];
+      return $scope.assets = imagoModel.getChildren(response[0]);
+    });
+  }
+
+  return imagoPage;
+
+})();
+
+angular.module('imago.widgets.angular').controller('imagoPage', ['$scope', '$state', 'imagoModel', imagoPage]);
+
 var imagoModel,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 
@@ -926,14 +929,14 @@ imagoModel = (function() {
     if (data.assets) {
       _.forEach(data.assets, (function(_this) {
         return function(asset) {
-          var oldAsset, _ref;
+          var oldAsset;
           oldAsset = _this.find(asset._id) || false;
           if (_.isEqual(oldAsset, asset)) {
 
           } else if (oldAsset && !_.isEqual(oldAsset, asset)) {
             return _this.update(asset);
           } else {
-            if ((_ref = asset.serving_url) != null ? _ref.indexOf('data' === 0) : void 0) {
+            if (_this.imagoUtils.isBaseString(asset.serving_url)) {
               asset.base64 = true;
             } else {
               asset.base64 = false;
@@ -990,8 +993,7 @@ imagoModel = (function() {
   };
 
   imagoModel.prototype.add = function(asset) {
-    var _ref;
-    if ((_ref = asset.serving_url) != null ? _ref.indexOf('data:image' === 0) : void 0) {
+    if (this.imagoUtils.isBaseString(asset.serving_url)) {
       asset.base64 = true;
     } else {
       asset.base64 = false;
@@ -1792,7 +1794,11 @@ imagoUtils = (function() {
           return console.log("This asset does not contain a " + attribute + " attribute");
         }
         return asset.fields[attribute].value;
-      }
+      },
+      isBaseString: function(string) {
+        return !!string.match(this.isBaseRegex);
+      },
+      isBaseRegex: /^\s*data:([a-z]+\/[a-z]+(;[a-z\-]+\=[a-z\-]+)?)?(;base64)?,[a-z0-9\!\$\&\'\,\(\)\*\+\,\;\=\-\.\_\~\:\@\/\?\%\s]*\s*$/i
     };
   }
 

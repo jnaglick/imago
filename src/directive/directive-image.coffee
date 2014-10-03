@@ -1,7 +1,7 @@
 
 class imagoImage extends Directive
 
-  constructor: ($window, $q, $log) ->
+  constructor: ($window, $q, $log, imagoUtils) ->
 
     return {
       replace: true
@@ -13,6 +13,7 @@ class imagoImage extends Directive
         $scope.imageStyle = {}
 
       link: (scope, element, attrs) ->
+
         self = {}
 
         opts = {}
@@ -110,7 +111,7 @@ class imagoImage extends Directive
           # console.log 'opts.assetRatio', opts.assetRatio
           # use pvrovided dimentions.
           if angular.isNumber(opts.width) and angular.isNumber(opts.height)
-            $log.log 'fixed size', opts.width, opts.height
+            # $log.log 'fixed size', opts.width, opts.height
             width  = parseInt opts.width
             height = parseInt opts.height
 
@@ -186,7 +187,11 @@ class imagoImage extends Directive
 
           opts.servingSize = servingSize
 
-          servingUrl = "#{ data.serving_url }=s#{ servingSize * opts.scale }"
+          if imagoUtils.isBaseString(data.serving_url)
+            servingUrl = data.serving_url
+
+          else
+            servingUrl = "#{ data.serving_url }=s#{ servingSize * opts.scale }"
 
           # $log.log 'servingURl', servingUrl
           unless opts.responsive

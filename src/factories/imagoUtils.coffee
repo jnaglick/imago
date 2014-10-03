@@ -435,4 +435,10 @@ class imagoUtils extends Factory
       getMeta: (asset, attribute) ->
         return console.log "This asset does not contain a #{attribute} attribute" unless asset.meta[attribute]
         return asset.fields[attribute].value
+
+      isBaseString: (string) ->
+        return !!string.match(@isBaseRegex)
+
+      isBaseRegex: /^\s*data:([a-z]+\/[a-z]+(;[a-z\-]+\=[a-z\-]+)?)?(;base64)?,[a-z0-9\!\$\&\'\,\(\)\*\+\,\;\=\-\.\_\~\:\@\/\?\%\s]*\s*$/i
+
     }

@@ -66,7 +66,7 @@ class imagoModel extends Service
         else if oldAsset and not _.isEqual(oldAsset, asset)
           @update(asset)
         else
-          if asset.serving_url?.indexOf 'data' is 0
+          if @imagoUtils.isBaseString(asset.serving_url)
             asset.base64 = true
           else
             asset.base64 = false
@@ -100,7 +100,7 @@ class imagoModel extends Service
     _.findIndex @data, parameter
 
   add: (asset) =>
-    if asset.serving_url?.indexOf 'data:image' is 0
+    if @imagoUtils.isBaseString(asset.serving_url)
       asset.base64 = true
     else
       asset.base64 = false
