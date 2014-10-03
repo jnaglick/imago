@@ -103,7 +103,7 @@ class imagoVideo extends Directive
             backgroundImage:      "url(#{serving_url})"
             backgroundRepeat:     "no-repeat"
 
-          scope.player.setAttribute("autoplay", videoOpts.autoplay)
+          scope.player.setAttribute("autoplay", true) if videoOpts.autoplay is true
           scope.player.setAttribute("preload", videoOpts.preload)
           scope.player.setAttribute("x-webkit-airplay", "allow")
           scope.player.setAttribute("webkitAllowFullscreen", true)
