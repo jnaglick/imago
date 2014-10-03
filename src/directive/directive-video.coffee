@@ -24,7 +24,7 @@ class imagoVideo extends Directive
           controls    : true
           preload     : 'none'
           size        : 'hd'
-          align       : 'left top'
+          align       : 'top left'
           sizemode    : 'fit'
           lazy        : true
           width       : ''
@@ -91,10 +91,8 @@ class imagoVideo extends Directive
 
           dpr = if @hires then Math.ceil(window.devicePixelRatio) or 1 else 1
 
-
           serving_url = data.serving_url
-          serving_url += "=s#{ Math.ceil(Math.min(Math.max(width, height) * dpr, 1600)) }"
-
+          serving_url += "=s#{ Math.ceil(Math.min(Math.max(width, height) * dpr)) or 1600 }"
 
           scope.wrapperStyle =
             size:                 videoOpts.size

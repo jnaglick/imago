@@ -549,7 +549,7 @@ imagoVideo = (function() {
           controls: true,
           preload: 'none',
           size: 'hd',
-          align: 'left top',
+          align: 'top left',
           sizemode: 'fit',
           lazy: true,
           width: '',
@@ -636,7 +636,7 @@ imagoVideo = (function() {
             }
             dpr = _this.hires ? Math.ceil(window.devicePixelRatio) || 1 : 1;
             serving_url = data.serving_url;
-            serving_url += "=s" + (Math.ceil(Math.min(Math.max(width, height) * dpr, 1600)));
+            serving_url += "=s" + (Math.ceil(Math.min(Math.max(width, height) * dpr)) || 1600);
             scope.wrapperStyle = {
               size: videoOpts.size,
               sizemode: videoOpts.sizemode,
