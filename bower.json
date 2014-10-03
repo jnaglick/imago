@@ -8,7 +8,7 @@
     "license": "MIT",
     "private": true,
     "dependencies": {
-        "angular-inview": "~1.3"
+        "angular-inview": "*"
     },
     "ignore": [
         "**/.*",
