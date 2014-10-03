@@ -11,6 +11,286 @@ App = (function() {
 
 angular.module('imago.widgets.angular', App());
 
+'use strict';
+var addWindowInViewItem, bindWindowEvents, checkInView, debounce, getBoundingClientRect, getViewportHeight, removeWindowInViewItem, trackInViewContainer, triggerInViewCallback, unbindWindowEvents, untrackInViewContainer, windowCheckInViewDebounced, windowEventsHandler, _containersControllers, _windowEventsHandlerBinded, _windowInViewItems;
+
+angular.module('angular-inview', []).directive('inView', [
+  '$parse', function($parse) {
+    return {
+      restrict: 'A',
+      require: '?^inViewContainer',
+      link: function(scope, element, attrs, containerController) {
+        var inViewFunc, item, performCheckDebounced;
+        if (!attrs.inView) {
+          return;
+        }
+        inViewFunc = $parse(attrs.inView);
+        item = {
+          element: element,
+          wasInView: false,
+          offset: 0,
+          callback: function($inview, $inviewpart) {
+            return scope.$apply((function(_this) {
+              return function() {
+                return inViewFunc(scope, {
+                  '$element': element[0],
+                  '$inview': $inview,
+                  '$inviewpart': $inviewpart
+                });
+              };
+            })(this));
+          }
+        };
+        if (attrs.inViewOffset != null) {
+          attrs.$observe('inViewOffset', function(offset) {
+            item.offset = scope.$eval(offset) || 0;
+            return performCheckDebounced();
+          });
+        }
+        performCheckDebounced = windowCheckInViewDebounced;
+        if (containerController != null) {
+          containerController.addItem(item);
+          performCheckDebounced = containerController.checkInViewDebounced;
+        } else {
+          addWindowInViewItem(item);
+        }
+        performCheckDebounced();
+        return scope.$on('$destroy', function() {
+          if (containerController != null) {
+            containerController.removeItem(item);
+          }
+          return removeWindowInViewItem(item);
+        });
+      }
+    };
+  }
+]).directive('inViewContainer', function() {
+  return {
+    restrict: 'AC',
+    controller: [
+      '$element', function($element) {
+        this.items = [];
+        this.addItem = function(item) {
+          return this.items.push(item);
+        };
+        this.removeItem = function(item) {
+          var i;
+          return this.items = (function() {
+            var _i, _len, _ref, _results;
+            _ref = this.items;
+            _results = [];
+            for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+              i = _ref[_i];
+              if (i !== item) {
+                _results.push(i);
+              }
+            }
+            return _results;
+          }).call(this);
+        };
+        this.checkInViewDebounced = debounce((function(_this) {
+          return function() {
+            return checkInView(_this.items, $element[0]);
+          };
+        })(this));
+        return this;
+      }
+    ],
+    link: function(scope, element, attrs, controller) {
+      element.bind('scroll', controller.checkInViewDebounced);
+      trackInViewContainer(controller);
+      return scope.$on('$destroy', function() {
+        element.unbind('scroll', controller.checkInViewDebounced);
+        return untrackInViewContainer(controller);
+      });
+    }
+  };
+});
+
+_windowInViewItems = [];
+
+addWindowInViewItem = function(item) {
+  _windowInViewItems.push(item);
+  return bindWindowEvents();
+};
+
+removeWindowInViewItem = function(item) {
+  var i;
+  _windowInViewItems = (function() {
+    var _i, _len, _results;
+    _results = [];
+    for (_i = 0, _len = _windowInViewItems.length; _i < _len; _i++) {
+      i = _windowInViewItems[_i];
+      if (i !== item) {
+        _results.push(i);
+      }
+    }
+    return _results;
+  })();
+  return unbindWindowEvents();
+};
+
+_containersControllers = [];
+
+trackInViewContainer = function(controller) {
+  _containersControllers.push(controller);
+  return bindWindowEvents();
+};
+
+untrackInViewContainer = function(container) {
+  var c;
+  _containersControllers = (function() {
+    var _i, _len, _results;
+    _results = [];
+    for (_i = 0, _len = _containersControllers.length; _i < _len; _i++) {
+      c = _containersControllers[_i];
+      if (c !== container) {
+        _results.push(c);
+      }
+    }
+    return _results;
+  })();
+  return unbindWindowEvents();
+};
+
+_windowEventsHandlerBinded = false;
+
+windowEventsHandler = function() {
+  var c, _i, _len;
+  for (_i = 0, _len = _containersControllers.length; _i < _len; _i++) {
+    c = _containersControllers[_i];
+    c.checkInViewDebounced();
+  }
+  if (_windowInViewItems.length) {
+    return windowCheckInViewDebounced();
+  }
+};
+
+bindWindowEvents = function() {
+  if (_windowEventsHandlerBinded) {
+    return;
+  }
+  _windowEventsHandlerBinded = true;
+  return angular.element(window).bind('checkInView click ready scroll resize', windowEventsHandler);
+};
+
+unbindWindowEvents = function() {
+  if (!_windowEventsHandlerBinded) {
+    return;
+  }
+  if (_windowInViewItems.length || _containersControllers.length) {
+    return;
+  }
+  _windowEventsHandlerBinded = false;
+  return angular.element(window).unbind('checkInView click ready scroll resize', windowEventsHandler);
+};
+
+triggerInViewCallback = function(item, inview, isTopVisible, isBottomVisible) {
+  var elOffsetTop, inviewpart;
+  if (inview) {
+    elOffsetTop = getBoundingClientRect(item.element[0]).top + window.pageYOffset;
+    inviewpart = (isTopVisible && 'top') || (isBottomVisible && 'bottom') || 'both';
+    if (!(item.wasInView && item.wasInView === inviewpart && elOffsetTop === item.lastOffsetTop)) {
+      item.lastOffsetTop = elOffsetTop;
+      item.wasInView = inviewpart;
+      return item.callback(true, inviewpart);
+    }
+  } else if (item.wasInView) {
+    item.wasInView = false;
+    return item.callback(false);
+  }
+};
+
+checkInView = function(items, container) {
+  var bounds, boundsBottom, boundsTop, element, item, viewport, _i, _j, _len, _len1, _ref, _ref1, _ref2, _ref3, _results;
+  viewport = {
+    top: 0,
+    bottom: getViewportHeight()
+  };
+  if (container && container !== window) {
+    bounds = getBoundingClientRect(container);
+    if (bounds.top > viewport.bottom || bounds.bottom < viewport.top) {
+      for (_i = 0, _len = items.length; _i < _len; _i++) {
+        item = items[_i];
+        triggerInViewCallback(item, false);
+      }
+      return;
+    }
+    if (bounds.top > viewport.top) {
+      viewport.top = bounds.top;
+    }
+    if (bounds.bottom < viewport.bottom) {
+      viewport.bottom = bounds.bottom;
+    }
+  }
+  _results = [];
+  for (_j = 0, _len1 = items.length; _j < _len1; _j++) {
+    item = items[_j];
+    element = item.element[0];
+    bounds = getBoundingClientRect(element);
+    boundsTop = bounds.top + parseInt((_ref = (_ref1 = item.offset) != null ? _ref1[0] : void 0) != null ? _ref : item.offset);
+    boundsBottom = bounds.bottom + parseInt((_ref2 = (_ref3 = item.offset) != null ? _ref3[1] : void 0) != null ? _ref2 : item.offset);
+    if (boundsTop < viewport.bottom && boundsBottom >= viewport.top) {
+      _results.push(triggerInViewCallback(item, true, boundsBottom > viewport.bottom, boundsTop < viewport.top));
+    } else {
+      _results.push(triggerInViewCallback(item, false));
+    }
+  }
+  return _results;
+};
+
+getViewportHeight = function() {
+  var height, mode, _ref;
+  height = window.innerHeight;
+  if (height) {
+    return height;
+  }
+  mode = document.compatMode;
+  if (mode || !(typeof $ !== "undefined" && $ !== null ? (_ref = $.support) != null ? _ref.boxModel : void 0 : void 0)) {
+    height = mode === 'CSS1Compat' ? document.documentElement.clientHeight : document.body.clientHeight;
+  }
+  return height;
+};
+
+getBoundingClientRect = function(element) {
+  var el, parent, top;
+  if (element.getBoundingClientRect != null) {
+    return element.getBoundingClientRect();
+  }
+  top = 0;
+  el = element;
+  while (el) {
+    top += el.offsetTop;
+    el = el.offsetParent;
+  }
+  parent = element.parentElement;
+  while (parent) {
+    if (parent.scrollTop != null) {
+      top -= parent.scrollTop;
+    }
+    parent = parent.parentElement;
+  }
+  return {
+    top: top,
+    bottom: top + element.offsetHeight
+  };
+};
+
+debounce = function(f, t) {
+  var timer;
+  timer = null;
+  return function() {
+    if (timer != null) {
+      clearTimeout(timer);
+    }
+    return timer = setTimeout(f, t != null ? t : 100);
+  };
+};
+
+windowCheckInViewDebounced = debounce(function() {
+  return checkInView(_windowInViewItems);
+});
+
 var imagoPage;
 
 imagoPage = (function() {
@@ -1863,3 +2143,177 @@ Time = (function() {
 })();
 
 angular.module('imago.widgets.angular').filter('time', [Time]);
+
+'use strict';
+var createTestView;
+
+createTestView = function(elemHtml, bef, aft) {
+  var test;
+  test = {
+    elem: null,
+    scope: null
+  };
+  beforeEach(inject(function($rootScope, $compile) {
+    test.elem = angular.element(elemHtml);
+    $('body,html').css('height', '100%');
+    $('body').append(test.elem);
+    test.scope = $rootScope.$new(true);
+    test.scope.inviewSpy = jasmine.createSpy('inviewSpy');
+    test.spyCalls = 0;
+    test.scrollAndWaitInView = function(scroll, callback) {
+      var _ref;
+      test.spyCalls = test.scope.inviewSpy.calls.length;
+            if ((_ref = typeof scroll === "function" ? scroll() : void 0) != null) {
+        _ref;
+      } else {
+        $(window).scrollTop(scroll);
+      };
+      waitsFor((function() {
+        return test.scope.inviewSpy.calls.length > test.spyCalls;
+      }), 'Scrolling should trigger an in view', 500);
+      if (callback != null) {
+        return runs(function() {
+          return callback();
+        });
+      }
+    };
+    $compile(test.elem)(test.scope);
+    test.scope.$digest();
+    return typeof bef === "function" ? bef() : void 0;
+  }));
+  afterEach(function() {
+    var _ref, _ref1;
+    if ((_ref = test.scope) != null) {
+      _ref.$destroy();
+    }
+    test.scope = null;
+    if ((_ref1 = test.elem) != null) {
+      _ref1.remove();
+    }
+    test.elem = null;
+    return typeof aft === "function" ? aft() : void 0;
+  });
+  return test;
+};
+
+describe('Directive: inView', function() {
+  beforeEach(module('angular-inview'));
+  describe('local variables', function() {
+    var test;
+    test = createTestView("<div id=\"zero\" in-view=\"inviewSpy($element, $inview, $inviewpart)\" style=\"height:0\"></div>");
+    return it('should define local variables `$element`, `$inview` and `$inviewpart`', function() {
+      return test.scrollAndWaitInView(0, function() {
+        expect(test.scope.inviewSpy.calls.length).toEqual(1);
+        return expect(test.scope.inviewSpy).toHaveBeenCalledWith(test.elem[0], true, 'both');
+      });
+    });
+  });
+  describe('scrolling behaviour', function() {
+    var test;
+    test = createTestView("<div id=\"zero\" in-view=\"inviewSpy(0, $inview, $inviewpart)\" style=\"height:0\"></div>\n<div id=\"one\" in-view=\"inviewSpy(1, $inview, $inviewpart)\" style=\"height:100%\">one</div>\n<div id=\"two\" in-view=\"inviewSpy(2, $inview, $inviewpart)\" style=\"height:100%\" in-view-offset=\"{{twoOffset}}\">two</div>\n<div id=\"three\" in-view=\"inviewSpy(3, $inview, $inviewpart)\" in-view-offset=\"{{threeOffset}}\" style=\"height:100%\">three</div>");
+    it('should initially execute the expression for all in-view elements', function() {
+      return test.scrollAndWaitInView(0, function() {
+        expect(test.scope.inviewSpy.calls.length).toEqual(2);
+        expect(test.scope.inviewSpy).toHaveBeenCalledWith(0, true, 'both');
+        return expect(test.scope.inviewSpy).toHaveBeenCalledWith(1, true, 'top');
+      });
+    });
+    it('should change the inview status on scrolling', function() {
+      return test.scrollAndWaitInView(0, function() {
+        return test.scrollAndWaitInView(window.innerHeight / 2, function() {
+          expect(test.scope.inviewSpy.calls.length - test.spyCalls).toEqual(3);
+          expect(test.scope.inviewSpy).toHaveBeenCalledWith(0, false, void 0);
+          expect(test.scope.inviewSpy).toHaveBeenCalledWith(1, true, 'bottom');
+          expect(test.scope.inviewSpy).toHaveBeenCalledWith(2, true, 'top');
+          return test.scrollAndWaitInView(window.innerHeight * 2, function() {
+            expect(test.scope.inviewSpy.calls.length - test.spyCalls).toEqual(3);
+            expect(test.scope.inviewSpy).toHaveBeenCalledWith(1, false, void 0);
+            expect(test.scope.inviewSpy).toHaveBeenCalledWith(2, true, 'bottom');
+            return expect(test.scope.inviewSpy).toHaveBeenCalledWith(3, true, 'top');
+          });
+        });
+      });
+    });
+    return it('should consider offset', function() {
+      return test.scrollAndWaitInView(0, function() {
+        test.scope.twoOffset = window.innerHeight;
+        test.scope.threeOffset = [-window.innerHeight, -window.innerHeight * 2];
+        test.scope.$digest();
+        return test.scrollAndWaitInView(window.innerHeight / 2, function() {
+          expect(test.scope.inviewSpy).not.toHaveBeenCalledWith(2, true, 'top');
+          expect(test.scope.inviewSpy).toHaveBeenCalledWith(3, true, 'both');
+          return test.scrollAndWaitInView(window.innerHeight * 2, function() {
+            return expect(test.scope.inviewSpy).toHaveBeenCalledWith(2, true, 'top');
+          });
+        });
+      });
+    });
+  });
+  return describe('element positioning behaviours', function() {
+    var test;
+    test = createTestView("<div id=\"one\" in-view=\"inviewSpy(0, $inview, $inviewpart)\" style=\"height:100%\">zero</div>\n<div id=\"one\" in-view=\"inviewSpy(1, $inview, $inviewpart)\" style=\"height:100%\" ng-show=\"showSpacer\">one</div>\n<div id=\"two\" in-view=\"inviewSpy(2, $inview, $inviewpart)\" style=\"height:10%\">two</div>\n<div id=\"one\" in-view=\"inviewSpy(3, $inview, $inviewpart)\" style=\"height:100%\">three</div>");
+    return it('should resend identical notification if inview item changed its position between debounces', function() {
+      return test.scrollAndWaitInView(0, function() {
+        return test.scrollAndWaitInView(window.innerHeight, function() {
+          expect(test.scope.inviewSpy).toHaveBeenCalledWith(2, true, 'both');
+          test.scope.inviewSpy = jasmine.createSpy('inviewSpy');
+          test.scope.showSpacer = true;
+          test.scope.$digest();
+          return test.scrollAndWaitInView(window.innerHeight * 2, function() {
+            return expect(test.scope.inviewSpy).toHaveBeenCalledWith(2, true, 'both');
+          });
+        });
+      });
+    });
+  });
+});
+
+describe('Directive: inViewContainer', function() {
+  var test;
+  beforeEach(module('angular-inview'));
+  test = createTestView("<div id=\"container1\" in-view-container style=\"height:100%\">\n	<div id=\"c1zero\" in-view=\"inviewSpy(10, $inview, $inviewpart)\" style=\"height:0\"></div>\n	<div id=\"c1one\" in-view=\"inviewSpy(11, $inview, $inviewpart)\" style=\"height:100%\">one</div>\n	<div id=\"c1two\" in-view=\"inviewSpy(12, $inview, $inviewpart)\" style=\"height:100%\">two</div>\n	<div id=\"container2\" in-view-container style=\"height:100%;overflow:scroll;\">\n		<div id=\"c2zero\" in-view=\"inviewSpy(20, $inview, $inviewpart)\" style=\"height:0\"></div>\n		<div id=\"c2one\" in-view=\"inviewSpy(21, $inview, $inviewpart)\" style=\"height:100%\">one</div>\n		<div id=\"c2two\" in-view=\"inviewSpy(22, $inview, $inviewpart)\" style=\"height:100%\">two</div>\n	</div>\n	<div id=\"c1three\" in-view=\"inviewSpy(13, $inview, $inviewpart)\" in-view-offset=\"{{threeOffset}}\" style=\"height:100%\">three</div>\n</div>", function() {
+    return test.elem2 = test.elem.find('#container2');
+  });
+  it('should fire inview with windows scroll', function() {
+    return test.scrollAndWaitInView(0, function() {
+      return test.scrollAndWaitInView(window.innerHeight * 2, function() {
+        expect(test.scope.inviewSpy.calls.length).toEqual(6);
+        expect(test.scope.inviewSpy).toHaveBeenCalledWith(20, true, 'both');
+        return expect(test.scope.inviewSpy).toHaveBeenCalledWith(21, true, 'top');
+      });
+    });
+  });
+  return it('should trigger inview with container scroll for all nested children', function() {
+    return test.scrollAndWaitInView((function() {
+      $(window).scrollTop(window.innerHeight * 2);
+      return test.elem2.scrollTop(window.innerHeight);
+    }), function() {
+      expect(test.scope.inviewSpy.calls.length).toEqual(2);
+      expect(test.scope.inviewSpy).toHaveBeenCalledWith(21, true, 'bottom');
+      return expect(test.scope.inviewSpy).toHaveBeenCalledWith(22, true, 'top');
+    });
+  });
+});
+
+describe('Directive: inViewContainer in fixed containers', function() {
+  var test;
+  beforeEach(module('angular-inview'));
+  test = createTestView("<div id=\"container\" in-view-container style=\"position:fixed;height:200px;overflow:scroll;\">\n	<div id=\"fzero\" in-view=\"inviewSpy(0, $inview, $inviewpart)\" style=\"height:0\"></div>\n	<div id=\"fone\" in-view=\"inviewSpy(1, $inview, $inviewpart)\" style=\"height:100%\">one</div>\n	<div id=\"ftwo\" in-view=\"inviewSpy(2, $inview, $inviewpart)\" style=\"height:100%\">two</div>\n</div>");
+  return it('should properly handle fixed positioned containers', function() {
+    var containerHeight;
+    containerHeight = 200;
+    return test.scrollAndWaitInView(0, function() {
+      expect(test.scope.inviewSpy.calls.length).toEqual(2);
+      expect(test.scope.inviewSpy).toHaveBeenCalledWith(0, true, 'both');
+      expect(test.scope.inviewSpy).toHaveBeenCalledWith(1, true, 'both');
+      return test.scrollAndWaitInView((function() {
+        return test.elem.scrollTop(containerHeight);
+      }), function() {
+        expect(test.scope.inviewSpy.calls.length).toEqual(2 + 3);
+        expect(test.scope.inviewSpy).toHaveBeenCalledWith(0, false, void 0);
+        expect(test.scope.inviewSpy).toHaveBeenCalledWith(1, true, 'bottom');
+        return expect(test.scope.inviewSpy).toHaveBeenCalledWith(2, true, 'both');
+      });
+    });
+  });
+});
