@@ -14,8 +14,7 @@ templateCache   = require 'gulp-angular-templatecache'
 uglify          = require 'gulp-uglify'
 watch           = require 'gulp-watch'
 gutil           = require 'gulp-util'
-Notification    = require 'node-notifier'
-notifier        = new Notification()
+notification    = require 'node-notifier'
 exec            = require('child_process').exec
 
 
@@ -153,7 +152,7 @@ gulp.task "watch", ->
 
 reportError = (err) ->
   gutil.beep()
-  notifier.notify
+  notification.notify
     title: "Error running Gulp"
     message: err.message
   gutil.log err.message
