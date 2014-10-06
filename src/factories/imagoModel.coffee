@@ -1,6 +1,6 @@
 class imagoModel extends Service
   # I converted everything to the new syntax, but didn't refact the methods
-  constructor: (@$rootScope, @$http, @$location, @$q, @$filter, @imagoUtils, _) ->
+  constructor: (@$rootScope, @$http, @$location, @$q, @$filter, @imagoUtils) ->
 
   data: []
 
@@ -264,35 +264,37 @@ class imagoModel extends Service
 
     name = @imagoUtils.normalize(name)
 
-    result =
-      count : 0
-      value : ''
+    result = undefined
 
-    assetsChildren = _.where(@findChildren(@currentCollection), {name: name})
-    result.count = assetsChildren.length
+    assetsChildren = _.find @currentCollection.assets, (chr) =>
+      normalizeName = angular.copy @imagoUtils.normalize(chr.name)
+      return normalizeName is name
 
-    if assetsChildren.length > 0
+    if assetsChildren
 
       if rename
-        assets = @findChildren(@currentCollection)
+        assets = @currentCollection.assets
         i = 1
         exists = true
         original_name = name
         while exists
           name = "#{original_name}_#{i}"
           i++
-          exists = (if _.where(assets, {name: name}).length > 0 then true else false)
+          findName = _.find assets, (chr) =>
+            normalizeName = angular.copy @imagoUtils.normalize(chr.name)
+            return normalizeName is name
+          exists = (if findName then true else false)
 
-        result.value = name
+        result = name
 
         defer.resolve(result)
 
       else
-        result.value = true
+        result = true
         defer.resolve result
 
     else
-      result.value = false
+      result = false
       defer.resolve result
 
     defer.promise
@@ -304,13 +306,13 @@ class imagoModel extends Service
 
     @isDuplicated(asset.name, rename).then (isDuplicated) =>
 
-      if isDuplicated.value and _.isBoolean isDuplicated.value
+      if isDuplicated and _.isBoolean isDuplicated
         defer.resolve('duplicated')
 
       else
 
-        if _.isString isDuplicated.value
-          asset.name = isDuplicated.value
+        if _.isString isDuplicated
+          asset.name = isDuplicated
 
         if order
           asset.order = order

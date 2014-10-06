@@ -810,7 +810,7 @@ var imagoModel,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 
 imagoModel = (function() {
-  function imagoModel($rootScope, $http, $location, $q, $filter, imagoUtils, _) {
+  function imagoModel($rootScope, $http, $location, $q, $filter, imagoUtils) {
     this.$rootScope = $rootScope;
     this.$http = $http;
     this.$location = $location;
@@ -1182,7 +1182,7 @@ imagoModel = (function() {
   };
 
   imagoModel.prototype.isDuplicated = function(name, rename) {
-    var assets, assetsChildren, defer, exists, i, original_name, result;
+    var assets, assetsChildren, defer, exists, findName, i, original_name, result;
     if (rename == null) {
       rename = false;
     }
@@ -1191,35 +1191,40 @@ imagoModel = (function() {
       defer.reject(name);
     }
     name = this.imagoUtils.normalize(name);
-    result = {
-      count: 0,
-      value: ''
-    };
-    assetsChildren = _.where(this.findChildren(this.currentCollection), {
-      name: name
-    });
-    result.count = assetsChildren.length;
-    if (assetsChildren.length > 0) {
+    result = void 0;
+    assetsChildren = _.find(this.currentCollection.assets, (function(_this) {
+      return function(chr) {
+        var normalizeName;
+        normalizeName = angular.copy(_this.imagoUtils.normalize(chr.name));
+        return normalizeName === name;
+      };
+    })(this));
+    if (assetsChildren) {
       if (rename) {
-        assets = this.findChildren(this.currentCollection);
+        assets = this.currentCollection.assets;
         i = 1;
         exists = true;
         original_name = name;
         while (exists) {
           name = "" + original_name + "_" + i;
           i++;
-          exists = (_.where(assets, {
-            name: name
-          }).length > 0 ? true : false);
+          findName = _.find(assets, (function(_this) {
+            return function(chr) {
+              var normalizeName;
+              normalizeName = angular.copy(_this.imagoUtils.normalize(chr.name));
+              return normalizeName === name;
+            };
+          })(this));
+          exists = (findName ? true : false);
         }
-        result.value = name;
+        result = name;
         defer.resolve(result);
       } else {
-        result.value = true;
+        result = true;
         defer.resolve(result);
       }
     } else {
-      result.value = false;
+      result = false;
       defer.resolve(result);
     }
     return defer.promise;
@@ -1237,11 +1242,11 @@ imagoModel = (function() {
     this.isDuplicated(asset.name, rename).then((function(_this) {
       return function(isDuplicated) {
         var assets;
-        if (isDuplicated.value && _.isBoolean(isDuplicated.value)) {
+        if (isDuplicated && _.isBoolean(isDuplicated)) {
           return defer.resolve('duplicated');
         } else {
-          if (_.isString(isDuplicated.value)) {
-            asset.name = isDuplicated.value;
+          if (_.isString(isDuplicated)) {
+            asset.name = isDuplicated;
           }
           if (order) {
             asset.order = order;
@@ -1261,7 +1266,7 @@ imagoModel = (function() {
 
 })();
 
-angular.module('imago.widgets.angular').service('imagoModel', ['$rootScope', '$http', '$location', '$q', '$filter', 'imagoUtils', '_', imagoModel]);
+angular.module('imago.widgets.angular').service('imagoModel', ['$rootScope', '$http', '$location', '$q', '$filter', 'imagoUtils', imagoModel]);
 
 var imagoSubmit,
   __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
@@ -1864,10 +1869,17 @@ Time = (function() {
 
 angular.module('imago.widgets.angular').filter('time', [Time]);
 
-var lodash;
+var lodash, _;
 
 lodash = angular.module('lodash', []);
 
-lodash.factory('_', function() {
-  return window._;
-});
+_ = (function() {
+  function _() {
+    return window._;
+  }
+
+  return _;
+
+})();
+
+angular.module('lodash').factory('_', [_]);
