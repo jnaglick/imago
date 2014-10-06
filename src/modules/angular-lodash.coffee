@@ -1,9 +1,6 @@
 lodash = angular.module 'lodash', []
 
-lodash.factory '_', () ->
-  return window._
+class _ extends Factory('lodash')
 
-# class _ extends Factory('lodash')
-
-#   constructor: () ->
-#     return window._
+  constructor: () ->
+    return window._
