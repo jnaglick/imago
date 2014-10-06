@@ -1875,17 +1875,10 @@ Time = (function() {
 
 angular.module('imago.widgets.angular').filter('time', [Time]);
 
-var lodash, _;
+var lodash;
 
 lodash = angular.module('lodash', []);
 
-_ = (function() {
-  function _() {
-    return window._;
-  }
-
-  return _;
-
-})();
-
-angular.module('lodash').factory('_', [_]);
+lodash.factory('_', function() {
+  return window._;
+});
