@@ -8,7 +8,7 @@ var App;
 
 App = (function() {
   function App() {
-    return ['ImagoWidgetsTemplates'];
+    return ['ImagoWidgetsTemplates', 'lodash'];
   }
 
   return App;
