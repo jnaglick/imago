@@ -1,6 +1,6 @@
 class imagoModel extends Service
   # I converted everything to the new syntax, but didn't refact the methods
-  constructor: (@$rootScope, @$http, @$location, @$q, @$filter, @imagoUtils) ->
+  constructor: (@$rootScope, @$http, @$location, @$q, @$filter, @imagoUtils, _) ->
 
   data: []
 
