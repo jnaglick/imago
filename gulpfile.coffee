@@ -23,7 +23,7 @@ exec            = require('child_process').exec
 # Defaults
 
 dest = 'dist'
-src = 'app'
+src = 'src'
 
 targets =
   js      : 'imago.widgets.angular.js'
@@ -32,9 +32,8 @@ targets =
 
 paths =
   coffee: [
-    "!node_modules/**/*.coffee"
-    "!gulpfile.coffee"
-    "**/*.coffee"
+    "index.coffee"
+    "#{src}/**/*.coffee"
   ]
   jade: [
     "!node_modules/**/*.jade"

@@ -272,8 +272,8 @@ imagoImage = (function() {
               return console.log('tried to render during rendering!!');
             }
             if (angular.isNumber(opts.width) && angular.isNumber(opts.height)) {
-              width = parseInt(opts.width) + 'px';
-              height = parseInt(opts.height) + 'px';
+              width = parseInt(opts.width);
+              height = parseInt(opts.height);
             } else if (opts.height === 'auto' && angular.isNumber(opts.width)) {
               height = parseInt(opts.width / opts.assetRatio);
               width = opts.width;
