@@ -159,7 +159,7 @@ class imagoImage extends Directive
 
           wrapperRatio = width / height
 
-          $log.log 'width, height, wrapperRatio, opts.assetRatio', width, height, wrapperRatio, opts.assetRatio
+          # $log.log 'width, height, wrapperRatio, opts.assetRatio', width, height, wrapperRatio, opts.assetRatio
           # debugger
 
           dpr = if opts.hires then Math.ceil($window.devicePixelRatio) or 1 else 1

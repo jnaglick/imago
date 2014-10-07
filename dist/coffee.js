@@ -286,7 +286,6 @@ imagoImage = (function() {
             }
             scope.status = 'preloading';
             wrapperRatio = width / height;
-            $log.log('width, height, wrapperRatio, opts.assetRatio', width, height, wrapperRatio, opts.assetRatio);
             dpr = opts.hires ? Math.ceil($window.devicePixelRatio) || 1 : 1;
             if (opts.sizemode === 'crop') {
               if (opts.assetRatio <= wrapperRatio) {
