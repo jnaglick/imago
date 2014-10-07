@@ -32,6 +32,7 @@ targets =
 
 paths =
   coffee: [
+    "index.coffee"
     "#{src}/**/*.coffee"
   ]
   jade: [

@@ -1,3 +1,16 @@
+var App;
+
+App = (function() {
+  function App() {
+    return ['ImagoWidgetsTemplates', 'lodash'];
+  }
+
+  return App;
+
+})();
+
+angular.module('imago.widgets.angular', App());
+
 var imagoPage;
 
 imagoPage = (function() {
