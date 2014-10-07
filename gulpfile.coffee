@@ -9,6 +9,8 @@ jade            = require 'gulp-jade'
 
 ngClassify      = require 'gulp-ng-classify'
 
+karma           = require('karma').server
+
 plumber         = require 'gulp-plumber'
 templateCache   = require 'gulp-angular-templatecache'
 uglify          = require 'gulp-uglify'
@@ -105,6 +107,12 @@ combineJs = (production = false) ->
   gulp.src sources
     .pipe concat targets.js
     .pipe gulp.dest dest
+
+gulp.task "karma test", ->
+  karma.start
+    configFile: 'tests/karma.conf.coffee'
+    singleRun: true
+  , done
 
 gulp.task "combine", combineJs
 
