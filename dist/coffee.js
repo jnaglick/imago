@@ -11,6 +11,22 @@ App = (function() {
 
 angular.module('imago.widgets.angular', App());
 
+module.exports = function(config) {
+  return config.set({
+    basePath: '../src',
+    frameworks: ['jasmine'],
+    browsers: ['Chrome', 'Safari', 'Firefox', 'Internet Explorer'],
+    preprocessors: {
+      '**/*.coffee': ['coffee']
+    },
+    coffeePreprocessor: {
+      options: {
+        bare: true
+      }
+    }
+  });
+};
+
 var imagoPage;
 
 imagoPage = (function() {
@@ -266,8 +282,8 @@ imagoImage = (function() {
               return console.log('tried to render during rendering!!');
             }
             if (angular.isNumber(opts.width) && angular.isNumber(opts.height)) {
-              width = parseInt(opts.width) + 'px';
-              height = parseInt(opts.height) + 'px';
+              width = parseInt(opts.width);
+              height = parseInt(opts.height);
             } else if (opts.height === 'auto' && angular.isNumber(opts.width)) {
               height = parseInt(opts.width / opts.assetRatio);
               width = opts.width;
@@ -286,6 +302,7 @@ imagoImage = (function() {
             }
             scope.status = 'preloading';
             wrapperRatio = width / height;
+            $log.log('width, height, wrapperRatio, opts.assetRatio', width, height, wrapperRatio, opts.assetRatio);
             dpr = opts.hires ? Math.ceil($window.devicePixelRatio) || 1 : 1;
             if (opts.sizemode === 'crop') {
               if (opts.assetRatio <= wrapperRatio) {

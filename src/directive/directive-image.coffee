@@ -118,8 +118,8 @@ class imagoImage extends Directive
           # use pvrovided dimentions.
           if angular.isNumber(opts.width) and angular.isNumber(opts.height)
             # $log.log 'fixed size', opts.width, opts.height
-            width  = parseInt(opts.width) + 'px'
-            height = parseInt(opts.height) + 'px'
+            width  = parseInt(opts.width)
+            height = parseInt(opts.height)
 
           #
           # # fit width
@@ -159,12 +159,13 @@ class imagoImage extends Directive
 
           wrapperRatio = width / height
 
-          # $log.log 'width, height, wrapperRatio, opts.assetRatio', opts.width, opts.height, wrapperRatio, assetRatio
+          $log.log 'width, height, wrapperRatio, opts.assetRatio', width, height, wrapperRatio, opts.assetRatio
           # debugger
 
           dpr = if opts.hires then Math.ceil($window.devicePixelRatio) or 1 else 1
 
           # $log.log 'width, height', width, height
+
           if opts.sizemode is 'crop'
             if opts.assetRatio <= wrapperRatio
               # $log.log 'crop full width'
