@@ -1,32 +1,3 @@
-var App;
-
-App = (function() {
-  function App() {
-    return ['ImagoWidgetsTemplates', 'lodash'];
-  }
-
-  return App;
-
-})();
-
-angular.module('imago.widgets.angular', App());
-
-module.exports = function(config) {
-  return config.set({
-    basePath: '../src',
-    frameworks: ['jasmine'],
-    browsers: ['Chrome', 'Safari', 'Firefox', 'Internet Explorer'],
-    preprocessors: {
-      '**/*.coffee': ['coffee']
-    },
-    coffeePreprocessor: {
-      options: {
-        bare: true
-      }
-    }
-  });
-};
-
 var imagoPage;
 
 imagoPage = (function() {

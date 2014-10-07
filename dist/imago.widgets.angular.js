@@ -4,35 +4,6 @@ $templateCache.put("/imagoWidgets/image-widget.html","<div in-view=\"visible = $
 $templateCache.put("/imagoWidgets/search-widget.html","<div class=\"search\"><input/><div class=\"clear\"></div></div>");
 $templateCache.put("/imagoWidgets/slider-widget.html","<div ng-class=\"elementStyle\"><div ng-transclude=\"ng-transclude\"></div><div ng-style=\"sliderStyle\" ng-swipe-left=\"goPrev()\" ng-swipe-right=\"goNext()\" class=\"nexslider {{confSlider.animation}}\"><div ng-show=\"confSlider.enablearrows &amp;&amp; loadedData\" ng-click=\"goPrev($event)\" class=\"prev\"></div><div ng-show=\"confSlider.enablearrows &amp;&amp; loadedData\" ng-click=\"goNext($event)\" stop-propagation=\"stop-propagation\" class=\"next\"></div><div ng-class=\"{\'active\': $index === currentIndex, \'nextslide\': $index === nextIndex, \'prevslide\': $index === prevIndex}\" ng-repeat=\"slide in slideSource\" ng-show=\"displaySlides($index)\" ng-switch=\"slide.kind\" class=\"slide\"><div imago-image=\"imago-image\" dimensions=\"dimensions\" source=\"slide\" sizemode=\"{{ $parent.confSlider.sizemode }}\" align=\" slide | meta: \'align\' \" ng-switch-when=\"Image\"></div><div imago-video=\"imago-video\" dimensions=\"dimensions\" source=\"slide\" sizemode=\"{{ $parent.confSlider.sizemode }}\" align=\" slide | meta: \'align\' \" ng-switch-when=\"Video\"></div></div></div></div>");
 $templateCache.put("/imagoWidgets/video-widget.html","<div ng-class=\"{loading: loading}\" in-view=\"visible = $inview\" visible=\"visible\" class=\"imagovideo {{wrapperStyle.backgroundPosition}} {{wrapperStyle.size}} {{wrapperStyle.sizemode}}\"><div ng-style=\"wrapperStyle\" ng-class=\"{playing: isPlaying}\" class=\"imagowrapper\"><a ng-hide=\"loading\" ng-click=\"togglePlay()\" ng-class=\"{playing: isPlaying}\" class=\"playbig fa fa-play\"></a><video ng-style=\"videoStyle\"><source ng-repeat=\"format in videoFormats\" src=\"{{format.src}}\" data-size=\"{{format.size}}\" data-codec=\"{{format.codec}}\" type=\"{{format.type}}\"/></video><div imago-controls=\"imago-controls\" ng-style=\"controlStyle\" ng-if=\"controls\" ng-show=\"hasPlayed\"></div></div></div>");}]);
-var App;
-
-App = (function() {
-  function App() {
-    return ['ImagoWidgetsTemplates', 'lodash'];
-  }
-
-  return App;
-
-})();
-
-angular.module('imago.widgets.angular', App());
-
-module.exports = function(config) {
-  return config.set({
-    basePath: '../src',
-    frameworks: ['jasmine'],
-    browsers: ['Chrome', 'Safari', 'Firefox', 'Internet Explorer'],
-    preprocessors: {
-      '**/*.coffee': ['coffee']
-    },
-    coffeePreprocessor: {
-      options: {
-        bare: true
-      }
-    }
-  });
-};
-
 var imagoPage;
 
 imagoPage = (function() {
