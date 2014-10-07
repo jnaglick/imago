@@ -19,7 +19,7 @@ div(ng-class="elementStyle")
           dimensions="dimensions",
           source="slide",
           sizemode="{{ $parent.confSlider.sizemode }}"
-          align="{{slide | meta: 'align'}}"
+          align=" slide | meta: 'align' "
           ng-switch-when="Image"
           )
 
@@ -27,6 +27,6 @@ div(ng-class="elementStyle")
           dimensions="dimensions",
           source="slide",
           sizemode="{{ $parent.confSlider.sizemode }}"
-          align="{{slide | meta: 'align'}}"
+          align=" slide | meta: 'align' "
           ng-switch-when="Video"
           )
