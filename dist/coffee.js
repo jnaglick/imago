@@ -603,11 +603,18 @@ imagoVideo = (function() {
         })(this)();
         sourcePromise.then((function(_this) {
           return function(data) {
-            var r, resolution;
+            var r, resolution, _ref;
             if (!data) {
               return;
             }
             self.source = data;
+            if (!self.source.fields.crop) {
+              if ((_ref = scope.confSlider) != null ? _ref.align : void 0) {
+                videoOpts.align = scope.confSlider.align;
+              }
+            } else {
+              videoOpts.align = self.source.fields.crop.value;
+            }
             if (angular.isString(data.resolution)) {
               r = data.resolution.split('x');
               resolution = {
