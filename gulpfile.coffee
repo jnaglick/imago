@@ -24,6 +24,7 @@ exec            = require('child_process').exec
 
 dest = 'dist'
 src = 'src'
+test = 'tmp/'
 
 targets =
   js      : 'imago.widgets.angular.js'
@@ -107,11 +108,56 @@ combineJs = (production = false) ->
     .pipe concat targets.js
     .pipe gulp.dest dest
 
-gulp.task "karma test", ->
-  karma.start
+gulp.task "karma", ->
+  YOUR_LOCALS = {}
+  gulp.src paths.coffee
+    .pipe plumber(
+      errorHandler: reportError
+    )
+    .pipe ngClassify(
+      appName: 'imago.widgets.angular'
+      animation:
+        format: 'camelCase'
+        prefix: ''
+      constant:
+        format: 'camelCase'
+        prefix: ''
+      controller:
+        format: 'camelCase'
+        suffix: ''
+      factory:
+        format: 'camelCase'
+      filter:
+        format: 'camelCase'
+      provider:
+        format: 'camelCase'
+        suffix: ''
+      service:
+        format: 'camelCase'
+        suffix: ''
+      value:
+        format: 'camelCase'
+      )
+    .pipe coffee(
+      bare: true
+    ).on('error', reportError)
+    .pipe gulp.dest test
+  gulp.src paths.jade
+    .pipe plumber(
+      errorHandler: reportError
+    )
+    .pipe jade({locals: YOUR_LOCALS}).on('error', reportError)
+    .pipe templateCache(
+      standalone: true
+      root: "/imagoWidgets/"
+      module: "ImagoWidgetsTemplates"
+    )
+    .pipe concat targets.jade
+    .pipe gulp.dest test
+  karma.start(
     configFile: 'tests/karma.conf.coffee'
     singleRun: true
-  , done
+    )
 
 gulp.task "combine", combineJs
 

@@ -15,8 +15,12 @@ module.exports = (config) ->
 
     # list of files / patterns to load in the browser
     files: [
-      '../src/**/*.coffee',
-      '../node_modules/angular-mocks/angular-mocks.js'
+      '../bower_components/angular/angular.js',
+      '../bower_components/angular-mocks/angular-mocks.js',
+      '../bower_components/angular-inview/angular-inview.js',
+      '../bower_components/lodash/dist/lodash.js',
+      '../tmp/*.js',
+      '../tmp/**/*.js',
       'unit/*.coffee'
     ]
 
@@ -25,18 +29,15 @@ module.exports = (config) ->
     exclude: [
     ]
 
-
-    # preprocess matching files before serving them to the browser
-    # available preprocessors: https://npmjs.org/browse/keyword/karma-preprocessor
-    preprocessors: {
-      '**/*.coffee': ['coffee']
-    }
-
-
     # test results reporter to use
     # possible values: 'dots', 'progress'
     # available reporters: https://npmjs.org/browse/keyword/karma-reporter
     reporters: ['progress']
+
+    # preprocess the coffeescript
+    preprocessors: {
+      '**/*.coffee': ['coffee']
+    }
 
 
     # web server port
@@ -63,7 +64,7 @@ module.exports = (config) ->
 
     # start these browsers
     # available browser launchers: https://npmjs.org/browse/keyword/karma-launcher
-    browsers: ['Chrome', 'IE', 'PhantomJS', 'Safari', 'Firefox']
+    browsers: ['Chrome', 'PhantomJS', 'Safari', 'Firefox']
 
 
     # Continuous Integration mode
