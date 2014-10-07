@@ -62,6 +62,13 @@ class imagoVideo extends Directive
           return unless data
           self.source = data
 
+          unless !!self.source.fields.crop
+            if scope.confSlider.align
+              videoOpts.align = scope.confSlider.align
+          else
+            videoOpts.align = self.source.fields.crop.value
+
+
           if angular.isString(data.resolution)
             r = data.resolution.split('x')
             resolution =

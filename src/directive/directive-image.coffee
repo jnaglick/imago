@@ -86,6 +86,12 @@ class imagoImage extends Directive
             element.remove()
             return
 
+          unless !!data.fields.crop
+            if scope.confSlider.align
+              opts.align = scope.confSlider.align
+          else
+            opts.align = data.fields.crop.value
+
           # console.log scope.visible
 
           scope.elementStyle = {} unless scope.elementStyle

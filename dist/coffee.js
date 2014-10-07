@@ -11,24 +11,6 @@ App = (function() {
 
 angular.module('imago.widgets.angular', App());
 
-var imagoPage;
-
-imagoPage = (function() {
-  function imagoPage($scope, $state, imagoModel) {
-    var path;
-    path = '/';
-    imagoModel.getData(path).then(function(response) {
-      $scope.collection = response[0];
-      return $scope.assets = imagoModel.getChildren(response[0]);
-    });
-  }
-
-  return imagoPage;
-
-})();
-
-angular.module('imago.widgets.angular').controller('imagoPage', ['$scope', '$state', 'imagoModel', imagoPage]);
-
 var imagoCompile;
 
 imagoCompile = (function() {
@@ -243,6 +225,13 @@ imagoImage = (function() {
             if (!(data != null ? data.serving_url : void 0)) {
               element.remove();
               return;
+            }
+            if (!data.fields.crop) {
+              if (scope.confSlider.align) {
+                opts.align = scope.confSlider.align;
+              }
+            } else {
+              opts.align = data.fields.crop.value;
             }
             if (!scope.elementStyle) {
               scope.elementStyle = {};
@@ -601,6 +590,13 @@ imagoVideo = (function() {
               return;
             }
             self.source = data;
+            if (!self.source.fields.crop) {
+              if (scope.confSlider.align) {
+                videoOpts.align = scope.confSlider.align;
+              }
+            } else {
+              videoOpts.align = self.source.fields.crop.value;
+            }
             if (angular.isString(data.resolution)) {
               r = data.resolution.split('x');
               resolution = {
@@ -1868,6 +1864,24 @@ Time = (function() {
 })();
 
 angular.module('imago.widgets.angular').filter('time', [Time]);
+
+var imagoPage;
+
+imagoPage = (function() {
+  function imagoPage($scope, $state, imagoModel) {
+    var path;
+    path = '/';
+    imagoModel.getData(path).then(function(response) {
+      $scope.collection = response[0];
+      return $scope.assets = imagoModel.getChildren(response[0]);
+    });
+  }
+
+  return imagoPage;
+
+})();
+
+angular.module('imago.widgets.angular').controller('imagoPage', ['$scope', '$state', 'imagoModel', imagoPage]);
 
 var lodash;
 
