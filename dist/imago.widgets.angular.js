@@ -2,7 +2,7 @@ angular.module("ImagoWidgetsTemplates", []).run(["$templateCache", function($tem
 $templateCache.put("/imagoWidgets/controls-widget.html","<div class=\"controls\"><a ng-click=\"togglePlay()\" ng-hide=\"isPlaying\" class=\"play fa fa-play\"></a><a ng-click=\"togglePlay()\" ng-show=\"isPlaying\" class=\"pause fa fa-pause\"></a><span class=\"time\">{{currentTime | time}}</span><span class=\"seekbar\"><input type=\"range\" ng-model=\"currentTime\" min=\"0\" max=\"{{duration}}\" ng-change=\"seek(currentTime)\" class=\"seek\"/></span><a ng-click=\"toggleSize()\" class=\"size\">{{wrapperStyle.size}}</a><span class=\"volume\"><span ng-click=\"volumeUp()\" class=\"fa fa-volume-up icon-volume-up\"></span><input type=\"range\" ng-model=\"volumeInput\" ng-change=\"onVolumeChange(volumeInput)\"/><span ng-click=\"volumeDown()\" class=\"fa fa-volume-down icon-volume-down\"></span></span><a ng-click=\"fullScreen()\" class=\"fullscreen fa fa-expand\"></a><a class=\"screen fa fa-compress\"></a></div>");
 $templateCache.put("/imagoWidgets/image-widget.html","<div in-view=\"visible = $inview\" ng-style=\"elementStyle\" ng-class=\"status\" visible=\"visible\" class=\"imagoimage imagowrapper\"><div ng-style=\"imageStyle\" class=\"imagox23\"></div><div class=\"loading\"><div class=\"spin\"></div><div class=\"spin2\"></div></div></div>");
 $templateCache.put("/imagoWidgets/search-widget.html","<div class=\"search\"><input/><div class=\"clear\"></div></div>");
-$templateCache.put("/imagoWidgets/slider-widget.html","<div ng-class=\"elementStyle\"><div ng-transclude=\"ng-transclude\"></div><div ng-style=\"sliderStyle\" ng-swipe-left=\"goPrev()\" ng-swipe-right=\"goNext()\" class=\"nexslider {{confSlider.animation}}\"><div ng-show=\"confSlider.enablearrows &amp;&amp; loadedData\" ng-click=\"goPrev($event)\" class=\"prev\"></div><div ng-show=\"confSlider.enablearrows &amp;&amp; loadedData\" ng-click=\"goNext($event)\" stop-propagation=\"stop-propagation\" class=\"next\"></div><div ng-class=\"{\'active\': $index === currentIndex, \'nextslide\': $index === nextIndex, \'prevslide\': $index === prevIndex}\" ng-repeat=\"slide in slideSource\" ng-show=\"displaySlides($index)\" ng-switch=\"slide.kind\" class=\"slide\"><div imago-image=\"imago-image\" dimensions=\"dimensions\" source=\"slide\" sizemode=\"{{ $parent.confSlider.sizemode }}\" ng-switch-when=\"Image\"></div><div imago-video=\"imago-video\" dimensions=\"dimensions\" source=\"slide\" sizemode=\"{{ $parent.confSlider.sizemode }}\" ng-switch-when=\"Video\"></div></div></div></div>");
+$templateCache.put("/imagoWidgets/slider-widget.html","<div ng-class=\"elementStyle\"><div ng-transclude=\"ng-transclude\"></div><div ng-style=\"sliderStyle\" ng-swipe-left=\"goPrev()\" ng-swipe-right=\"goNext()\" class=\"nexslider {{confSlider.animation}}\"><div ng-show=\"confSlider.enablearrows &amp;&amp; loadedData\" ng-click=\"goPrev($event)\" class=\"prev\"></div><div ng-show=\"confSlider.enablearrows &amp;&amp; loadedData\" ng-click=\"goNext($event)\" stop-propagation=\"stop-propagation\" class=\"next\"></div><div ng-class=\"{\'active\': $index === currentIndex, \'nextslide\': $index === nextIndex, \'prevslide\': $index === prevIndex}\" ng-repeat=\"slide in slideSource\" ng-show=\"displaySlides($index)\" ng-switch=\"slide.kind\" class=\"slide\"><div imago-image=\"imago-image\" dimensions=\"dimensions\" source=\"slide\" sizemode=\"{{ $parent.confSlider.sizemode }}\" align=\" slide | meta: \'align\' \" ng-switch-when=\"Image\"></div><div imago-video=\"imago-video\" dimensions=\"dimensions\" source=\"slide\" sizemode=\"{{ $parent.confSlider.sizemode }}\" align=\" slide | meta: \'align\' \" ng-switch-when=\"Video\"></div></div></div></div>");
 $templateCache.put("/imagoWidgets/video-widget.html","<div ng-class=\"{loading: loading}\" in-view=\"visible = $inview\" visible=\"visible\" class=\"imagovideo {{wrapperStyle.backgroundPosition}} {{wrapperStyle.size}} {{wrapperStyle.sizemode}}\"><div ng-style=\"wrapperStyle\" ng-class=\"{playing: isPlaying}\" class=\"imagowrapper\"><a ng-hide=\"loading\" ng-click=\"togglePlay()\" ng-class=\"{playing: isPlaying}\" class=\"playbig fa fa-play\"></a><video ng-style=\"videoStyle\"><source ng-repeat=\"format in videoFormats\" src=\"{{format.src}}\" data-size=\"{{format.size}}\" data-codec=\"{{format.codec}}\" type=\"{{format.type}}\"/></video><div imago-controls=\"imago-controls\" ng-style=\"controlStyle\" ng-if=\"controls\" ng-show=\"hasPlayed\"></div></div></div>");}]);
 var App;
 
@@ -245,10 +245,17 @@ imagoImage = (function() {
         })(this));
         render = (function(_this) {
           return function(data) {
-            var dpr, height, img, r, servingSize, servingUrl, width, wrapperRatio;
+            var dpr, height, img, r, servingSize, servingUrl, width, wrapperRatio, _ref;
             if (!(data != null ? data.serving_url : void 0)) {
               element.remove();
               return;
+            }
+            if (!data.fields.crop) {
+              if ((_ref = scope.confSlider) != null ? _ref.align : void 0) {
+                opts.align = scope.confSlider.align;
+              }
+            } else {
+              opts.align = data.fields.crop.value;
             }
             if (!scope.elementStyle) {
               scope.elementStyle = {};
@@ -265,20 +272,20 @@ imagoImage = (function() {
               return console.log('tried to render during rendering!!');
             }
             if (angular.isNumber(opts.width) && angular.isNumber(opts.height)) {
-              width = parseInt(opts.width);
-              height = parseInt(opts.height);
+              width = parseInt(opts.width) + 'px';
+              height = parseInt(opts.height) + 'px';
             } else if (opts.height === 'auto' && angular.isNumber(opts.width)) {
               height = parseInt(opts.width / opts.assetRatio);
               width = opts.width;
-              scope.elementStyle.height = parseInt(height);
+              scope.elementStyle.height = parseInt(height) + 'px';
             } else if (opts.width === 'auto' && angular.isNumber(opts.height)) {
               height = opts.height;
               width = opts.height * opts.assetRatio;
-              scope.elementStyle.width = parseInt(width);
+              scope.elementStyle.width = parseInt(width) + 'px';
             } else if (opts.width === 'auto' && opts.height === 'auto') {
               width = element[0].clientWidth;
               height = width / opts.assetRatio;
-              scope.elementStyle.height = parseInt(height);
+              scope.elementStyle.height = parseInt(height) + 'px';
             } else {
               width = element[0].clientWidth;
               height = element[0].clientHeight;

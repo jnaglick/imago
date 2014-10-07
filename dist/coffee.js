@@ -239,10 +239,17 @@ imagoImage = (function() {
         })(this));
         render = (function(_this) {
           return function(data) {
-            var dpr, height, img, r, servingSize, servingUrl, width, wrapperRatio;
+            var dpr, height, img, r, servingSize, servingUrl, width, wrapperRatio, _ref;
             if (!(data != null ? data.serving_url : void 0)) {
               element.remove();
               return;
+            }
+            if (!data.fields.crop) {
+              if ((_ref = scope.confSlider) != null ? _ref.align : void 0) {
+                opts.align = scope.confSlider.align;
+              }
+            } else {
+              opts.align = data.fields.crop.value;
             }
             if (!scope.elementStyle) {
               scope.elementStyle = {};
@@ -259,20 +266,20 @@ imagoImage = (function() {
               return console.log('tried to render during rendering!!');
             }
             if (angular.isNumber(opts.width) && angular.isNumber(opts.height)) {
-              width = parseInt(opts.width);
-              height = parseInt(opts.height);
+              width = parseInt(opts.width) + 'px';
+              height = parseInt(opts.height) + 'px';
             } else if (opts.height === 'auto' && angular.isNumber(opts.width)) {
               height = parseInt(opts.width / opts.assetRatio);
               width = opts.width;
-              scope.elementStyle.height = parseInt(height);
+              scope.elementStyle.height = parseInt(height) + 'px';
             } else if (opts.width === 'auto' && angular.isNumber(opts.height)) {
               height = opts.height;
               width = opts.height * opts.assetRatio;
-              scope.elementStyle.width = parseInt(width);
+              scope.elementStyle.width = parseInt(width) + 'px';
             } else if (opts.width === 'auto' && opts.height === 'auto') {
               width = element[0].clientWidth;
               height = width / opts.assetRatio;
-              scope.elementStyle.height = parseInt(height);
+              scope.elementStyle.height = parseInt(height) + 'px';
             } else {
               width = element[0].clientWidth;
               height = element[0].clientHeight;
