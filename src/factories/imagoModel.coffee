@@ -64,7 +64,7 @@ class imagoModel extends Service
         if _.isEqual(oldAsset, asset)
           return
         else if oldAsset and not _.isEqual(oldAsset, asset)
-          @update(asset)
+          # @update(asset)
         else
           if @imagoUtils.isBaseString(asset.serving_url)
             asset.base64 = true
@@ -75,7 +75,7 @@ class imagoModel extends Service
     if _.isEqual(oldData, data)
       return data
     else if oldData and not _.isEqual(oldData, data)
-      @update(data)
+      # @update(data)
       return data
     else
       data = _.omit data, 'assets' if data.items

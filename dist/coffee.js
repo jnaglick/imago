@@ -944,7 +944,7 @@ imagoModel = (function() {
           if (_.isEqual(oldAsset, asset)) {
 
           } else if (oldAsset && !_.isEqual(oldAsset, asset)) {
-            return _this.update(asset);
+
           } else {
             if (_this.imagoUtils.isBaseString(asset.serving_url)) {
               asset.base64 = true;
@@ -959,7 +959,6 @@ imagoModel = (function() {
     if (_.isEqual(oldData, data)) {
       return data;
     } else if (oldData && !_.isEqual(oldData, data)) {
-      this.update(data);
       return data;
     } else {
       if (data.items) {
