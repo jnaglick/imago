@@ -87,7 +87,7 @@ class imagoImage extends Directive
             return
 
           unless !!data.fields.crop
-            if scope.confSlider.align
+            if scope.confSlider?.align
               opts.align = scope.confSlider.align
           else
             opts.align = data.fields.crop.value
@@ -118,22 +118,22 @@ class imagoImage extends Directive
           # use pvrovided dimentions.
           if angular.isNumber(opts.width) and angular.isNumber(opts.height)
             # $log.log 'fixed size', opts.width, opts.height
-            width  = parseInt opts.width
-            height = parseInt opts.height
+            width  = parseInt(opts.width) + 'px'
+            height = parseInt(opts.height) + 'px'
 
           #
           # # fit width
           else if opts.height is 'auto' and angular.isNumber(opts.width)
             height =  parseInt opts.width / opts.assetRatio
             width  =  opts.width
-            scope.elementStyle.height = parseInt height
+            scope.elementStyle.height = parseInt(height) + 'px'
             #$log.log 'fit width', opts.width, opts.height
           #
           # # fit height
           else if opts.width is 'auto' and angular.isNumber(opts.height)
             height = opts.height
             width  = opts.height * opts.assetRatio
-            scope.elementStyle.width = parseInt width
+            scope.elementStyle.width = parseInt(width) + 'px'
             #$log.log 'fit height', opts.width, opts.height
           #
           # # we want dynamic resizing without css.
@@ -141,7 +141,7 @@ class imagoImage extends Directive
           else if opts.width is 'auto' and opts.height is 'auto'
             width  = element[0].clientWidth
             height = width / opts.assetRatio
-            scope.elementStyle.height = parseInt height
+            scope.elementStyle.height = parseInt(height) + 'px'
             # $log.log 'both auto', opts.width, opts.height, width, height, opts.assetRatio
           #
           # # width and height dynamic, needs to be defined via css

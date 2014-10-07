@@ -63,7 +63,7 @@ class imagoVideo extends Directive
           self.source = data
 
           unless !!self.source.fields.crop
-            if scope.confSlider.align
+            if scope.confSlider?.align
               videoOpts.align = scope.confSlider.align
           else
             videoOpts.align = self.source.fields.crop.value
