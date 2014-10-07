@@ -34,7 +34,7 @@ paths =
   coffee: [
     "!node_modules/**/*.coffee"
     "!gulpfile.coffee"
-    "**/*.coffee"
+    "#{src}/**/*.coffee"
   ]
   jade: [
     "!node_modules/**/*.jade"
