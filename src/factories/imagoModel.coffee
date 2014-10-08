@@ -130,14 +130,14 @@ class imagoModel extends Service
     @$rootScope.$broadcast 'assets:update', id
     return @data
 
-  move: (data) =>
-    # I'm not sure if thise will work as intended
-    # finds assets of a collection then reorders them
-    # and returns the reordered array
-    assets = @findChildren(data)
-    _.forEach assets, (asset) =>
-        order = _.indexOf assets, asset
-        assets.splice order, 1
+  # move: (data) =>
+  #   # I'm not sure if thise will work as intended
+  #   # finds assets of a collection then reorders them
+  #   # and returns the reordered array
+  #   assets = @findChildren(data)
+  #   _.forEach assets, (asset) =>
+  #       order = _.indexOf assets, asset
+  #       assets.splice order, 1
 
   paste: (assets, checkdups=true) =>
     defer = @$q.defer()

@@ -19,6 +19,10 @@ describe "Unit: imagoModel", ->
   beforeEach ->
       $httpBackend.when('POST', '/api/search').respond(responseData)
 
+  afterEach ->
+      while imagoModel.data.length > 0
+        imagoModel.data.pop()
+
   describe 'getData invoked', ->
     collection = {}
 
@@ -32,28 +36,34 @@ describe "Unit: imagoModel", ->
       expect(collection).toEqual(responseCollection)
 
   describe 'findChildren invoked', ->
-    collection   = {}
+    parent   = {}
     children     = {}
 
-    it "should return an array of children", ->
+    beforeEach ->
       imagoModel.getData('/test').then (response) ->
-        collection = response[0]
-        children = imagoModel.findChildren(collection)
-
+        parent = response[0]
+        children = imagoModel.findChildren(parent)
       $rootScope.$digest()
       $httpBackend.flush()
+
+    it "should return an array of children", ->
       expect(children.length).toEqual(10)
+      for child in children
+        expect(imagoModel.findParent(child)).toEqual(parent)
 
   describe 'findParent invoked', ->
-    child = {}
+    parent = {}
+    child  = {}
 
-    it "should return a collection's parent", ->
+    beforeEach ->
       imagoModel.getData('/test').then (response) ->
+        parent = response[0]
         child = imagoModel.findChildren(response[0])[6]
-
       $rootScope.$digest()
       $httpBackend.flush()
-      expect(imagoModel.findParent(child)).toEqual(responseCollection)
+
+    it "should return a collection's parent", ->
+      expect(imagoModel.findParent(child)).toEqual(parent)
 
   describe 'findByAttr invoked', ->
     collections = []
@@ -119,6 +129,10 @@ describe "Unit: imagoModel", ->
       expect(base64Asset.base64).toEqual(true)
 
     it "should add the assets to the data array", ->
+      imagoModel.add(collection)
+      imagoModel.add(asset)
+      imagoModel.add(base64Asset)
+
       expect(imagoModel.data.length).toEqual(14)
 
     it "should broadcast asset:update and pass in the asset", ->
@@ -146,6 +160,7 @@ describe "Unit: imagoModel", ->
       imagoModel.update(collection)
       expect(imagoModel.find(id)['name']).toEqual(collection['name'])
       expect($rootScope.$broadcast).toHaveBeenCalledWith('assets:update', collection)
+      expect(imagoModel.data.length).toEqual(11)
 
       for child in children
         child['name'] = 'test'
@@ -154,12 +169,53 @@ describe "Unit: imagoModel", ->
       for child, i in imagoModel.findChildren(collection)
         expect(child['name']).toEqual(children[i]['name'])
       expect($rootScope.$broadcast).toHaveBeenCalledWith('assets:update', children)
+      expect(imagoModel.data.length).toEqual(11)
 
 
+  describe 'delete invoked', ->
+    id = ''
+
+    beforeEach ->
+      imagoModel.getData('/test').then (response) ->
+        id = imagoModel.findChildren(response[0])[4]['_id']
+      $rootScope.$digest()
+      $httpBackend.flush()
+
+    it 'should delete the asset with specified id', ->
+      spyOn($rootScope, "$broadcast")
+      imagoModel.delete(id)
+      expect(imagoModel.data.length).toEqual(10)
+      expect(imagoModel.findIdx(id)).toEqual(-1)
+      expect($rootScope.$broadcast).toHaveBeenCalledWith('assets:update', id)
+
+  # describe 'paste invoked', ->
 
 
+  describe 'batchAddRemove invoked', ->
+    parent   = {}
+    children = []
 
+    beforeEach ->
+      imagoModel.getData('/test').then (response) ->
+        parent = response[0]
+        children = imagoModel.findChildren(response[0])
+      $rootScope.$digest()
+      $httpBackend.flush()
 
+    it 'should remove each asset then add them again', ->
+      spyOn($rootScope, "$broadcast")
+      expect(child['kind']).toEqual('Image') for child in children
+      child['kind'] = 'Video' for child in children
+      imagoModel.batchAddRemove(children)
+      expect(imagoModel.data[0]['_id']).toEqual(parent['_id'])
+      expect(imagoModel.data.length).toEqual(11)
+      expect(child['kind']).toEqual('Video') for child in imagoModel.findChildren(parent)
+      expect($rootScope.$broadcast).toHaveBeenCalledWith('assets:update', children)
 
+  describe 'reorder invoked', ->
 
+    beforeEach ->
+      imagoModel.getData('/test').then (response) ->
+        parent = response[0]
+        children = imagoModel.findChildren(parent)
 
