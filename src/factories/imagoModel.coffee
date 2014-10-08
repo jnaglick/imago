@@ -1,13 +1,13 @@
 class imagoModel extends Service
   # I converted everything to the new syntax, but didn't refact the methods
-  constructor: (@$rootScope, @$http, @$location, @$q, @$filter, @imagoUtils) ->
+  constructor: (@$rootScope, @$http, @$location, @$q, @imagoUtils) ->
 
   data: []
 
   currentCollection: undefined
 
   getSearchUrl: ->
-    if (data is 'online' and debug)
+    if (data? is 'online' and debug?)
       return "#{window.location.protocol}//imagoapi-nex9.rhcloud.com/api/search"
     else
       return "/api/search"
@@ -78,7 +78,7 @@ class imagoModel extends Service
       # @update(data)
       return data
     else
-      data = _.omit data, 'assets' if data.items
+      data = _.omit data, 'assets' if data.assets
       @data.push data
       return data
 
