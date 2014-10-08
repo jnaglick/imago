@@ -27,10 +27,14 @@ class imagoSlider extends Directive
           $scope.confSlider[key] = value
 
       link: (scope, element, attrs) ->
+
         self = {}
 
         angular.forEach attrs, (value, key) ->
           scope.confSlider[key] = value
+
+        scope.$on 'slider:change', (e, index) ->
+          scope.setCurrentSlideIndex index
 
         sourcePromise = do () =>
           deffered = $q.defer()
