@@ -126,6 +126,39 @@ describe "Unit: imagoModel", ->
       imagoModel.add(asset)
       expect($rootScope.$broadcast).toHaveBeenCalledWith('assets:update', asset)
 
+  describe 'update invoked', ->
+    collection = {}
+    children = []
+
+    beforeEach ->
+      imagoModel.getData('/test').then (response) ->
+        collection = response[0]
+        children   = imagoModel.findChildren(collection)
+      $rootScope.$digest()
+      $httpBackend.flush()
+      # child['name'] = 'Test Name' for child in children
+
+    it 'should update the name value on each collection', ->
+      spyOn($rootScope, "$broadcast")
+
+      collection['name'] = 'test'
+      id = collection['_id']
+      imagoModel.update(collection)
+      expect(imagoModel.find(id)['name']).toEqual(collection['name'])
+      expect($rootScope.$broadcast).toHaveBeenCalledWith('assets:update', collection)
+
+      for child in children
+        child['name'] = 'test'
+      imagoModel.update(children)
+
+      for child, i in imagoModel.findChildren(collection)
+        expect(child['name']).toEqual(children[i]['name'])
+      expect($rootScope.$broadcast).toHaveBeenCalledWith('assets:update', children)
+
+
+
+
+
 
 
 
