@@ -1,13 +1,13 @@
 class imagoModel extends Service
   # I converted everything to the new syntax, but didn't refact the methods
-  constructor: (@$rootScope, @$http, @$location, @$q, @imagoUtils) ->
+  constructor: (@$rootScope, @$http, @$location, @$q, @$filter, @imagoUtils) ->
 
   data: []
 
   currentCollection: undefined
 
   getSearchUrl: ->
-    if (data? is 'online' and debug?)
+    if (data is 'online' and debug)
       return "#{window.location.protocol}//imagoapi-nex9.rhcloud.com/api/search"
     else
       return "/api/search"
@@ -64,7 +64,7 @@ class imagoModel extends Service
         if _.isEqual(oldAsset, asset)
           return
         else if oldAsset and not _.isEqual(oldAsset, asset)
-          # @update(asset)
+          @update(asset)
         else
           if @imagoUtils.isBaseString(asset.serving_url)
             asset.base64 = true
@@ -75,10 +75,10 @@ class imagoModel extends Service
     if _.isEqual(oldData, data)
       return data
     else if oldData and not _.isEqual(oldData, data)
-      # @update(data)
+      @update(data)
       return data
     else
-      data = _.omit data, 'assets' if data.assets
+      data = _.omit data, 'assets' if data.items
       @data.push data
       return data
 
@@ -107,7 +107,7 @@ class imagoModel extends Service
     @data.unshift asset
     @$rootScope.$broadcast 'assets:update', asset
 
-  update: (data, attribute = '_id') =>
+  update: (data, attribute = '_id', update="true") =>
     if _.isPlainObject(data)
       return unless data[attribute]
       delete data.assets if data.assets
@@ -120,7 +120,7 @@ class imagoModel extends Service
         idx = @findIdx(asset[attribute], attribute)
         _.assign(@data[idx], asset)
 
-    @$rootScope.$broadcast 'assets:update', data
+    @$rootScope.$broadcast('assets:update', data) if update
 
 
   delete: (id) =>
@@ -130,14 +130,14 @@ class imagoModel extends Service
     @$rootScope.$broadcast 'assets:update', id
     return @data
 
-  # move: (data) =>
-  #   # I'm not sure if thise will work as intended
-  #   # finds assets of a collection then reorders them
-  #   # and returns the reordered array
-  #   assets = @findChildren(data)
-  #   _.forEach assets, (asset) =>
-  #       order = _.indexOf assets, asset
-  #       assets.splice order, 1
+  move: (data) =>
+    # I'm not sure if thise will work as intended
+    # finds assets of a collection then reorders them
+    # and returns the reordered array
+    assets = @findChildren(data)
+    _.forEach assets, (asset) =>
+        order = _.indexOf assets, asset
+        assets.splice order, 1
 
   paste: (assets, checkdups=true) =>
     defer = @$q.defer()

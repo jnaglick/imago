@@ -827,11 +827,12 @@ var imagoModel,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 
 imagoModel = (function() {
-  function imagoModel($rootScope, $http, $location, $q, imagoUtils) {
+  function imagoModel($rootScope, $http, $location, $q, $filter, imagoUtils) {
     this.$rootScope = $rootScope;
     this.$http = $http;
     this.$location = $location;
     this.$q = $q;
+    this.$filter = $filter;
     this.imagoUtils = imagoUtils;
     this.prepareCreation = __bind(this.prepareCreation, this);
     this.isDuplicated = __bind(this.isDuplicated, this);
@@ -841,6 +842,7 @@ imagoModel = (function() {
     this.reorder = __bind(this.reorder, this);
     this.batchAddRemove = __bind(this.batchAddRemove, this);
     this.paste = __bind(this.paste, this);
+    this.move = __bind(this.move, this);
     this["delete"] = __bind(this["delete"], this);
     this.update = __bind(this.update, this);
     this.add = __bind(this.add, this);
@@ -858,7 +860,7 @@ imagoModel = (function() {
   imagoModel.prototype.currentCollection = void 0;
 
   imagoModel.prototype.getSearchUrl = function() {
-    if ((typeof data !== "undefined" && data !== null) === 'online' && (typeof debug !== "undefined" && debug !== null)) {
+    if (data === 'online' && debug) {
       return "" + window.location.protocol + "//imagoapi-nex9.rhcloud.com/api/search";
     } else {
       return "/api/search";
@@ -945,7 +947,7 @@ imagoModel = (function() {
           if (_.isEqual(oldAsset, asset)) {
 
           } else if (oldAsset && !_.isEqual(oldAsset, asset)) {
-
+            return _this.update(asset);
           } else {
             if (_this.imagoUtils.isBaseString(asset.serving_url)) {
               asset.base64 = true;
@@ -960,9 +962,10 @@ imagoModel = (function() {
     if (_.isEqual(oldData, data)) {
       return data;
     } else if (oldData && !_.isEqual(oldData, data)) {
+      this.update(data);
       return data;
     } else {
-      if (data.assets) {
+      if (data.items) {
         data = _.omit(data, 'assets');
       }
       this.data.push(data);
@@ -1012,10 +1015,13 @@ imagoModel = (function() {
     return this.$rootScope.$broadcast('assets:update', asset);
   };
 
-  imagoModel.prototype.update = function(data, attribute) {
+  imagoModel.prototype.update = function(data, attribute, update) {
     var asset, idx, _i, _len;
     if (attribute == null) {
       attribute = '_id';
+    }
+    if (update == null) {
+      update = "true";
     }
     if (_.isPlainObject(data)) {
       if (!data[attribute]) {
@@ -1036,7 +1042,9 @@ imagoModel = (function() {
         _.assign(this.data[idx], asset);
       }
     }
-    return this.$rootScope.$broadcast('assets:update', data);
+    if (update) {
+      return this.$rootScope.$broadcast('assets:update', data);
+    }
   };
 
   imagoModel.prototype["delete"] = function(id) {
@@ -1048,6 +1056,18 @@ imagoModel = (function() {
     });
     this.$rootScope.$broadcast('assets:update', id);
     return this.data;
+  };
+
+  imagoModel.prototype.move = function(data) {
+    var assets;
+    assets = this.findChildren(data);
+    return _.forEach(assets, (function(_this) {
+      return function(asset) {
+        var order;
+        order = _.indexOf(assets, asset);
+        return assets.splice(order, 1);
+      };
+    })(this));
   };
 
   imagoModel.prototype.paste = function(assets, checkdups) {
@@ -1268,7 +1288,7 @@ imagoModel = (function() {
 
 })();
 
-angular.module('imago.widgets.angular').service('imagoModel', ['$rootScope', '$http', '$location', '$q', 'imagoUtils', imagoModel]);
+angular.module('imago.widgets.angular').service('imagoModel', ['$rootScope', '$http', '$location', '$q', '$filter', 'imagoUtils', imagoModel]);
 
 var imagoSubmit,
   __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
