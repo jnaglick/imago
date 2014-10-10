@@ -190,7 +190,6 @@ describe "Unit: imagoModel", ->
 
   # describe 'paste invoked', ->
 
-
   describe 'batchAddRemove invoked', ->
     parent   = {}
     children = []
