@@ -5,6 +5,8 @@ describe "Unit: imagoModel", ->
   $rootScope   = {}
   $httpBackend = {}
   imagoModel   = {}
+  window.data   = false
+  window.online = false
 
   # Mock Application to allow us to inject our own dependencies
   beforeEach ->
@@ -33,7 +35,7 @@ describe "Unit: imagoModel", ->
       $rootScope.$digest()
       $httpBackend.flush()
       expect(imagoModel.data.length).toEqual(11)
-      expect(collection).toEqual(responseCollection)
+      expect(collection.assets).toBeUndefined()
 
   describe 'findChildren invoked', ->
     parent   = {}

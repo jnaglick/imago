@@ -73,12 +73,13 @@ class imagoModel extends Service
           @data.push asset
 
     if _.isEqual(oldData, data)
+      data = _.omit data, 'assets' if data.assets
       return data
     else if oldData and not _.isEqual(oldData, data)
       @update(data)
       return data
     else
-      data = _.omit data, 'assets' if data.items
+      data = _.omit data, 'assets' if data.assets
       @data.push data
       return data
 
