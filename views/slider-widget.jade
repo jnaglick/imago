@@ -7,7 +7,8 @@ div(ng-class="elementStyle")
             )
     //- .debug {{slideSource | json}}
     .prev(ng-show="confSlider.enablearrows && loadedData",
-          ng-click="goPrev($event)")
+          ng-click="goPrev($event)"
+          stop-propagation)
     .next(ng-show="confSlider.enablearrows && loadedData",
           ng-click="goNext($event)"
           stop-propagation)

@@ -1,4 +1,4 @@
-.controls
+.controls(stop-propagation)
   a.video-play.fa.fa-play(ng-click="togglePlay()", ng-hide="isPlaying")
   a.video-pause.fa.fa-pause(ng-click="togglePlay()", ng-show="isPlaying")
   span.video-time {{currentTime | time}}

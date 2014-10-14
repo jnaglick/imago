@@ -104,9 +104,6 @@ imagoControls = (function() {
         });
       },
       link: function(scope, element, attrs) {
-        element.bind('swipe', function(e) {
-          return e.stopPropagation();
-        });
         scope.seek = function(value) {
           return scope.player.currentTime = value;
         };
@@ -822,7 +819,13 @@ StopPropagation = (function() {
         element.bind('click', function(e) {
           return e.stopPropagation();
         });
-        return element.bind('dblclick', function(e) {
+        element.bind('dblclick', function(e) {
+          return e.stopPropagation();
+        });
+        element.bind('mousedown', function(e) {
+          return e.stopPropagation();
+        });
+        return element.bind('mouseup', function(e) {
           return e.stopPropagation();
         });
       }
