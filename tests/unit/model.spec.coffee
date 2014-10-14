@@ -214,9 +214,17 @@ describe "Unit: imagoModel", ->
       expect($rootScope.$broadcast).toHaveBeenCalledWith('assets:update', children)
 
   describe 'reorder invoked', ->
+    parent = {}
+    children = []
+    assets = []
 
     beforeEach ->
       imagoModel.getData('/test').then (response) ->
-        parent = response[0]
+        parent   = response[0]
         children = imagoModel.findChildren(parent)
+        assets   = _.shuffle(children)
 
+    it 'should reorder the assets in @data', ->
+      spyOn($rootScope, "$broadcast")
+      imagoModel.reorder(assets)
+      expect($rootScope.$broadcast).toHaveBeenCalledWith('assets:update', assets)

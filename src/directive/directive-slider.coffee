@@ -83,10 +83,12 @@ class imagoSlider extends Directive
         scope.goNext = ($event) ->
           scope.currentIndex = if (scope.currentIndex < scope.slideSource.length - 1) then ++scope.currentIndex else 0
           getSiblings()
+          scope.$broadcast 'slide'
 
         scope.goPrev = ($event) ->
           scope.currentIndex = if (scope.currentIndex > 0) then --scope.currentIndex else scope.slideSource.length - 1
           getSiblings()
+          scope.$broadcast 'slide'
 
         getSiblings = () ->
           scope.nextIndex = if scope.currentIndex is scope.sliderLength then 0 else scope.currentIndex + 1

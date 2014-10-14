@@ -110,6 +110,9 @@ imagoControls = (function() {
         });
       },
       link: function(scope, element, attrs) {
+        element.bind('swipe', function(e) {
+          return e.stopPropagation();
+        });
         scope.seek = function(value) {
           return scope.player.currentTime = value;
         };
@@ -499,11 +502,13 @@ imagoSlider = (function() {
         };
         scope.goNext = function($event) {
           scope.currentIndex = scope.currentIndex < scope.slideSource.length - 1 ? ++scope.currentIndex : 0;
-          return getSiblings();
+          getSiblings();
+          return scope.$broadcast('slide');
         };
         scope.goPrev = function($event) {
           scope.currentIndex = scope.currentIndex > 0 ? --scope.currentIndex : scope.slideSource.length - 1;
-          return getSiblings();
+          getSiblings();
+          return scope.$broadcast('slide');
         };
         getSiblings = function() {
           scope.nextIndex = scope.currentIndex === scope.sliderLength ? 0 : scope.currentIndex + 1;
@@ -794,8 +799,15 @@ imagoVideo = (function() {
           }
           return scope.videoFormats.reverse();
         };
-        return scope.$on('resizelimit', function() {
+        scope.$on('resizelimit', function() {
           return scope.$apply(resize);
+        });
+        return scope.$on('slide', function() {
+          if (!scope.isPlaying) {
+            return;
+          }
+          scope.isPlaying = false;
+          return scope.player.pause();
         });
       }
     };
@@ -966,12 +978,15 @@ imagoModel = (function() {
       })(this));
     }
     if (_.isEqual(oldData, data)) {
+      if (data.assets) {
+        data = _.omit(data, 'assets');
+      }
       return data;
     } else if (oldData && !_.isEqual(oldData, data)) {
       this.update(data);
       return data;
     } else {
-      if (data.items) {
+      if (data.assets) {
         data = _.omit(data, 'assets');
       }
       this.data.push(data);

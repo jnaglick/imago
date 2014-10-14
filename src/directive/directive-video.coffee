@@ -216,4 +216,9 @@ class imagoVideo extends Directive
         # we should only do this if the video changes actually size
         scope.$on 'resizelimit', () ->
           scope.$apply( resize )
+
+        scope.$on 'slide', () ->
+          return unless scope.isPlaying
+          scope.isPlaying = false
+          scope.player.pause()
     }

@@ -20,6 +20,8 @@ class imagoControls extends Directive
           $scope.$apply()
 
       link: (scope, element, attrs) ->
+        element.bind 'swipe', (e) ->
+          e.stopPropagation()
 
         scope.seek = (value) ->
           scope.player.currentTime = value
