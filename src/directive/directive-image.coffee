@@ -1,7 +1,7 @@
 
 class imagoImage extends Directive
 
-  constructor: ($window, $q, $log, imagoUtils) ->
+  constructor: ($window, $timeout, $q, $log, imagoUtils) ->
 
     return {
       replace: true
@@ -9,16 +9,10 @@ class imagoImage extends Directive
       templateUrl: '/imagoWidgets/image-widget.html'
       controller: ($scope, $element, $attrs) ->
 
-        console.log 'elemenet 1', $element[0].clientWidth
-
         $scope.status = 'loading'
         $scope.imageStyle = {}
 
       link: (scope, element, attrs) ->
-
-        # console.log 'elemenet 2', element, element[0].clientWidth, element[0].offsetWidth, element[0].scrollWidth
-
-        console.log 'computed',  element[0].clientWidth, window.getComputedStyle(element[0])
 
         self = {}
 
@@ -49,7 +43,7 @@ class imagoImage extends Directive
         opts.initialWidth  = opts.width
         opts.initialHeight = opts.height
 
-        if opts.lazy
+        unless opts.lazy isnt false
           visiblePromise = do () =>
             deffered = $q.defer()
             self.visibleFunc = scope.$watch attrs['visible'], (value) =>
@@ -218,7 +212,7 @@ class imagoImage extends Directive
             scope.imageStyle.height = "#{parseInt height, 10}px"
 
 
-          if opts.lazy
+          unless opts.lazy isnt false
             visiblePromise.then (value) =>
               self.visibleFunc()
               img = angular.element('<img>')
