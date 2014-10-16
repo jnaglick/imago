@@ -17,6 +17,42 @@ class imagoModel extends Service
     params = @formatQuery query
     return @$http.post(@getSearchUrl(), angular.toJson(params))
 
+  getLocalData: (query) =>
+    defer = @$q.defer()
+
+    for type, index in query
+      for key, value of type
+        if key is 'collection'
+          query[index] = 'path': value
+          path = value
+
+        else if key is 'kind'
+          query[index] = 'metakind': value
+
+    if path
+      asset = @find('path' : path[0])
+
+      if asset
+        if asset.count? isnt 0
+          asset.assets = @findChildren(asset)
+
+          if asset.assets.length isnt asset.count
+            defer.reject query
+
+          defer.resolve asset
+
+        else
+          defer.resolve asset
+
+      else
+        defer.reject query
+        # @findChildren(asset)
+
+    else
+      defer.reject query
+
+    defer.promise
+
   getData: (query, cache) =>
     query = @$location.path() unless query
     if angular.isString query
@@ -25,19 +61,24 @@ class imagoModel extends Service
 
     query = @imagoUtils.toArray query
 
-    promises = []
+    @getLocalData(query).then (result) =>
+      return [result]
 
-    _.forEach query, (value) =>
-      promises.push @search(value).then (response) =>
-        return unless response.data
-        response.data.page = value.page if value.page
-        @create response.data
+    , (query) =>
+
+      promises = []
+
+      _.forEach query, (value) =>
+        promises.push @search(value).then (response) =>
+          return unless response.data
+          response.data.page = value.page if value.page
+          @create response.data
 
 
-    @$q.all(promises).then (data) =>
-      # What does data equal here.
-      data = _.flatten data
-      return data
+      @$q.all(promises).then (data) =>
+
+        data = _.flatten data
+        return data
 
   formatQuery: (query) ->
     querydict = {}
@@ -57,10 +98,10 @@ class imagoModel extends Service
     querydict
 
   create: (data) =>
-    oldData = @find(data._id) or false
+    oldData = @find('id' : data._id) or false
     if data.assets
       _.forEach data.assets, (asset) =>
-        oldAsset = @find(asset._id) or false
+        oldAsset = @find('id' : asset._id) or false
         if _.isEqual(oldAsset, asset)
           return
         else if oldAsset and not _.isEqual(oldAsset, asset)
@@ -79,7 +120,7 @@ class imagoModel extends Service
       @update(data)
       return data
     else
-      data = _.omit data, 'assets' if data.assets
+      data = _.omit data, 'assets' if data.kind is 'Collection'
       @data.push data
       return data
 
@@ -92,13 +133,11 @@ class imagoModel extends Service
   findByAttr: (attr) =>
     _.where @data, attr
 
-  find: (id) =>
-    _.find @data, '_id' : id
+  find: (options = {}) =>
+    _.find @data, options
 
-  findIdx: (id, attribute = '_id') =>
-    parameter = {}
-    parameter[attribute] = id
-    _.findIndex @data, parameter
+  findIdx: (options = {}) =>
+    _.findIndex @data, options
 
   add: (asset) =>
     if @imagoUtils.isBaseString(asset.serving_url)
@@ -177,7 +216,7 @@ class imagoModel extends Service
   reorder: (assets) =>
 
     for asset in assets
-      idxAsset = @findIdx asset._id
+      idxAsset = @findIdx 'id': asset._id
       idx = (if idxAsset > idx then idx else idxAsset)
 
     args = [idx, assets.length].concat(assets)
@@ -238,7 +277,7 @@ class imagoModel extends Service
   batchChange: (assets, save = false) =>
 
     for asset in assets
-      idx = @findIdx(asset._id)
+      idx = @findIdx('id' : asset.id)
 
       return if idx is -1
 

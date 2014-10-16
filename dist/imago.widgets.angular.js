@@ -890,6 +890,7 @@ imagoModel = (function() {
     this.findChildren = __bind(this.findChildren, this);
     this.create = __bind(this.create, this);
     this.getData = __bind(this.getData, this);
+    this.getLocalData = __bind(this.getLocalData, this);
   }
 
   imagoModel.prototype.data = [];
@@ -910,8 +911,49 @@ imagoModel = (function() {
     return this.$http.post(this.getSearchUrl(), angular.toJson(params));
   };
 
+  imagoModel.prototype.getLocalData = function(query) {
+    var asset, defer, index, key, path, type, value, _i, _len;
+    defer = this.$q.defer();
+    for (index = _i = 0, _len = query.length; _i < _len; index = ++_i) {
+      type = query[index];
+      for (key in type) {
+        value = type[key];
+        if (key === 'collection') {
+          query[index] = {
+            'path': value
+          };
+          path = value;
+        } else if (key === 'kind') {
+          query[index] = {
+            'metakind': value
+          };
+        }
+      }
+    }
+    if (path) {
+      asset = this.find({
+        'path': path[0]
+      });
+      if (asset) {
+        if ((asset.count != null) !== 0) {
+          asset.assets = this.findChildren(asset);
+          if (asset.assets.length !== asset.count) {
+            defer.reject(query);
+          }
+          defer.resolve(asset);
+        } else {
+          defer.resolve(asset);
+        }
+      } else {
+        defer.reject(query);
+      }
+    } else {
+      defer.reject(query);
+    }
+    return defer.promise;
+  };
+
   imagoModel.prototype.getData = function(query, cache) {
-    var promises;
     if (!query) {
       query = this.$location.path();
     }
@@ -923,24 +965,29 @@ imagoModel = (function() {
       ];
     }
     query = this.imagoUtils.toArray(query);
-    promises = [];
-    _.forEach(query, (function(_this) {
-      return function(value) {
-        return promises.push(_this.search(value).then(function(response) {
-          if (!response.data) {
-            return;
-          }
-          if (value.page) {
-            response.data.page = value.page;
-          }
-          return _this.create(response.data);
-        }));
+    return this.getLocalData(query).then((function(_this) {
+      return function(result) {
+        return [result];
       };
-    })(this));
-    return this.$q.all(promises).then((function(_this) {
-      return function(data) {
-        data = _.flatten(data);
-        return data;
+    })(this), (function(_this) {
+      return function(query) {
+        var promises;
+        promises = [];
+        _.forEach(query, function(value) {
+          return promises.push(_this.search(value).then(function(response) {
+            if (!response.data) {
+              return;
+            }
+            if (value.page) {
+              response.data.page = value.page;
+            }
+            return _this.create(response.data);
+          }));
+        });
+        return _this.$q.all(promises).then(function(data) {
+          data = _.flatten(data);
+          return data;
+        });
       };
     })(this));
   };
@@ -975,12 +1022,16 @@ imagoModel = (function() {
 
   imagoModel.prototype.create = function(data) {
     var oldData;
-    oldData = this.find(data._id) || false;
+    oldData = this.find({
+      'id': data._id
+    }) || false;
     if (data.assets) {
       _.forEach(data.assets, (function(_this) {
         return function(asset) {
           var oldAsset;
-          oldAsset = _this.find(asset._id) || false;
+          oldAsset = _this.find({
+            'id': asset._id
+          }) || false;
           if (_.isEqual(oldAsset, asset)) {
 
           } else if (oldAsset && !_.isEqual(oldAsset, asset)) {
@@ -1005,7 +1056,7 @@ imagoModel = (function() {
       this.update(data);
       return data;
     } else {
-      if (data.assets) {
+      if (data.kind === 'Collection') {
         data = _.omit(data, 'assets');
       }
       this.data.push(data);
@@ -1029,20 +1080,18 @@ imagoModel = (function() {
     return _.where(this.data, attr);
   };
 
-  imagoModel.prototype.find = function(id) {
-    return _.find(this.data, {
-      '_id': id
-    });
+  imagoModel.prototype.find = function(options) {
+    if (options == null) {
+      options = {};
+    }
+    return _.find(this.data, options);
   };
 
-  imagoModel.prototype.findIdx = function(id, attribute) {
-    var parameter;
-    if (attribute == null) {
-      attribute = '_id';
+  imagoModel.prototype.findIdx = function(options) {
+    if (options == null) {
+      options = {};
     }
-    parameter = {};
-    parameter[attribute] = id;
-    return _.findIndex(this.data, parameter);
+    return _.findIndex(this.data, options);
   };
 
   imagoModel.prototype.add = function(asset) {
@@ -1158,7 +1207,9 @@ imagoModel = (function() {
     var args, asset, idx, idxAsset, _i, _len;
     for (_i = 0, _len = assets.length; _i < _len; _i++) {
       asset = assets[_i];
-      idxAsset = this.findIdx(asset._id);
+      idxAsset = this.findIdx({
+        'id': asset._id
+      });
       idx = (idxAsset > idx ? idx : idxAsset);
     }
     args = [idx, assets.length].concat(assets);
@@ -1220,7 +1271,9 @@ imagoModel = (function() {
     }
     for (_i = 0, _len = assets.length; _i < _len; _i++) {
       asset = assets[_i];
-      idx = this.findIdx(asset._id);
+      idx = this.findIdx({
+        'id': asset.id
+      });
       if (idx === -1) {
         return;
       }
