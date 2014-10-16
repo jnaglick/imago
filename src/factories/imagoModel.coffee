@@ -39,10 +39,14 @@ class imagoModel extends Service
 
     if path
 
-      if _.isString path
+      if path[0] is '/'
+        asset = @find('name' : path[0])
+
+      else if _.isString path
         asset = @find('path' : path)
 
       else if _.isArray path
+        # if path[0] is '/'
         asset = @find('path' : path[0])
 
       if asset

@@ -929,7 +929,11 @@ imagoModel = (function() {
       }
     }
     if (path) {
-      if (_.isString(path)) {
+      if (path[0] === '/') {
+        asset = this.find({
+          'name': path[0]
+        });
+      } else if (_.isString(path)) {
         asset = this.find({
           'path': path
         });
