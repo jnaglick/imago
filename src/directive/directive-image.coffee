@@ -1,7 +1,7 @@
 
 class imagoImage extends Directive
 
-  constructor: ($window, $timeout, $q, $log, imagoUtils) ->
+  constructor: ($window, $q, $log, imagoUtils) ->
 
     return {
       replace: true

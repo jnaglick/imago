@@ -156,7 +156,7 @@ angular.module('imago.widgets.angular').directive('imagoControls', [imagoControl
 var imagoImage;
 
 imagoImage = (function() {
-  function imagoImage($window, $timeout, $q, $log, imagoUtils) {
+  function imagoImage($window, $q, $log, imagoUtils) {
     return {
       replace: true,
       scope: true,
@@ -409,7 +409,7 @@ imagoImage = (function() {
 
 })();
 
-angular.module('imago.widgets.angular').directive('imagoImage', ['$window', '$timeout', '$q', '$log', 'imagoUtils', imagoImage]);
+angular.module('imago.widgets.angular').directive('imagoImage', ['$window', '$q', '$log', 'imagoUtils', imagoImage]);
 
 
 
