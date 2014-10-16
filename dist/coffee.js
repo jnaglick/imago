@@ -906,28 +906,36 @@ imagoModel = (function() {
   };
 
   imagoModel.prototype.getLocalData = function(query) {
-    var asset, defer, index, key, path, type, value, _i, _len;
+    var asset, defer, key, path, value;
     defer = this.$q.defer();
-    for (index = _i = 0, _len = query.length; _i < _len; index = ++_i) {
-      type = query[index];
-      for (key in type) {
-        value = type[key];
-        if (key === 'collection') {
-          query[index] = {
-            'path': value
-          };
-          path = value;
-        } else if (key === 'kind') {
-          query[index] = {
-            'metakind': value
-          };
-        }
+    for (key in query) {
+      value = query[key];
+      if (key === 'fts') {
+        defer.reject(query);
+      } else if (key === 'collection') {
+        query = {
+          'path': value
+        };
+        path = value;
+      } else if (key === 'kind') {
+        query = {
+          'metakind': value
+        };
+      } else if (key === 'path') {
+        path || (path = []);
+        path.push(value);
       }
     }
     if (path) {
-      asset = this.find({
-        'path': path[0]
-      });
+      if (_.isString(path)) {
+        asset = this.find({
+          'path': path
+        });
+      } else if (_.isArray(path)) {
+        asset = this.find({
+          'path': path[0]
+        });
+      }
       if (asset) {
         if ((asset.count != null) !== 0) {
           asset.assets = this.findChildren(asset);
@@ -948,6 +956,8 @@ imagoModel = (function() {
   };
 
   imagoModel.prototype.getData = function(query, cache) {
+    var data, defer, fetches, promises, resolve;
+    defer = this.$q.defer();
     if (!query) {
       query = this.$location.path();
     }
@@ -959,31 +969,39 @@ imagoModel = (function() {
       ];
     }
     query = this.imagoUtils.toArray(query);
-    return this.getLocalData(query).then((function(_this) {
-      return function(result) {
-        return [result];
+    promises = [];
+    fetches = [];
+    data = [];
+    resolve = (function(_this) {
+      return function() {
+        return _this.$q.all(fetches).then(function(resolve) {
+          return defer.resolve(data);
+        });
       };
-    })(this), (function(_this) {
-      return function(query) {
-        var promises;
-        promises = [];
-        _.forEach(query, function(value) {
-          return promises.push(_this.search(value).then(function(response) {
+    })(this);
+    _.forEach(query, (function(_this) {
+      return function(value) {
+        return promises.push(_this.getLocalData(value).then(function(result) {
+          data.push(result);
+          return data = _.flatten(data);
+        }, function(reject) {
+          return fetches.push(_this.search(reject).then(function(response) {
+            console.log('response reject', response.data.name);
             if (!response.data) {
               return;
             }
-            if (value.page) {
-              response.data.page = value.page;
+            if (reject.page) {
+              response.data.page = reject.page;
             }
-            return _this.create(response.data);
+            return data.push(_this.create(response.data));
           }));
-        });
-        return _this.$q.all(promises).then(function(data) {
-          data = _.flatten(data);
-          return data;
-        });
+        }));
       };
     })(this));
+    this.$q.all(promises).then(function(response) {
+      return resolve();
+    });
+    return defer.promise;
   };
 
   imagoModel.prototype.formatQuery = function(query) {
@@ -1015,47 +1033,29 @@ imagoModel = (function() {
   };
 
   imagoModel.prototype.create = function(data) {
-    var oldData;
-    oldData = this.find({
-      'id': data._id
-    }) || false;
-    if (data.assets) {
-      _.forEach(data.assets, (function(_this) {
+    var collection;
+    collection = data;
+    if (collection.assets) {
+      _.forEach(collection.assets, (function(_this) {
         return function(asset) {
-          var oldAsset;
-          oldAsset = _this.find({
-            'id': asset._id
-          }) || false;
-          if (_.isEqual(oldAsset, asset)) {
-
-          } else if (oldAsset && !_.isEqual(oldAsset, asset)) {
-            return _this.update(asset);
+          if (_this.imagoUtils.isBaseString(asset.serving_url)) {
+            asset.base64 = true;
           } else {
-            if (_this.imagoUtils.isBaseString(asset.serving_url)) {
-              asset.base64 = true;
-            } else {
-              asset.base64 = false;
-            }
-            return _this.data.push(asset);
+            asset.base64 = false;
           }
+          return _this.data.push(asset);
         };
       })(this));
     }
-    if (_.isEqual(oldData, data)) {
-      if (data.assets) {
-        data = _.omit(data, 'assets');
+    if (!this.find({
+      'id': collection.id
+    })) {
+      if (collection.kind === 'Collection') {
+        collection = _.omit(collection, 'assets');
       }
-      return data;
-    } else if (oldData && !_.isEqual(oldData, data)) {
-      this.update(data);
-      return data;
-    } else {
-      if (data.kind === 'Collection') {
-        data = _.omit(data, 'assets');
-      }
-      this.data.push(data);
-      return data;
+      this.data.push(collection);
     }
+    return data;
   };
 
   imagoModel.prototype.findChildren = function(asset) {

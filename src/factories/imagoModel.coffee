@@ -20,23 +20,36 @@ class imagoModel extends Service
   getLocalData: (query) =>
     defer = @$q.defer()
 
-    for type, index in query
-      for key, value of type
-        if key is 'collection'
-          query[index] = 'path': value
-          path = value
+    for key, value of query
 
-        else if key is 'kind'
-          query[index] = 'metakind': value
+      if key is 'fts'
+        defer.reject query
+
+      else if key is 'collection'
+        query = 'path': value
+        path = value
+
+      else if key is 'kind'
+        query = 'metakind': value
+
+      else if key is 'path'
+        path or= []
+        path.push value
 
     if path
-      asset = @find('path' : path[0])
+
+      if _.isString path
+        asset = @find('path' : path)
+
+      else if _.isArray path
+        asset = @find('path' : path[0])
 
       if asset
         if asset.count? isnt 0
           asset.assets = @findChildren(asset)
 
           if asset.assets.length isnt asset.count
+            # console.log 'rejected in count', asset.assets, asset.assets.length, asset.count
             defer.reject query
 
           defer.resolve asset
@@ -46,7 +59,6 @@ class imagoModel extends Service
 
       else
         defer.reject query
-        # @findChildren(asset)
 
     else
       defer.reject query
@@ -54,6 +66,8 @@ class imagoModel extends Service
     defer.promise
 
   getData: (query, cache) =>
+    defer = @$q.defer()
+
     query = @$location.path() unless query
     if angular.isString query
       query =
@@ -61,24 +75,30 @@ class imagoModel extends Service
 
     query = @imagoUtils.toArray query
 
-    @getLocalData(query).then (result) =>
-      return [result]
+    promises = []
+    fetches = []
+    data = []
 
-    , (query) =>
+    resolve = =>
+      @$q.all(fetches).then (resolve) =>
+        defer.resolve data
 
-      promises = []
-
-      _.forEach query, (value) =>
-        promises.push @search(value).then (response) =>
-          return unless response.data
-          response.data.page = value.page if value.page
-          @create response.data
-
-
-      @$q.all(promises).then (data) =>
-
+    _.forEach query, (value) =>
+      promises.push @getLocalData(value).then (result) =>
+        data.push result
         data = _.flatten data
-        return data
+      , (reject) =>
+        fetches.push @search(reject).then (response) =>
+          console.log 'response reject', response.data.name
+          return unless response.data
+          response.data.page = reject.page if reject.page
+          data.push @create response.data
+
+    @$q.all(promises).then (response) ->
+      resolve()
+
+    defer.promise
+
 
   formatQuery: (query) ->
     querydict = {}
@@ -98,31 +118,20 @@ class imagoModel extends Service
     querydict
 
   create: (data) =>
-    oldData = @find('id' : data._id) or false
-    if data.assets
-      _.forEach data.assets, (asset) =>
-        oldAsset = @find('id' : asset._id) or false
-        if _.isEqual(oldAsset, asset)
-          return
-        else if oldAsset and not _.isEqual(oldAsset, asset)
-          @update(asset)
+    collection = data
+    if collection.assets
+      _.forEach collection.assets, (asset) =>
+        if @imagoUtils.isBaseString(asset.serving_url)
+          asset.base64 = true
         else
-          if @imagoUtils.isBaseString(asset.serving_url)
-            asset.base64 = true
-          else
-            asset.base64 = false
-          @data.push asset
+          asset.base64 = false
+        @data.push asset
 
-    if _.isEqual(oldData, data)
-      data = _.omit data, 'assets' if data.assets
-      return data
-    else if oldData and not _.isEqual(oldData, data)
-      @update(data)
-      return data
-    else
-      data = _.omit data, 'assets' if data.kind is 'Collection'
-      @data.push data
-      return data
+    unless @find('id' : collection.id)
+      collection = _.omit collection, 'assets' if collection.kind is 'Collection'
+      @data.push collection
+
+    return data
 
   findChildren: (asset) =>
     _.where @data, {parent: asset._id}
