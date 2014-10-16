@@ -1,6 +1,6 @@
 class imagoModel extends Service
   # I converted everything to the new syntax, but didn't refact the methods
-  constructor: (@$rootScope, @$http, @$location, @$q, @$filter, @imagoUtils) ->
+  constructor: (@$rootScope, @$http, @$location, @$q, @imagoUtils) ->
 
   data: []
 
@@ -18,6 +18,7 @@ class imagoModel extends Service
     return @$http.post(@getSearchUrl(), angular.toJson(params))
 
   getLocalData: (query) =>
+
     defer = @$q.defer()
 
     for key, value of query
@@ -26,11 +27,11 @@ class imagoModel extends Service
         defer.reject query
 
       else if key is 'collection'
-        query = 'path': value
+        query = @imagoUtils.renameKey('path', 'collection', query)
         path = value
 
       else if key is 'kind'
-        query = 'metakind': value
+        query = @imagoUtils.renameKey('metakind', 'kind', query)
 
       else if key is 'path'
         path or= []
@@ -49,8 +50,11 @@ class imagoModel extends Service
           asset.assets = @findChildren(asset)
 
           if asset.assets.length isnt asset.count
-            # console.log 'rejected in count', asset.assets, asset.assets.length, asset.count
+            console.log 'rejected in count', asset.assets, asset.assets.length, asset.count
             defer.reject query
+
+          else
+            asset.assets = @filterAssets(asset.assets, query)
 
           defer.resolve asset
 
@@ -66,6 +70,7 @@ class imagoModel extends Service
     defer.promise
 
   getData: (query, cache) =>
+
     defer = @$q.defer()
 
     query = @$location.path() unless query
@@ -88,8 +93,9 @@ class imagoModel extends Service
         data.push result
         data = _.flatten data
       , (reject) =>
+        console.log 'reject value', reject
         fetches.push @search(reject).then (response) =>
-          console.log 'response reject', response.data.name
+          console.log 'response reject', response.data
           return unless response.data
           response.data.page = reject.page if reject.page
           data.push @create response.data
@@ -121,6 +127,7 @@ class imagoModel extends Service
     collection = data
     if collection.assets
       _.forEach collection.assets, (asset) =>
+        return if @find 'id': asset.id
         if @imagoUtils.isBaseString(asset.serving_url)
           asset.base64 = true
         else
@@ -147,6 +154,22 @@ class imagoModel extends Service
 
   findIdx: (options = {}) =>
     _.findIndex @data, options
+
+  filterAssets: (assets, query) =>
+
+    if _.keys(query).length > 0
+      for key, value of query
+        for params in value
+          if key isnt 'path'
+            # console.log 'params', key, params
+            assets = _.filter assets, (asset) ->
+              if asset.fields?.hasOwnProperty key
+                return asset if asset.fields[key]['value'] is params
+
+              else if asset[key] is params
+                return asset
+
+    return assets
 
   add: (asset) =>
     if @imagoUtils.isBaseString(asset.serving_url)

@@ -864,12 +864,11 @@ var imagoModel,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 
 imagoModel = (function() {
-  function imagoModel($rootScope, $http, $location, $q, $filter, imagoUtils) {
+  function imagoModel($rootScope, $http, $location, $q, imagoUtils) {
     this.$rootScope = $rootScope;
     this.$http = $http;
     this.$location = $location;
     this.$q = $q;
-    this.$filter = $filter;
     this.imagoUtils = imagoUtils;
     this.prepareCreation = __bind(this.prepareCreation, this);
     this.isDuplicated = __bind(this.isDuplicated, this);
@@ -883,6 +882,7 @@ imagoModel = (function() {
     this["delete"] = __bind(this["delete"], this);
     this.update = __bind(this.update, this);
     this.add = __bind(this.add, this);
+    this.filterAssets = __bind(this.filterAssets, this);
     this.findIdx = __bind(this.findIdx, this);
     this.find = __bind(this.find, this);
     this.findByAttr = __bind(this.findByAttr, this);
@@ -919,14 +919,10 @@ imagoModel = (function() {
       if (key === 'fts') {
         defer.reject(query);
       } else if (key === 'collection') {
-        query = {
-          'path': value
-        };
+        query = this.imagoUtils.renameKey('path', 'collection', query);
         path = value;
       } else if (key === 'kind') {
-        query = {
-          'metakind': value
-        };
+        query = this.imagoUtils.renameKey('metakind', 'kind', query);
       } else if (key === 'path') {
         path || (path = []);
         path.push(value);
@@ -946,7 +942,10 @@ imagoModel = (function() {
         if ((asset.count != null) !== 0) {
           asset.assets = this.findChildren(asset);
           if (asset.assets.length !== asset.count) {
+            console.log('rejected in count', asset.assets, asset.assets.length, asset.count);
             defer.reject(query);
+          } else {
+            asset.assets = this.filterAssets(asset.assets, query);
           }
           defer.resolve(asset);
         } else {
@@ -991,8 +990,9 @@ imagoModel = (function() {
           data.push(result);
           return data = _.flatten(data);
         }, function(reject) {
+          console.log('reject value', reject);
           return fetches.push(_this.search(reject).then(function(response) {
-            console.log('response reject', response.data.name);
+            console.log('response reject', response.data);
             if (!response.data) {
               return;
             }
@@ -1044,6 +1044,11 @@ imagoModel = (function() {
     if (collection.assets) {
       _.forEach(collection.assets, (function(_this) {
         return function(asset) {
+          if (_this.find({
+            'id': asset.id
+          })) {
+            return;
+          }
           if (_this.imagoUtils.isBaseString(asset.serving_url)) {
             asset.base64 = true;
           } else {
@@ -1092,6 +1097,31 @@ imagoModel = (function() {
       options = {};
     }
     return _.findIndex(this.data, options);
+  };
+
+  imagoModel.prototype.filterAssets = function(assets, query) {
+    var key, params, value, _i, _len;
+    if (_.keys(query).length > 0) {
+      for (key in query) {
+        value = query[key];
+        for (_i = 0, _len = value.length; _i < _len; _i++) {
+          params = value[_i];
+          if (key !== 'path') {
+            assets = _.filter(assets, function(asset) {
+              var _ref;
+              if ((_ref = asset.fields) != null ? _ref.hasOwnProperty(key) : void 0) {
+                if (asset.fields[key]['value'] === params) {
+                  return asset;
+                }
+              } else if (asset[key] === params) {
+                return asset;
+              }
+            });
+          }
+        }
+      }
+    }
+    return assets;
   };
 
   imagoModel.prototype.add = function(asset) {
@@ -1381,7 +1411,7 @@ imagoModel = (function() {
 
 })();
 
-angular.module('imago.widgets.angular').service('imagoModel', ['$rootScope', '$http', '$location', '$q', '$filter', 'imagoUtils', imagoModel]);
+angular.module('imago.widgets.angular').service('imagoModel', ['$rootScope', '$http', '$location', '$q', 'imagoUtils', imagoModel]);
 
 var imagoSubmit,
   __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
