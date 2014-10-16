@@ -1941,7 +1941,12 @@ imagoUtils = (function() {
         }
         return !!string.match(this.isBaseRegex);
       },
-      isBaseRegex: /^\s*data:([a-z]+\/[a-z]+(;[a-z\-]+\=[a-z\-]+)?)?(;base64)?,[a-z0-9\!\$\&\'\,\(\)\*\+\,\;\=\-\.\_\~\:\@\/\?\%\s]*\s*$/i
+      isBaseRegex: /^\s*data:([a-z]+\/[a-z]+(;[a-z\-]+\=[a-z\-]+)?)?(;base64)?,[a-z0-9\!\$\&\'\,\(\)\*\+\,\;\=\-\.\_\~\:\@\/\?\%\s]*\s*$/i,
+      renameKey: function(newName, oldName, object) {
+        object[newName] = object[oldName];
+        delete object[oldName];
+        return object;
+      }
     };
   }
 

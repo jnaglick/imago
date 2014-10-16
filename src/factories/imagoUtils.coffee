@@ -441,4 +441,9 @@ class imagoUtils extends Factory
 
       isBaseRegex: /^\s*data:([a-z]+\/[a-z]+(;[a-z\-]+\=[a-z\-]+)?)?(;base64)?,[a-z0-9\!\$\&\'\,\(\)\*\+\,\;\=\-\.\_\~\:\@\/\?\%\s]*\s*$/i
 
+      renameKey: (newName, oldName, object) ->
+        object[newName] = object[oldName]
+        delete object[oldName]
+        return object
+
     }
