@@ -942,7 +942,6 @@ imagoModel = (function() {
         if ((asset.count != null) !== 0) {
           asset.assets = this.findChildren(asset);
           if (asset.assets.length !== asset.count) {
-            console.log('rejected in count', asset.assets, asset.assets.length, asset.count);
             defer.reject(query);
           } else {
             asset.assets = this.filterAssets(asset.assets, query);
@@ -990,9 +989,7 @@ imagoModel = (function() {
           data.push(result);
           return data = _.flatten(data);
         }, function(reject) {
-          console.log('reject value', reject);
           return fetches.push(_this.search(reject).then(function(response) {
-            console.log('response reject', response.data);
             if (!response.data) {
               return;
             }

@@ -50,7 +50,7 @@ class imagoModel extends Service
           asset.assets = @findChildren(asset)
 
           if asset.assets.length isnt asset.count
-            console.log 'rejected in count', asset.assets, asset.assets.length, asset.count
+            # console.log 'rejected in count', asset.assets, asset.assets.length, asset.count
             defer.reject query
 
           else
@@ -93,9 +93,7 @@ class imagoModel extends Service
         data.push result
         data = _.flatten data
       , (reject) =>
-        console.log 'reject value', reject
         fetches.push @search(reject).then (response) =>
-          console.log 'response reject', response.data
           return unless response.data
           response.data.page = reject.page if reject.page
           data.push @create response.data
