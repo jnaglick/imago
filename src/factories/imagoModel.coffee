@@ -148,8 +148,8 @@ class imagoModel extends Service
   findParent: (asset) =>
     _.find @data, {_id: asset.parent}
 
-  findByAttr: (attr) =>
-    _.where @data, attr
+  findByAttr: (options = {}) =>
+    _.where @data, options
 
   find: (options = {}) =>
     _.find @data, options
@@ -183,15 +183,19 @@ class imagoModel extends Service
 
   update: (data, attribute = '_id', update="true") =>
     if _.isPlainObject(data)
+      query = {}
+      query[attribute] = data[attribute]
       return unless data[attribute]
       delete data.assets if data.assets
-      idx = @findIdx(data[attribute], attribute)
+      idx = @findIdx(query)
       @data[idx] = _.assign(@data[idx], data)
 
     else if _.isArray(data)
       for asset in data
+        query = {}
+        query[attribute] = asset[attribute]
         delete asset.assets if asset.assets
-        idx = @findIdx(asset[attribute], attribute)
+        idx = @findIdx(query)
         _.assign(@data[idx], asset)
 
     @$rootScope.$broadcast('assets:update', data) if update
