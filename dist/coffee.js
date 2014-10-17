@@ -1076,8 +1076,11 @@ imagoModel = (function() {
     });
   };
 
-  imagoModel.prototype.findByAttr = function(attr) {
-    return _.where(this.data, attr);
+  imagoModel.prototype.findByAttr = function(options) {
+    if (options == null) {
+      options = {};
+    }
+    return _.where(this.data, options);
   };
 
   imagoModel.prototype.find = function(options) {
@@ -1130,7 +1133,7 @@ imagoModel = (function() {
   };
 
   imagoModel.prototype.update = function(data, attribute, update) {
-    var asset, idx, _i, _len;
+    var asset, idx, query, _i, _len;
     if (attribute == null) {
       attribute = '_id';
     }
@@ -1138,21 +1141,25 @@ imagoModel = (function() {
       update = "true";
     }
     if (_.isPlainObject(data)) {
+      query = {};
+      query[attribute] = data[attribute];
       if (!data[attribute]) {
         return;
       }
       if (data.assets) {
         delete data.assets;
       }
-      idx = this.findIdx(data[attribute], attribute);
+      idx = this.findIdx(query);
       this.data[idx] = _.assign(this.data[idx], data);
     } else if (_.isArray(data)) {
       for (_i = 0, _len = data.length; _i < _len; _i++) {
         asset = data[_i];
+        query = {};
+        query[attribute] = asset[attribute];
         if (asset.assets) {
           delete asset.assets;
         }
-        idx = this.findIdx(asset[attribute], attribute);
+        idx = this.findIdx(query);
         _.assign(this.data[idx], asset);
       }
     }
