@@ -826,6 +826,82 @@ imagoVideo = (function() {
 
 angular.module('imago.widgets.angular').directive('imagoVideo', ['$q', '$window', 'imagoUtils', '$timeout', imagoVideo]);
 
+var ResponsiveEvents;
+
+ResponsiveEvents = (function() {
+  function ResponsiveEvents($window) {
+    return {
+      restrict: 'A',
+      link: function($scope) {
+        var onMouseWheelStart, onResizeStart, onScrollStart, w;
+        w = angular.element($window);
+        onResizeStart = (function(_this) {
+          return function(e) {
+            if (_this.resizeing) {
+              return;
+            }
+            $scope.$broadcast('resizestart');
+            _this.resizeing = true;
+            return w.one('resizestop', function() {
+              return _this.resizeing = false;
+            });
+          };
+        })(this);
+        onScrollStart = (function(_this) {
+          return function(e) {
+            if (_this.scrolling) {
+              return;
+            }
+            $scope.$broadcast('scrollstart');
+            _this.scrolling = true;
+            return w.one('scrollstop', function() {
+              return _this.scrolling = false;
+            });
+          };
+        })(this);
+        onMouseWheelStart = (function(_this) {
+          return function(e) {
+            if (_this.isMouseWheeling) {
+              return;
+            }
+            $scope.$broadcast('mousewheelstart');
+            _this.isMouseWheeling = true;
+            return w.one('mousewheelstop', function() {
+              return _this.isMouseWheeling = false;
+            });
+          };
+        })(this);
+        w.on('resize', onResizeStart);
+        w.on('resize', _.debounce((function() {
+          return $scope.$broadcast('resizestop');
+        }), 200));
+        w.on('resize', _.throttle((function() {
+          return $scope.$broadcast('resizelimit');
+        }), 150));
+        w.on('scroll', onScrollStart);
+        w.on('scroll', _.debounce((function() {
+          return $scope.$broadcast('scrollstop');
+        }), 200));
+        w.on('scroll', _.throttle((function() {
+          return $scope.$broadcast('scrolllimit');
+        }), 150));
+        w.on('mousewheel', onMouseWheelStart);
+        w.on('mousewheel', _.debounce((function() {
+          return $scope.$broadcast('mousewheelstop');
+        }), 200));
+        return w.on('mousewheel', _.throttle((function() {
+          return $scope.$broadcast('mousewheellimit');
+        }), 150));
+      }
+    };
+  }
+
+  return ResponsiveEvents;
+
+})();
+
+angular.module('imago.widgets.angular').directive('responsiveEvents', ['$window', ResponsiveEvents]);
+
 var StopPropagation;
 
 StopPropagation = (function() {
