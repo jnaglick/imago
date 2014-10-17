@@ -1303,7 +1303,7 @@ imagoModel = (function() {
     for (_i = 0, _len = assets.length; _i < _len; _i++) {
       asset = assets[_i];
       idx = this.findIdx({
-        'id': asset.id
+        '_id': asset._id
       });
       if (idx === -1) {
         return;

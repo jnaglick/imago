@@ -311,7 +311,7 @@ class imagoModel extends Service
   batchChange: (assets, save = false) =>
 
     for asset in assets
-      idx = @findIdx('id' : asset.id)
+      idx = @findIdx('_id' : asset._id)
 
       return if idx is -1
 
