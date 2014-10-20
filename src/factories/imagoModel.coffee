@@ -182,23 +182,24 @@ class imagoModel extends Service
     @$rootScope.$broadcast 'assets:update', asset
 
   update: (data, attribute = '_id', update="true") =>
-    if _.isPlainObject(data)
+    copy = angular.copy data
+    if _.isPlainObject(copy)
       query = {}
-      query[attribute] = data[attribute]
-      return unless data[attribute]
-      delete data.assets if data.assets
+      query[attribute] = copy[attribute]
+      return unless copy[attribute]
+      delete copy.assets if copy.assets
       idx = @findIdx(query)
-      @data[idx] = _.assign(@data[idx], data)
+      @data[idx] = _.assign(@data[idx], copy)
 
-    else if _.isArray(data)
-      for asset in data
+    else if _.isArray(copy)
+      for asset in copy
         query = {}
         query[attribute] = asset[attribute]
         delete asset.assets if asset.assets
         idx = @findIdx(query)
         _.assign(@data[idx], asset)
 
-    @$rootScope.$broadcast('assets:update', data) if update
+    @$rootScope.$broadcast('assets:update', copy) if update
 
 
   delete: (id) =>
