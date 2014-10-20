@@ -43,7 +43,7 @@ describe "Unit: imagoModel", ->
 
     beforeEach ->
       imagoModel.getData('/test').then (response) ->
-        parent = response[0]
+        parent = _.omit response[0], 'assets'
         children = imagoModel.findChildren(parent)
       $rootScope.$digest()
       $httpBackend.flush()
