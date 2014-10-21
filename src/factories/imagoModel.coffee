@@ -248,7 +248,7 @@ class imagoModel extends Service
 
     for asset in assets
       @data = _.reject(@data, { _id: asset.id })
-      @data.push asset
+      @data.unshift asset
 
     @$rootScope.$broadcast 'assets:update', assets
 
