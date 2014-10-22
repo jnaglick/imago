@@ -1,6 +1,6 @@
 class imagoModel extends Service
   # I converted everything to the new syntax, but didn't refact the methods
-  constructor: (@$rootScope, @$http, @$location, @$q, @imagoUtils) ->
+  constructor: (@$rootScope, @$http, @$location, @$q, @imagoUtils, @imagoRest) ->
 
   data: []
 
@@ -181,7 +181,10 @@ class imagoModel extends Service
     @data.unshift asset
     @$rootScope.$broadcast 'assets:update', asset
 
-  update: (data, attribute = '_id', update="true") =>
+  update: (data, options = {}) =>
+    options.stream = true unless options.stream
+    attribute = (if options.attribute then options.attribute else '_id')
+
     copy = angular.copy data
     if _.isPlainObject(copy)
       query = {}
@@ -199,14 +202,16 @@ class imagoModel extends Service
         idx = @findIdx(query)
         _.assign(@data[idx], asset)
 
-    @$rootScope.$broadcast('assets:update', copy) if update
+    @$rootScope.$broadcast('assets:update', copy) if options.stream
+    @imagoRest.assets.update(copy) if options.save
 
 
-  delete: (id) =>
+  delete: (id, save=false) =>
     return unless id
     # returns an array without the asset of id
     @data = _.reject(@data, { _id: id })
     @$rootScope.$broadcast 'assets:update', id
+    imagoRest.assets.delete(id) if save
     return @data
 
   move: (data) =>
@@ -245,7 +250,6 @@ class imagoModel extends Service
     defer.promise
 
   batchAddRemove: (assets) =>
-
     for asset in assets
       @data = _.reject(@data, { _id: asset.id })
       @data.unshift asset
@@ -253,7 +257,6 @@ class imagoModel extends Service
     @$rootScope.$broadcast 'assets:update', assets
 
   reorder: (assets) =>
-
     for asset in assets
       idxAsset = @findIdx 'id': asset._id
       idx = (if idxAsset > idx then idx else idxAsset)
@@ -264,7 +267,6 @@ class imagoModel extends Service
     @$rootScope.$broadcast 'assets:update', assets
 
   reindexAll:  (list) =>
-
     newList = []
 
     count = list.length
@@ -283,7 +285,6 @@ class imagoModel extends Service
     return orderedList
 
   orderChanged:  (start, finish, dropped, list) =>
-
     if dropped < finish
       finish = finish+1
       prev = if list[dropped-1] then list[dropped-1].order else list[0].order+1000
@@ -314,7 +315,6 @@ class imagoModel extends Service
     return orderedList
 
   batchChange: (assets, save = false) =>
-
     for asset in assets
       idx = @findIdx('_id' : asset._id)
 
@@ -323,10 +323,13 @@ class imagoModel extends Service
       if _.isBoolean(asset.visible)
         @data[idx]['visible'] = asset.visible
 
-      for key of asset.fields
-        @data[idx]['fields'] or= {}
-        @data[idx]['fields'][key] or= {}
-        @data[idx]['fields'][key]['value'] = asset.fields[key]['value']
+      if asset.fields
+        fields = angular.copy asset.fields
+
+        for key of fields
+          @data[idx]['fields'] or= {}
+          @data[idx]['fields'][key] or= {}
+          @data[idx]['fields'][key] = fields[key]
 
     if save
       object =
@@ -336,20 +339,23 @@ class imagoModel extends Service
 
     else return false
 
-  isDuplicated: (name, rename = false) =>
+  isDuplicated: (asset, rename = false) =>
     defer = @$q.defer()
 
-    defer.reject(name) unless name
+    defer.reject(asset.name) unless asset.name
 
-    name = @imagoUtils.normalize(name)
+    name = @imagoUtils.normalize(asset.name)
 
     result = undefined
 
-    assetsChildren = _.find @currentCollection.assets, (chr) =>
+    assetsChildren = _.where @currentCollection.assets, (chr) =>
       normalizeName = angular.copy @imagoUtils.normalize(chr.name)
       return normalizeName is name
 
-    if assetsChildren
+    if assetsChildren.length > 0
+
+      if assetsChildren.length is 1 and assetsChildren[0].id is asset.id
+        defer.resolve false
 
       if rename
         assets = @currentCollection.assets
@@ -364,26 +370,21 @@ class imagoModel extends Service
             return normalizeName is name
           exists = (if findName then true else false)
 
-        result = name
-
-        defer.resolve(result)
+        defer.resolve name
 
       else
-        result = true
-        defer.resolve result
+        defer.resolve true
 
     else
-      result = false
-      defer.resolve result
+      defer.resolve false
 
     defer.promise
-
 
   prepareCreation: (asset, parent, order, rename = false) =>
     defer = @$q.defer()
     defer.reject(asset.name) unless asset.name
 
-    @isDuplicated(asset.name, rename).then (isDuplicated) =>
+    @isDuplicated(asset, rename).then (isDuplicated) =>
 
       if isDuplicated and _.isBoolean isDuplicated
         defer.resolve('duplicated')

@@ -934,12 +934,13 @@ var imagoModel,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 
 imagoModel = (function() {
-  function imagoModel($rootScope, $http, $location, $q, imagoUtils) {
+  function imagoModel($rootScope, $http, $location, $q, imagoUtils, imagoRest) {
     this.$rootScope = $rootScope;
     this.$http = $http;
     this.$location = $location;
     this.$q = $q;
     this.imagoUtils = imagoUtils;
+    this.imagoRest = imagoRest;
     this.prepareCreation = __bind(this.prepareCreation, this);
     this.isDuplicated = __bind(this.isDuplicated, this);
     this.batchChange = __bind(this.batchChange, this);
@@ -1208,14 +1209,15 @@ imagoModel = (function() {
     return this.$rootScope.$broadcast('assets:update', asset);
   };
 
-  imagoModel.prototype.update = function(data, attribute, update) {
-    var asset, copy, idx, query, _i, _len;
-    if (attribute == null) {
-      attribute = '_id';
+  imagoModel.prototype.update = function(data, options) {
+    var asset, attribute, copy, idx, query, _i, _len;
+    if (options == null) {
+      options = {};
     }
-    if (update == null) {
-      update = "true";
+    if (!options.stream) {
+      options.stream = true;
     }
+    attribute = (options.attribute ? options.attribute : '_id');
     copy = angular.copy(data);
     if (_.isPlainObject(copy)) {
       query = {};
@@ -1240,12 +1242,18 @@ imagoModel = (function() {
         _.assign(this.data[idx], asset);
       }
     }
-    if (update) {
-      return this.$rootScope.$broadcast('assets:update', copy);
+    if (options.stream) {
+      this.$rootScope.$broadcast('assets:update', copy);
+    }
+    if (options.save) {
+      return this.imagoRest.assets.update(copy);
     }
   };
 
-  imagoModel.prototype["delete"] = function(id) {
+  imagoModel.prototype["delete"] = function(id, save) {
+    if (save == null) {
+      save = false;
+    }
     if (!id) {
       return;
     }
@@ -1253,6 +1261,9 @@ imagoModel = (function() {
       _id: id
     });
     this.$rootScope.$broadcast('assets:update', id);
+    if (save) {
+      imagoRest.assets["delete"](id);
+    }
     return this.data;
   };
 
@@ -1374,7 +1385,7 @@ imagoModel = (function() {
   };
 
   imagoModel.prototype.batchChange = function(assets, save) {
-    var asset, idx, key, object, _base, _base1, _i, _len;
+    var asset, fields, idx, key, object, _base, _base1, _i, _len;
     if (save == null) {
       save = false;
     }
@@ -1389,10 +1400,13 @@ imagoModel = (function() {
       if (_.isBoolean(asset.visible)) {
         this.data[idx]['visible'] = asset.visible;
       }
-      for (key in asset.fields) {
-        (_base = this.data[idx])['fields'] || (_base['fields'] = {});
-        (_base1 = this.data[idx]['fields'])[key] || (_base1[key] = {});
-        this.data[idx]['fields'][key]['value'] = asset.fields[key]['value'];
+      if (asset.fields) {
+        fields = angular.copy(asset.fields);
+        for (key in fields) {
+          (_base = this.data[idx])['fields'] || (_base['fields'] = {});
+          (_base1 = this.data[idx]['fields'])[key] || (_base1[key] = {});
+          this.data[idx]['fields'][key] = fields[key];
+        }
       }
     }
     if (save) {
@@ -1405,25 +1419,28 @@ imagoModel = (function() {
     }
   };
 
-  imagoModel.prototype.isDuplicated = function(name, rename) {
-    var assets, assetsChildren, defer, exists, findName, i, original_name, result;
+  imagoModel.prototype.isDuplicated = function(asset, rename) {
+    var assets, assetsChildren, defer, exists, findName, i, name, original_name, result;
     if (rename == null) {
       rename = false;
     }
     defer = this.$q.defer();
-    if (!name) {
-      defer.reject(name);
+    if (!asset.name) {
+      defer.reject(asset.name);
     }
-    name = this.imagoUtils.normalize(name);
+    name = this.imagoUtils.normalize(asset.name);
     result = void 0;
-    assetsChildren = _.find(this.currentCollection.assets, (function(_this) {
+    assetsChildren = _.where(this.currentCollection.assets, (function(_this) {
       return function(chr) {
         var normalizeName;
         normalizeName = angular.copy(_this.imagoUtils.normalize(chr.name));
         return normalizeName === name;
       };
     })(this));
-    if (assetsChildren) {
+    if (assetsChildren.length > 0) {
+      if (assetsChildren.length === 1 && assetsChildren[0].id === asset.id) {
+        defer.resolve(false);
+      }
       if (rename) {
         assets = this.currentCollection.assets;
         i = 1;
@@ -1441,15 +1458,12 @@ imagoModel = (function() {
           })(this));
           exists = (findName ? true : false);
         }
-        result = name;
-        defer.resolve(result);
+        defer.resolve(name);
       } else {
-        result = true;
-        defer.resolve(result);
+        defer.resolve(true);
       }
     } else {
-      result = false;
-      defer.resolve(result);
+      defer.resolve(false);
     }
     return defer.promise;
   };
@@ -1463,7 +1477,7 @@ imagoModel = (function() {
     if (!asset.name) {
       defer.reject(asset.name);
     }
-    this.isDuplicated(asset.name, rename).then((function(_this) {
+    this.isDuplicated(asset, rename).then((function(_this) {
       return function(isDuplicated) {
         var assets;
         if (isDuplicated && _.isBoolean(isDuplicated)) {
@@ -1490,7 +1504,7 @@ imagoModel = (function() {
 
 })();
 
-angular.module('imago.widgets.angular').service('imagoModel', ['$rootScope', '$http', '$location', '$q', 'imagoUtils', imagoModel]);
+angular.module('imago.widgets.angular').service('imagoModel', ['$rootScope', '$http', '$location', '$q', 'imagoUtils', 'imagoRest', imagoModel]);
 
 var imagoSubmit,
   __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
