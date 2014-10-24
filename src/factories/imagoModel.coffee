@@ -297,7 +297,7 @@ class imagoModel extends Service
 
     @$rootScope.$broadcast 'assets:update', assets
 
-  reorder: (assets) =>
+  reorder: (assets, options = {}) =>
     for asset in assets
       idxAsset = @findIdx 'id': asset._id
       idx = (if idxAsset > idx then idx else idxAsset)
@@ -305,7 +305,8 @@ class imagoModel extends Service
     args = [idx, assets.length].concat(assets)
     Array.prototype.splice.apply(@data, args)
 
-    @$rootScope.$broadcast 'assets:update', assets
+    @$rootScope.$broadcast('assets:update', assets) if options.stream
+    @assets.batch(assets: assets) if options.save
 
   reindexAll:  (list) =>
     newList = []

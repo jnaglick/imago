@@ -1383,8 +1383,11 @@ imagoModel = (function() {
     return this.$rootScope.$broadcast('assets:update', assets);
   };
 
-  imagoModel.prototype.reorder = function(assets) {
+  imagoModel.prototype.reorder = function(assets, options) {
     var args, asset, idx, idxAsset, _i, _len;
+    if (options == null) {
+      options = {};
+    }
     for (_i = 0, _len = assets.length; _i < _len; _i++) {
       asset = assets[_i];
       idxAsset = this.findIdx({
@@ -1394,7 +1397,14 @@ imagoModel = (function() {
     }
     args = [idx, assets.length].concat(assets);
     Array.prototype.splice.apply(this.data, args);
-    return this.$rootScope.$broadcast('assets:update', assets);
+    if (options.stream) {
+      this.$rootScope.$broadcast('assets:update', assets);
+    }
+    if (options.save) {
+      return this.assets.batch({
+        assets: assets
+      });
+    }
   };
 
   imagoModel.prototype.reindexAll = function(list) {
