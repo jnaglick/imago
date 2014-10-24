@@ -130,7 +130,7 @@ imagoControls = (function() {
             return scope.volumeInput = 100;
           };
         })(this);
-        return scope.fullScreen = (function(_this) {
+        scope.fullScreen = (function(_this) {
           return function() {
             if (scope.player.requestFullscreen) {
               return scope.player.requestFullscreen();
@@ -143,6 +143,12 @@ imagoControls = (function() {
             }
           };
         })(this);
+        element.bind('mouseup', function(e) {
+          return e.stopPropagation();
+        });
+        return element.bind('mousedown', function(e) {
+          return e.stopPropagation();
+        });
       }
     };
   }
@@ -1220,7 +1226,7 @@ imagoModel = (function() {
     if (options == null) {
       options = {};
     }
-    if (!options.stream) {
+    if (_.isUndefined(options.stream)) {
       options.stream = true;
     }
     attribute = (options.attribute ? options.attribute : '_id');
@@ -1324,7 +1330,7 @@ imagoModel = (function() {
       this.data = _.reject(this.data, {
         _id: asset.id
       });
-      this.data.unshift(asset);
+      this.data.push(asset);
     }
     return this.$rootScope.$broadcast('assets:update', assets);
   };

@@ -182,7 +182,7 @@ class imagoModel extends Service
     @$rootScope.$broadcast 'assets:update', asset
 
   update: (data, options = {}) =>
-    options.stream = true unless options.stream
+    options.stream = true if _.isUndefined options.stream
     attribute = (if options.attribute then options.attribute else '_id')
 
     copy = angular.copy data
@@ -252,7 +252,7 @@ class imagoModel extends Service
   batchAddRemove: (assets) =>
     for asset in assets
       @data = _.reject(@data, { _id: asset.id })
-      @data.unshift asset
+      @data.push asset
 
     @$rootScope.$broadcast 'assets:update', assets
 

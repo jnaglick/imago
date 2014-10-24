@@ -44,4 +44,10 @@ class imagoControls extends Directive
             scope.player.mozRequestFullScreen();
           else if scope.player.msRequestFullscreen
             scope.player.msRequestFullscreen();
+
+        element.bind 'mouseup', (e) ->
+          e.stopPropagation()
+
+        element.bind 'mousedown', (e) ->
+          e.stopPropagation()
     }
