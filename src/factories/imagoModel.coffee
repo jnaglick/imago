@@ -1,48 +1,47 @@
 class imagoModel extends Service
   # I converted everything to the new syntax, but didn't refact the methods
   constructor: (@$rootScope, @$http, @$location, @$q, @imagoUtils) ->
-
     @host = window.location.protocol + "//imagoapi-nex9.rhcloud.com"
 
     @assets =
-        get: (id) ->
-          $http.get "#{host}/api/assets/#{id}"
+      get: (id) =>
+        $http.get "#{@host}/api/assets/#{id}"
 
-        create: (item) ->
-          $http.post "#{host}/api/assets/batch", item
+      create: (item) =>
+        $http.post "#{@host}/api/assets/batch", item
 
-        update: (item) ->
-          $http.put "#{host}/api/assets/#{item._id}", item
+      update: (item) =>
+        $http.put "#{@host}/api/assets/#{item._id}", item
 
-        delete: (id) ->
-          $http.delete "#{host}/api/assets/#{id}"
+      delete: (id) =>
+        $http.delete "#{@host}/api/assets/#{id}"
 
-        trash: (assets) ->
-          $http.post "#{host}/api/assets/trash", assets
+      trash: (assets) =>
+        $http.post "#{@host}/api/assets/trash", assets
 
-        move: (items, src, dest) ->
-          data =
-            src   : src
-            dest  : dest
-            items : items
+      move: (items, src, dest) =>
+        data =
+          src   : src
+          dest  : dest
+          items : items
 
-          $http.post "#{host}/api/assets/move", data
+        $http.post "#{@host}/api/assets/move", data
 
-        copy: (items, src, dest) ->
-          data =
-            src   : src
-            dest  : dest
-            items : items
+      copy: (items, src, dest) =>
+        data =
+          src   : src
+          dest  : dest
+          items : items
 
-          $http.post "#{host}/api/assets/copy", data
+        $http.post "#{@host}/api/assets/copy", data
 
-        batch: (object) ->
+      batch: (object) =>
 
-          # format = {
-          #   assets: list
-          # }
+        # format = {
+        #   assets: list
+        # }
 
-          $http.put "#{host}/api/assets/update", object
+        $http.put "#{@host}/api/assets/update", object
 
   data: []
 

@@ -969,42 +969,58 @@ imagoModel = (function() {
     this.getLocalData = __bind(this.getLocalData, this);
     this.host = window.location.protocol + "//imagoapi-nex9.rhcloud.com";
     this.assets = {
-      get: function(id) {
-        return $http.get("" + host + "/api/assets/" + id);
-      },
-      create: function(item) {
-        return $http.post("" + host + "/api/assets/batch", item);
-      },
-      update: function(item) {
-        return $http.put("" + host + "/api/assets/" + item._id, item);
-      },
-      "delete": function(id) {
-        return $http["delete"]("" + host + "/api/assets/" + id);
-      },
-      trash: function(assets) {
-        return $http.post("" + host + "/api/assets/trash", assets);
-      },
-      move: function(items, src, dest) {
-        var data;
-        data = {
-          src: src,
-          dest: dest,
-          items: items
+      get: (function(_this) {
+        return function(id) {
+          return $http.get("" + _this.host + "/api/assets/" + id);
         };
-        return $http.post("" + host + "/api/assets/move", data);
-      },
-      copy: function(items, src, dest) {
-        var data;
-        data = {
-          src: src,
-          dest: dest,
-          items: items
+      })(this),
+      create: (function(_this) {
+        return function(item) {
+          return $http.post("" + _this.host + "/api/assets/batch", item);
         };
-        return $http.post("" + host + "/api/assets/copy", data);
-      },
-      batch: function(object) {
-        return $http.put("" + host + "/api/assets/update", object);
-      }
+      })(this),
+      update: (function(_this) {
+        return function(item) {
+          return $http.put("" + _this.host + "/api/assets/" + item._id, item);
+        };
+      })(this),
+      "delete": (function(_this) {
+        return function(id) {
+          return $http["delete"]("" + _this.host + "/api/assets/" + id);
+        };
+      })(this),
+      trash: (function(_this) {
+        return function(assets) {
+          return $http.post("" + _this.host + "/api/assets/trash", assets);
+        };
+      })(this),
+      move: (function(_this) {
+        return function(items, src, dest) {
+          var data;
+          data = {
+            src: src,
+            dest: dest,
+            items: items
+          };
+          return $http.post("" + _this.host + "/api/assets/move", data);
+        };
+      })(this),
+      copy: (function(_this) {
+        return function(items, src, dest) {
+          var data;
+          data = {
+            src: src,
+            dest: dest,
+            items: items
+          };
+          return $http.post("" + _this.host + "/api/assets/copy", data);
+        };
+      })(this),
+      batch: (function(_this) {
+        return function(object) {
+          return $http.put("" + _this.host + "/api/assets/update", object);
+        };
+      })(this)
     };
   }
 
