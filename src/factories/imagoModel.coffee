@@ -361,16 +361,20 @@ class imagoModel extends Service
 
       return if idx is -1
 
-      if _.isBoolean(asset.visible)
-        @data[idx]['visible'] = asset.visible
+      copy = angular.copy asset
 
-      if asset.fields
-        fields = angular.copy asset.fields
+      for key, value of copy
+        continue unless key isnt '_id' and key isnt 'id'
 
-        for key of fields
-          @data[idx]['fields'] or= {}
-          @data[idx]['fields'][key] or= {}
-          @data[idx]['fields'][key] = fields[key]
+        if key is 'fields'
+
+          for key of copy.fields
+            @data[idx]['fields'] or= {}
+            @data[idx]['fields'][key] or= {}
+            @data[idx]['fields'][key] = copy.fields[key]
+
+        else
+          @data[idx][key] = copy[key]
 
     if save
       object =

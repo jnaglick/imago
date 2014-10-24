@@ -1445,7 +1445,7 @@ imagoModel = (function() {
   };
 
   imagoModel.prototype.batchChange = function(assets, save) {
-    var asset, fields, idx, key, object, _base, _base1, _i, _len;
+    var asset, copy, idx, key, object, value, _base, _base1, _i, _len;
     if (save == null) {
       save = false;
     }
@@ -1457,15 +1457,20 @@ imagoModel = (function() {
       if (idx === -1) {
         return;
       }
-      if (_.isBoolean(asset.visible)) {
-        this.data[idx]['visible'] = asset.visible;
-      }
-      if (asset.fields) {
-        fields = angular.copy(asset.fields);
-        for (key in fields) {
-          (_base = this.data[idx])['fields'] || (_base['fields'] = {});
-          (_base1 = this.data[idx]['fields'])[key] || (_base1[key] = {});
-          this.data[idx]['fields'][key] = fields[key];
+      copy = angular.copy(asset);
+      for (key in copy) {
+        value = copy[key];
+        if (!(key !== '_id' && key !== 'id')) {
+          continue;
+        }
+        if (key === 'fields') {
+          for (key in copy.fields) {
+            (_base = this.data[idx])['fields'] || (_base['fields'] = {});
+            (_base1 = this.data[idx]['fields'])[key] || (_base1[key] = {});
+            this.data[idx]['fields'][key] = copy.fields[key];
+          }
+        } else {
+          this.data[idx][key] = copy[key];
         }
       }
     }
