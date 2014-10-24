@@ -8,10 +8,4 @@ class StopPropagation extends Directive
         element.bind 'dblclick', (e) ->
           e.stopPropagation()
 
-        element.bind 'mousedown', (e) ->
-          e.stopPropagation()
-
-        element.bind 'mouseup', (e) ->
-          e.stopPropagation()
-
     }

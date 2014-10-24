@@ -917,13 +917,7 @@ StopPropagation = (function() {
         element.bind('click', function(e) {
           return e.stopPropagation();
         });
-        element.bind('dblclick', function(e) {
-          return e.stopPropagation();
-        });
-        element.bind('mousedown', function(e) {
-          return e.stopPropagation();
-        });
-        return element.bind('mouseup', function(e) {
+        return element.bind('dblclick', function(e) {
           return e.stopPropagation();
         });
       }
