@@ -946,13 +946,12 @@ var imagoModel,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 
 imagoModel = (function() {
-  function imagoModel($rootScope, $http, $location, $q, imagoUtils, imagoRest) {
+  function imagoModel($rootScope, $http, $location, $q, imagoUtils) {
     this.$rootScope = $rootScope;
     this.$http = $http;
     this.$location = $location;
     this.$q = $q;
     this.imagoUtils = imagoUtils;
-    this.imagoRest = imagoRest;
     this.prepareCreation = __bind(this.prepareCreation, this);
     this.isDuplicated = __bind(this.isDuplicated, this);
     this.batchChange = __bind(this.batchChange, this);
@@ -974,6 +973,45 @@ imagoModel = (function() {
     this.create = __bind(this.create, this);
     this.getData = __bind(this.getData, this);
     this.getLocalData = __bind(this.getLocalData, this);
+    this.host = window.location.protocol + "//imagoapi-nex9.rhcloud.com";
+    this.assets = {
+      get: function(id) {
+        return $http.get("" + host + "/api/assets/" + id);
+      },
+      create: function(item) {
+        return $http.post("" + host + "/api/assets/batch", item);
+      },
+      update: function(item) {
+        return $http.put("" + host + "/api/assets/" + item._id, item);
+      },
+      "delete": function(id) {
+        return $http["delete"]("" + host + "/api/assets/" + id);
+      },
+      trash: function(assets) {
+        return $http.post("" + host + "/api/assets/trash", assets);
+      },
+      move: function(items, src, dest) {
+        var data;
+        data = {
+          src: src,
+          dest: dest,
+          items: items
+        };
+        return $http.post("" + host + "/api/assets/move", data);
+      },
+      copy: function(items, src, dest) {
+        var data;
+        data = {
+          src: src,
+          dest: dest,
+          items: items
+        };
+        return $http.post("" + host + "/api/assets/copy", data);
+      },
+      batch: function(object) {
+        return $http.put("" + host + "/api/assets/update", object);
+      }
+    };
   }
 
   imagoModel.prototype.data = [];
@@ -1258,7 +1296,7 @@ imagoModel = (function() {
       this.$rootScope.$broadcast('assets:update', copy);
     }
     if (options.save) {
-      return this.imagoRest.assets.update(copy);
+      return this.assets.update(copy);
     }
   };
 
@@ -1274,7 +1312,7 @@ imagoModel = (function() {
     });
     this.$rootScope.$broadcast('assets:update', id);
     if (save) {
-      imagoRest.assets["delete"](id);
+      this.assets["delete"](id);
     }
     return this.data;
   };
@@ -1516,7 +1554,7 @@ imagoModel = (function() {
 
 })();
 
-angular.module('imago.widgets.angular').service('imagoModel', ['$rootScope', '$http', '$location', '$q', 'imagoUtils', 'imagoRest', imagoModel]);
+angular.module('imago.widgets.angular').service('imagoModel', ['$rootScope', '$http', '$location', '$q', 'imagoUtils', imagoModel]);
 
 var imagoSubmit,
   __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };

@@ -1,6 +1,48 @@
 class imagoModel extends Service
   # I converted everything to the new syntax, but didn't refact the methods
-  constructor: (@$rootScope, @$http, @$location, @$q, @imagoUtils, @imagoRest) ->
+  constructor: (@$rootScope, @$http, @$location, @$q, @imagoUtils) ->
+
+    @host = window.location.protocol + "//imagoapi-nex9.rhcloud.com"
+
+    @assets =
+        get: (id) ->
+          $http.get "#{host}/api/assets/#{id}"
+
+        create: (item) ->
+          $http.post "#{host}/api/assets/batch", item
+
+        update: (item) ->
+          $http.put "#{host}/api/assets/#{item._id}", item
+
+        delete: (id) ->
+          $http.delete "#{host}/api/assets/#{id}"
+
+        trash: (assets) ->
+          $http.post "#{host}/api/assets/trash", assets
+
+        move: (items, src, dest) ->
+          data =
+            src   : src
+            dest  : dest
+            items : items
+
+          $http.post "#{host}/api/assets/move", data
+
+        copy: (items, src, dest) ->
+          data =
+            src   : src
+            dest  : dest
+            items : items
+
+          $http.post "#{host}/api/assets/copy", data
+
+        batch: (object) ->
+
+          # format = {
+          #   assets: list
+          # }
+
+          $http.put "#{host}/api/assets/update", object
 
   data: []
 
@@ -203,7 +245,7 @@ class imagoModel extends Service
         _.assign(@data[idx], asset)
 
     @$rootScope.$broadcast('assets:update', copy) if options.stream
-    @imagoRest.assets.update(copy) if options.save
+    @assets.update(copy) if options.save
 
 
   delete: (id, save=false) =>
@@ -211,7 +253,7 @@ class imagoModel extends Service
     # returns an array without the asset of id
     @data = _.reject(@data, { _id: id })
     @$rootScope.$broadcast 'assets:update', id
-    imagoRest.assets.delete(id) if save
+    @assets.delete(id) if save
     return @data
 
   move: (data) =>
