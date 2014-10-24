@@ -28,7 +28,7 @@ describe "Unit: imagoModel", ->
   describe 'getData invoked', ->
     collection = {}
 
-    it "should return data", () ->
+    it "should fetch data from the server data", () ->
       imagoModel.getData('/test').then (response) ->
         collection = response[0]
 
@@ -37,9 +37,18 @@ describe "Unit: imagoModel", ->
       expect(imagoModel.data.length).toEqual(11)
       expect(collection.assets).toBeDefined()
 
+    # it "should fetch data locally", () ->
+    #   imagoModel.getData('/test').then (response) ->
+    #     collection = response[0]
+
+  describe 'getLocalData invoked', ->
+    query = {}
+
+    it 'should return cached data or a query to be fetched', () ->
+      imagoModel.getLocalData('/test')
   describe 'findChildren invoked', ->
     parent   = {}
-    children     = {}
+    children = {}
 
     beforeEach ->
       imagoModel.getData('/test').then (response) ->
