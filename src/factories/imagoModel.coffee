@@ -298,11 +298,19 @@ class imagoModel extends Service
     @$rootScope.$broadcast 'assets:update', assets
 
   reorder: (assets, options = {}) =>
-    for asset in assets
-      idxAsset = @findIdx 'id': asset._id
-      idx = (if idxAsset > idx then idx else idxAsset)
 
-    args = [idx, assets.length].concat(assets)
+    copy = []
+
+    for asset, index in assets
+      idxAsset = @findIdx 'id': asset._id
+
+      if idxAsset isnt -1
+        asset = _.assign @data[idxAsset], asset
+        copy.push asset
+
+        idx = (if idxAsset > idx then idx else idxAsset)
+
+    args = [idx, assets.length].concat(copy)
     Array.prototype.splice.apply(@data, args)
 
     @$rootScope.$broadcast('assets:update', assets) if options.stream
@@ -315,10 +323,10 @@ class imagoModel extends Service
 
     for asset, key in list
       asset.order = (count-key) * 1000
-      ordered = {
+      ordered =
         _id: asset._id
         order: asset.order
-      }
+
       newList.push ordered
 
     orderedList =
@@ -444,15 +452,27 @@ class imagoModel extends Service
           asset.order = order
 
         else
-          # assets = @findChildren(parent)
-          # asset.order = (if assets.length is 0 then 1000 else assets[0].order + 1000)
-          @currentCollection.sortorder = '-order'
-          orderedList = @reindexAll(@currentCollection.assets)
-          @reorder orderedList.assets, {save: true, stream: true}
 
-          asset.order = orderedList.assets[0].order + 1000
+          if parent.sortorder is '-order'
 
-        asset.parent = parent
+            assets = parent.assets
+            asset.order = (if assets.length then assets[0].order + 1000 else 1000)
+
+          else
+
+            if parent.assets.length
+
+              orderedList = @reindexAll(parent.assets)
+              @reorder orderedList.assets, {save: true, stream: true}
+              asset.order = orderedList.assets[0].order + 1000
+
+            else
+              asset.order = 1000
+
+            parent.sortorder = '-order'
+            @update parent, {save: true}
+
+        asset.parent = parent._id
 
         defer.resolve asset
 
