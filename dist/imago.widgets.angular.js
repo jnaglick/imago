@@ -425,9 +425,9 @@ imagoSlider = (function() {
   function imagoSlider($q, $document, imagoModel) {
     return {
       replace: true,
-      scope: true,
       transclude: true,
       templateUrl: '/imagoWidgets/slider-widget.html',
+      controllerAs: 'slider',
       controller: function($scope) {
         $scope.confSlider = {};
         this.defaults = {
@@ -444,47 +444,38 @@ imagoSlider = (function() {
           lazy: false,
           align: 'center center'
         };
-        return angular.forEach(this.defaults, function(value, key) {
+        angular.forEach(this.defaults, function(value, key) {
           return $scope.confSlider[key] = value;
         });
+        return this.setCurrentSlideIndex = function(index) {
+          $scope.currentIndex = index;
+          return $scope.getSiblings();
+        };
       },
       link: function(scope, element, attrs) {
-        var getSiblings, prepareSlides, self, sourcePromise;
+        var computeData, prepareSlides, self;
         self = {};
         angular.forEach(attrs, function(value, key) {
           return scope.confSlider[key] = value;
         });
-        scope.$on('slider:change', function(e, index) {
-          return scope.setCurrentSlideIndex(index);
-        });
-        sourcePromise = (function(_this) {
-          return function() {
-            var deffered;
-            deffered = $q.defer();
-            self.watch = scope.$watch(attrs['source'], function(data) {
-              if (!data) {
-                return;
-              }
-              return deffered.resolve(data);
+        computeData = function(data) {
+          if (!angular.isArray(data)) {
+            return imagoModel.getData(data.path).then(function(response) {
+              data = imagoModel.findChildren(response[0]);
+              return prepareSlides(data);
             });
-            return deffered.promise;
-          };
-        })(this)();
-        sourcePromise.then((function(_this) {
+          } else {
+            return prepareSlides(data);
+          }
+        };
+        self.watch = scope.$watch(attrs['source'], (function(_this) {
           return function(data) {
             if (!data) {
               return;
             }
+            computeData(data);
             if (!attrs['watch']) {
-              self.watch();
-            }
-            if (!angular.isArray(data)) {
-              return imagoModel.getData(data.path).then(function(response) {
-                data = imagoModel.findChildren(response[0]);
-                return prepareSlides(data);
-              });
-            } else {
-              return prepareSlides(data);
+              return self.watch();
             }
           };
         })(this));
@@ -506,13 +497,11 @@ imagoSlider = (function() {
             scope.confSlider.enablearrows = false;
             scope.confSlider.enablekeys = false;
           }
-          scope.currentIndex = 0;
+          if (!scope.currentIndex) {
+            scope.currentIndex = 0;
+          }
           scope.sliderLength = scope.slideSource.length - 1;
-          return getSiblings();
-        };
-        scope.setCurrentSlideIndex = function(index) {
-          scope.currentIndex = index;
-          return getSiblings();
+          return scope.getSiblings();
         };
         scope.displaySlides = function(index) {
           if (index === scope.currentIndex || scope.nextIndex || scope.prevIndex) {
@@ -521,15 +510,15 @@ imagoSlider = (function() {
         };
         scope.goNext = function($event) {
           scope.currentIndex = scope.currentIndex < scope.slideSource.length - 1 ? ++scope.currentIndex : 0;
-          getSiblings();
+          scope.getSiblings();
           return scope.$broadcast('slide');
         };
         scope.goPrev = function($event) {
           scope.currentIndex = scope.currentIndex > 0 ? --scope.currentIndex : scope.slideSource.length - 1;
-          getSiblings();
+          scope.getSiblings();
           return scope.$broadcast('slide');
         };
-        getSiblings = function() {
+        scope.getSiblings = function() {
           scope.nextIndex = scope.currentIndex === scope.sliderLength ? 0 : scope.currentIndex + 1;
           return scope.prevIndex = scope.currentIndex === 0 ? scope.sliderLength : scope.currentIndex - 1;
         };
@@ -2130,6 +2119,14 @@ imagoUtils = (function() {
 
 angular.module('imago.widgets.angular').factory('imagoUtils', [imagoUtils]);
 
+var lodash;
+
+lodash = angular.module('lodash', []);
+
+lodash.factory('_', function() {
+  return window._();
+});
+
 var Meta;
 
 Meta = (function() {
@@ -2186,11 +2183,3 @@ Time = (function() {
 })();
 
 angular.module('imago.widgets.angular').filter('time', [Time]);
-
-var lodash;
-
-lodash = angular.module('lodash', []);
-
-lodash.factory('_', function() {
-  return window._();
-});
