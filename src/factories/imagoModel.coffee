@@ -444,8 +444,13 @@ class imagoModel extends Service
           asset.order = order
 
         else
-          assets = @findChildren(parent)
-          asset.order = (if assets.length is 0 then 1000 else assets[0].order + 1000)
+          # assets = @findChildren(parent)
+          # asset.order = (if assets.length is 0 then 1000 else assets[0].order + 1000)
+          @currentCollection.sortorder = '-order'
+          orderedList = @reindexAll(@currentCollection.assets)
+          @reorder orderedList.assets, {save: true, stream: true}
+
+          asset.order = orderedList.assets[0].order + 1000
 
         asset.parent = parent
 
