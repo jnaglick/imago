@@ -43,24 +43,7 @@ class imagoImage extends Directive
         opts.initialWidth  = opts.width
         opts.initialHeight = opts.height
 
-        # unless opts.lazy is 'false'
-        #   visiblePromise = do () =>
-        #     deffered = $q.defer()
-        #     self.visibleFunc = scope.$watch attrs['visible'], (value) =>
-        #       return unless value is true
-        #       deffered.resolve(value)
-
-        #     return deffered.promise
-
-        activateVisible = (servingUrl, opts) ->
-          self.visibleFunc = scope.$watch attrs['visible'], (value) =>
-            return unless value is true
-            self.visibleFunc()
-            visibleFunc(servingUrl, opts)
-
-
         calculateData = (data) ->
-
           source = data
 
           if opts.dimensions and attrs['dimensions']
@@ -75,7 +58,7 @@ class imagoImage extends Directive
           self.watch() unless attrs['watch']
           calculateData(data)
 
-        visibleFunc = (servingUrl, opts) ->
+        renderImage = (servingUrl, opts) ->
           img = angular.element('<img>')
           img.on 'load', (e) =>
             scope.imageStyle.backgroundImage     = "url(#{servingUrl})"
@@ -87,6 +70,12 @@ class imagoImage extends Directive
           # console.log 'scope.imageStyle', scope.imageStyle
 
           img[0].src = servingUrl
+
+        lazyLoad = (servingUrl, opts) ->
+          self.visibleFunc = scope.$watch attrs['visible'], (value) =>
+            return unless value is true
+            self.visibleFunc()
+            renderImage(servingUrl, opts)
 
         render = (data) =>
           unless data?.serving_url
@@ -206,10 +195,10 @@ class imagoImage extends Directive
             scope.imageStyle.height = "#{parseInt height, 10}px"
 
           unless opts.lazy
-            visibleFunc(servingUrl, opts)
+            renderImage(servingUrl, opts)
 
           else
-            activateVisible(servingUrl, opts)
+            lazyLoad(servingUrl, opts)
 
         scope.calcMediaSize = () =>
 

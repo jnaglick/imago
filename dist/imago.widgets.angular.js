@@ -172,7 +172,7 @@ imagoImage = (function() {
         return $scope.imageStyle = {};
       },
       link: function(scope, element, attrs) {
-        var activateVisible, calculateData, defaults, key, opts, render, self, source, value, visibleFunc;
+        var calculateData, defaults, key, lazyLoad, opts, render, renderImage, self, source, value;
         self = {};
         opts = {};
         source = {};
@@ -198,17 +198,6 @@ imagoImage = (function() {
         }
         opts.initialWidth = opts.width;
         opts.initialHeight = opts.height;
-        activateVisible = function(servingUrl, opts) {
-          return self.visibleFunc = scope.$watch(attrs['visible'], (function(_this) {
-            return function(value) {
-              if (value !== true) {
-                return;
-              }
-              self.visibleFunc();
-              return visibleFunc(servingUrl, opts);
-            };
-          })(this));
-        };
         calculateData = function(data) {
           source = data;
           if (opts.dimensions && attrs['dimensions']) {
@@ -233,7 +222,7 @@ imagoImage = (function() {
             return calculateData(data);
           };
         })(this));
-        visibleFunc = function(servingUrl, opts) {
+        renderImage = function(servingUrl, opts) {
           var img;
           img = angular.element('<img>');
           img.on('load', (function(_this) {
@@ -247,6 +236,17 @@ imagoImage = (function() {
             };
           })(this));
           return img[0].src = servingUrl;
+        };
+        lazyLoad = function(servingUrl, opts) {
+          return self.visibleFunc = scope.$watch(attrs['visible'], (function(_this) {
+            return function(value) {
+              if (value !== true) {
+                return;
+              }
+              self.visibleFunc();
+              return renderImage(servingUrl, opts);
+            };
+          })(this));
         };
         render = (function(_this) {
           return function(data) {
@@ -333,9 +333,9 @@ imagoImage = (function() {
               scope.imageStyle.height = "" + (parseInt(height, 10)) + "px";
             }
             if (!opts.lazy) {
-              return visibleFunc(servingUrl, opts);
+              return renderImage(servingUrl, opts);
             } else {
-              return activateVisible(servingUrl, opts);
+              return lazyLoad(servingUrl, opts);
             }
           };
         })(this);
