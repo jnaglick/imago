@@ -53,8 +53,9 @@ class imagoImage extends Directive
         #     return deffered.promise
 
         activateVisible = (servingUrl, opts) ->
-          scope.$watch attrs['visible'], (value) =>
+          self.visibleFunc = scope.$watch attrs['visible'], (value) =>
             return unless value is true
+            self.visibleFunc()
             visibleFunc(servingUrl, opts)
 
 
