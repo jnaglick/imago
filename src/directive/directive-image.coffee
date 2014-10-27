@@ -77,7 +77,7 @@ class imagoImage extends Directive
             opts.align = data.fields.crop.value
 
           if data.fields.sizemode
-            opts.sizemode = data.fields.sizemode
+            opts.sizemode = data.fields.sizemode.value
 
           scope.elementStyle = {} unless scope.elementStyle
 
@@ -220,6 +220,7 @@ class imagoImage extends Directive
           return unless opts.width and opts.height
 
           wrapperRatio = opts.width / opts.height
+
           if opts.sizemode is 'crop'
             # $log.log 'opts.sizemode crop', opts.assetRatio, wrapperRatio
             if opts.assetRatio < wrapperRatio then "100% auto" else "auto 100%"
