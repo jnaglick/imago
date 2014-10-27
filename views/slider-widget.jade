@@ -16,13 +16,6 @@ div(ng-class="elementStyle")
           ng-repeat="slide in slideSource",
           ng-show="displaySlides($index)"
           ng-switch="slide.kind")
-      div(imago-image,
-          dimensions="dimensions",
-          source="slide",
-          sizemode="{{ $parent.confSlider.sizemode }}"
-          align=" slide | meta: 'align' "
-          ng-switch-when="Image"
-          )
 
       div(imago-video,
           dimensions="dimensions",
@@ -30,4 +23,12 @@ div(ng-class="elementStyle")
           sizemode="{{ $parent.confSlider.sizemode }}"
           align=" slide | meta: 'align' "
           ng-switch-when="Video"
+          )
+
+      div(imago-image,
+          dimensions="dimensions",
+          source="slide",
+          sizemode="{{ $parent.confSlider.sizemode }}"
+          align=" slide | meta: 'align' "
+          ng-switch-default
           )
