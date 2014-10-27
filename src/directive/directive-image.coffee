@@ -43,7 +43,7 @@ class imagoImage extends Directive
         opts.initialWidth  = opts.width
         opts.initialHeight = opts.height
 
-        unless opts.lazy isnt false
+        unless opts.lazy is 'false'
           visiblePromise = do () =>
             deffered = $q.defer()
             self.visibleFunc = scope.$watch attrs['visible'], (value) =>
@@ -52,22 +52,7 @@ class imagoImage extends Directive
 
             return deffered.promise
 
-
-        sourcePromise = do () =>
-          deffered = $q.defer()
-
-          self.watch = scope.$watch attrs['source'], (data) =>
-            return unless data
-
-            deffered.resolve(data)
-
-          return deffered.promise
-
-
-        sourcePromise.then (data) =>
-          self.watch() unless attrs['watch']
-          source = data
-
+        calculateData = (source) ->
           if opts.dimensions and attrs['dimensions']
             scope.$watch attrs['dimensions'], (value) =>
               angular.forEach value, (value, key) =>
@@ -75,12 +60,10 @@ class imagoImage extends Directive
 
           render source
 
-          # if opts.lazy
-          #   visiblePromise.then (value) =>
-          #     self.visibleFunc()
-          #     render source
-          # else
-          #   render data
+        self.watch = scope.$watch attrs['source'], (data) =>
+          return unless data
+          self.watch() unless attrs['watch']
+          calculateData(data)
 
         render = (data) =>
           unless data?.serving_url
@@ -200,7 +183,7 @@ class imagoImage extends Directive
             scope.imageStyle.height = "#{parseInt height, 10}px"
 
 
-          unless opts.lazy isnt false
+          unless opts.lazy is 'false'
             visiblePromise.then (value) =>
               self.visibleFunc()
               img = angular.element('<img>')
@@ -230,8 +213,8 @@ class imagoImage extends Directive
 
           # $log.log 'calcMediaSize', opts.sizemode
 
-          # opts.width  = element[0].clientWidth  or opts.width
-          # opts.height = element[0].clientHeight or opts.height
+          opts.width  = element[0].clientWidth  or opts.width
+          opts.height = element[0].clientHeight or opts.height
 
           # $log.log 'calcMediaSize: opts.width, opts.height', opts.width, opts.height
           return unless opts.width and opts.height

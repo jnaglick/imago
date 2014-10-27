@@ -166,7 +166,7 @@ imagoImage = (function() {
         return $scope.imageStyle = {};
       },
       link: function(scope, element, attrs) {
-        var defaults, key, opts, render, self, source, sourcePromise, value, visiblePromise;
+        var calculateData, defaults, key, opts, render, self, source, value, visiblePromise;
         self = {};
         opts = {};
         source = {};
@@ -192,7 +192,7 @@ imagoImage = (function() {
         }
         opts.initialWidth = opts.width;
         opts.initialHeight = opts.height;
-        if (opts.lazy === false) {
+        if (opts.lazy !== 'false') {
           visiblePromise = (function(_this) {
             return function() {
               var deffered;
@@ -207,33 +207,27 @@ imagoImage = (function() {
             };
           })(this)();
         }
-        sourcePromise = (function(_this) {
-          return function() {
-            var deffered;
-            deffered = $q.defer();
-            self.watch = scope.$watch(attrs['source'], function(data) {
-              if (!data) {
-                return;
-              }
-              return deffered.resolve(data);
-            });
-            return deffered.promise;
-          };
-        })(this)();
-        sourcePromise.then((function(_this) {
-          return function(data) {
-            if (!attrs['watch']) {
-              self.watch();
-            }
-            source = data;
-            if (opts.dimensions && attrs['dimensions']) {
-              scope.$watch(attrs['dimensions'], function(value) {
+        calculateData = function(source) {
+          if (opts.dimensions && attrs['dimensions']) {
+            scope.$watch(attrs['dimensions'], (function(_this) {
+              return function(value) {
                 return angular.forEach(value, function(value, key) {
                   return opts[key] = value || 'auto';
                 });
-              });
+              };
+            })(this));
+          }
+          return render(source);
+        };
+        self.watch = scope.$watch(attrs['source'], (function(_this) {
+          return function(data) {
+            if (!data) {
+              return;
             }
-            return render(source);
+            if (!attrs['watch']) {
+              self.watch();
+            }
+            return calculateData(data);
           };
         })(this));
         render = (function(_this) {
@@ -320,7 +314,7 @@ imagoImage = (function() {
               scope.imageStyle.width = "" + (parseInt(width, 10)) + "px";
               scope.imageStyle.height = "" + (parseInt(height, 10)) + "px";
             }
-            if (opts.lazy === false) {
+            if (opts.lazy !== 'false') {
               return visiblePromise.then(function(value) {
                 var img;
                 self.visibleFunc();
@@ -352,6 +346,8 @@ imagoImage = (function() {
         scope.calcMediaSize = (function(_this) {
           return function() {
             var wrapperRatio;
+            opts.width = element[0].clientWidth || opts.width;
+            opts.height = element[0].clientHeight || opts.height;
             if (!(opts.width && opts.height)) {
               return;
             }
