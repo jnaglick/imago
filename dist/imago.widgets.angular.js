@@ -358,8 +358,6 @@ imagoImage = (function() {
         scope.calcMediaSize = (function(_this) {
           return function() {
             var wrapperRatio;
-            opts.width = element[0].clientWidth || opts.width;
-            opts.height = element[0].clientHeight || opts.height;
             if (!(opts.width && opts.height)) {
               return;
             }
@@ -447,10 +445,15 @@ imagoSlider = (function() {
         angular.forEach(this.defaults, function(value, key) {
           return $scope.confSlider[key] = value;
         });
-        return this.setCurrentSlideIndex = function(index) {
-          $scope.currentIndex = index;
-          return $scope.getSiblings();
+        this.getCurrentSlideIndex = function() {
+          return $scope.currentIndex;
         };
+        return this.setCurrentSlideIndex = (function(_this) {
+          return function(index) {
+            $scope.currentIndex = index;
+            return $scope.getSiblings();
+          };
+        })(this);
       },
       link: function(scope, element, attrs) {
         var computeData, prepareSlides, self;
@@ -508,13 +511,13 @@ imagoSlider = (function() {
             return true;
           }
         };
-        scope.goNext = function($event) {
-          scope.currentIndex = scope.currentIndex < scope.slideSource.length - 1 ? ++scope.currentIndex : 0;
+        scope.goPrev = function($event) {
+          scope.currentIndex = scope.currentIndex > 0 ? --scope.currentIndex : scope.slideSource.length - 1;
           scope.getSiblings();
           return scope.$broadcast('slide');
         };
-        scope.goPrev = function($event) {
-          scope.currentIndex = scope.currentIndex > 0 ? --scope.currentIndex : scope.slideSource.length - 1;
+        scope.goNext = function($event) {
+          scope.currentIndex = scope.currentIndex < scope.slideSource.length - 1 ? ++scope.currentIndex : 0;
           scope.getSiblings();
           return scope.$broadcast('slide');
         };
@@ -2146,7 +2149,7 @@ var Meta;
 Meta = (function() {
   function Meta() {
     return function(input, value) {
-      if (!(input && value)) {
+      if (!(input && value && input.fields[value])) {
         return;
       }
       if (input.fields[value].value.type) {
