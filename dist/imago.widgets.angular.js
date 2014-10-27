@@ -1251,63 +1251,6 @@ imagoUtils = (function() {
 
 angular.module('imago.widgets.angular').factory('imagoUtils', [imagoUtils]);
 
-var Meta;
-
-Meta = (function() {
-  function Meta() {
-    return function(input, value) {
-      if (!(input && value && input.fields[value])) {
-        return;
-      }
-      if (input.fields[value].value.type) {
-        return input.fields[value].value.value;
-      } else {
-        return input.fields[value].value;
-      }
-    };
-  }
-
-  return Meta;
-
-})();
-
-angular.module('imago.widgets.angular').filter('meta', [Meta]);
-
-var Time;
-
-Time = (function() {
-  function Time() {
-    return function(input) {
-      var calc, hours, minutes, pad, seconds;
-      if (!input) {
-        return;
-      }
-      pad = function(num) {
-        if (num < 10) {
-          return "0" + num;
-        }
-        return num;
-      };
-      calc = [];
-      minutes = Math.floor(input / 60);
-      hours = Math.floor(input / 3600);
-      seconds = (input === 0 ? 0 : input % 60);
-      seconds = Math.round(seconds);
-      if (hours > 0) {
-        calc.push(pad(hours));
-      }
-      calc.push(pad(minutes));
-      calc.push(pad(seconds));
-      return calc.join(":");
-    };
-  }
-
-  return Time;
-
-})();
-
-angular.module('imago.widgets.angular').filter('time', [Time]);
-
 var imagoCompile;
 
 imagoCompile = (function() {
@@ -1445,7 +1388,7 @@ imagoImage = (function() {
         return $scope.imageStyle = {};
       },
       link: function(scope, element, attrs) {
-        var calculateData, defaults, key, opts, render, self, source, value, visiblePromise;
+        var activateVisible, calculateData, defaults, key, opts, render, self, source, value, visibleFunc;
         self = {};
         opts = {};
         source = {};
@@ -1471,22 +1414,18 @@ imagoImage = (function() {
         }
         opts.initialWidth = opts.width;
         opts.initialHeight = opts.height;
-        if (opts.lazy !== 'false') {
-          visiblePromise = (function(_this) {
-            return function() {
-              var deffered;
-              deffered = $q.defer();
-              self.visibleFunc = scope.$watch(attrs['visible'], function(value) {
-                if (value !== true) {
-                  return;
-                }
-                return deffered.resolve(value);
-              });
-              return deffered.promise;
+        activateVisible = function(servingUrl, opts) {
+          return scope.$watch(attrs['visible'], (function(_this) {
+            return function(value) {
+              if (value !== true) {
+                return;
+              }
+              return visibleFunc(servingUrl, opts);
             };
-          })(this)();
-        }
-        calculateData = function(source) {
+          })(this));
+        };
+        calculateData = function(data) {
+          source = data;
           if (opts.dimensions && attrs['dimensions']) {
             scope.$watch(attrs['dimensions'], (function(_this) {
               return function(value) {
@@ -1509,9 +1448,24 @@ imagoImage = (function() {
             return calculateData(data);
           };
         })(this));
+        visibleFunc = function(servingUrl, opts) {
+          var img;
+          img = angular.element('<img>');
+          img.on('load', (function(_this) {
+            return function(e) {
+              scope.imageStyle.backgroundImage = "url(" + servingUrl + ")";
+              scope.imageStyle.backgroundSize = scope.calcMediaSize();
+              scope.imageStyle.backgroundPosition = opts.align;
+              scope.imageStyle.display = 'inline-block';
+              scope.status = 'loaded';
+              return scope.$apply();
+            };
+          })(this));
+          return img[0].src = servingUrl;
+        };
         render = (function(_this) {
           return function(data) {
-            var dpr, height, img, r, servingSize, servingUrl, width, wrapperRatio, _ref;
+            var dpr, height, r, servingSize, servingUrl, width, wrapperRatio, _ref;
             if (!(data != null ? data.serving_url : void 0)) {
               element.remove();
               return;
@@ -1593,32 +1547,10 @@ imagoImage = (function() {
               scope.imageStyle.width = "" + (parseInt(width, 10)) + "px";
               scope.imageStyle.height = "" + (parseInt(height, 10)) + "px";
             }
-            if (opts.lazy !== 'false') {
-              return visiblePromise.then(function(value) {
-                var img;
-                self.visibleFunc();
-                img = angular.element('<img>');
-                img.on('load', function(e) {
-                  scope.imageStyle.backgroundImage = "url(" + servingUrl + ")";
-                  scope.imageStyle.backgroundSize = scope.calcMediaSize();
-                  scope.imageStyle.backgroundPosition = opts.align;
-                  scope.imageStyle.display = 'inline-block';
-                  scope.status = 'loaded';
-                  return scope.$apply();
-                });
-                return img[0].src = servingUrl;
-              });
+            if (!opts.lazy) {
+              return visibleFunc(servingUrl, opts);
             } else {
-              img = angular.element('<img>');
-              img.on('load', function(e) {
-                scope.imageStyle.backgroundImage = "url(" + servingUrl + ")";
-                scope.imageStyle.backgroundSize = scope.calcMediaSize();
-                scope.imageStyle.backgroundPosition = opts.align;
-                scope.imageStyle.display = 'inline-block';
-                scope.status = 'loaded';
-                return scope.$apply();
-              });
-              return img[0].src = servingUrl;
+              return activateVisible(servingUrl, opts);
             }
           };
         })(this);
@@ -2196,6 +2128,63 @@ StopPropagation = (function() {
 })();
 
 angular.module('imago.widgets.angular').directive('stopPropagation', [StopPropagation]);
+
+var Meta;
+
+Meta = (function() {
+  function Meta() {
+    return function(input, value) {
+      if (!(input && value && input.fields[value])) {
+        return;
+      }
+      if (input.fields[value].value.type) {
+        return input.fields[value].value.value;
+      } else {
+        return input.fields[value].value;
+      }
+    };
+  }
+
+  return Meta;
+
+})();
+
+angular.module('imago.widgets.angular').filter('meta', [Meta]);
+
+var Time;
+
+Time = (function() {
+  function Time() {
+    return function(input) {
+      var calc, hours, minutes, pad, seconds;
+      if (!input) {
+        return;
+      }
+      pad = function(num) {
+        if (num < 10) {
+          return "0" + num;
+        }
+        return num;
+      };
+      calc = [];
+      minutes = Math.floor(input / 60);
+      hours = Math.floor(input / 3600);
+      seconds = (input === 0 ? 0 : input % 60);
+      seconds = Math.round(seconds);
+      if (hours > 0) {
+        calc.push(pad(hours));
+      }
+      calc.push(pad(minutes));
+      calc.push(pad(seconds));
+      return calc.join(":");
+    };
+  }
+
+  return Time;
+
+})();
+
+angular.module('imago.widgets.angular').filter('time', [Time]);
 
 var lodash;
 

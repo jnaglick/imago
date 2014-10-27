@@ -43,16 +43,25 @@ class imagoImage extends Directive
         opts.initialWidth  = opts.width
         opts.initialHeight = opts.height
 
-        unless opts.lazy is 'false'
-          visiblePromise = do () =>
-            deffered = $q.defer()
-            self.visibleFunc = scope.$watch attrs['visible'], (value) =>
-              return unless value is true
-              deffered.resolve(value)
+        # unless opts.lazy is 'false'
+        #   visiblePromise = do () =>
+        #     deffered = $q.defer()
+        #     self.visibleFunc = scope.$watch attrs['visible'], (value) =>
+        #       return unless value is true
+        #       deffered.resolve(value)
 
-            return deffered.promise
+        #     return deffered.promise
 
-        calculateData = (source) ->
+        activateVisible = (servingUrl, opts) ->
+          scope.$watch attrs['visible'], (value) =>
+            return unless value is true
+            visibleFunc(servingUrl, opts)
+
+
+        calculateData = (data) ->
+
+          source = data
+
           if opts.dimensions and attrs['dimensions']
             scope.$watch attrs['dimensions'], (value) =>
               angular.forEach value, (value, key) =>
@@ -64,6 +73,19 @@ class imagoImage extends Directive
           return unless data
           self.watch() unless attrs['watch']
           calculateData(data)
+
+        visibleFunc = (servingUrl, opts) ->
+          img = angular.element('<img>')
+          img.on 'load', (e) =>
+            scope.imageStyle.backgroundImage     = "url(#{servingUrl})"
+            scope.imageStyle.backgroundSize      = scope.calcMediaSize()
+            scope.imageStyle.backgroundPosition  = opts.align
+            scope.imageStyle.display             = 'inline-block'
+            scope.status                         = 'loaded'
+            scope.$apply()
+          # console.log 'scope.imageStyle', scope.imageStyle
+
+          img[0].src = servingUrl
 
         render = (data) =>
           unless data?.serving_url
@@ -182,32 +204,11 @@ class imagoImage extends Directive
             scope.imageStyle.width  = "#{parseInt width,  10}px"
             scope.imageStyle.height = "#{parseInt height, 10}px"
 
+          unless opts.lazy
+            visibleFunc(servingUrl, opts)
 
-          unless opts.lazy is 'false'
-            visiblePromise.then (value) =>
-              self.visibleFunc()
-              img = angular.element('<img>')
-              img.on 'load', (e) =>
-                scope.imageStyle.backgroundImage     = "url(#{servingUrl})"
-                scope.imageStyle.backgroundSize      = scope.calcMediaSize()
-                scope.imageStyle.backgroundPosition  = opts.align
-                scope.imageStyle.display             = 'inline-block'
-                scope.status                         = 'loaded'
-                scope.$apply()
-
-              img[0].src = servingUrl
           else
-            img = angular.element('<img>')
-            img.on 'load', (e) =>
-              scope.imageStyle.backgroundImage     = "url(#{servingUrl})"
-              scope.imageStyle.backgroundSize      = scope.calcMediaSize()
-              scope.imageStyle.backgroundPosition  = opts.align
-              scope.imageStyle.display             = 'inline-block'
-              scope.status                         = 'loaded'
-              scope.$apply()
-            # console.log 'scope.imageStyle', scope.imageStyle
-
-            img[0].src = servingUrl
+            activateVisible(servingUrl, opts)
 
         scope.calcMediaSize = () =>
 
