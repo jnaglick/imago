@@ -21,12 +21,15 @@ class imagoSlider extends Directive
           noResize:     false
           current:      0
           lazy:         false
-          align:         'center center'
+          align:        'center center'
 
         angular.forEach @defaults, (value, key) ->
           $scope.confSlider[key] = value
 
-        @setCurrentSlideIndex = (index) ->
+        @getCurrentSlideIndex = () ->
+          return $scope.currentIndex
+
+        @setCurrentSlideIndex = (index) =>
           $scope.currentIndex = index
           $scope.getSiblings()
 
@@ -36,9 +39,6 @@ class imagoSlider extends Directive
 
         angular.forEach attrs, (value, key) ->
           scope.confSlider[key] = value
-
-        # scope.$on 'slider:change', (e, index) ->
-        #   scope.setCurrentSlideIndex index
 
         computeData = (data) ->
           unless angular.isArray(data)
@@ -75,13 +75,13 @@ class imagoSlider extends Directive
         scope.displaySlides = (index) ->
           return true if index is scope.currentIndex or scope.nextIndex or scope.prevIndex
 
-        scope.goNext = ($event) ->
-          scope.currentIndex = if (scope.currentIndex < scope.slideSource.length - 1) then ++scope.currentIndex else 0
+        scope.goPrev = ($event) ->
+          scope.currentIndex = if (scope.currentIndex > 0) then --scope.currentIndex else scope.slideSource.length - 1
           scope.getSiblings()
           scope.$broadcast 'slide'
 
-        scope.goPrev = ($event) ->
-          scope.currentIndex = if (scope.currentIndex > 0) then --scope.currentIndex else scope.slideSource.length - 1
+        scope.goNext = ($event) ->
+          scope.currentIndex = if (scope.currentIndex < scope.slideSource.length - 1) then ++scope.currentIndex else 0
           scope.getSiblings()
           scope.$broadcast 'slide'
 

@@ -83,9 +83,6 @@ class imagoImage extends Directive
           #   render data
 
         render = (data) =>
-          # console.log 'data', data.serving_url
-
-
           unless data?.serving_url
             element.remove()
             return
@@ -100,7 +97,7 @@ class imagoImage extends Directive
             opts.sizemode = data.fields.sizemode
 
           scope.elementStyle = {} unless scope.elementStyle
-          #console.log 'elementStyle ' , scope.elementStyle
+
           if angular.isString(data.resolution)
             r = data.resolution.split('x')
             opts.resolution =
@@ -108,15 +105,6 @@ class imagoImage extends Directive
               height: r[1]
             opts.assetRatio = r[0]/r[1]
 
-          # TODO: Not sure about this solution below:
-          # the widget may get less flexible / Sebastian
-
-          # if opts.width and opts.height
-          #   width = parseInt opts.width
-          #   height = parseInt opts.height
-          # else
-          #   width = element[0].clientWidth
-          #   height = element[0].clientHeight
           return console.log('tried to render during rendering!!') if scope.status is 'preloading'
 
           # console.log 'opts.assetRatio', opts.assetRatio
@@ -241,8 +229,9 @@ class imagoImage extends Directive
         scope.calcMediaSize = () =>
 
           # $log.log 'calcMediaSize', opts.sizemode
-          opts.width  = element[0].clientWidth  or opts.width
-          opts.height = element[0].clientHeight or opts.height
+
+          # opts.width  = element[0].clientWidth  or opts.width
+          # opts.height = element[0].clientHeight or opts.height
 
           # $log.log 'calcMediaSize: opts.width, opts.height', opts.width, opts.height
           return unless opts.width and opts.height
@@ -260,7 +249,6 @@ class imagoImage extends Directive
           scope.imageStyle['background-size'] = scope.calcMediaSize()
 
         scope.$on 'resizelimit', () =>
-          #console.log 'resizelimit' ,opts.responsive
           scope.onResize() if opts.responsive
 
         scope.$on 'resizestop', () =>
