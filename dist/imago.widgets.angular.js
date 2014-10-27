@@ -8,7 +8,7 @@ var App;
 
 App = (function() {
   function App() {
-    return ['ImagoWidgetsTemplates', 'lodash'];
+    return ['ImagoWidgetsTemplates', 'lodash', 'angular-inview'];
   }
 
   return App;

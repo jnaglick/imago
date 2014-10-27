@@ -5,4 +5,5 @@ class App extends App
         return [
             'ImagoWidgetsTemplates'
             'lodash'
+            'angular-inview'
         ]
