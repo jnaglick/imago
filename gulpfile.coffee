@@ -30,6 +30,7 @@ targets =
   js      : 'imago.widgets.angular.js'
   jade    : 'templates.js'
   coffee  : 'coffee.js'
+  scripts : 'scripts.js'
 
 paths =
   coffee: [
@@ -37,8 +38,10 @@ paths =
     "#{src}/**/*.coffee"
   ]
   jade: [
-    "!node_modules/**/*.jade"
     "views/*.jade"
+  ]
+  js: [
+    "bower_components/angular-inview/angular-inview.js"
   ]
 
 # END Defaults
@@ -94,6 +97,12 @@ gulp.task "jade", ->
     .pipe concat targets.jade
     .pipe gulp.dest dest
 
+gulp.task "scripts", ->
+  gulp.src paths.js
+    .pipe plumber()
+    .pipe concat targets.scripts
+    .pipe gulp.dest dest
+
 combineJs = (production = false) ->
   # We need to rethrow jade errors to see them
   rethrow = (err, filename, lineno) -> throw err
@@ -101,6 +110,7 @@ combineJs = (production = false) ->
   files = [
     targets.jade
     targets.coffee
+    targets.scripts
   ]
   sources = files.map (file) -> "#{dest}/#{file}"
 
@@ -161,7 +171,7 @@ gulp.task "karma", ->
 
 gulp.task "combine", combineJs
 
-gulp.task "js", ["coffee", "jade"], (next) ->
+gulp.task "js", ["coffee", "jade", "scripts"], (next) ->
   next()
 
 gulp.task "prepare", ["js"], ->
