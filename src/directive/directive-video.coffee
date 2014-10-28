@@ -1,14 +1,15 @@
 class imagoVideo extends Directive
 
-  constructor: ($q, $window, imagoUtils, $timeout) ->
+  constructor: ($q, $timeout, $window, imagoUtils) ->
     return {
       replace: true
       scope: true
       templateUrl: '/imagoWidgets/video-widget.html'
+      controllerAs: 'video'
       controller: ($scope, $element, $attrs, $transclude) ->
 
-        $scope.player = $element.find('video')[0]
-        $scope.loading =true
+        $scope.player  = $element.find('video')[0]
+        $scope.loading = true
 
         angular.element($scope.player).bind 'ended', (e) =>
           $scope.player.currentTime = 0
@@ -39,7 +40,7 @@ class imagoVideo extends Directive
             value = JSON.parse value
           videoOpts[key] = value
 
-        # TODO: Remember users preference by localStorage
+
         if videoOpts.lazy
           visiblePromise = do () =>
             deffered = $q.defer()
@@ -49,19 +50,8 @@ class imagoVideo extends Directive
 
             return deffered.promise
 
-        sourcePromise = do () =>
-          deffered = $q.defer()
+        compileData = (data) ->
 
-          self.watch = scope.$watch attrs['source'], (data) =>
-            return unless data
-
-            deffered.resolve(data)
-
-          return deffered.promise
-
-
-        sourcePromise.then (data) =>
-          return unless data
           self.source = data
 
           unless !!self.source.fields.crop
@@ -85,6 +75,12 @@ class imagoVideo extends Directive
               render self.source
           else
             render self.source
+
+        self.watch = scope.$watch attrs['source'], (data) =>
+          return unless data
+
+          self.watch() unless attrs['watch']
+          compileData data
 
         render = (data) =>
           scope.wrapperStyle = {} unless scope.wrapperStyle
@@ -204,14 +200,20 @@ class imagoVideo extends Directive
             scope.player.pause()
 
         scope.toggleSize = ->
+
           if videoOpts.size is 'hd'
             videoOpts.size = 'sd'
             scope.wrapperStyle.size = 'sd'
+
           else
             videoOpts.size = 'hd'
             scope.wrapperStyle.size = 'hd'
 
           scope.videoFormats.reverse()
+
+          $timeout ->
+            scope.player.load()
+            scope.player.play()
 
         # we should only do this if the video changes actually size
         scope.$on 'resizelimit', () ->
