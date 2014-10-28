@@ -38,6 +38,8 @@ class imagoSlider extends Directive
         self = {}
 
         angular.forEach attrs, (value, key) ->
+          if value is 'true' or value is 'false'
+            value = JSON.parse value
           scope.confSlider[key] = value
 
         computeData = (data) ->

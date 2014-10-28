@@ -1,7 +1,10 @@
 class imagoModel extends Service
   # I converted everything to the new syntax, but didn't refact the methods
   constructor: (@$rootScope, @$http, @$location, @$q, @imagoUtils) ->
-    @host = window.location.protocol + "//imagoapi-nex9.rhcloud.com"
+    if (data is 'online' and debug)
+      @host = window.location.protocol + "//imagoapi-nex9.rhcloud.com"
+    else
+      @host = window.location.protocol + "//localhost:8000"
 
     @assets =
       get: (id) =>
@@ -51,7 +54,7 @@ class imagoModel extends Service
     if (data is 'online' and debug)
       return "#{window.location.protocol}//imagoapi-nex9.rhcloud.com/api/search"
     else
-      return "/api/search"
+      return "http://localhost:8000/api/search"
 
   search: (query) ->
     # console.log 'search...', query

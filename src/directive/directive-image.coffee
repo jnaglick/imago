@@ -36,6 +36,8 @@ class imagoImage extends Directive
           opts[key] = value
 
         for key, value of attrs
+          if value is 'true' or value is 'false'
+            value = JSON.parse value
           opts[key] = value
 
         #####

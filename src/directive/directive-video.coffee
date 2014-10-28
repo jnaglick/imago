@@ -35,6 +35,8 @@ class imagoVideo extends Directive
           videoOpts[key] = value
 
         angular.forEach attrs, (value, key) =>
+          if value is 'true' or value is 'false'
+            value = JSON.parse value
           videoOpts[key] = value
 
         # TODO: Remember users preference by localStorage
@@ -119,9 +121,7 @@ class imagoVideo extends Directive
           for format, i in data.fields.formats
             continue unless codec is format.codec
             scope.videoFormats.push(
-                "src" : """//imagoapi-nex9.rhcloud.com/api/
-                           play_redirect?uuid=#{data.uuid}&codec=#{format.codec}
-                           &quality=hd&max_size=#{format.size}"""
+                "src" : """//imagoapi-nex9.rhcloud.com/api/play_redirect?uuid=#{data.uuid}&codec=#{format.codec}&quality=hd&max_size=#{format.size}"""
                 "size": format.size
                 "codec": format.codec
                 "type": "video/#{codec}"
