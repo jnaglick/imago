@@ -1240,14 +1240,51 @@ imagoModel = (function() {
     return assets;
   };
 
-  imagoModel.prototype.add = function(asset) {
-    if (this.imagoUtils.isBaseString(asset.serving_url)) {
-      asset.base64 = true;
-    } else {
-      asset.base64 = false;
+  imagoModel.prototype.add = function(assets, options) {
+    var asset, defer, _i, _len;
+    if (options == null) {
+      options = {};
     }
-    this.data.unshift(asset);
-    return this.$rootScope.$broadcast('assets:update', asset);
+    if (_.isUndefined(options.stream)) {
+      options.stream = true;
+    }
+    if (options.save) {
+      defer = this.$q.defer();
+      this.assets.create(assets).then((function(_this) {
+        return function(result) {
+          var asset, _i, _len, _ref;
+          console.log('result create', result.data.data);
+          _ref = result.data.data;
+          for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+            asset = _ref[_i];
+            if (_this.imagoUtils.isBaseString(asset.serving_url)) {
+              asset.base64 = true;
+            } else {
+              asset.base64 = false;
+            }
+            _this.data.unshift(asset);
+          }
+          defer.resolve(result.data.data);
+          if (options.stream) {
+            return _this.$rootScope.$broadcast('assets:update', result.data.data);
+          }
+        };
+      })(this));
+      return defer.promise;
+    } else {
+      for (_i = 0, _len = assets.length; _i < _len; _i++) {
+        asset = assets[_i];
+        if (this.imagoUtils.isBaseString(asset.serving_url)) {
+          asset.base64 = true;
+        } else {
+          asset.base64 = false;
+        }
+        this.data.unshift(asset);
+      }
+      if (options.stream) {
+        return this.$rootScope.$broadcast('assets:update', assets);
+      }
+    }
   };
 
   imagoModel.prototype.update = function(data, options) {

@@ -217,13 +217,36 @@ class imagoModel extends Service
 
     return assets
 
-  add: (asset) =>
-    if @imagoUtils.isBaseString(asset.serving_url)
-      asset.base64 = true
-    else
-      asset.base64 = false
-    @data.unshift asset
-    @$rootScope.$broadcast 'assets:update', asset
+  add: (assets, options = {}) =>
+      options.stream = true if _.isUndefined options.stream
+
+      if options.save
+        defer = @$q.defer()
+
+        @assets.create(assets).then (result) =>
+          console.log 'result create', result.data.data
+          for asset in result.data.data
+            if @imagoUtils.isBaseString(asset.serving_url)
+              asset.base64 = true
+            else
+              asset.base64 = false
+            @data.unshift asset
+
+          defer.resolve result.data.data
+          @$rootScope.$broadcast('assets:update', result.data.data) if options.stream
+
+        defer.promise
+
+      else
+
+        for asset in assets
+          if @imagoUtils.isBaseString(asset.serving_url)
+            asset.base64 = true
+          else
+            asset.base64 = false
+          @data.unshift asset
+
+        @$rootScope.$broadcast('assets:update', assets) if options.stream
 
   update: (data, options = {}) =>
     options.stream = true if _.isUndefined options.stream
