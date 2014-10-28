@@ -84,14 +84,15 @@ class imagoModel extends Service
     if path
 
       if path[0] is '/'
-        asset = @find('name' : path[0])
+        asset = @find('name' : '/')
 
       else if _.isString path
         asset = @find('path' : path)
 
       else if _.isArray path
-        # if path[0] is '/'
         asset = @find('path' : path[0])
+
+        # console.log 'asset', path[0], asset, @data
 
       if asset
         if asset.count? isnt 0
@@ -171,17 +172,24 @@ class imagoModel extends Service
 
   create: (data) =>
     collection = data
-    if collection.assets
-      _.forEach collection.assets, (asset) =>
-        return if @find 'id': asset.id
+    if data.assets
+      for asset in data.assets
+      # _.forEach data.assets, (asset) =>
         if @imagoUtils.isBaseString(asset.serving_url)
           asset.base64 = true
         else
           asset.base64 = false
-        @data.push asset
+
+        @data.push(asset) unless @find('id': asset.id)
 
     unless @find('id' : collection.id)
       collection = _.omit collection, 'assets' if collection.kind is 'Collection'
+
+      if @imagoUtils.isBaseString(collection.serving_url)
+        collection.base64 = true
+      else
+        collection.base64 = false
+
       @data.push collection
 
     return data
@@ -217,13 +225,36 @@ class imagoModel extends Service
 
     return assets
 
-  add: (asset) =>
-    if @imagoUtils.isBaseString(asset.serving_url)
-      asset.base64 = true
+  add: (assets, options = {}) =>
+    options.stream = true if _.isUndefined options.stream
+
+    if options.save
+      defer = @$q.defer()
+
+      @assets.create(assets).then (result) =>
+        console.log 'result create', result.data.data
+        for asset in result.data.data
+          if @imagoUtils.isBaseString(asset.serving_url)
+            asset.base64 = true
+          else
+            asset.base64 = false
+          @data.unshift asset
+
+        defer.resolve result.data.data
+        @$rootScope.$broadcast('assets:update', result.data.data) if options.stream
+
+      defer.promise
+
     else
-      asset.base64 = false
-    @data.unshift asset
-    @$rootScope.$broadcast 'assets:update', asset
+
+      for asset in assets
+        if @imagoUtils.isBaseString(asset.serving_url)
+          asset.base64 = true
+        else
+          asset.base64 = false
+        @data.unshift asset
+
+      @$rootScope.$broadcast('assets:update', assets) if options.stream
 
   update: (data, options = {}) =>
     options.stream = true if _.isUndefined options.stream
