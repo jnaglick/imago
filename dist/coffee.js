@@ -89,7 +89,7 @@ imagoControls = (function() {
       replace: true,
       scope: true,
       require: '^imagoVideo',
-      templateUrl: '/imagoWidgets/controls-widget.html',
+      templateUrl: '/imagoWidgets/controlsVideo.html',
       controller: function($scope) {
         var videoPlayer;
         videoPlayer = angular.element($scope.player);
@@ -160,7 +160,7 @@ imagoImage = (function() {
     return {
       replace: true,
       scope: true,
-      templateUrl: '/imagoWidgets/image-widget.html',
+      templateUrl: '/imagoWidgets/imagoImage.html',
       controller: function($scope, $element, $attrs) {
         $scope.status = 'loading';
         return $scope.imageStyle = {};
@@ -398,8 +398,6 @@ imagoImage = (function() {
 
 angular.module('imago.widgets.angular').directive('imagoImage', ['$window', '$q', '$log', 'imagoUtils', imagoImage]);
 
-
-
 var imagoSlider;
 
 imagoSlider = (function() {
@@ -407,7 +405,7 @@ imagoSlider = (function() {
     return {
       replace: true,
       transclude: true,
-      templateUrl: '/imagoWidgets/slider-widget.html',
+      templateUrl: '/imagoWidgets/imagoSlider.html',
       controllerAs: 'slider',
       controller: function($scope) {
         $scope.confSlider = {};
@@ -546,7 +544,7 @@ imagoVideo = (function() {
     return {
       replace: true,
       scope: true,
-      templateUrl: '/imagoWidgets/video-widget.html',
+      templateUrl: '/imagoWidgets/imagoVideo.html',
       controllerAs: 'video',
       controller: function($scope, $element, $attrs, $transclude) {
         $scope.player = $element.find('video')[0];
@@ -1035,10 +1033,8 @@ imagoModel = (function() {
       if (key === 'fts') {
         defer.reject(query);
       } else if (key === 'collection') {
-        query = this.imagoUtils.renameKey('path', 'collection', query);
+        query = this.imagoUtils.renameKey('collection', 'path', query);
         path = value;
-      } else if (key === 'kind') {
-        query = this.imagoUtils.renameKey('metakind', 'kind', query);
       } else if (key === 'path') {
         path || (path = []);
         path.push(value);
@@ -1047,7 +1043,7 @@ imagoModel = (function() {
     if (path) {
       if (path[0] === '/') {
         asset = this.find({
-          'name': '/'
+          'name': path[0]
         });
       } else if (_.isString(path)) {
         asset = this.find({
@@ -1156,34 +1152,30 @@ imagoModel = (function() {
   };
 
   imagoModel.prototype.create = function(data) {
-    var asset, collection, _i, _len, _ref;
+    var collection;
     collection = data;
-    if (data.assets) {
-      _ref = data.assets;
-      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        asset = _ref[_i];
-        if (this.imagoUtils.isBaseString(asset.serving_url)) {
-          asset.base64 = true;
-        } else {
-          asset.base64 = false;
-        }
-        if (!this.find({
-          'id': asset.id
-        })) {
-          this.data.push(asset);
-        }
-      }
+    if (collection.assets) {
+      _.forEach(collection.assets, (function(_this) {
+        return function(asset) {
+          if (_this.find({
+            'id': asset.id
+          })) {
+            return;
+          }
+          if (_this.imagoUtils.isBaseString(asset.serving_url)) {
+            asset.base64 = true;
+          } else {
+            asset.base64 = false;
+          }
+          return _this.data.push(asset);
+        };
+      })(this));
     }
     if (!this.find({
       'id': collection.id
     })) {
       if (collection.kind === 'Collection') {
         collection = _.omit(collection, 'assets');
-      }
-      if (this.imagoUtils.isBaseString(collection.serving_url)) {
-        collection.base64 = true;
-      } else {
-        collection.base64 = false;
       }
       this.data.push(collection);
     }
@@ -1248,51 +1240,14 @@ imagoModel = (function() {
     return assets;
   };
 
-  imagoModel.prototype.add = function(assets, options) {
-    var asset, defer, _i, _len;
-    if (options == null) {
-      options = {};
-    }
-    if (_.isUndefined(options.stream)) {
-      options.stream = true;
-    }
-    if (options.save) {
-      defer = this.$q.defer();
-      this.assets.create(assets).then((function(_this) {
-        return function(result) {
-          var asset, _i, _len, _ref;
-          console.log('result create', result.data.data);
-          _ref = result.data.data;
-          for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-            asset = _ref[_i];
-            if (_this.imagoUtils.isBaseString(asset.serving_url)) {
-              asset.base64 = true;
-            } else {
-              asset.base64 = false;
-            }
-            _this.data.unshift(asset);
-          }
-          defer.resolve(result.data.data);
-          if (options.stream) {
-            return _this.$rootScope.$broadcast('assets:update', result.data.data);
-          }
-        };
-      })(this));
-      return defer.promise;
+  imagoModel.prototype.add = function(asset) {
+    if (this.imagoUtils.isBaseString(asset.serving_url)) {
+      asset.base64 = true;
     } else {
-      for (_i = 0, _len = assets.length; _i < _len; _i++) {
-        asset = assets[_i];
-        if (this.imagoUtils.isBaseString(asset.serving_url)) {
-          asset.base64 = true;
-        } else {
-          asset.base64 = false;
-        }
-        this.data.unshift(asset);
-      }
-      if (options.stream) {
-        return this.$rootScope.$broadcast('assets:update', assets);
-      }
+      asset.base64 = false;
     }
+    this.data.unshift(asset);
+    return this.$rootScope.$broadcast('assets:update', asset);
   };
 
   imagoModel.prototype.update = function(data, options) {
@@ -2164,7 +2119,7 @@ imagoUtils = (function() {
         return !!string.match(this.isBaseRegex);
       },
       isBaseRegex: /^\s*data:([a-z]+\/[a-z]+(;[a-z\-]+\=[a-z\-]+)?)?(;base64)?,[a-z0-9\!\$\&\'\,\(\)\*\+\,\;\=\-\.\_\~\:\@\/\?\%\s]*\s*$/i,
-      renameKey: function(newName, oldName, object) {
+      renameKey: function(oldName, newName, object) {
         object[newName] = object[oldName];
         delete object[oldName];
         return object;

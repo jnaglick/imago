@@ -1,9 +1,8 @@
 angular.module("ImagoWidgetsTemplates", []).run(["$templateCache", function($templateCache) {$templateCache.put("/imagoWidgets/contact-widget.html","<div class=\"nex form\"><form name=\"nexContact\" ng-submit=\"submitForm(nexContact.$valid)\" novalidate=\"novalidate\"><div class=\"nex field\"><label for=\"name\">Name</label><input type=\"text\" name=\"name\" ng-model=\"contact.name\" placeholder=\"Name\" require=\"require\"/></div><div class=\"nex field\"><label for=\"email\">Email</label><input type=\"email\" name=\"email\" ng-model=\"contact.email\" placeholder=\"Email\" require=\"require\"/></div><div class=\"nex field\"><label for=\"message\">Message</label><textarea name=\"message\" ng-model=\"contact.message\" placeholder=\"Your message.\" require=\"require\"></textarea></div><div class=\"nex checkbox\"><input type=\"checkbox\" name=\"subscribe\" ng-model=\"contact.subscribe\" checked=\"checked\"/><label for=\"subscribe\">Subscribe</label></div><div class=\"formcontrols\"><button type=\"submit\" ng-disabled=\"nexContact.$invalid\" class=\"send\">Send</button></div></form><div class=\"sucess\"><span>Thank You!</span></div><div class=\"error\"><span>Error!</span></div></div>");
-$templateCache.put("/imagoWidgets/controls-widget.html","<div stop-propagation=\"stop-propagation\" class=\"controls\"><a ng-click=\"togglePlay()\" ng-hide=\"isPlaying\" class=\"video-play fa fa-play\"></a><a ng-click=\"togglePlay()\" ng-show=\"isPlaying\" class=\"video-pause fa fa-pause\"></a><span class=\"video-time\">{{currentTime | time}}</span><span class=\"video-seekbar\"><input type=\"range\" ng-model=\"currentTime\" min=\"0\" max=\"{{duration}}\" ng-change=\"seek(currentTime)\" class=\"seek\"/></span><a ng-click=\"toggleSize()\" class=\"size\">{{wrapperStyle.size}}</a><span class=\"volume\"><span ng-click=\"volumeUp()\" class=\"fa fa-volume-up icon-volume-up\"></span><input type=\"range\" ng-model=\"volumeInput\" ng-change=\"onVolumeChange(volumeInput)\"/><span ng-click=\"volumeDown()\" class=\"fa fa-volume-down icon-volume-down\"></span></span><a ng-click=\"fullScreen()\" class=\"video-fullscreen fa fa-expand\"></a><a class=\"video-screen fa fa-compress\"></a></div>");
-$templateCache.put("/imagoWidgets/image-widget.html","<div in-view=\"visible = $inview\" responsive-events=\"responsive-events\" ng-style=\"elementStyle\" ng-class=\"status\" visible=\"visible\" class=\"imagoimage imagowrapper\"><div ng-style=\"imageStyle\" class=\"imagox23\"></div><div class=\"loading\"><div class=\"spin\"></div><div class=\"spin2\"></div></div></div>");
-$templateCache.put("/imagoWidgets/search-widget.html","<div class=\"search\"><input/><div class=\"clear\"></div></div>");
-$templateCache.put("/imagoWidgets/slider-widget.html","<div ng-class=\"elementStyle\"><div ng-transclude=\"ng-transclude\"></div><div ng-style=\"sliderStyle\" ng-swipe-left=\"goPrev()\" ng-swipe-right=\"goNext()\" class=\"nexslider {{confSlider.animation}}\"><div ng-show=\"confSlider.enablearrows &amp;&amp; loadedData\" ng-click=\"goPrev($event)\" stop-propagation=\"stop-propagation\" class=\"prev\"></div><div ng-show=\"confSlider.enablearrows &amp;&amp; loadedData\" ng-click=\"goNext($event)\" stop-propagation=\"stop-propagation\" class=\"next\"></div><div ng-class=\"{\'active\': $index === currentIndex, \'nextslide\': $index === nextIndex, \'prevslide\': $index === prevIndex}\" ng-repeat=\"slide in slideSource\" ng-show=\"displaySlides($index)\" ng-switch=\"slide.kind\" class=\"slide\"><div imago-video=\"imago-video\" dimensions=\"dimensions\" source=\"slide\" sizemode=\"{{ $parent.confSlider.sizemode }}\" align=\" slide | meta: \'align\' \" ng-switch-when=\"Video\"></div><div imago-image=\"imago-image\" dimensions=\"dimensions\" source=\"slide\" sizemode=\"{{ $parent.confSlider.sizemode }}\" align=\" slide | meta: \'align\' \" ng-switch-default=\"ng-switch-default\"></div></div></div></div>");
-$templateCache.put("/imagoWidgets/video-widget.html","<div ng-class=\"{loading: loading}\" in-view=\"visible = $inview\" visible=\"visible\" responsive-events=\"responsive-events\" class=\"imagovideo {{wrapperStyle.backgroundPosition}} {{wrapperStyle.size}} {{wrapperStyle.sizemode}}\"><div ng-style=\"wrapperStyle\" ng-class=\"{playing: isPlaying}\" class=\"imagowrapper\"><a ng-hide=\"loading\" ng-click=\"togglePlay()\" ng-class=\"{playing: isPlaying}\" stop-propagation=\"stop-propagation\" class=\"playbig fa fa-play\"></a><video ng-style=\"videoStyle\"><source ng-repeat=\"format in videoFormats\" src=\"{{format.src}}\" data-size=\"{{format.size}}\" data-codec=\"{{format.codec}}\" type=\"{{format.type}}\"/></video><div imago-controls=\"imago-controls\" ng-style=\"controlStyle\" ng-if=\"controls\" ng-show=\"hasPlayed\"></div></div></div>");}]);
+$templateCache.put("/imagoWidgets/controlsVideo.html","<div stop-propagation=\"stop-propagation\" class=\"controls\"><a ng-click=\"togglePlay()\" ng-hide=\"isPlaying\" class=\"video-play fa fa-play\"></a><a ng-click=\"togglePlay()\" ng-show=\"isPlaying\" class=\"video-pause fa fa-pause\"></a><span class=\"video-time\">{{currentTime | time}}</span><span class=\"video-seekbar\"><input type=\"range\" ng-model=\"currentTime\" min=\"0\" max=\"{{duration}}\" ng-change=\"seek(currentTime)\" class=\"seek\"/></span><a ng-click=\"toggleSize()\" class=\"size\">{{wrapperStyle.size}}</a><span class=\"volume\"><span ng-click=\"volumeUp()\" class=\"fa fa-volume-up icon-volume-up\"></span><input type=\"range\" ng-model=\"volumeInput\" ng-change=\"onVolumeChange(volumeInput)\"/><span ng-click=\"volumeDown()\" class=\"fa fa-volume-down icon-volume-down\"></span></span><a ng-click=\"fullScreen()\" class=\"video-fullscreen fa fa-expand\"></a><a class=\"video-screen fa fa-compress\"></a></div>");
+$templateCache.put("/imagoWidgets/imagoImage.html","<div in-view=\"visible = $inview\" responsive-events=\"responsive-events\" ng-style=\"elementStyle\" ng-class=\"status\" visible=\"visible\" class=\"imagoimage imagowrapper\"><div ng-style=\"imageStyle\" class=\"imagox23\"></div><div class=\"loading\"><div class=\"spin\"></div><div class=\"spin2\"></div></div></div>");
+$templateCache.put("/imagoWidgets/imagoSlider.html","<div ng-class=\"elementStyle\"><div ng-transclude=\"ng-transclude\"></div><div ng-style=\"sliderStyle\" ng-swipe-left=\"goPrev()\" ng-swipe-right=\"goNext()\" class=\"nexslider {{confSlider.animation}}\"><div ng-show=\"confSlider.enablearrows &amp;&amp; loadedData\" ng-click=\"goPrev($event)\" stop-propagation=\"stop-propagation\" class=\"prev\"></div><div ng-show=\"confSlider.enablearrows &amp;&amp; loadedData\" ng-click=\"goNext($event)\" stop-propagation=\"stop-propagation\" class=\"next\"></div><div ng-class=\"{\'active\': $index === currentIndex, \'nextslide\': $index === nextIndex, \'prevslide\': $index === prevIndex}\" ng-repeat=\"slide in slideSource\" ng-show=\"displaySlides($index)\" ng-switch=\"slide.kind\" class=\"slide\"><div imago-video=\"imago-video\" dimensions=\"dimensions\" source=\"slide\" sizemode=\"{{ $parent.confSlider.sizemode }}\" align=\" slide | meta: \'align\' \" ng-switch-when=\"Video\"></div><div imago-image=\"imago-image\" dimensions=\"dimensions\" source=\"slide\" sizemode=\"{{ $parent.confSlider.sizemode }}\" align=\" slide | meta: \'align\' \" ng-switch-default=\"ng-switch-default\"></div></div></div></div>");
+$templateCache.put("/imagoWidgets/imagoVideo.html","<div ng-class=\"{loading: loading}\" in-view=\"visible = $inview\" visible=\"visible\" responsive-events=\"responsive-events\" class=\"imagovideo {{wrapperStyle.backgroundPosition}} {{wrapperStyle.size}} {{wrapperStyle.sizemode}}\"><div ng-style=\"wrapperStyle\" ng-class=\"{playing: isPlaying}\" class=\"imagowrapper\"><a ng-hide=\"loading\" ng-click=\"togglePlay()\" ng-class=\"{playing: isPlaying}\" stop-propagation=\"stop-propagation\" class=\"playbig fa fa-play\"></a><video ng-style=\"videoStyle\"><source ng-repeat=\"format in videoFormats\" src=\"{{format.src}}\" data-size=\"{{format.size}}\" data-codec=\"{{format.codec}}\" type=\"{{format.type}}\"/></video><div imago-controls=\"imago-controls\" ng-style=\"controlStyle\" ng-if=\"controls\" ng-show=\"hasPlayed\"></div></div></div>");}]);
 var App;
 
 App = (function() {
@@ -95,7 +94,7 @@ imagoControls = (function() {
       replace: true,
       scope: true,
       require: '^imagoVideo',
-      templateUrl: '/imagoWidgets/controls-widget.html',
+      templateUrl: '/imagoWidgets/controlsVideo.html',
       controller: function($scope) {
         var videoPlayer;
         videoPlayer = angular.element($scope.player);
@@ -166,7 +165,7 @@ imagoImage = (function() {
     return {
       replace: true,
       scope: true,
-      templateUrl: '/imagoWidgets/image-widget.html',
+      templateUrl: '/imagoWidgets/imagoImage.html',
       controller: function($scope, $element, $attrs) {
         $scope.status = 'loading';
         return $scope.imageStyle = {};
@@ -404,8 +403,6 @@ imagoImage = (function() {
 
 angular.module('imago.widgets.angular').directive('imagoImage', ['$window', '$q', '$log', 'imagoUtils', imagoImage]);
 
-
-
 var imagoSlider;
 
 imagoSlider = (function() {
@@ -413,7 +410,7 @@ imagoSlider = (function() {
     return {
       replace: true,
       transclude: true,
-      templateUrl: '/imagoWidgets/slider-widget.html',
+      templateUrl: '/imagoWidgets/imagoSlider.html',
       controllerAs: 'slider',
       controller: function($scope) {
         $scope.confSlider = {};
@@ -552,7 +549,7 @@ imagoVideo = (function() {
     return {
       replace: true,
       scope: true,
-      templateUrl: '/imagoWidgets/video-widget.html',
+      templateUrl: '/imagoWidgets/imagoVideo.html',
       controllerAs: 'video',
       controller: function($scope, $element, $attrs, $transclude) {
         $scope.player = $element.find('video')[0];
@@ -1041,10 +1038,8 @@ imagoModel = (function() {
       if (key === 'fts') {
         defer.reject(query);
       } else if (key === 'collection') {
-        query = this.imagoUtils.renameKey('path', 'collection', query);
+        query = this.imagoUtils.renameKey('collection', 'path', query);
         path = value;
-      } else if (key === 'kind') {
-        query = this.imagoUtils.renameKey('metakind', 'kind', query);
       } else if (key === 'path') {
         path || (path = []);
         path.push(value);
@@ -1053,7 +1048,7 @@ imagoModel = (function() {
     if (path) {
       if (path[0] === '/') {
         asset = this.find({
-          'name': '/'
+          'name': path[0]
         });
       } else if (_.isString(path)) {
         asset = this.find({
@@ -1162,34 +1157,30 @@ imagoModel = (function() {
   };
 
   imagoModel.prototype.create = function(data) {
-    var asset, collection, _i, _len, _ref;
+    var collection;
     collection = data;
-    if (data.assets) {
-      _ref = data.assets;
-      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        asset = _ref[_i];
-        if (this.imagoUtils.isBaseString(asset.serving_url)) {
-          asset.base64 = true;
-        } else {
-          asset.base64 = false;
-        }
-        if (!this.find({
-          'id': asset.id
-        })) {
-          this.data.push(asset);
-        }
-      }
+    if (collection.assets) {
+      _.forEach(collection.assets, (function(_this) {
+        return function(asset) {
+          if (_this.find({
+            'id': asset.id
+          })) {
+            return;
+          }
+          if (_this.imagoUtils.isBaseString(asset.serving_url)) {
+            asset.base64 = true;
+          } else {
+            asset.base64 = false;
+          }
+          return _this.data.push(asset);
+        };
+      })(this));
     }
     if (!this.find({
       'id': collection.id
     })) {
       if (collection.kind === 'Collection') {
         collection = _.omit(collection, 'assets');
-      }
-      if (this.imagoUtils.isBaseString(collection.serving_url)) {
-        collection.base64 = true;
-      } else {
-        collection.base64 = false;
       }
       this.data.push(collection);
     }
@@ -1254,51 +1245,14 @@ imagoModel = (function() {
     return assets;
   };
 
-  imagoModel.prototype.add = function(assets, options) {
-    var asset, defer, _i, _len;
-    if (options == null) {
-      options = {};
-    }
-    if (_.isUndefined(options.stream)) {
-      options.stream = true;
-    }
-    if (options.save) {
-      defer = this.$q.defer();
-      this.assets.create(assets).then((function(_this) {
-        return function(result) {
-          var asset, _i, _len, _ref;
-          console.log('result create', result.data.data);
-          _ref = result.data.data;
-          for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-            asset = _ref[_i];
-            if (_this.imagoUtils.isBaseString(asset.serving_url)) {
-              asset.base64 = true;
-            } else {
-              asset.base64 = false;
-            }
-            _this.data.unshift(asset);
-          }
-          defer.resolve(result.data.data);
-          if (options.stream) {
-            return _this.$rootScope.$broadcast('assets:update', result.data.data);
-          }
-        };
-      })(this));
-      return defer.promise;
+  imagoModel.prototype.add = function(asset) {
+    if (this.imagoUtils.isBaseString(asset.serving_url)) {
+      asset.base64 = true;
     } else {
-      for (_i = 0, _len = assets.length; _i < _len; _i++) {
-        asset = assets[_i];
-        if (this.imagoUtils.isBaseString(asset.serving_url)) {
-          asset.base64 = true;
-        } else {
-          asset.base64 = false;
-        }
-        this.data.unshift(asset);
-      }
-      if (options.stream) {
-        return this.$rootScope.$broadcast('assets:update', assets);
-      }
+      asset.base64 = false;
     }
+    this.data.unshift(asset);
+    return this.$rootScope.$broadcast('assets:update', asset);
   };
 
   imagoModel.prototype.update = function(data, options) {
@@ -2170,7 +2124,7 @@ imagoUtils = (function() {
         return !!string.match(this.isBaseRegex);
       },
       isBaseRegex: /^\s*data:([a-z]+\/[a-z]+(;[a-z\-]+\=[a-z\-]+)?)?(;base64)?,[a-z0-9\!\$\&\'\,\(\)\*\+\,\;\=\-\.\_\~\:\@\/\?\%\s]*\s*$/i,
-      renameKey: function(newName, oldName, object) {
+      renameKey: function(oldName, newName, object) {
         object[newName] = object[oldName];
         delete object[oldName];
         return object;
