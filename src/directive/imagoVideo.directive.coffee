@@ -4,7 +4,7 @@ class imagoVideo extends Directive
     return {
       replace: true
       scope: true
-      templateUrl: '/imagoWidgets/video-widget.html'
+      templateUrl: '/imagoWidgets/imagoVideo.html'
       controllerAs: 'video'
       controller: ($scope, $element, $attrs, $transclude) ->
 

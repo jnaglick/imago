@@ -6,7 +6,7 @@ class imagoImage extends Directive
     return {
       replace: true
       scope: true
-      templateUrl: '/imagoWidgets/image-widget.html'
+      templateUrl: '/imagoWidgets/imagoImage.html'
       controller: ($scope, $element, $attrs) ->
 
         $scope.status = 'loading'

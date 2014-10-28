@@ -5,7 +5,7 @@ class imagoControls extends Directive
       replace: true
       scope: true
       require: '^imagoVideo'
-      templateUrl: '/imagoWidgets/controls-widget.html'
+      templateUrl: '/imagoWidgets/controlsVideo.html'
       controller: ($scope) ->
 
         videoPlayer = angular.element($scope.player)

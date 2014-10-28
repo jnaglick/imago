@@ -4,7 +4,7 @@ class imagoSlider extends Directive
     return {
       replace: true
       transclude: true
-      templateUrl: '/imagoWidgets/slider-widget.html'
+      templateUrl: '/imagoWidgets/imagoSlider.html'
       controllerAs: 'slider'
       controller: ($scope) ->
         $scope.confSlider = {}
