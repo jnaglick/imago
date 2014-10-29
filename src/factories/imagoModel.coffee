@@ -10,8 +10,8 @@ class imagoModel extends Service
       get: (id) =>
         $http.get "#{@host}/api/assets/#{id}"
 
-      create: (item) =>
-        $http.post "#{@host}/api/assets/batch", item
+      create: (assets) =>
+        $http.post "#{@host}/api/assets", assets
 
       update: (item) =>
         $http.put "#{@host}/api/assets/#{item._id}", item
@@ -83,10 +83,7 @@ class imagoModel extends Service
 
     if path
 
-      if path[0] is '/'
-        asset = @find('name' : path[0])
-
-      else if _.isString path
+      if _.isString path
         asset = @find('path' : path)
 
       else if _.isArray path
@@ -219,18 +216,24 @@ class imagoModel extends Service
 
   add: (assets, options = {}) =>
       options.stream = true if _.isUndefined options.stream
+      options.push = true if _.isUndefined options.push
 
       if options.save
         defer = @$q.defer()
 
         @assets.create(assets).then (result) =>
-          console.log 'result create', result.data.data
-          for asset in result.data.data
-            if @imagoUtils.isBaseString(asset.serving_url)
-              asset.base64 = true
-            else
-              asset.base64 = false
-            @data.unshift asset
+
+          console.log 'result created', result
+
+          if options.push
+
+            for asset in result.data.data
+              if @imagoUtils.isBaseString(asset.serving_url)
+                asset.base64 = true
+              else
+                asset.base64 = false
+
+              @data.unshift(asset)
 
           defer.resolve result.data.data
           @$rootScope.$broadcast('assets:update', result.data.data) if options.stream
@@ -239,12 +242,13 @@ class imagoModel extends Service
 
       else
 
-        for asset in assets
-          if @imagoUtils.isBaseString(asset.serving_url)
-            asset.base64 = true
-          else
-            asset.base64 = false
-          @data.unshift asset
+        if options.push
+          for asset in assets
+            if @imagoUtils.isBaseString(asset.serving_url)
+              asset.base64 = true
+            else
+              asset.base64 = false
+            @data.unshift(asset)
 
         @$rootScope.$broadcast('assets:update', assets) if options.stream
 
@@ -262,6 +266,7 @@ class imagoModel extends Service
       @data[idx] = _.assign(@data[idx], copy)
 
     else if _.isArray(copy)
+      console.log 'attribute', attribute, copy
       for asset in copy
         query = {}
         query[attribute] = asset[attribute]

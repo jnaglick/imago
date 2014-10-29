@@ -11,24 +11,6 @@ App = (function() {
 
 angular.module('imago.widgets.angular', App());
 
-var imagoPage;
-
-imagoPage = (function() {
-  function imagoPage($scope, $state, imagoModel) {
-    var path;
-    path = '/';
-    imagoModel.getData(path).then(function(response) {
-      $scope.collection = response[0];
-      return $scope.assets = imagoModel.getChildren(response[0]);
-    });
-  }
-
-  return imagoPage;
-
-})();
-
-angular.module('imago.widgets.angular').controller('imagoPage', ['$scope', '$state', 'imagoModel', imagoPage]);
-
 var imagoCompile;
 
 imagoCompile = (function() {
@@ -958,8 +940,8 @@ imagoModel = (function() {
         };
       })(this),
       create: (function(_this) {
-        return function(item) {
-          return $http.post("" + _this.host + "/api/assets/batch", item);
+        return function(assets) {
+          return $http.post("" + _this.host + "/api/assets", assets);
         };
       })(this),
       update: (function(_this) {
@@ -1041,11 +1023,7 @@ imagoModel = (function() {
       }
     }
     if (path) {
-      if (path[0] === '/') {
-        asset = this.find({
-          'name': path[0]
-        });
-      } else if (_.isString(path)) {
+      if (_.isString(path)) {
         asset = this.find({
           'path': path
         });
@@ -1248,21 +1226,26 @@ imagoModel = (function() {
     if (_.isUndefined(options.stream)) {
       options.stream = true;
     }
+    if (_.isUndefined(options.push)) {
+      options.push = true;
+    }
     if (options.save) {
       defer = this.$q.defer();
       this.assets.create(assets).then((function(_this) {
         return function(result) {
           var asset, _i, _len, _ref;
-          console.log('result create', result.data.data);
-          _ref = result.data.data;
-          for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-            asset = _ref[_i];
-            if (_this.imagoUtils.isBaseString(asset.serving_url)) {
-              asset.base64 = true;
-            } else {
-              asset.base64 = false;
+          console.log('result created', result);
+          if (options.push) {
+            _ref = result.data.data;
+            for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+              asset = _ref[_i];
+              if (_this.imagoUtils.isBaseString(asset.serving_url)) {
+                asset.base64 = true;
+              } else {
+                asset.base64 = false;
+              }
+              _this.data.unshift(asset);
             }
-            _this.data.unshift(asset);
           }
           defer.resolve(result.data.data);
           if (options.stream) {
@@ -1272,14 +1255,16 @@ imagoModel = (function() {
       })(this));
       return defer.promise;
     } else {
-      for (_i = 0, _len = assets.length; _i < _len; _i++) {
-        asset = assets[_i];
-        if (this.imagoUtils.isBaseString(asset.serving_url)) {
-          asset.base64 = true;
-        } else {
-          asset.base64 = false;
+      if (options.push) {
+        for (_i = 0, _len = assets.length; _i < _len; _i++) {
+          asset = assets[_i];
+          if (this.imagoUtils.isBaseString(asset.serving_url)) {
+            asset.base64 = true;
+          } else {
+            asset.base64 = false;
+          }
+          this.data.unshift(asset);
         }
-        this.data.unshift(asset);
       }
       if (options.stream) {
         return this.$rootScope.$broadcast('assets:update', assets);
@@ -1309,6 +1294,7 @@ imagoModel = (function() {
       idx = this.findIdx(query);
       this.data[idx] = _.assign(this.data[idx], copy);
     } else if (_.isArray(copy)) {
+      console.log('attribute', attribute, copy);
       for (_i = 0, _len = copy.length; _i < _len; _i++) {
         asset = copy[_i];
         query = {};
@@ -2170,6 +2156,32 @@ imagoUtils = (function() {
 
 angular.module('imago.widgets.angular').factory('imagoUtils', [imagoUtils]);
 
+var imagoPage;
+
+imagoPage = (function() {
+  function imagoPage($scope, $state, imagoModel) {
+    var path;
+    path = '/';
+    imagoModel.getData(path).then(function(response) {
+      $scope.collection = response[0];
+      return $scope.assets = imagoModel.getChildren(response[0]);
+    });
+  }
+
+  return imagoPage;
+
+})();
+
+angular.module('imago.widgets.angular').controller('imagoPage', ['$scope', '$state', 'imagoModel', imagoPage]);
+
+var lodash;
+
+lodash = angular.module('lodash', []);
+
+lodash.factory('_', function() {
+  return window._();
+});
+
 var Meta;
 
 Meta = (function() {
@@ -2226,11 +2238,3 @@ Time = (function() {
 })();
 
 angular.module('imago.widgets.angular').filter('time', [Time]);
-
-var lodash;
-
-lodash = angular.module('lodash', []);
-
-lodash.factory('_', function() {
-  return window._();
-});
