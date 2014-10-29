@@ -266,7 +266,6 @@ class imagoModel extends Service
       @data[idx] = _.assign(@data[idx], copy)
 
     else if _.isArray(copy)
-      console.log 'attribute', attribute, copy
       for asset in copy
         query = {}
         query[attribute] = asset[attribute]
@@ -321,12 +320,14 @@ class imagoModel extends Service
 
     defer.promise
 
-  batchAddRemove: (assets) =>
+  batchAddRemove: (assets, options = {}) =>
+    options.stream = true if _.isUndefined options.stream
+
     for asset in assets
       @data = _.reject(@data, { _id: asset.id })
       @data.push asset
 
-    @$rootScope.$broadcast 'assets:update', assets
+    @$rootScope.$broadcast('assets:update', assets) if options.stream
 
   reorder: (assets, options = {}) =>
 

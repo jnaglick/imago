@@ -1294,7 +1294,6 @@ imagoModel = (function() {
       idx = this.findIdx(query);
       this.data[idx] = _.assign(this.data[idx], copy);
     } else if (_.isArray(copy)) {
-      console.log('attribute', attribute, copy);
       for (_i = 0, _len = copy.length; _i < _len; _i++) {
         asset = copy[_i];
         query = {};
@@ -1375,8 +1374,14 @@ imagoModel = (function() {
     return defer.promise;
   };
 
-  imagoModel.prototype.batchAddRemove = function(assets) {
+  imagoModel.prototype.batchAddRemove = function(assets, options) {
     var asset, _i, _len;
+    if (options == null) {
+      options = {};
+    }
+    if (_.isUndefined(options.stream)) {
+      options.stream = true;
+    }
     for (_i = 0, _len = assets.length; _i < _len; _i++) {
       asset = assets[_i];
       this.data = _.reject(this.data, {
@@ -1384,7 +1389,9 @@ imagoModel = (function() {
       });
       this.data.push(asset);
     }
-    return this.$rootScope.$broadcast('assets:update', assets);
+    if (options.stream) {
+      return this.$rootScope.$broadcast('assets:update', assets);
+    }
   };
 
   imagoModel.prototype.reorder = function(assets, options) {
@@ -2156,32 +2163,6 @@ imagoUtils = (function() {
 
 angular.module('imago.widgets.angular').factory('imagoUtils', [imagoUtils]);
 
-var imagoPage;
-
-imagoPage = (function() {
-  function imagoPage($scope, $state, imagoModel) {
-    var path;
-    path = '/';
-    imagoModel.getData(path).then(function(response) {
-      $scope.collection = response[0];
-      return $scope.assets = imagoModel.getChildren(response[0]);
-    });
-  }
-
-  return imagoPage;
-
-})();
-
-angular.module('imago.widgets.angular').controller('imagoPage', ['$scope', '$state', 'imagoModel', imagoPage]);
-
-var lodash;
-
-lodash = angular.module('lodash', []);
-
-lodash.factory('_', function() {
-  return window._();
-});
-
 var Meta;
 
 Meta = (function() {
@@ -2238,3 +2219,29 @@ Time = (function() {
 })();
 
 angular.module('imago.widgets.angular').filter('time', [Time]);
+
+var lodash;
+
+lodash = angular.module('lodash', []);
+
+lodash.factory('_', function() {
+  return window._();
+});
+
+var imagoPage;
+
+imagoPage = (function() {
+  function imagoPage($scope, $state, imagoModel) {
+    var path;
+    path = '/';
+    imagoModel.getData(path).then(function(response) {
+      $scope.collection = response[0];
+      return $scope.assets = imagoModel.getChildren(response[0]);
+    });
+  }
+
+  return imagoPage;
+
+})();
+
+angular.module('imago.widgets.angular').controller('imagoPage', ['$scope', '$state', 'imagoModel', imagoPage]);
