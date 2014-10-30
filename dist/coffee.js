@@ -1035,6 +1035,8 @@ imagoModel = (function() {
       } else if (key === 'collection') {
         query = this.imagoUtils.renameKey('collection', 'path', query);
         path = value;
+      } else if (key === 'kind') {
+        query = this.imagoUtils.renameKey('kind', 'metakind', query);
       } else if (key === 'path') {
         path || (path = []);
         path.push(value);
@@ -1311,6 +1313,9 @@ imagoModel = (function() {
       }
       idx = this.findIdx(query);
       this.data[idx] = _.assign(this.data[idx], copy);
+      if (copy.status === 'processing' && options.save) {
+        delete copy.serving_url;
+      }
     } else if (_.isArray(copy)) {
       for (_i = 0, _len = copy.length; _i < _len; _i++) {
         asset = copy[_i];
@@ -1321,6 +1326,9 @@ imagoModel = (function() {
         }
         idx = this.findIdx(query);
         _.assign(this.data[idx], asset);
+        if (asset.status === 'processing' && options.save) {
+          delete asset.serving_url;
+        }
       }
     }
     if (options.stream) {

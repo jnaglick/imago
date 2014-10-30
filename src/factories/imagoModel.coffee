@@ -74,8 +74,8 @@ class imagoModel extends Service
         query = @imagoUtils.renameKey('collection', 'path', query)
         path = value
 
-      # else if key is 'kind'
-        # query = @imagoUtils.renameKey('kind', 'metakind', query)
+      else if key is 'kind'
+        query = @imagoUtils.renameKey('kind', 'metakind', query)
 
       else if key is 'path'
         path or= []
@@ -265,6 +265,9 @@ class imagoModel extends Service
       idx = @findIdx(query)
       @data[idx] = _.assign(@data[idx], copy)
 
+      if copy.status is 'processing' and options.save
+        delete copy.serving_url
+
     else if _.isArray(copy)
       for asset in copy
         query = {}
@@ -272,6 +275,9 @@ class imagoModel extends Service
         delete asset.assets if asset.assets
         idx = @findIdx(query)
         _.assign(@data[idx], asset)
+
+        if asset.status is 'processing' and options.save
+          delete asset.serving_url
 
     @$rootScope.$broadcast('assets:update', copy) if options.stream
     @assets.update(copy) if options.save
