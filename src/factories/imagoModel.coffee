@@ -1,5 +1,5 @@
 class imagoModel extends Service
-  # I converted everything to the new syntax, but didn't refact the methods
+
   constructor: (@$rootScope, @$http, @$location, @$q, @imagoUtils) ->
     if (data is 'online' and debug)
       @host = window.location.protocol + "//imagoapi-nex9.rhcloud.com"
@@ -345,7 +345,7 @@ class imagoModel extends Service
     args = [idx, assets.length].concat(copy)
     Array.prototype.splice.apply(@data, args)
 
-    @$rootScope.$broadcast('assets:update', assets) if options.stream
+    @$rootScope.$broadcast('assets:update', copy) if options.stream
     @assets.batch(assets: assets) if options.save
 
   reindexAll:  (list) =>

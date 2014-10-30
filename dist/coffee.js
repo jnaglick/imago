@@ -11,6 +11,24 @@ App = (function() {
 
 angular.module('imago.widgets.angular', App());
 
+var imagoPage;
+
+imagoPage = (function() {
+  function imagoPage($scope, $state, imagoModel) {
+    var path;
+    path = '/';
+    imagoModel.getData(path).then(function(response) {
+      $scope.collection = response[0];
+      return $scope.assets = imagoModel.getChildren(response[0]);
+    });
+  }
+
+  return imagoPage;
+
+})();
+
+angular.module('imago.widgets.angular').controller('imagoPage', ['$scope', '$state', 'imagoModel', imagoPage]);
+
 var imagoCompile;
 
 imagoCompile = (function() {
@@ -1414,7 +1432,7 @@ imagoModel = (function() {
     args = [idx, assets.length].concat(copy);
     Array.prototype.splice.apply(this.data, args);
     if (options.stream) {
-      this.$rootScope.$broadcast('assets:update', assets);
+      this.$rootScope.$broadcast('assets:update', copy);
     }
     if (options.save) {
       return this.assets.batch({
@@ -2227,21 +2245,3 @@ lodash = angular.module('lodash', []);
 lodash.factory('_', function() {
   return window._();
 });
-
-var imagoPage;
-
-imagoPage = (function() {
-  function imagoPage($scope, $state, imagoModel) {
-    var path;
-    path = '/';
-    imagoModel.getData(path).then(function(response) {
-      $scope.collection = response[0];
-      return $scope.assets = imagoModel.getChildren(response[0]);
-    });
-  }
-
-  return imagoPage;
-
-})();
-
-angular.module('imago.widgets.angular').controller('imagoPage', ['$scope', '$state', 'imagoModel', imagoPage]);
