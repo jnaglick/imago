@@ -1,6 +1,6 @@
 class imagoModel extends Service
 
-  constructor: (@$rootScope, @$http, @$location, @$q, @imagoUtils) ->
+  constructor: (@$rootScope, @$http, @$location, @$q, @imagoUtils, @imagoWorker) ->
     if (data is 'online' and debug)
       @host = window.location.protocol + "//imagoapi-nex9.rhcloud.com"
     else
@@ -38,13 +38,8 @@ class imagoModel extends Service
 
         $http.post "#{@host}/api/assets/copy", data
 
-      batch: (object) =>
-
-        # format = {
-        #   assets: list
-        # }
-
-        $http.put "#{@host}/api/assets/update", object
+      batch: (list) =>
+        $http.put "#{@host}/api/assets/update", {assets: list}
 
   data: []
 
@@ -78,8 +73,7 @@ class imagoModel extends Service
         query = @imagoUtils.renameKey('kind', 'metakind', query)
 
       else if key is 'path'
-        path or= []
-        path.push value
+        path = value
 
     if path
 
@@ -114,7 +108,7 @@ class imagoModel extends Service
 
     defer.promise
 
-  getData: (query, cache) =>
+  getData: (query) =>
 
     defer = @$q.defer()
 
@@ -135,8 +129,11 @@ class imagoModel extends Service
 
     _.forEach query, (value) =>
       promises.push @getLocalData(value).then (result) =>
-        data.push result
-        data = _.flatten data
+        fetches.push @imagoWorker.reorder(result.assets, result.sortorder).then (response) =>
+          result.assets = response.assets
+          data.push result
+          data = _.flatten data
+
       , (reject) =>
         fetches.push @search(reject).then (response) =>
           return unless response.data
@@ -168,14 +165,14 @@ class imagoModel extends Service
 
   create: (data) =>
     collection = data
-    if collection.assets
-      _.forEach collection.assets, (asset) =>
-        return if @find 'id': asset.id
+    if data.assets
+      for asset in data.assets
         if @imagoUtils.isBaseString(asset.serving_url)
           asset.base64 = true
         else
           asset.base64 = false
-        @data.push asset
+
+        @data.push(asset) unless @find('id': asset.id)
 
     unless @find('id' : collection.id)
       collection = _.omit collection, 'assets' if collection.kind is 'Collection'
@@ -204,7 +201,6 @@ class imagoModel extends Service
       for key, value of query
         for params in value
           if key isnt 'path'
-            # console.log 'params', key, params
             assets = _.filter assets, (asset) ->
               if asset.fields?.hasOwnProperty key
                 return asset if asset.fields[key]['value'] is params
@@ -223,8 +219,6 @@ class imagoModel extends Service
 
         @assets.create(assets).then (result) =>
 
-          console.log 'result created', result
-
           if options.push
 
             for asset in result.data.data
@@ -233,7 +227,7 @@ class imagoModel extends Service
               else
                 asset.base64 = false
 
-              @data.unshift(asset)
+              @data.push(asset)
 
           defer.resolve result.data.data
           @$rootScope.$broadcast('assets:update', result.data.data) if options.stream
@@ -248,7 +242,7 @@ class imagoModel extends Service
               asset.base64 = true
             else
               asset.base64 = false
-            @data.unshift(asset)
+            @data.push(asset)
 
         @$rootScope.$broadcast('assets:update', assets) if options.stream
 
@@ -268,6 +262,8 @@ class imagoModel extends Service
       if copy.status is 'processing' and options.save
         delete copy.serving_url
 
+      @assets.update(copy) if options.save
+
     else if _.isArray(copy)
       for asset in copy
         query = {}
@@ -279,17 +275,24 @@ class imagoModel extends Service
         if asset.status is 'processing' and options.save
           delete asset.serving_url
 
-    @$rootScope.$broadcast('assets:update', copy) if options.stream
-    @assets.update(copy) if options.save
+      @assets.batch(copy) if options.save
 
+    @$rootScope.$broadcast('assets:update', copy) if options.stream
 
   delete: (id, save=false) =>
+    console.log 'id', id
     return unless id
     # returns an array without the asset of id
     @data = _.reject(@data, { _id: id })
     @$rootScope.$broadcast 'assets:update', id
     @assets.delete(id) if save
     return @data
+
+  trash: (assets) =>
+    @assets.trash(assets)
+
+    for asset in assets
+      @delete asset.id
 
   move: (data) =>
     # I'm not sure if thise will work as intended
@@ -307,7 +310,7 @@ class imagoModel extends Service
 
     for asset in assets
       if not checkdups or _.where(assetsChildren, {name: asset.name}).length is 0
-        @data.unshift asset
+        @data.push asset
 
       else
         i = 1
@@ -318,7 +321,7 @@ class imagoModel extends Service
           i++
           exists = (if _.where(assetsChildren, {name: asset.name}).length > 0 then true else false)
 
-        @data.unshift asset
+        @data.push asset
 
     @$rootScope.$broadcast 'assets:update', assets
 
@@ -326,17 +329,7 @@ class imagoModel extends Service
 
     defer.promise
 
-  batchAddRemove: (assets, options = {}) =>
-    options.stream = true if _.isUndefined options.stream
-
-    for asset in assets
-      @data = _.reject(@data, { _id: asset.id })
-      @data.push asset
-
-    @$rootScope.$broadcast('assets:update', assets) if options.stream
-
   reorder: (assets, options = {}) =>
-
     copy = []
 
     for asset, index in assets
@@ -352,7 +345,7 @@ class imagoModel extends Service
     Array.prototype.splice.apply(@data, args)
 
     @$rootScope.$broadcast('assets:update', copy) if options.stream
-    @assets.batch(assets: assets) if options.save
+    @assets.batch(assets) if options.save
 
   reindexAll:  (list) =>
     newList = []
@@ -388,7 +381,7 @@ class imagoModel extends Service
     else
       return
 
-    console.log 'prev', prev, 'next', next
+    # console.log 'prev', prev, 'next', next
 
     count = prev-1000
 
@@ -402,34 +395,28 @@ class imagoModel extends Service
 
     return orderedList
 
-  batchChange: (assets, save = false) =>
-    for asset in assets
-      idx = @findIdx('_id' : asset._id)
+  batchChange: (assets) =>
+    for asset, idx in assets
+      original = @find('_id' : asset._id)
 
-      return if idx is -1
+      return unless original
 
-      copy = angular.copy asset
+      copy =
+        fields : original.fields
+        parent : original.parent
 
-      for key, value of copy
-        continue unless key isnt '_id' and key isnt 'id'
-
+      for key, value of asset
         if key is 'fields'
 
-          for key of copy.fields
-            @data[idx]['fields'] or= {}
-            @data[idx]['fields'][key] or= {}
-            @data[idx]['fields'][key] = copy.fields[key]
+          for key of asset.fields
+            copy['fields'] or= {}
+            copy['fields'][key] = asset.fields[key]
 
         else
-          @data[idx][key] = copy[key]
+          copy[key] = asset[key]
 
-    if save
-      object =
-        assets : assets
-
-      return object
-
-    else return false
+      assets[idx] = copy
+    @update assets, {save: true}
 
   isDuplicated: (asset, rename = false) =>
     defer = @$q.defer()
@@ -501,7 +488,7 @@ class imagoModel extends Service
             if parent.assets.length
 
               orderedList = @reindexAll(parent.assets)
-              @reorder orderedList.assets, {save: true, stream: true}
+              @imagoModel.update orderedList.assets, {save: true}
               asset.order = orderedList.assets[0].order + 1000
 
             else

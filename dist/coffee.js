@@ -919,21 +919,22 @@ var imagoModel,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 
 imagoModel = (function() {
-  function imagoModel($rootScope, $http, $location, $q, imagoUtils) {
+  function imagoModel($rootScope, $http, $location, $q, imagoUtils, imagoWorker) {
     this.$rootScope = $rootScope;
     this.$http = $http;
     this.$location = $location;
     this.$q = $q;
     this.imagoUtils = imagoUtils;
+    this.imagoWorker = imagoWorker;
     this.prepareCreation = __bind(this.prepareCreation, this);
     this.isDuplicated = __bind(this.isDuplicated, this);
     this.batchChange = __bind(this.batchChange, this);
     this.orderChanged = __bind(this.orderChanged, this);
     this.reindexAll = __bind(this.reindexAll, this);
     this.reorder = __bind(this.reorder, this);
-    this.batchAddRemove = __bind(this.batchAddRemove, this);
     this.paste = __bind(this.paste, this);
     this.move = __bind(this.move, this);
+    this.trash = __bind(this.trash, this);
     this["delete"] = __bind(this["delete"], this);
     this.update = __bind(this.update, this);
     this.add = __bind(this.add, this);
@@ -1000,8 +1001,10 @@ imagoModel = (function() {
         };
       })(this),
       batch: (function(_this) {
-        return function(object) {
-          return $http.put("" + _this.host + "/api/assets/update", object);
+        return function(list) {
+          return $http.put("" + _this.host + "/api/assets/update", {
+            assets: list
+          });
         };
       })(this)
     };
@@ -1038,8 +1041,7 @@ imagoModel = (function() {
       } else if (key === 'kind') {
         query = this.imagoUtils.renameKey('kind', 'metakind', query);
       } else if (key === 'path') {
-        path || (path = []);
-        path.push(value);
+        path = value;
       }
     }
     if (path) {
@@ -1073,7 +1075,7 @@ imagoModel = (function() {
     return defer.promise;
   };
 
-  imagoModel.prototype.getData = function(query, cache) {
+  imagoModel.prototype.getData = function(query) {
     var data, defer, fetches, promises, resolve;
     defer = this.$q.defer();
     if (!query) {
@@ -1100,8 +1102,11 @@ imagoModel = (function() {
     _.forEach(query, (function(_this) {
       return function(value) {
         return promises.push(_this.getLocalData(value).then(function(result) {
-          data.push(result);
-          return data = _.flatten(data);
+          return fetches.push(_this.imagoWorker.reorder(result.assets, result.sortorder).then(function(response) {
+            result.assets = response.assets;
+            data.push(result);
+            return data = _.flatten(data);
+          }));
         }, function(reject) {
           return fetches.push(_this.search(reject).then(function(response) {
             if (!response.data) {
@@ -1150,24 +1155,23 @@ imagoModel = (function() {
   };
 
   imagoModel.prototype.create = function(data) {
-    var collection;
+    var asset, collection, _i, _len, _ref;
     collection = data;
-    if (collection.assets) {
-      _.forEach(collection.assets, (function(_this) {
-        return function(asset) {
-          if (_this.find({
-            'id': asset.id
-          })) {
-            return;
-          }
-          if (_this.imagoUtils.isBaseString(asset.serving_url)) {
-            asset.base64 = true;
-          } else {
-            asset.base64 = false;
-          }
-          return _this.data.push(asset);
-        };
-      })(this));
+    if (data.assets) {
+      _ref = data.assets;
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        asset = _ref[_i];
+        if (this.imagoUtils.isBaseString(asset.serving_url)) {
+          asset.base64 = true;
+        } else {
+          asset.base64 = false;
+        }
+        if (!this.find({
+          'id': asset.id
+        })) {
+          this.data.push(asset);
+        }
+      }
     }
     if (!this.find({
       'id': collection.id
@@ -1254,7 +1258,6 @@ imagoModel = (function() {
       this.assets.create(assets).then((function(_this) {
         return function(result) {
           var asset, _i, _len, _ref;
-          console.log('result created', result);
           if (options.push) {
             _ref = result.data.data;
             for (_i = 0, _len = _ref.length; _i < _len; _i++) {
@@ -1264,7 +1267,7 @@ imagoModel = (function() {
               } else {
                 asset.base64 = false;
               }
-              _this.data.unshift(asset);
+              _this.data.push(asset);
             }
           }
           defer.resolve(result.data.data);
@@ -1283,7 +1286,7 @@ imagoModel = (function() {
           } else {
             asset.base64 = false;
           }
-          this.data.unshift(asset);
+          this.data.push(asset);
         }
       }
       if (options.stream) {
@@ -1316,6 +1319,9 @@ imagoModel = (function() {
       if (copy.status === 'processing' && options.save) {
         delete copy.serving_url;
       }
+      if (options.save) {
+        this.assets.update(copy);
+      }
     } else if (_.isArray(copy)) {
       for (_i = 0, _len = copy.length; _i < _len; _i++) {
         asset = copy[_i];
@@ -1330,12 +1336,12 @@ imagoModel = (function() {
           delete asset.serving_url;
         }
       }
+      if (options.save) {
+        this.assets.batch(copy);
+      }
     }
     if (options.stream) {
-      this.$rootScope.$broadcast('assets:update', copy);
-    }
-    if (options.save) {
-      return this.assets.update(copy);
+      return this.$rootScope.$broadcast('assets:update', copy);
     }
   };
 
@@ -1343,6 +1349,7 @@ imagoModel = (function() {
     if (save == null) {
       save = false;
     }
+    console.log('id', id);
     if (!id) {
       return;
     }
@@ -1354,6 +1361,17 @@ imagoModel = (function() {
       this.assets["delete"](id);
     }
     return this.data;
+  };
+
+  imagoModel.prototype.trash = function(assets) {
+    var asset, _i, _len, _results;
+    this.assets.trash(assets);
+    _results = [];
+    for (_i = 0, _len = assets.length; _i < _len; _i++) {
+      asset = assets[_i];
+      _results.push(this["delete"](asset.id));
+    }
+    return _results;
   };
 
   imagoModel.prototype.move = function(data) {
@@ -1380,7 +1398,7 @@ imagoModel = (function() {
       if (!checkdups || _.where(assetsChildren, {
         name: asset.name
       }).length === 0) {
-        this.data.unshift(asset);
+        this.data.push(asset);
       } else {
         i = 1;
         exists = true;
@@ -1392,32 +1410,12 @@ imagoModel = (function() {
             name: asset.name
           }).length > 0 ? true : false);
         }
-        this.data.unshift(asset);
+        this.data.push(asset);
       }
     }
     this.$rootScope.$broadcast('assets:update', assets);
     defer.resolve(assets);
     return defer.promise;
-  };
-
-  imagoModel.prototype.batchAddRemove = function(assets, options) {
-    var asset, _i, _len;
-    if (options == null) {
-      options = {};
-    }
-    if (_.isUndefined(options.stream)) {
-      options.stream = true;
-    }
-    for (_i = 0, _len = assets.length; _i < _len; _i++) {
-      asset = assets[_i];
-      this.data = _.reject(this.data, {
-        _id: asset.id
-      });
-      this.data.push(asset);
-    }
-    if (options.stream) {
-      return this.$rootScope.$broadcast('assets:update', assets);
-    }
   };
 
   imagoModel.prototype.reorder = function(assets, options) {
@@ -1443,9 +1441,7 @@ imagoModel = (function() {
       this.$rootScope.$broadcast('assets:update', copy);
     }
     if (options.save) {
-      return this.assets.batch({
-        assets: assets
-      });
+      return this.assets.batch(assets);
     }
   };
 
@@ -1483,7 +1479,6 @@ imagoModel = (function() {
     } else {
       return;
     }
-    console.log('prev', prev, 'next', next);
     count = prev - 1000;
     for (_i = 0, _len = assets.length; _i < _len; _i++) {
       asset = assets[_i];
@@ -1496,44 +1491,36 @@ imagoModel = (function() {
     return orderedList;
   };
 
-  imagoModel.prototype.batchChange = function(assets, save) {
-    var asset, copy, idx, key, object, value, _base, _base1, _i, _len;
-    if (save == null) {
-      save = false;
-    }
-    for (_i = 0, _len = assets.length; _i < _len; _i++) {
-      asset = assets[_i];
-      idx = this.findIdx({
+  imagoModel.prototype.batchChange = function(assets) {
+    var asset, copy, idx, key, original, value, _i, _len;
+    for (idx = _i = 0, _len = assets.length; _i < _len; idx = ++_i) {
+      asset = assets[idx];
+      original = this.find({
         '_id': asset._id
       });
-      if (idx === -1) {
+      if (!original) {
         return;
       }
-      copy = angular.copy(asset);
-      for (key in copy) {
-        value = copy[key];
-        if (!(key !== '_id' && key !== 'id')) {
-          continue;
-        }
+      copy = {
+        fields: original.fields,
+        parent: original.parent
+      };
+      for (key in asset) {
+        value = asset[key];
         if (key === 'fields') {
-          for (key in copy.fields) {
-            (_base = this.data[idx])['fields'] || (_base['fields'] = {});
-            (_base1 = this.data[idx]['fields'])[key] || (_base1[key] = {});
-            this.data[idx]['fields'][key] = copy.fields[key];
+          for (key in asset.fields) {
+            copy['fields'] || (copy['fields'] = {});
+            copy['fields'][key] = asset.fields[key];
           }
         } else {
-          this.data[idx][key] = copy[key];
+          copy[key] = asset[key];
         }
       }
+      assets[idx] = copy;
     }
-    if (save) {
-      object = {
-        assets: assets
-      };
-      return object;
-    } else {
-      return false;
-    }
+    return this.update(assets, {
+      save: true
+    });
   };
 
   imagoModel.prototype.isDuplicated = function(asset, rename) {
@@ -1612,9 +1599,8 @@ imagoModel = (function() {
             } else {
               if (parent.assets.length) {
                 orderedList = _this.reindexAll(parent.assets);
-                _this.reorder(orderedList.assets, {
-                  save: true,
-                  stream: true
+                _this.imagoModel.update(orderedList.assets, {
+                  save: true
                 });
                 asset.order = orderedList.assets[0].order + 1000;
               } else {
@@ -1638,7 +1624,7 @@ imagoModel = (function() {
 
 })();
 
-angular.module('imago.widgets.angular').service('imagoModel', ['$rootScope', '$http', '$location', '$q', 'imagoUtils', imagoModel]);
+angular.module('imago.widgets.angular').service('imagoModel', ['$rootScope', '$http', '$location', '$q', 'imagoUtils', 'imagoWorker', imagoModel]);
 
 var imagoSubmit,
   __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
