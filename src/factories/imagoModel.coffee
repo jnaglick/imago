@@ -248,7 +248,7 @@ class imagoModel extends Service
             asset.base64 = false
           @data.push(asset)
 
-      @$rootScope.$emit('assets:update', assets) if options.stream
+      @$rootScope.$emit('assets:add', assets) if options.stream
 
   update: (data, options = {}) =>
     options.stream = true if _.isUndefined options.stream
@@ -492,7 +492,7 @@ class imagoModel extends Service
             if parent.assets.length
 
               orderedList = @reindexAll(parent.assets)
-              @imagoModel.update orderedList.assets, {save: true}
+              @update orderedList.assets, {save: true}
               asset.order = orderedList.assets[0].order + 1000
 
             else

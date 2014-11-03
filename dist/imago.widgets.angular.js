@@ -1300,7 +1300,7 @@ imagoModel = (function() {
         }
       }
       if (options.stream) {
-        return this.$rootScope.$emit('assets:update', assets);
+        return this.$rootScope.$emit('assets:add', assets);
       }
     }
   };
@@ -1611,7 +1611,7 @@ imagoModel = (function() {
             } else {
               if (parent.assets.length) {
                 orderedList = _this.reindexAll(parent.assets);
-                _this.imagoModel.update(orderedList.assets, {
+                _this.update(orderedList.assets, {
                   save: true
                 });
                 asset.order = orderedList.assets[0].order + 1000;
