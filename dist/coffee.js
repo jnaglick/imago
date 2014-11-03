@@ -1333,6 +1333,7 @@ imagoModel = (function() {
         idx = this.findIdx(query);
         _.assign(this.data[idx], asset);
         if (asset.status === 'processing' && options.save) {
+          console.log('passed and it should not');
           delete asset.serving_url;
         }
       }
@@ -1350,7 +1351,6 @@ imagoModel = (function() {
     if (options == null) {
       options = {};
     }
-    console.log('assets', assets);
     if (!assets) {
       return;
     }

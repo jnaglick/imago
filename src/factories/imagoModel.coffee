@@ -211,40 +211,40 @@ class imagoModel extends Service
     return assets
 
   add: (assets, options = {}) =>
-      options.stream = true if _.isUndefined options.stream
-      options.push = true if _.isUndefined options.push
+    options.stream = true if _.isUndefined options.stream
+    options.push = true if _.isUndefined options.push
 
-      if options.save
-        defer = @$q.defer()
+    if options.save
+      defer = @$q.defer()
 
-        @assets.create(assets).then (result) =>
-
-          if options.push
-
-            for asset in result.data.data
-              if @imagoUtils.isBaseString(asset.serving_url)
-                asset.base64 = true
-              else
-                asset.base64 = false
-
-              @data.push(asset)
-
-          defer.resolve result.data.data
-          @$rootScope.$broadcast('assets:update', result.data.data) if options.stream
-
-        defer.promise
-
-      else
+      @assets.create(assets).then (result) =>
 
         if options.push
-          for asset in assets
+
+          for asset in result.data.data
             if @imagoUtils.isBaseString(asset.serving_url)
               asset.base64 = true
             else
               asset.base64 = false
+
             @data.push(asset)
 
-        @$rootScope.$broadcast('assets:update', assets) if options.stream
+        defer.resolve result.data.data
+        @$rootScope.$broadcast('assets:update', result.data.data) if options.stream
+
+      defer.promise
+
+    else
+
+      if options.push
+        for asset in assets
+          if @imagoUtils.isBaseString(asset.serving_url)
+            asset.base64 = true
+          else
+            asset.base64 = false
+          @data.push(asset)
+
+      @$rootScope.$broadcast('assets:update', assets) if options.stream
 
   update: (data, options = {}) =>
     options.stream = true if _.isUndefined options.stream
@@ -273,6 +273,7 @@ class imagoModel extends Service
         _.assign(@data[idx], asset)
 
         if asset.status is 'processing' and options.save
+          console.log 'passed and it should not'
           delete asset.serving_url
 
       @assets.batch(copy) if options.save
@@ -280,7 +281,6 @@ class imagoModel extends Service
     @$rootScope.$broadcast('assets:update', copy) if options.stream
 
   delete: (assets, options = {}) =>
-    console.log 'assets', assets
     return unless assets
 
     options.stream = true if _.isUndefined options.stream
