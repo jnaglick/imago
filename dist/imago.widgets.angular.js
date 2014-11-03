@@ -171,7 +171,7 @@ imagoImage = (function() {
         return $scope.imageStyle = {};
       },
       link: function(scope, element, attrs) {
-        var calculateData, defaults, key, lazyLoad, opts, render, renderImage, self, source, value;
+        var calculateData, createWatcher, defaults, key, lazyLoad, opts, render, renderImage, self, source, value;
         self = {};
         opts = {};
         source = {};
@@ -239,16 +239,24 @@ imagoImage = (function() {
           })(this));
           return img[0].src = servingUrl;
         };
-        lazyLoad = function(servingUrl, opts) {
-          return self.visibleFunc = scope.$watch(attrs['visible'], (function(_this) {
-            return function(value) {
-              if (value !== true) {
+        createWatcher = (function(_this) {
+          return function(servingUrl, opts) {
+            return self.visibleFunc = scope.$watch(attrs['visible'], function(value) {
+              if (!value) {
                 return;
               }
+              self.watcherCreated = true;
               self.visibleFunc();
               return renderImage(servingUrl, opts);
-            };
-          })(this));
+            });
+          };
+        })(this);
+        lazyLoad = function(servingUrl, opts) {
+          if (self.watcherCreated) {
+            return renderImage(servingUrl, opts);
+          } else {
+            return createWatcher(servingUrl, opts);
+          }
         };
         render = (function(_this) {
           return function(data) {
@@ -281,20 +289,18 @@ imagoImage = (function() {
             if (scope.status === 'preloading') {
               return console.log('tried to render during rendering!!');
             }
+            scope.status = 'preloading';
             if (angular.isNumber(opts.width) && angular.isNumber(opts.height)) {
-              $log.log('fixed size', opts.width, opts.height);
               width = parseInt(opts.width);
               height = parseInt(opts.height);
             } else if (opts.height === 'auto' && angular.isNumber(opts.width)) {
               height = parseInt(opts.width / opts.assetRatio);
               width = opts.width;
               scope.elementStyle.height = parseInt(height) + 'px';
-              $log.log('fit width', opts.width, opts.height);
             } else if (opts.width === 'auto' && angular.isNumber(opts.height)) {
               height = opts.height;
               width = opts.height * opts.assetRatio;
               scope.elementStyle.width = parseInt(width) + 'px';
-              $log.log('fit height', opts.width, opts.height);
             } else if (opts.width === 'auto' && opts.height === 'auto') {
               width = element[0].clientWidth;
               height = width / opts.assetRatio;
@@ -303,7 +309,6 @@ imagoImage = (function() {
               width = element[0].clientWidth;
               height = element[0].clientHeight;
             }
-            scope.status = 'preloading';
             wrapperRatio = width / height;
             dpr = opts.hires ? Math.ceil($window.devicePixelRatio) || 1 : 1;
             if (opts.sizemode === 'crop') {
@@ -379,6 +384,7 @@ imagoImage = (function() {
         })(this));
         scope.$on('resizestop', (function(_this) {
           return function() {
+            scope.status = 'loading';
             if (opts.responsive) {
               return render(source);
             }
