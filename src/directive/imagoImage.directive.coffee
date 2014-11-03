@@ -1,4 +1,3 @@
-
 class imagoImage extends Directive
 
   constructor: ($window, $q, $log, imagoUtils) ->
@@ -73,11 +72,18 @@ class imagoImage extends Directive
 
           img[0].src = servingUrl
 
-        lazyLoad = (servingUrl, opts) ->
+        createWatcher = (servingUrl, opts) =>
           self.visibleFunc = scope.$watch attrs['visible'], (value) =>
-            return unless value is true
+            return unless value
+            self.watcherCreated = true
             self.visibleFunc()
             renderImage(servingUrl, opts)
+
+        lazyLoad = (servingUrl, opts) ->
+          if self.watcherCreated
+            renderImage(servingUrl, opts)
+          else
+            createWatcher(servingUrl, opts)
 
         render = (data) =>
           unless data?.serving_url
@@ -103,11 +109,12 @@ class imagoImage extends Directive
             opts.assetRatio = r[0]/r[1]
 
           return console.log('tried to render during rendering!!') if scope.status is 'preloading'
+          scope.status = 'preloading'
 
           # console.log 'opts.assetRatio', opts.assetRatio
           # use pvrovided dimentions.
           if angular.isNumber(opts.width) and angular.isNumber(opts.height)
-            $log.log 'fixed size', opts.width, opts.height
+            # $log.log 'fixed size', opts.width, opts.height
             width  = parseInt(opts.width)
             height = parseInt(opts.height)
 
@@ -117,14 +124,14 @@ class imagoImage extends Directive
             height =  parseInt opts.width / opts.assetRatio
             width  =  opts.width
             scope.elementStyle.height = parseInt(height) + 'px'
-            $log.log 'fit width', opts.width, opts.height
+            # $log.log 'fit width', opts.width, opts.height
           #
           # # fit height
           else if opts.width is 'auto' and angular.isNumber(opts.height)
             height = opts.height
             width  = opts.height * opts.assetRatio
             scope.elementStyle.width = parseInt(width) + 'px'
-            $log.log 'fit height', opts.width, opts.height
+            # $log.log 'fit height', opts.width, opts.height
           #
           # # we want dynamic resizing without css.
           # # like standard image behaviour. will get a height according to the width
@@ -145,8 +152,6 @@ class imagoImage extends Directive
           # unbind scrollstop listener for lazy loading
           # opts.window.off "scrollstop.#{opts.id}" if opts.lazy
 
-
-          scope.status = 'preloading'
 
           wrapperRatio = width / height
 
@@ -178,8 +183,8 @@ class imagoImage extends Directive
           servingSize = parseInt Math.min(servingSize * dpr, opts.maxsize), 10
 
           # make sure we only load a new size
+          # console.log 'new size, old size', servingSize, opts.servingSize
           if servingSize is opts.servingSize
-            # console.log 'same size exit'
             scope.status = 'loaded'
             return
 
@@ -196,9 +201,9 @@ class imagoImage extends Directive
             scope.imageStyle.width  = "#{parseInt width,  10}px"
             scope.imageStyle.height = "#{parseInt height, 10}px"
 
+
           unless opts.lazy
             renderImage(servingUrl, opts)
-
           else
             lazyLoad(servingUrl, opts)
 
@@ -209,7 +214,6 @@ class imagoImage extends Directive
           opts.width  = element[0].clientWidth  or opts.width
           opts.height = element[0].clientHeight or opts.height
 
-          # $log.log 'calcMediaSize: opts.width, opts.height', opts.width, opts.height
           return unless opts.width and opts.height
 
           wrapperRatio = opts.width / opts.height
@@ -222,13 +226,16 @@ class imagoImage extends Directive
             if opts.assetRatio > wrapperRatio then "100% auto" else "auto 100%"
 
         scope.onResize = () =>
-          # console.log 'onResize func'
+          # console.log 'onResize func', scope.calcMediaSize()
           scope.imageStyle['background-size'] = scope.calcMediaSize()
 
         scope.$on 'resizelimit', () =>
+          # console.log 'resizelimit'
           scope.onResize() if opts.responsive
 
         scope.$on 'resizestop', () =>
+          # console.log 'resizestop'
+          scope.status = 'loading'
           render(source) if opts.responsive
 
         angular.element($window).on "orientationchange", () =>
