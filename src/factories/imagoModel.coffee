@@ -129,7 +129,11 @@ class imagoModel extends Service
 
     _.forEach query, (value) =>
       promises.push @getLocalData(value).then (result) =>
-        fetches.push @imagoWorker.reorder(result.assets, result.sortorder).then (response) =>
+        worker =
+          assets :  result.assets
+          order  :  result.sortorder
+
+        fetches.push @imagoWorker.reorder(worker).then (response) =>
           result.assets = response.assets
           data.push result
           data = _.flatten data
