@@ -1350,33 +1350,40 @@ imagoModel = (function() {
     }
   };
 
-  imagoModel.prototype["delete"] = function(id, save) {
-    if (save == null) {
-      save = false;
+  imagoModel.prototype["delete"] = function(assets, options) {
+    var asset, _i, _len;
+    if (options == null) {
+      options = {};
     }
-    console.log('id', id);
-    if (!id) {
+    console.log('assets', assets);
+    if (!assets) {
       return;
     }
-    this.data = _.reject(this.data, {
-      _id: id
-    });
-    this.$rootScope.$broadcast('assets:update', id);
-    if (save) {
-      this.assets["delete"](id);
+    if (_.isUndefined(options.stream)) {
+      options.stream = true;
     }
-    return this.data;
+    if (_.isUndefined(options.save)) {
+      options.save = true;
+    }
+    for (_i = 0, _len = assets.length; _i < _len; _i++) {
+      asset = assets[_i];
+      this.data = _.reject(this.data, {
+        _id: asset.id
+      });
+      if (options.save) {
+        this.assets["delete"](asset.id);
+      }
+    }
+    if (options.stream) {
+      return this.$rootScope.$broadcast('assets:delete', assets);
+    }
   };
 
   imagoModel.prototype.trash = function(assets) {
-    var asset, _i, _len, _results;
     this.assets.trash(assets);
-    _results = [];
-    for (_i = 0, _len = assets.length; _i < _len; _i++) {
-      asset = assets[_i];
-      _results.push(this["delete"](asset.id));
-    }
-    return _results;
+    return this["delete"](assets, {
+      save: false
+    });
   };
 
   imagoModel.prototype.move = function(data) {

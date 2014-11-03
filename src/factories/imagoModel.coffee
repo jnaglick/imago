@@ -279,20 +279,22 @@ class imagoModel extends Service
 
     @$rootScope.$broadcast('assets:update', copy) if options.stream
 
-  delete: (id, save=false) =>
-    console.log 'id', id
-    return unless id
-    # returns an array without the asset of id
-    @data = _.reject(@data, { _id: id })
-    @$rootScope.$broadcast 'assets:update', id
-    @assets.delete(id) if save
-    return @data
+  delete: (assets, options = {}) =>
+    console.log 'assets', assets
+    return unless assets
+
+    options.stream = true if _.isUndefined options.stream
+    options.save   = true if _.isUndefined options.save
+
+    for asset in assets
+      @data = _.reject(@data, { _id: asset.id })
+      @assets.delete(asset.id) if options.save
+
+    @$rootScope.$broadcast('assets:delete', assets) if options.stream
 
   trash: (assets) =>
     @assets.trash(assets)
-
-    for asset in assets
-      @delete asset.id
+    @delete(assets, save: false)
 
   move: (data) =>
     # I'm not sure if thise will work as intended
