@@ -915,6 +915,63 @@ StopPropagation = (function() {
 
 angular.module('imago.widgets.angular').directive('stopPropagation', [StopPropagation]);
 
+var Meta;
+
+Meta = (function() {
+  function Meta() {
+    return function(input, value) {
+      if (!(input && value && input.fields[value])) {
+        return;
+      }
+      if (input.fields[value].value.type) {
+        return input.fields[value].value.value;
+      } else {
+        return input.fields[value].value;
+      }
+    };
+  }
+
+  return Meta;
+
+})();
+
+angular.module('imago.widgets.angular').filter('meta', [Meta]);
+
+var Time;
+
+Time = (function() {
+  function Time() {
+    return function(input) {
+      var calc, hours, minutes, pad, seconds;
+      if (!input) {
+        return;
+      }
+      pad = function(num) {
+        if (num < 10) {
+          return "0" + num;
+        }
+        return num;
+      };
+      calc = [];
+      minutes = Math.floor(input / 60);
+      hours = Math.floor(input / 3600);
+      seconds = (input === 0 ? 0 : input % 60);
+      seconds = Math.round(seconds);
+      if (hours > 0) {
+        calc.push(pad(hours));
+      }
+      calc.push(pad(minutes));
+      calc.push(pad(seconds));
+      return calc.join(":");
+    };
+  }
+
+  return Time;
+
+})();
+
+angular.module('imago.widgets.angular').filter('time', [Time]);
+
 var imagoModel,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 
@@ -1272,7 +1329,7 @@ imagoModel = (function() {
           }
           defer.resolve(result.data.data);
           if (options.stream) {
-            return _this.$rootScope.$broadcast('assets:update', result.data.data);
+            return _this.$rootScope.$emit('assets:add', result.data.data);
           }
         };
       })(this));
@@ -1290,7 +1347,7 @@ imagoModel = (function() {
         }
       }
       if (options.stream) {
-        return this.$rootScope.$broadcast('assets:update', assets);
+        return this.$rootScope.$emit('assets:update', assets);
       }
     }
   };
@@ -1342,7 +1399,7 @@ imagoModel = (function() {
       }
     }
     if (options.stream) {
-      return this.$rootScope.$broadcast('assets:update', copy);
+      return this.$rootScope.$emit('assets:update', copy);
     }
   };
 
@@ -1357,9 +1414,6 @@ imagoModel = (function() {
     if (_.isUndefined(options.stream)) {
       options.stream = true;
     }
-    if (_.isUndefined(options.save)) {
-      options.save = true;
-    }
     for (_i = 0, _len = assets.length; _i < _len; _i++) {
       asset = assets[_i];
       this.data = _.reject(this.data, {
@@ -1370,15 +1424,13 @@ imagoModel = (function() {
       }
     }
     if (options.stream) {
-      return this.$rootScope.$broadcast('assets:delete', assets);
+      return this.$rootScope.$emit('assets:delete', assets);
     }
   };
 
   imagoModel.prototype.trash = function(assets) {
     this.assets.trash(assets);
-    return this["delete"](assets, {
-      save: false
-    });
+    return this["delete"](assets);
   };
 
   imagoModel.prototype.move = function(data) {
@@ -1420,7 +1472,7 @@ imagoModel = (function() {
         this.data.push(asset);
       }
     }
-    this.$rootScope.$broadcast('assets:update', assets);
+    this.$rootScope.$emit('assets:update', assets);
     defer.resolve(assets);
     return defer.promise;
   };
@@ -1445,7 +1497,7 @@ imagoModel = (function() {
     args = [idx, assets.length].concat(copy);
     Array.prototype.splice.apply(this.data, args);
     if (options.stream) {
-      this.$rootScope.$broadcast('assets:update', copy);
+      this.$rootScope.$emit('assets:update', copy);
     }
     if (options.save) {
       return this.assets.batch(assets);
@@ -2181,63 +2233,6 @@ imagoUtils = (function() {
 })();
 
 angular.module('imago.widgets.angular').factory('imagoUtils', [imagoUtils]);
-
-var Meta;
-
-Meta = (function() {
-  function Meta() {
-    return function(input, value) {
-      if (!(input && value && input.fields[value])) {
-        return;
-      }
-      if (input.fields[value].value.type) {
-        return input.fields[value].value.value;
-      } else {
-        return input.fields[value].value;
-      }
-    };
-  }
-
-  return Meta;
-
-})();
-
-angular.module('imago.widgets.angular').filter('meta', [Meta]);
-
-var Time;
-
-Time = (function() {
-  function Time() {
-    return function(input) {
-      var calc, hours, minutes, pad, seconds;
-      if (!input) {
-        return;
-      }
-      pad = function(num) {
-        if (num < 10) {
-          return "0" + num;
-        }
-        return num;
-      };
-      calc = [];
-      minutes = Math.floor(input / 60);
-      hours = Math.floor(input / 3600);
-      seconds = (input === 0 ? 0 : input % 60);
-      seconds = Math.round(seconds);
-      if (hours > 0) {
-        calc.push(pad(hours));
-      }
-      calc.push(pad(minutes));
-      calc.push(pad(seconds));
-      return calc.join(":");
-    };
-  }
-
-  return Time;
-
-})();
-
-angular.module('imago.widgets.angular').filter('time', [Time]);
 
 var lodash;
 

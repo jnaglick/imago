@@ -230,7 +230,7 @@ class imagoModel extends Service
             @data.push(asset)
 
         defer.resolve result.data.data
-        @$rootScope.$broadcast('assets:update', result.data.data) if options.stream
+        @$rootScope.$emit('assets:add', result.data.data) if options.stream
 
       defer.promise
 
@@ -244,7 +244,7 @@ class imagoModel extends Service
             asset.base64 = false
           @data.push(asset)
 
-      @$rootScope.$broadcast('assets:update', assets) if options.stream
+      @$rootScope.$emit('assets:update', assets) if options.stream
 
   update: (data, options = {}) =>
     options.stream = true if _.isUndefined options.stream
@@ -278,23 +278,21 @@ class imagoModel extends Service
 
       @assets.batch(copy) if options.save
 
-    @$rootScope.$broadcast('assets:update', copy) if options.stream
+    @$rootScope.$emit('assets:update', copy) if options.stream
 
   delete: (assets, options = {}) =>
     return unless assets
-
     options.stream = true if _.isUndefined options.stream
-    options.save   = true if _.isUndefined options.save
 
     for asset in assets
       @data = _.reject(@data, { _id: asset.id })
       @assets.delete(asset.id) if options.save
 
-    @$rootScope.$broadcast('assets:delete', assets) if options.stream
+    @$rootScope.$emit('assets:delete', assets) if options.stream
 
   trash: (assets) =>
     @assets.trash(assets)
-    @delete(assets, save: false)
+    @delete(assets)
 
   move: (data) =>
     # I'm not sure if thise will work as intended
@@ -325,7 +323,7 @@ class imagoModel extends Service
 
         @data.push asset
 
-    @$rootScope.$broadcast 'assets:update', assets
+    @$rootScope.$emit 'assets:update', assets
 
     defer.resolve assets
 
@@ -346,7 +344,7 @@ class imagoModel extends Service
     args = [idx, assets.length].concat(copy)
     Array.prototype.splice.apply(@data, args)
 
-    @$rootScope.$broadcast('assets:update', copy) if options.stream
+    @$rootScope.$emit('assets:update', copy) if options.stream
     @assets.batch(assets) if options.save
 
   reindexAll:  (list) =>
