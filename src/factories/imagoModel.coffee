@@ -298,32 +298,42 @@ class imagoModel extends Service
     @delete(assets)
 
   copy: (assets, sourceId, parentId) =>
-    request = []
-    for asset in assets
-      newAsset =
-        id    : asset.id
-        order : asset.order
 
-      request.push newAsset
+    @paste(assets).then (pasted) =>
 
-    @paste(assets)
-    @assets.copy(request, sourceId, parentId)
+      request = []
+
+      for asset in pasted
+        newAsset =
+          id    : asset.id
+          order : asset.order
+          name  : asset.name
+
+        request.push(newAsset)
+
+      @assets.copy(request, sourceId, parentId)
+        .then (result) =>
+          @update result.data
 
   move: (assets, sourceId, parentId) =>
-    request = []
-    for asset in assets
-      newAsset =
-        id    : asset.id
-        order : asset.order
 
-      request.push newAsset
+    @paste(assets).then (pasted) =>
 
-    @delete(assets, stream: false)
-    @paste(assets)
-    @assets.move(request, sourceId, parentId)
+      request = []
+
+      for asset in pasted
+        newAsset =
+          id    : asset.id
+          order : asset.order
+          name  : asset.name
+
+        request.push newAsset
+
+      @update(pasted)
+      @assets.move(request, sourceId, parentId)
 
   paste: (assets, options={}) =>
-    options.checkdups = true unless _.isUndefined options.checkdups
+    options.checkdups = true if _.isUndefined options.checkdups
 
     defer = @$q.defer()
 
@@ -333,7 +343,6 @@ class imagoModel extends Service
       deferAsset = @$q.defer()
 
       if not options.checkdups or _.where(assetsChildren, {name: asset.name}).length is 0
-        @data.push(asset)
         deferAsset.resolve asset
 
       else
@@ -345,7 +354,6 @@ class imagoModel extends Service
           i++
           exists = (if _.where(assetsChildren, {name: asset.name}).length > 0 then true else false)
 
-        @data.push(asset)
         deferAsset.resolve asset
 
       deferAsset.promise
@@ -355,9 +363,8 @@ class imagoModel extends Service
     for asset in assets
       queue.push checkAsset(asset)
 
-    @$q.all(queue).then () =>
-      @$rootScope.$emit('assets:update', assets)
-      defer.resolve(assets)
+    @$q.all(queue).then (result) =>
+      defer.resolve(result)
 
     defer.promise
 
