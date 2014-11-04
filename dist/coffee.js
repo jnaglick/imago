@@ -939,6 +939,7 @@ imagoModel = (function() {
     this.reindexAll = __bind(this.reindexAll, this);
     this.paste = __bind(this.paste, this);
     this.move = __bind(this.move, this);
+    this.copy = __bind(this.copy, this);
     this.trash = __bind(this.trash, this);
     this["delete"] = __bind(this["delete"], this);
     this.update = __bind(this.update, this);
@@ -1385,22 +1386,46 @@ imagoModel = (function() {
     return this["delete"](assets);
   };
 
-  imagoModel.prototype.move = function(data) {
-    var assets;
-    assets = this.findChildren(data);
-    return _.forEach(assets, (function(_this) {
-      return function(asset) {
-        var order;
-        order = _.indexOf(assets, asset);
-        return assets.splice(order, 1);
+  imagoModel.prototype.copy = function(assets, sourceId, parentId) {
+    var asset, newAsset, request, _i, _len;
+    request = [];
+    for (_i = 0, _len = assets.length; _i < _len; _i++) {
+      asset = assets[_i];
+      newAsset = {
+        id: asset.id,
+        order: asset.order
       };
-    })(this));
+      request.push(newAsset);
+    }
+    this.paste(assets);
+    return this.assets.copy(request, sourceId, parentId);
   };
 
-  imagoModel.prototype.paste = function(assets, checkdups) {
+  imagoModel.prototype.move = function(assets, sourceId, parentId) {
+    var asset, newAsset, request, _i, _len;
+    request = [];
+    for (_i = 0, _len = assets.length; _i < _len; _i++) {
+      asset = assets[_i];
+      newAsset = {
+        id: asset.id,
+        order: asset.order
+      };
+      request.push(newAsset);
+    }
+    this["delete"](assets, {
+      stream: false
+    });
+    this.paste(assets);
+    return this.assets.move(request, sourceId, parentId);
+  };
+
+  imagoModel.prototype.paste = function(assets, options) {
     var asset, assetsChildren, checkAsset, defer, queue, _i, _len;
-    if (checkdups == null) {
-      checkdups = true;
+    if (options == null) {
+      options = {};
+    }
+    if (!_.isUndefined(options.checkdups)) {
+      options.checkdups = true;
     }
     defer = this.$q.defer();
     assetsChildren = this.findChildren(this.currentCollection);
@@ -1408,7 +1433,7 @@ imagoModel = (function() {
       return function(asset) {
         var deferAsset, exists, i, original_name;
         deferAsset = _this.$q.defer();
-        if (!checkdups || _.where(assetsChildren, {
+        if (!options.checkdups || _.where(assetsChildren, {
           name: asset.name
         }).length === 0) {
           _this.data.push(asset);

@@ -294,16 +294,34 @@ class imagoModel extends Service
     @assets.trash(ids)
     @delete(assets)
 
-  move: (data) =>
-    # I'm not sure if thise will work as intended
-    # finds assets of a collection then reorders them
-    # and returns the reordered array
-    assets = @findChildren(data)
-    _.forEach assets, (asset) =>
-        order = _.indexOf assets, asset
-        assets.splice order, 1
+  copy: (assets, sourceId, parentId) =>
+    request = []
+    for asset in assets
+      newAsset =
+        id    : asset.id
+        order : asset.order
 
-  paste: (assets, checkdups=true) =>
+      request.push newAsset
+
+    @paste(assets)
+    @assets.copy(request, sourceId, parentId)
+
+  move: (assets, sourceId, parentId) =>
+    request = []
+    for asset in assets
+      newAsset =
+        id    : asset.id
+        order : asset.order
+
+      request.push newAsset
+
+    @delete(assets, stream: false)
+    @paste(assets)
+    @assets.move(request, sourceId, parentId)
+
+  paste: (assets, options={}) =>
+    options.checkdups = true unless _.isUndefined options.checkdups
+
     defer = @$q.defer()
 
     assetsChildren = @findChildren(@currentCollection)
@@ -311,7 +329,7 @@ class imagoModel extends Service
     checkAsset = (asset) =>
       deferAsset = @$q.defer()
 
-      if not checkdups or _.where(assetsChildren, {name: asset.name}).length is 0
+      if not options.checkdups or _.where(assetsChildren, {name: asset.name}).length is 0
         @data.push(asset)
         deferAsset.resolve asset
 
