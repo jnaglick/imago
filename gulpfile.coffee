@@ -224,3 +224,5 @@ reportError = (err) ->
 ## End essentials tasks
 
 gulp.task "default", ["watch"]
+
+module.exports = gulp
