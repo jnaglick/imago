@@ -291,7 +291,7 @@ class imagoModel extends Service
     for asset in assets
       ids.push asset.id
 
-    @assets.trash(assets)
+    @assets.trash(ids)
     @delete(assets)
 
   move: (data) =>
@@ -322,8 +322,6 @@ class imagoModel extends Service
           exists = (if _.where(assetsChildren, {name: asset.name}).length > 0 then true else false)
 
         @data.push asset
-
-    @$rootScope.$emit 'assets:update', assets
 
     defer.resolve assets
 
