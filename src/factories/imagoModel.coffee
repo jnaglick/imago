@@ -274,7 +274,6 @@ class imagoModel extends Service
 
       @assets.batch(copy) if options.save
 
-
     @$rootScope.$emit('assets:update', copy) if options.stream
 
   delete: (assets, options = {}) =>
@@ -402,15 +401,17 @@ class imagoModel extends Service
         fields : original.fields
         parent : original.parent
 
-      for key, value of asset
+      toedit = angular.copy asset
+
+      for key, value of toedit
         if key is 'fields'
 
-          for key of asset.fields
+          for key of toedit.fields
             copy['fields'] or= {}
-            copy['fields'][key] = asset.fields[key]
+            copy['fields'][key] = toedit.fields[key]
 
         else
-          copy[key] = asset[key]
+          copy[key] = toedit[key]
 
       assets[idx] = copy
     @update assets, {save: true}
