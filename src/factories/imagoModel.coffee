@@ -287,6 +287,10 @@ class imagoModel extends Service
     @$rootScope.$emit('assets:delete', assets) if options.stream
 
   trash: (assets) =>
+    ids = []
+    for asset in assets
+      ids.push asset.id
+
     @assets.trash(assets)
     @delete(assets)
 
@@ -324,24 +328,6 @@ class imagoModel extends Service
     defer.resolve assets
 
     defer.promise
-
-  reorder: (assets, options = {}) =>
-    copy = []
-
-    for asset, index in assets
-      idxAsset = @findIdx 'id': asset._id
-
-      if idxAsset isnt -1
-        asset = _.assign @data[idxAsset], asset
-        copy.push asset
-
-        idx = (if idxAsset > idx then idx else idxAsset)
-
-    args = [idx, assets.length].concat(copy)
-    Array.prototype.splice.apply(@data, args)
-
-    @$rootScope.$emit('assets:update', copy) if options.stream
-    @assets.batch(assets) if options.save
 
   reindexAll:  (list) =>
     newList = []

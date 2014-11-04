@@ -16,24 +16,6 @@ App = (function() {
 
 angular.module('imago.widgets.angular', App());
 
-var imagoPage;
-
-imagoPage = (function() {
-  function imagoPage($scope, $state, imagoModel) {
-    var path;
-    path = '/';
-    imagoModel.getData(path).then(function(response) {
-      $scope.collection = response[0];
-      return $scope.assets = imagoModel.getChildren(response[0]);
-    });
-  }
-
-  return imagoPage;
-
-})();
-
-angular.module('imago.widgets.angular').controller('imagoPage', ['$scope', '$state', 'imagoModel', imagoPage]);
-
 var imagoCompile;
 
 imagoCompile = (function() {
@@ -926,6 +908,24 @@ StopPropagation = (function() {
 
 angular.module('imago.widgets.angular').directive('stopPropagation', [StopPropagation]);
 
+var imagoPage;
+
+imagoPage = (function() {
+  function imagoPage($scope, $state, imagoModel) {
+    var path;
+    path = '/';
+    imagoModel.getData(path).then(function(response) {
+      $scope.collection = response[0];
+      return $scope.assets = imagoModel.getChildren(response[0]);
+    });
+  }
+
+  return imagoPage;
+
+})();
+
+angular.module('imago.widgets.angular').controller('imagoPage', ['$scope', '$state', 'imagoModel', imagoPage]);
+
 var imagoModel,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 
@@ -942,7 +942,6 @@ imagoModel = (function() {
     this.batchChange = __bind(this.batchChange, this);
     this.orderChanged = __bind(this.orderChanged, this);
     this.reindexAll = __bind(this.reindexAll, this);
-    this.reorder = __bind(this.reorder, this);
     this.paste = __bind(this.paste, this);
     this.move = __bind(this.move, this);
     this.trash = __bind(this.trash, this);
@@ -1382,6 +1381,12 @@ imagoModel = (function() {
   };
 
   imagoModel.prototype.trash = function(assets) {
+    var asset, ids, _i, _len;
+    ids = [];
+    for (_i = 0, _len = assets.length; _i < _len; _i++) {
+      asset = assets[_i];
+      ids.push(asset.id);
+    }
     this.assets.trash(assets);
     return this["delete"](assets);
   };
@@ -1428,33 +1433,6 @@ imagoModel = (function() {
     this.$rootScope.$emit('assets:update', assets);
     defer.resolve(assets);
     return defer.promise;
-  };
-
-  imagoModel.prototype.reorder = function(assets, options) {
-    var args, asset, copy, idx, idxAsset, index, _i, _len;
-    if (options == null) {
-      options = {};
-    }
-    copy = [];
-    for (index = _i = 0, _len = assets.length; _i < _len; index = ++_i) {
-      asset = assets[index];
-      idxAsset = this.findIdx({
-        'id': asset._id
-      });
-      if (idxAsset !== -1) {
-        asset = _.assign(this.data[idxAsset], asset);
-        copy.push(asset);
-        idx = (idxAsset > idx ? idx : idxAsset);
-      }
-    }
-    args = [idx, assets.length].concat(copy);
-    Array.prototype.splice.apply(this.data, args);
-    if (options.stream) {
-      this.$rootScope.$emit('assets:update', copy);
-    }
-    if (options.save) {
-      return this.assets.batch(assets);
-    }
   };
 
   imagoModel.prototype.reindexAll = function(list) {
