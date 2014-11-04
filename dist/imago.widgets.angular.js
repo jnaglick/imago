@@ -1381,13 +1381,16 @@ imagoModel = (function() {
   };
 
   imagoModel.prototype.trash = function(assets) {
-    var asset, ids, _i, _len;
-    ids = [];
+    var asset, newAsset, request, _i, _len;
+    request = [];
     for (_i = 0, _len = assets.length; _i < _len; _i++) {
       asset = assets[_i];
-      ids.push(asset.id);
+      newAsset = {
+        id: asset.id
+      };
+      request.push(newAsset);
     }
-    this.assets.trash(ids);
+    this.assets.trash(request);
     return this["delete"](assets);
   };
 

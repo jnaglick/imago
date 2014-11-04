@@ -287,11 +287,14 @@ class imagoModel extends Service
     @$rootScope.$emit('assets:delete', assets) if options.stream
 
   trash: (assets) =>
-    ids = []
+    request = []
     for asset in assets
-      ids.push asset.id
+      newAsset =
+        id : asset.id
 
-    @assets.trash(ids)
+      request.push newAsset
+
+    @assets.trash(request)
     @delete(assets)
 
   copy: (assets, sourceId, parentId) =>
