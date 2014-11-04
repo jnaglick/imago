@@ -88,7 +88,7 @@ class imagoModel extends Service
           asset.assets = @findChildren(asset)
 
           if asset.assets.length isnt asset.count
-            console.log 'rejected in count', asset.assets, asset.assets.length, asset.count
+            # console.log 'rejected in count', asset.assets, asset.assets.length, asset.count
             defer.reject query
 
           else
@@ -308,9 +308,12 @@ class imagoModel extends Service
 
     assetsChildren = @findChildren(@currentCollection)
 
-    for asset in assets
+    checkAsset = (asset) =>
+      deferAsset = @$q.defer()
+
       if not checkdups or _.where(assetsChildren, {name: asset.name}).length is 0
-        @data.push asset
+        @data.push(asset)
+        deferAsset.resolve asset
 
       else
         i = 1
@@ -321,9 +324,19 @@ class imagoModel extends Service
           i++
           exists = (if _.where(assetsChildren, {name: asset.name}).length > 0 then true else false)
 
-        @data.push asset
+        @data.push(asset)
+        deferAsset.resolve asset
 
-    defer.resolve assets
+      deferAsset.promise
+
+    queue = []
+
+    for asset in assets
+      queue.push checkAsset(asset)
+
+    @$q.all(queue).then () =>
+      @$rootScope.$emit('assets:update', assets)
+      defer.resolve(assets)
 
     defer.promise
 

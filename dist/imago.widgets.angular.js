@@ -1068,7 +1068,6 @@ imagoModel = (function() {
         if (asset.count) {
           asset.assets = this.findChildren(asset);
           if (asset.assets.length !== asset.count) {
-            console.log('rejected in count', asset.assets, asset.assets.length, asset.count);
             defer.reject(query);
           } else {
             asset.assets = this.filterAssets(asset.assets, query);
@@ -1404,33 +1403,49 @@ imagoModel = (function() {
   };
 
   imagoModel.prototype.paste = function(assets, checkdups) {
-    var asset, assetsChildren, defer, exists, i, original_name, _i, _len;
+    var asset, assetsChildren, checkAsset, defer, queue, _i, _len;
     if (checkdups == null) {
       checkdups = true;
     }
     defer = this.$q.defer();
     assetsChildren = this.findChildren(this.currentCollection);
+    checkAsset = (function(_this) {
+      return function(asset) {
+        var deferAsset, exists, i, original_name;
+        deferAsset = _this.$q.defer();
+        if (!checkdups || _.where(assetsChildren, {
+          name: asset.name
+        }).length === 0) {
+          _this.data.push(asset);
+          deferAsset.resolve(asset);
+        } else {
+          i = 1;
+          exists = true;
+          original_name = asset.name;
+          while (exists) {
+            asset.name = "" + original_name + "_" + i;
+            i++;
+            exists = (_.where(assetsChildren, {
+              name: asset.name
+            }).length > 0 ? true : false);
+          }
+          _this.data.push(asset);
+          deferAsset.resolve(asset);
+        }
+        return deferAsset.promise;
+      };
+    })(this);
+    queue = [];
     for (_i = 0, _len = assets.length; _i < _len; _i++) {
       asset = assets[_i];
-      if (!checkdups || _.where(assetsChildren, {
-        name: asset.name
-      }).length === 0) {
-        this.data.push(asset);
-      } else {
-        i = 1;
-        exists = true;
-        original_name = asset.name;
-        while (exists) {
-          asset.name = "" + original_name + "_" + i;
-          i++;
-          exists = (_.where(assetsChildren, {
-            name: asset.name
-          }).length > 0 ? true : false);
-        }
-        this.data.push(asset);
-      }
+      queue.push(checkAsset(asset));
     }
-    defer.resolve(assets);
+    this.$q.all(queue).then((function(_this) {
+      return function() {
+        _this.$rootScope.$emit('assets:update', assets);
+        return defer.resolve(assets);
+      };
+    })(this));
     return defer.promise;
   };
 
