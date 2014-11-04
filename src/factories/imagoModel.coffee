@@ -2,7 +2,7 @@ class imagoModel extends Service
 
   constructor: (@$rootScope, @$http, @$location, @$q, @imagoUtils, @imagoWorker) ->
     if (data is 'online' and debug)
-      @host = window.location.protocol + "//imagoapi-nex9.rhcloud.com"
+      @host = window.location.protocol + "//api.2.imagoapp.com"
     else
       @host = window.location.protocol + "//localhost:8000"
 
@@ -47,7 +47,7 @@ class imagoModel extends Service
 
   getSearchUrl: ->
     if (data is 'online' and debug)
-      return "#{window.location.protocol}//imagoapi-nex9.rhcloud.com/api/search"
+      return "#{window.location.protocol}//api.2.imagoapp.com/api/search"
     else
       return "http://localhost:8000/api/search"
 

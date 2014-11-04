@@ -690,7 +690,7 @@ imagoVideo = (function() {
                 continue;
               }
               scope.videoFormats.push({
-                "src": "//imagoapi-nex9.rhcloud.com/api/play_redirect?uuid=" + data.uuid + "&codec=" + format.codec + "&quality=hd&max_size=" + format.size,
+                "src": "//api.2.imagoapp.com/api/play_redirect?uuid=" + data.uuid + "&codec=" + format.codec + "&quality=hd&max_size=" + format.size,
                 "size": format.size,
                 "codec": format.codec,
                 "type": "video/" + codec
@@ -954,7 +954,7 @@ imagoModel = (function() {
     this.getData = __bind(this.getData, this);
     this.getLocalData = __bind(this.getLocalData, this);
     if (data === 'online' && debug) {
-      this.host = window.location.protocol + "//imagoapi-nex9.rhcloud.com";
+      this.host = window.location.protocol + "//api.2.imagoapp.com";
     } else {
       this.host = window.location.protocol + "//localhost:8000";
     }
@@ -1022,7 +1022,7 @@ imagoModel = (function() {
 
   imagoModel.prototype.getSearchUrl = function() {
     if (data === 'online' && debug) {
-      return "" + window.location.protocol + "//imagoapi-nex9.rhcloud.com/api/search";
+      return "" + window.location.protocol + "//api.2.imagoapp.com/api/search";
     } else {
       return "http://localhost:8000/api/search";
     }

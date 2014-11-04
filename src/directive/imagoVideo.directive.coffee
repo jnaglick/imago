@@ -117,7 +117,7 @@ class imagoVideo extends Directive
           for format, i in data.fields.formats
             continue unless codec is format.codec
             scope.videoFormats.push(
-                "src" : """//imagoapi-nex9.rhcloud.com/api/play_redirect?uuid=#{data.uuid}&codec=#{format.codec}&quality=hd&max_size=#{format.size}"""
+                "src" : """//api.2.imagoapp.com/api/play_redirect?uuid=#{data.uuid}&codec=#{format.codec}&quality=hd&max_size=#{format.size}"""
                 "size": format.size
                 "codec": format.codec
                 "type": "video/#{codec}"
