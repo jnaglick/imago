@@ -81,21 +81,19 @@ class imagoModel extends Service
         asset = @find('path' : path)
 
       else if _.isArray path
-        # if path[0] is '/'
         asset = @find('path' : path[0])
 
       if asset
-        if asset.count? isnt 0
+        if asset.count
           asset.assets = @findChildren(asset)
 
           if asset.assets.length isnt asset.count
-            # console.log 'rejected in count', asset.assets, asset.assets.length, asset.count
+            console.log 'rejected in count', asset.assets, asset.assets.length, asset.count
             defer.reject query
 
           else
             asset.assets = @filterAssets(asset.assets, query)
-
-          defer.resolve asset
+            defer.resolve asset
 
         else
           defer.resolve asset
@@ -255,6 +253,7 @@ class imagoModel extends Service
     attribute = (if options.attribute then options.attribute else '_id')
 
     copy = angular.copy data
+
     if _.isPlainObject(copy)
       query = {}
       query[attribute] = copy[attribute]
@@ -262,9 +261,6 @@ class imagoModel extends Service
       delete copy.assets if copy.assets
       idx = @findIdx(query)
       @data[idx] = _.assign(@data[idx], copy)
-
-      if copy.status is 'processing' and options.save
-        delete copy.serving_url
 
       @assets.update(copy) if options.save
 
@@ -276,11 +272,8 @@ class imagoModel extends Service
         idx = @findIdx(query)
         _.assign(@data[idx], asset)
 
-        if asset.status is 'processing' and options.save
-          console.log 'passed and it should not'
-          delete asset.serving_url
-
       @assets.batch(copy) if options.save
+
 
     @$rootScope.$emit('assets:update', copy) if options.stream
 

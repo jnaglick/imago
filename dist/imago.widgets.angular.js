@@ -1066,14 +1066,15 @@ imagoModel = (function() {
         });
       }
       if (asset) {
-        if ((asset.count != null) !== 0) {
+        if (asset.count) {
           asset.assets = this.findChildren(asset);
           if (asset.assets.length !== asset.count) {
+            console.log('rejected in count', asset.assets, asset.assets.length, asset.count);
             defer.reject(query);
           } else {
             asset.assets = this.filterAssets(asset.assets, query);
+            defer.resolve(asset);
           }
-          defer.resolve(asset);
         } else {
           defer.resolve(asset);
         }
@@ -1332,9 +1333,6 @@ imagoModel = (function() {
       }
       idx = this.findIdx(query);
       this.data[idx] = _.assign(this.data[idx], copy);
-      if (copy.status === 'processing' && options.save) {
-        delete copy.serving_url;
-      }
       if (options.save) {
         this.assets.update(copy);
       }
@@ -1348,10 +1346,6 @@ imagoModel = (function() {
         }
         idx = this.findIdx(query);
         _.assign(this.data[idx], asset);
-        if (asset.status === 'processing' && options.save) {
-          console.log('passed and it should not');
-          delete asset.serving_url;
-        }
       }
       if (options.save) {
         this.assets.batch(copy);
