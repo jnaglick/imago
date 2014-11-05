@@ -90,7 +90,7 @@ class imagoModel extends Service
         if asset.count or asset.assets.length
 
           if asset.assets.length isnt asset.count
-            # console.log 'rejected in count', asset.assets, asset.assets.length, asset.count
+            console.log "count not same as assets.length - go to server", asset.count, asset.assets.length
             defer.reject query
 
           else
@@ -155,7 +155,6 @@ class imagoModel extends Service
 
     defer.promise
 
-
   formatQuery: (query) ->
     querydict = {}
     if angular.isArray(query)
@@ -206,7 +205,6 @@ class imagoModel extends Service
     _.findIndex @data, options
 
   filterAssets: (assets, query) =>
-
     if _.keys(query).length > 0
       for key, value of query
         for params in value
@@ -219,6 +217,10 @@ class imagoModel extends Service
                 return asset
 
     return assets
+
+  updateCount: (parent, number) =>
+    parent.count = parent.count + number
+    @update parent, {stream: false}
 
   add: (assets, options = {}) =>
     options.stream = true if _.isUndefined options.stream
@@ -487,7 +489,8 @@ class imagoModel extends Service
     result = undefined
 
     assetsChildren = _.where @currentCollection.assets, (chr) =>
-      normalizeName = angular.copy @imagoUtils.normalize(chr.name)
+      return false if not chr.name
+      normalizeName = angular.copy(@imagoUtils.normalize(chr.name))
       return normalizeName is name
 
     if assetsChildren.length > 0

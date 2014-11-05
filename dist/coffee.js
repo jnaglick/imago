@@ -927,6 +927,7 @@ imagoModel = (function() {
     this["delete"] = __bind(this["delete"], this);
     this.update = __bind(this.update, this);
     this.add = __bind(this.add, this);
+    this.updateCount = __bind(this.updateCount, this);
     this.filterAssets = __bind(this.filterAssets, this);
     this.findIdx = __bind(this.findIdx, this);
     this.find = __bind(this.find, this);
@@ -1047,6 +1048,7 @@ imagoModel = (function() {
         asset.assets = this.findChildren(asset);
         if (asset.count || asset.assets.length) {
           if (asset.assets.length !== asset.count) {
+            console.log("count not same as assets.length - go to server", asset.count, asset.assets.length);
             defer.reject(query);
           } else {
             asset.assets = this.filterAssets(asset.assets, query);
@@ -1239,6 +1241,13 @@ imagoModel = (function() {
       }
     }
     return assets;
+  };
+
+  imagoModel.prototype.updateCount = function(parent, number) {
+    parent.count = parent.count + number;
+    return this.update(parent, {
+      stream: false
+    });
   };
 
   imagoModel.prototype.add = function(assets, options) {
@@ -1596,6 +1605,9 @@ imagoModel = (function() {
     assetsChildren = _.where(this.currentCollection.assets, (function(_this) {
       return function(chr) {
         var normalizeName;
+        if (!chr.name) {
+          return false;
+        }
         normalizeName = angular.copy(_this.imagoUtils.normalize(chr.name));
         return normalizeName === name;
       };
@@ -2289,14 +2301,6 @@ imagoPage = (function() {
 
 angular.module('imago.widgets.angular').controller('imagoPage', ['$scope', '$state', 'imagoModel', imagoPage]);
 
-var lodash;
-
-lodash = angular.module('lodash', []);
-
-lodash.factory('_', function() {
-  return window._();
-});
-
 var Meta;
 
 Meta = (function() {
@@ -2353,3 +2357,11 @@ Time = (function() {
 })();
 
 angular.module('imago.widgets.angular').filter('time', [Time]);
+
+var lodash;
+
+lodash = angular.module('lodash', []);
+
+lodash.factory('_', function() {
+  return window._();
+});
