@@ -181,9 +181,9 @@ class imagoModel extends Service
         else
           asset.base64 = false
 
-        @data.push(asset) unless @find('id': asset._id)
+        @data.push(asset) unless @find('_id': asset._id)
 
-    unless @find('id' : collection._id)
+    unless @find('_id' : collection._id)
       collection = _.omit collection, 'assets' if collection.kind is 'Collection'
       @data.push collection
 
@@ -260,7 +260,7 @@ class imagoModel extends Service
 
   update: (data, options = {}) =>
     options.stream = true if _.isUndefined options.stream
-    attribute = (if options.attribute then options.attribute else 'id')
+    attribute = (if options.attribute then options.attribute else '_id')
 
     copy = angular.copy data
 
@@ -456,7 +456,7 @@ class imagoModel extends Service
 
   batchChange: (assets) =>
     for asset, idx in assets
-      original = @find('id' : asset._id)
+      original = @find('_id' : asset._id)
 
       return unless original
 
@@ -477,6 +477,7 @@ class imagoModel extends Service
           copy[key] = toedit[key]
 
       assets[idx] = copy
+
     @update assets, {save: true}
 
   isDuplicated: (asset, rename = false) =>

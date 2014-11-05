@@ -1191,14 +1191,14 @@ imagoModel = (function() {
           asset.base64 = false;
         }
         if (!this.find({
-          'id': asset._id
+          '_id': asset._id
         })) {
           this.data.push(asset);
         }
       }
     }
     if (!this.find({
-      'id': collection._id
+      '_id': collection._id
     })) {
       if (collection.kind === 'Collection') {
         collection = _.omit(collection, 'assets');
@@ -1334,7 +1334,7 @@ imagoModel = (function() {
     if (_.isUndefined(options.stream)) {
       options.stream = true;
     }
-    attribute = (options.attribute ? options.attribute : 'id');
+    attribute = (options.attribute ? options.attribute : '_id');
     copy = angular.copy(data);
     if (_.isPlainObject(copy)) {
       query = {};
@@ -1586,7 +1586,7 @@ imagoModel = (function() {
     for (idx = _i = 0, _len = assets.length; _i < _len; idx = ++_i) {
       asset = assets[idx];
       original = this.find({
-        'id': asset._id
+        '_id': asset._id
       });
       if (!original) {
         return;
