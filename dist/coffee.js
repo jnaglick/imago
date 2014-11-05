@@ -973,7 +973,7 @@ imagoModel = (function() {
       })(this),
       update: (function(_this) {
         return function(item) {
-          return $http.put("" + _this.host + "/api/assets/" + item.id, item);
+          return $http.put("" + _this.host + "/api/assets/" + item._id, item);
         };
       })(this),
       "delete": (function(_this) {
@@ -1186,14 +1186,14 @@ imagoModel = (function() {
           asset.base64 = false;
         }
         if (!this.find({
-          'id': asset.id
+          'id': asset._id
         })) {
           this.data.push(asset);
         }
       }
     }
     if (!this.find({
-      'id': collection.id
+      'id': collection._id
     })) {
       if (collection.kind === 'Collection') {
         collection = _.omit(collection, 'assets');
@@ -1205,7 +1205,7 @@ imagoModel = (function() {
 
   imagoModel.prototype.findChildren = function(asset) {
     return _.where(this.data, {
-      parent: asset.id
+      parent: asset._id
     });
   };
 
@@ -1388,10 +1388,10 @@ imagoModel = (function() {
     for (_i = 0, _len = assets.length; _i < _len; _i++) {
       asset = assets[_i];
       this.data = _.reject(this.data, {
-        id: asset.id
+        id: asset._id
       });
       if (options.save) {
-        this.assets["delete"](asset.id);
+        this.assets["delete"](asset._id);
       }
     }
     defer.resolve(assets);
@@ -1407,7 +1407,7 @@ imagoModel = (function() {
     for (_i = 0, _len = assets.length; _i < _len; _i++) {
       asset = assets[_i];
       newAsset = {
-        id: asset.id
+        id: asset._id
       };
       request.push(newAsset);
     }
@@ -1423,7 +1423,7 @@ imagoModel = (function() {
         for (_i = 0, _len = pasted.length; _i < _len; _i++) {
           asset = pasted[_i];
           newAsset = {
-            id: asset.id,
+            id: asset._id,
             order: asset.order,
             name: asset.name
           };
@@ -1451,7 +1451,7 @@ imagoModel = (function() {
         for (_i = 0, _len = pasted.length; _i < _len; _i++) {
           asset = pasted[_i];
           formatted = {
-            id: asset.id,
+            id: asset._id,
             order: asset.order,
             name: asset.name
           };
@@ -1541,7 +1541,7 @@ imagoModel = (function() {
       asset = list[key];
       asset.order = (count - key) * 1000;
       ordered = {
-        id: asset.id,
+        id: asset._id,
         order: asset.order
       };
       newList.push(ordered);
@@ -1581,7 +1581,7 @@ imagoModel = (function() {
     for (idx = _i = 0, _len = assets.length; _i < _len; idx = ++_i) {
       asset = assets[idx];
       original = this.find({
-        'id': asset.id
+        'id': asset._id
       });
       if (!original) {
         return;
@@ -1631,7 +1631,7 @@ imagoModel = (function() {
       };
     })(this));
     if (assetsChildren.length > 0) {
-      if (assetsChildren.length === 1 && assetsChildren[0].id === asset.id) {
+      if (assetsChildren.length === 1 && assetsChildren[0]._id === asset._id) {
         defer.resolve(false);
       }
       if (rename) {
@@ -1701,7 +1701,7 @@ imagoModel = (function() {
               });
             }
           }
-          asset.parent = parent.id;
+          asset.parent = parent._id;
           return defer.resolve(asset);
         }
       };

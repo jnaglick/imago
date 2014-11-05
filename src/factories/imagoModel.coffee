@@ -14,7 +14,7 @@ class imagoModel extends Service
         $http.post "#{@host}/api/assets", assets
 
       update: (item) =>
-        $http.put "#{@host}/api/assets/#{item.id}", item
+        $http.put "#{@host}/api/assets/#{item._id}", item
 
       delete: (id) =>
         $http.delete "#{@host}/api/assets/#{id}"
@@ -181,16 +181,16 @@ class imagoModel extends Service
         else
           asset.base64 = false
 
-        @data.push(asset) unless @find('id': asset.id)
+        @data.push(asset) unless @find('id': asset._id)
 
-    unless @find('id' : collection.id)
+    unless @find('id' : collection._id)
       collection = _.omit collection, 'assets' if collection.kind is 'Collection'
       @data.push collection
 
     return data
 
   findChildren: (asset) =>
-    _.where @data, {parent: asset.id}
+    _.where @data, {parent: asset._id}
 
   findParent: (asset) =>
     _.find @data, {id: asset.parent}
@@ -300,8 +300,8 @@ class imagoModel extends Service
     options.stream = true if _.isUndefined options.stream
 
     for asset in assets
-      @data = _.reject(@data, { id: asset.id })
-      @assets.delete(asset.id) if options.save
+      @data = _.reject(@data, { id: asset._id })
+      @assets.delete(asset._id) if options.save
 
     defer.resolve(assets)
 
@@ -312,7 +312,7 @@ class imagoModel extends Service
     request = []
     for asset in assets
       newAsset =
-        id : asset.id
+        id : asset._id
 
       request.push newAsset
 
@@ -327,7 +327,7 @@ class imagoModel extends Service
 
       for asset in pasted
         newAsset =
-          id    : asset.id
+          id    : asset._id
           order : asset.order
           name  : asset.name
 
@@ -349,7 +349,7 @@ class imagoModel extends Service
 
       for asset in pasted
         formatted =
-          id    : asset.id
+          id    : asset._id
           order : asset.order
           name  : asset.name
 
@@ -417,7 +417,7 @@ class imagoModel extends Service
     for asset, key in list
       asset.order = (count-key) * 1000
       ordered =
-        id: asset.id
+        id: asset._id
         order: asset.order
 
       newList.push ordered
@@ -456,7 +456,7 @@ class imagoModel extends Service
 
   batchChange: (assets) =>
     for asset, idx in assets
-      original = @find('id' : asset.id)
+      original = @find('id' : asset._id)
 
       return unless original
 
@@ -495,7 +495,7 @@ class imagoModel extends Service
 
     if assetsChildren.length > 0
 
-      if assetsChildren.length is 1 and assetsChildren[0].id is asset.id
+      if assetsChildren.length is 1 and assetsChildren[0]._id is asset._id
         defer.resolve false
 
       if rename
@@ -559,7 +559,7 @@ class imagoModel extends Service
             parent.sortorder = '-order'
             @update parent, {save: true}
 
-        asset.parent = parent.id
+        asset.parent = parent._id
 
         defer.resolve asset
 
