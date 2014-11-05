@@ -16,24 +16,6 @@ App = (function() {
 
 angular.module('imago.widgets.angular', App());
 
-var imagoPage;
-
-imagoPage = (function() {
-  function imagoPage($scope, $state, imagoModel) {
-    var path;
-    path = '/';
-    imagoModel.getData(path).then(function(response) {
-      $scope.collection = response[0];
-      return $scope.assets = imagoModel.getChildren(response[0]);
-    });
-  }
-
-  return imagoPage;
-
-})();
-
-angular.module('imago.widgets.angular').controller('imagoPage', ['$scope', '$state', 'imagoModel', imagoPage]);
-
 var imagoCompile;
 
 imagoCompile = (function() {
@@ -1216,7 +1198,7 @@ imagoModel = (function() {
 
   imagoModel.prototype.findParent = function(asset) {
     return _.find(this.data, {
-      id: asset.parent
+      '_id': asset.parent
     });
   };
 
@@ -1393,7 +1375,7 @@ imagoModel = (function() {
     for (_i = 0, _len = assets.length; _i < _len; _i++) {
       asset = assets[_i];
       this.data = _.reject(this.data, {
-        id: asset._id
+        '_id': asset._id
       });
       if (options.save) {
         this.assets["delete"](asset._id);
@@ -1412,7 +1394,7 @@ imagoModel = (function() {
     for (_i = 0, _len = assets.length; _i < _len; _i++) {
       asset = assets[_i];
       newAsset = {
-        id: asset._id
+        '_id': asset._id
       };
       request.push(newAsset);
     }
@@ -1428,9 +1410,9 @@ imagoModel = (function() {
         for (_i = 0, _len = pasted.length; _i < _len; _i++) {
           asset = pasted[_i];
           newAsset = {
-            id: asset._id,
-            order: asset.order,
-            name: asset.name
+            '_id': asset._id,
+            'order': asset.order,
+            'name': asset.name
           };
           request.push(newAsset);
         }
@@ -1456,9 +1438,9 @@ imagoModel = (function() {
         for (_i = 0, _len = pasted.length; _i < _len; _i++) {
           asset = pasted[_i];
           formatted = {
-            id: asset._id,
-            order: asset.order,
-            name: asset.name
+            '_id': asset._id,
+            'order': asset.order,
+            'name': asset.name
           };
           request.push(formatted);
         }
@@ -1546,8 +1528,8 @@ imagoModel = (function() {
       asset = list[key];
       asset.order = (count - key) * 1000;
       ordered = {
-        id: asset._id,
-        order: asset.order
+        '_id': asset._id,
+        'order': asset.order
       };
       newList.push(ordered);
     }
@@ -2305,6 +2287,24 @@ imagoWorker = (function() {
 })();
 
 angular.module('imago.widgets.angular').service('imagoWorker', ['$q', 'workerSettings', imagoWorker]);
+
+var imagoPage;
+
+imagoPage = (function() {
+  function imagoPage($scope, $state, imagoModel) {
+    var path;
+    path = '/';
+    imagoModel.getData(path).then(function(response) {
+      $scope.collection = response[0];
+      return $scope.assets = imagoModel.getChildren(response[0]);
+    });
+  }
+
+  return imagoPage;
+
+})();
+
+angular.module('imago.widgets.angular').controller('imagoPage', ['$scope', '$state', 'imagoModel', imagoPage]);
 
 var Meta;
 

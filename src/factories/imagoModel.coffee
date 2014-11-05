@@ -193,7 +193,7 @@ class imagoModel extends Service
     _.where @data, {parent: asset._id}
 
   findParent: (asset) =>
-    _.find @data, {id: asset.parent}
+    _.find @data, {'_id': asset.parent}
 
   findByAttr: (options = {}) =>
     _.where @data, options
@@ -300,7 +300,7 @@ class imagoModel extends Service
     options.stream = true if _.isUndefined options.stream
 
     for asset in assets
-      @data = _.reject(@data, { id: asset._id })
+      @data = _.reject(@data, {'_id': asset._id })
       @assets.delete(asset._id) if options.save
 
     defer.resolve(assets)
@@ -312,7 +312,7 @@ class imagoModel extends Service
     request = []
     for asset in assets
       newAsset =
-        id : asset._id
+        '_id' : asset._id
 
       request.push newAsset
 
@@ -327,9 +327,9 @@ class imagoModel extends Service
 
       for asset in pasted
         newAsset =
-          id    : asset._id
-          order : asset.order
-          name  : asset.name
+          '_id'   : asset._id
+          'order' : asset.order
+          'name'  : asset.name
 
         request.push(newAsset)
 
@@ -349,9 +349,9 @@ class imagoModel extends Service
 
       for asset in pasted
         formatted =
-          id    : asset._id
-          order : asset.order
-          name  : asset.name
+          '_id'    : asset._id
+          'order' : asset.order
+          'name'  : asset.name
 
         request.push formatted
 
@@ -417,8 +417,8 @@ class imagoModel extends Service
     for asset, key in list
       asset.order = (count-key) * 1000
       ordered =
-        id: asset._id
-        order: asset.order
+        '_id'   : asset._id
+        'order' : asset.order
 
       newList.push ordered
 
