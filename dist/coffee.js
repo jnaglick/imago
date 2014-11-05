@@ -937,6 +937,7 @@ imagoModel = (function() {
     this.batchChange = __bind(this.batchChange, this);
     this.orderChanged = __bind(this.orderChanged, this);
     this.reindexAll = __bind(this.reindexAll, this);
+    this.reSort = __bind(this.reSort, this);
     this.paste = __bind(this.paste, this);
     this.move = __bind(this.move, this);
     this.copy = __bind(this.copy, this);
@@ -1061,8 +1062,8 @@ imagoModel = (function() {
         });
       }
       if (asset) {
-        if (asset.count) {
-          asset.assets = this.findChildren(asset);
+        asset.assets = this.findChildren(asset);
+        if (asset.count || asset.assets.length) {
           if (asset.assets.length !== asset.count) {
             defer.reject(query);
           } else {
@@ -1109,15 +1110,20 @@ imagoModel = (function() {
       return function(value) {
         return promises.push(_this.getLocalData(value).then(function(result) {
           var worker;
-          worker = {
-            assets: result.assets,
-            order: result.sortorder
-          };
-          return fetches.push(_this.imagoWorker.reorder(worker).then(function(response) {
-            result.assets = response.assets;
+          if (result.assets) {
+            worker = {
+              assets: result.assets,
+              order: result.sortorder
+            };
+            return fetches.push(_this.imagoWorker.reorder(worker).then(function(response) {
+              result.assets = response.assets;
+              data.push(result);
+              return data = _.flatten(data);
+            }));
+          } else {
             data.push(result);
             return data = _.flatten(data);
-          }));
+          }
         }, function(reject) {
           return fetches.push(_this.search(reject).then(function(response) {
             if (!response.data) {
@@ -1326,7 +1332,11 @@ imagoModel = (function() {
         delete copy.assets;
       }
       idx = this.findIdx(query);
-      this.data[idx] = _.assign(this.data[idx], copy);
+      if (idx !== -1) {
+        this.data[idx] = _.assign(this.data[idx], copy);
+      } else {
+        this.data.push(copy);
+      }
       if (options.save) {
         this.assets.update(copy);
       }
@@ -1339,7 +1349,11 @@ imagoModel = (function() {
           delete asset.assets;
         }
         idx = this.findIdx(query);
-        _.assign(this.data[idx], asset);
+        if (idx !== -1) {
+          _.assign(this.data[idx], asset);
+        } else {
+          this.data.push(asset);
+        }
       }
       if (options.save) {
         this.assets.batch(copy);
@@ -1351,13 +1365,14 @@ imagoModel = (function() {
   };
 
   imagoModel.prototype["delete"] = function(assets, options) {
-    var asset, _i, _len;
+    var asset, defer, _i, _len;
     if (options == null) {
       options = {};
     }
     if (!assets) {
       return;
     }
+    defer = this.$q.defer();
     if (_.isUndefined(options.stream)) {
       options.stream = true;
     }
@@ -1370,9 +1385,11 @@ imagoModel = (function() {
         this.assets["delete"](asset.id);
       }
     }
+    defer.resolve(assets);
     if (options.stream) {
-      return this.$rootScope.$emit('assets:delete', assets);
+      this.$rootScope.$emit('assets:delete', assets);
     }
+    return defer.promise;
   };
 
   imagoModel.prototype.trash = function(assets) {
@@ -1404,7 +1421,14 @@ imagoModel = (function() {
           request.push(newAsset);
         }
         return _this.assets.copy(request, sourceId, parentId).then(function(result) {
-          return _this.update(result.data);
+          if (_this.currentCollection.sortorder === '-order') {
+            return _this.update(result.data);
+          } else {
+            _this.update(result.data, {
+              stream: false
+            });
+            return _this.reSort(_this.currentCollection);
+          }
         });
       };
     })(this));
@@ -1413,18 +1437,25 @@ imagoModel = (function() {
   imagoModel.prototype.move = function(assets, sourceId, parentId) {
     return this.paste(assets).then((function(_this) {
       return function(pasted) {
-        var asset, newAsset, request, _i, _len;
+        var asset, formatted, request, _i, _len;
         request = [];
         for (_i = 0, _len = pasted.length; _i < _len; _i++) {
           asset = pasted[_i];
-          newAsset = {
+          formatted = {
             id: asset.id,
             order: asset.order,
             name: asset.name
           };
-          request.push(newAsset);
+          request.push(formatted);
         }
-        _this.update(pasted);
+        if (_this.currentCollection.sortorder === '-order') {
+          _this.update(pasted);
+        } else {
+          _this.update(pasted, {
+            stream: false
+          });
+          _this.reSort(_this.currentCollection);
+        }
         return _this.assets.move(request, sourceId, parentId);
       };
     })(this));
@@ -1477,8 +1508,24 @@ imagoModel = (function() {
     return defer.promise;
   };
 
+  imagoModel.prototype.reSort = function(collection) {
+    var orderedList;
+    if (!collection.assets || collection.sortorder === '-order') {
+      return;
+    }
+    orderedList = this.reindexAll(collection.assets);
+    this.update(orderedList, {
+      stream: false,
+      save: true
+    });
+    collection.sortorder = '-order';
+    return this.update(collection, {
+      save: true
+    });
+  };
+
   imagoModel.prototype.reindexAll = function(list) {
-    var asset, count, key, newList, ordered, orderedList, _i, _len;
+    var asset, count, key, newList, ordered, _i, _len;
     newList = [];
     count = list.length;
     for (key = _i = 0, _len = list.length; _i < _len; key = ++_i) {
@@ -1490,10 +1537,7 @@ imagoModel = (function() {
       };
       newList.push(ordered);
     }
-    orderedList = {
-      assets: newList
-    };
-    return orderedList;
+    return newList;
   };
 
   imagoModel.prototype.orderChanged = function(start, finish, dropped, list) {
@@ -1632,7 +1676,7 @@ imagoModel = (function() {
             } else {
               if (parent.assets.length) {
                 orderedList = _this.reindexAll(parent.assets);
-                _this.update(orderedList.assets, {
+                _this.update(orderedList, {
                   save: true
                 });
                 asset.order = orderedList.assets[0].order + 1000;

@@ -84,8 +84,10 @@ class imagoModel extends Service
         asset = @find('path' : path[0])
 
       if asset
-        if asset.count
-          asset.assets = @findChildren(asset)
+
+        asset.assets = @findChildren(asset)
+
+        if asset.count or asset.assets.length
 
           if asset.assets.length isnt asset.count
             # console.log 'rejected in count', asset.assets, asset.assets.length, asset.count
@@ -127,12 +129,18 @@ class imagoModel extends Service
 
     _.forEach query, (value) =>
       promises.push @getLocalData(value).then (result) =>
-        worker =
-          assets :  result.assets
-          order  :  result.sortorder
 
-        fetches.push @imagoWorker.reorder(worker).then (response) =>
-          result.assets = response.assets
+        if result.assets
+          worker =
+            assets :  result.assets
+            order  :  result.sortorder
+
+          fetches.push @imagoWorker.reorder(worker).then (response) =>
+            result.assets = response.assets
+            data.push result
+            data = _.flatten data
+
+        else
           data.push result
           data = _.flatten data
 
@@ -260,7 +268,11 @@ class imagoModel extends Service
       return unless copy[attribute]
       delete copy.assets if copy.assets
       idx = @findIdx(query)
-      @data[idx] = _.assign(@data[idx], copy)
+      if idx isnt -1
+        @data[idx] = _.assign(@data[idx], copy)
+
+      else
+        @data.push copy
 
       @assets.update(copy) if options.save
 
@@ -270,7 +282,11 @@ class imagoModel extends Service
         query[attribute] = asset[attribute]
         delete asset.assets if asset.assets
         idx = @findIdx(query)
-        _.assign(@data[idx], asset)
+        if idx isnt -1
+          _.assign(@data[idx], asset)
+
+        else
+          @data.push asset
 
       @assets.batch(copy) if options.save
 
@@ -278,13 +294,17 @@ class imagoModel extends Service
 
   delete: (assets, options = {}) =>
     return unless assets
+    defer = @$q.defer()
     options.stream = true if _.isUndefined options.stream
 
     for asset in assets
       @data = _.reject(@data, { _id: asset.id })
       @assets.delete(asset.id) if options.save
 
+    defer.resolve(assets)
+
     @$rootScope.$emit('assets:delete', assets) if options.stream
+    defer.promise
 
   trash: (assets) =>
     request = []
@@ -313,23 +333,33 @@ class imagoModel extends Service
 
       @assets.copy(request, sourceId, parentId)
         .then (result) =>
-          @update result.data
+          if @currentCollection.sortorder is '-order'
+            @update(result.data)
+
+          else
+            @update(result.data, {stream: false})
+            @reSort(@currentCollection)
 
   move: (assets, sourceId, parentId) =>
-
     @paste(assets).then (pasted) =>
 
       request = []
 
       for asset in pasted
-        newAsset =
+        formatted =
           id    : asset.id
           order : asset.order
           name  : asset.name
 
-        request.push newAsset
+        request.push formatted
 
-      @update(pasted)
+      if @currentCollection.sortorder is '-order'
+        @update(pasted)
+
+      else
+        @update(pasted, {stream: false})
+        @reSort(@currentCollection)
+
       @assets.move(request, sourceId, parentId)
 
   paste: (assets, options={}) =>
@@ -368,6 +398,15 @@ class imagoModel extends Service
 
     defer.promise
 
+  reSort: (collection) =>
+    return if not collection.assets or collection.sortorder is '-order'
+
+    orderedList = @reindexAll(collection.assets)
+    @update orderedList, {stream: false, save: true}
+
+    collection.sortorder = '-order'
+    @update collection, {save : true}
+
   reindexAll:  (list) =>
     newList = []
 
@@ -381,10 +420,7 @@ class imagoModel extends Service
 
       newList.push ordered
 
-    orderedList =
-      assets : newList
-
-    return orderedList
+    return newList
 
   orderChanged:  (start, finish, dropped, list) =>
     if dropped < finish
@@ -511,7 +547,7 @@ class imagoModel extends Service
             if parent.assets.length
 
               orderedList = @reindexAll(parent.assets)
-              @update orderedList.assets, {save: true}
+              @update orderedList, {save: true}
               asset.order = orderedList.assets[0].order + 1000
 
             else
