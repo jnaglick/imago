@@ -14,7 +14,7 @@ class imagoModel extends Service
         $http.post "#{@host}/api/assets", assets
 
       update: (item) =>
-        $http.put "#{@host}/api/assets/#{item._id}", item
+        $http.put "#{@host}/api/assets/#{item.id}", item
 
       delete: (id) =>
         $http.delete "#{@host}/api/assets/#{id}"
@@ -191,10 +191,10 @@ class imagoModel extends Service
     return data
 
   findChildren: (asset) =>
-    _.where @data, {parent: asset._id}
+    _.where @data, {parent: asset.id}
 
   findParent: (asset) =>
-    _.find @data, {_id: asset.parent}
+    _.find @data, {id: asset.parent}
 
   findByAttr: (options = {}) =>
     _.where @data, options
@@ -258,7 +258,7 @@ class imagoModel extends Service
 
   update: (data, options = {}) =>
     options.stream = true if _.isUndefined options.stream
-    attribute = (if options.attribute then options.attribute else '_id')
+    attribute = (if options.attribute then options.attribute else 'id')
 
     copy = angular.copy data
 
@@ -298,7 +298,7 @@ class imagoModel extends Service
     options.stream = true if _.isUndefined options.stream
 
     for asset in assets
-      @data = _.reject(@data, { _id: asset.id })
+      @data = _.reject(@data, { id: asset.id })
       @assets.delete(asset.id) if options.save
 
     defer.resolve(assets)
@@ -415,7 +415,7 @@ class imagoModel extends Service
     for asset, key in list
       asset.order = (count-key) * 1000
       ordered =
-        _id: asset._id
+        id: asset.id
         order: asset.order
 
       newList.push ordered
@@ -454,7 +454,7 @@ class imagoModel extends Service
 
   batchChange: (assets) =>
     for asset, idx in assets
-      original = @find('_id' : asset._id)
+      original = @find('id' : asset.id)
 
       return unless original
 
@@ -556,7 +556,7 @@ class imagoModel extends Service
             parent.sortorder = '-order'
             @update parent, {save: true}
 
-        asset.parent = parent._id
+        asset.parent = parent.id
 
         defer.resolve asset
 
