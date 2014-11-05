@@ -16,6 +16,24 @@ App = (function() {
 
 angular.module('imago.widgets.angular', App());
 
+var imagoPage;
+
+imagoPage = (function() {
+  function imagoPage($scope, $state, imagoModel) {
+    var path;
+    path = '/';
+    imagoModel.getData(path).then(function(response) {
+      $scope.collection = response[0];
+      return $scope.assets = imagoModel.getChildren(response[0]);
+    });
+  }
+
+  return imagoPage;
+
+})();
+
+angular.module('imago.widgets.angular').controller('imagoPage', ['$scope', '$state', 'imagoModel', imagoPage]);
+
 var imagoCompile;
 
 imagoCompile = (function() {
@@ -2287,24 +2305,6 @@ imagoWorker = (function() {
 })();
 
 angular.module('imago.widgets.angular').service('imagoWorker', ['$q', 'workerSettings', imagoWorker]);
-
-var imagoPage;
-
-imagoPage = (function() {
-  function imagoPage($scope, $state, imagoModel) {
-    var path;
-    path = '/';
-    imagoModel.getData(path).then(function(response) {
-      $scope.collection = response[0];
-      return $scope.assets = imagoModel.getChildren(response[0]);
-    });
-  }
-
-  return imagoPage;
-
-})();
-
-angular.module('imago.widgets.angular').controller('imagoPage', ['$scope', '$state', 'imagoModel', imagoPage]);
 
 var Meta;
 
