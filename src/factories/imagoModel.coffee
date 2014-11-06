@@ -552,7 +552,7 @@ class imagoModel extends Service
 
               orderedList = @reindexAll(parent.assets)
               @update orderedList, {save: true}
-              asset.order = orderedList.assets[0].order + 1000
+              asset.order = orderedList[0].order + 1000
 
             else
               asset.order = 1000
