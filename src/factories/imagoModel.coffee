@@ -1,6 +1,6 @@
 class imagoModel extends Service
 
-  constructor: (@$rootScope, @$http, @$location, @$q, @imagoUtils, @imagoWorker) ->
+  constructor: (@$rootScope, @$http, @$location, @$q, @imagoUtils, @imagoWorker, @sortWorker) ->
     if (data is 'online' and debug)
       @host = window.location.protocol + "//api.2.imagoapp.com"
     else
@@ -134,8 +134,9 @@ class imagoModel extends Service
           worker =
             assets :  result.assets
             order  :  result.sortorder
+            path   :  @sortWorker
 
-          fetches.push @imagoWorker.reorder(worker).then (response) =>
+          fetches.push @imagoWorker.work(worker).then (response) =>
             result.assets = response.assets
             data.push result
             data = _.flatten data

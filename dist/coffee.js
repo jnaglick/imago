@@ -925,13 +925,14 @@ var imagoModel,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 
 imagoModel = (function() {
-  function imagoModel($rootScope, $http, $location, $q, imagoUtils, imagoWorker) {
+  function imagoModel($rootScope, $http, $location, $q, imagoUtils, imagoWorker, sortWorker) {
     this.$rootScope = $rootScope;
     this.$http = $http;
     this.$location = $location;
     this.$q = $q;
     this.imagoUtils = imagoUtils;
     this.imagoWorker = imagoWorker;
+    this.sortWorker = sortWorker;
     this.prepareCreation = __bind(this.prepareCreation, this);
     this.isDuplicated = __bind(this.isDuplicated, this);
     this.batchChange = __bind(this.batchChange, this);
@@ -1115,9 +1116,10 @@ imagoModel = (function() {
           if (result.assets) {
             worker = {
               assets: result.assets,
-              order: result.sortorder
+              order: result.sortorder,
+              path: _this.sortWorker
             };
-            return fetches.push(_this.imagoWorker.reorder(worker).then(function(response) {
+            return fetches.push(_this.imagoWorker.work(worker).then(function(response) {
               result.assets = response.assets;
               data.push(result);
               return data = _.flatten(data);
@@ -1713,7 +1715,7 @@ imagoModel = (function() {
 
 })();
 
-angular.module('imago.widgets.angular').service('imagoModel', ['$rootScope', '$http', '$location', '$q', 'imagoUtils', 'imagoWorker', imagoModel]);
+angular.module('imago.widgets.angular').service('imagoModel', ['$rootScope', '$http', '$location', '$q', 'imagoUtils', 'imagoWorker', 'sortWorker', imagoModel]);
 
 var imagoSubmit,
   __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
