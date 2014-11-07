@@ -1,20 +1,19 @@
 class imagoWorker extends Service
 
-  constructor: (@$q, workerSettings) ->
-    @path = workerSettings
+  constructor: (@$q) ->
 
-  create: () =>
-    new Worker(@path)
+  create: (path) => new Worker(path)
 
-  reorder: (data) =>
+  work: (data) =>
     defer = @$q.defer()
 
-    defer.reject('nodata') unless data
+    defer.reject('nodata') unless data and data.path
 
-    worker = @create()
+    worker = @create(data.path)
 
     worker.addEventListener 'message', (e) =>
-        defer.resolve e.data
+      defer.resolve e.data
+      worker.terminate()
 
     , false
 

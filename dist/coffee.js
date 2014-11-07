@@ -2270,27 +2270,27 @@ var imagoWorker,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 
 imagoWorker = (function() {
-  function imagoWorker($q, workerSettings) {
+  function imagoWorker($q) {
     this.$q = $q;
-    this.reorder = __bind(this.reorder, this);
+    this.work = __bind(this.work, this);
     this.create = __bind(this.create, this);
-    this.path = workerSettings;
   }
 
-  imagoWorker.prototype.create = function() {
-    return new Worker(this.path);
+  imagoWorker.prototype.create = function(path) {
+    return new Worker(path);
   };
 
-  imagoWorker.prototype.reorder = function(data) {
+  imagoWorker.prototype.work = function(data) {
     var defer, worker;
     defer = this.$q.defer();
-    if (!data) {
+    if (!(data && data.path)) {
       defer.reject('nodata');
     }
-    worker = this.create();
+    worker = this.create(data.path);
     worker.addEventListener('message', (function(_this) {
       return function(e) {
-        return defer.resolve(e.data);
+        defer.resolve(e.data);
+        return worker.terminate();
       };
     })(this), false);
     worker.postMessage(data);
@@ -2301,7 +2301,7 @@ imagoWorker = (function() {
 
 })();
 
-angular.module('imago.widgets.angular').service('imagoWorker', ['$q', 'workerSettings', imagoWorker]);
+angular.module('imago.widgets.angular').service('imagoWorker', ['$q', imagoWorker]);
 
 var Meta;
 
