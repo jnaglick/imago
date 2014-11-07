@@ -90,7 +90,7 @@ class imagoModel extends Service
         if asset.count or asset.assets.length
 
           if asset.assets.length isnt asset.count
-            console.log "count not same as assets.length - go to server", asset.count, asset.assets.length
+            # console.log "count not same as assets.length - go to server", asset.count, asset.assets.length
             defer.reject query
 
           else
@@ -277,7 +277,9 @@ class imagoModel extends Service
       else
         @data.push copy
 
-      @assets.update(copy) if options.save
+      if options.save
+        delete copy.serving_url if copy.status is 'processing'
+        @assets.update(copy)
 
     else if _.isArray(copy)
       for asset in copy
@@ -290,6 +292,8 @@ class imagoModel extends Service
 
         else
           @data.push asset
+
+        delete asset.serving_url if asset.status is 'processing'
 
       @assets.batch(copy) if options.save
 
@@ -428,32 +432,26 @@ class imagoModel extends Service
   orderChanged:  (start, finish, dropped, list) =>
     if dropped < finish
       finish = finish+1
-      prev = if list[dropped-1] then list[dropped-1].order else list[0].order+1000
+      prev = if list[dropped-1] then list[dropped-1].order else list[list.length-1].order+1000
       next = if list[finish] then list[finish].order else 0
       assets = list.slice dropped, finish
 
     else if dropped > start
       dropped = dropped+1
-      prev = if list[start-1] then list[start-1].order else list[0].order+1000
+      prev = if list[start-1] then list[start-1].order else list[list.length-1].order+1000
       next = if list[dropped] then list[dropped].order else 0
-      assets = list.slice start, dropped
+      assets = list.slice(start, dropped)
 
     else
       return
 
-    # console.log 'prev', prev, 'next', next
-
     count = prev-1000
 
     for asset in assets
-      # console.log 'asset', asset.order, asset.name
       asset.order = count
       count = count-1000
 
-    orderedList =
-      assets: assets
-
-    return orderedList
+    return assets
 
   batchChange: (assets) =>
     for asset, idx in assets
@@ -481,16 +479,16 @@ class imagoModel extends Service
 
     @update assets, {save: true}
 
-  isDuplicated: (asset, rename = false) =>
-    defer = @$q.defer()
+  isDuplicated: (asset, assets, options={}) =>
+    options.rename = false if _.isUndefined options.rename
 
+    defer = @$q.defer()
     defer.reject(asset.name) unless asset.name
 
     name = @imagoUtils.normalize(asset.name)
-
     result = undefined
 
-    assetsChildren = _.where @currentCollection.assets, (chr) =>
+    assetsChildren = _.where assets, (chr) =>
       return false if not chr.name
       normalizeName = angular.copy(@imagoUtils.normalize(chr.name))
       return normalizeName is name
@@ -500,8 +498,7 @@ class imagoModel extends Service
       if assetsChildren.length is 1 and assetsChildren[0]._id is asset._id
         defer.resolve false
 
-      if rename
-        assets = @currentCollection.assets
+      if options.rename
         i = 1
         exists = true
         original_name = name
@@ -527,7 +524,7 @@ class imagoModel extends Service
     defer = @$q.defer()
     defer.reject(asset.name) unless asset.name
 
-    @isDuplicated(asset, rename).then (isDuplicated) =>
+    @isDuplicated(asset, parent.assets, {rename: rename}).then (isDuplicated) =>
 
       if isDuplicated and _.isBoolean isDuplicated
         defer.resolve('duplicated')
@@ -541,16 +538,12 @@ class imagoModel extends Service
           asset.order = order
 
         else
-
           if parent.sortorder is '-order'
-
             assets = parent.assets
             asset.order = (if assets.length then assets[0].order + 1000 else 1000)
 
           else
-
             if parent.assets.length
-
               orderedList = @reindexAll(parent.assets)
               @update orderedList, {save: true}
               asset.order = orderedList[0].order + 1000
@@ -562,7 +555,6 @@ class imagoModel extends Service
             @update parent, {save: true}
 
         asset.parent = parent._id
-
         defer.resolve asset
 
     defer.promise

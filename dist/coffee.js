@@ -11,24 +11,6 @@ App = (function() {
 
 angular.module('imago.widgets.angular', App());
 
-var imagoPage;
-
-imagoPage = (function() {
-  function imagoPage($scope, $state, imagoModel) {
-    var path;
-    path = '/';
-    imagoModel.getData(path).then(function(response) {
-      $scope.collection = response[0];
-      return $scope.assets = imagoModel.getChildren(response[0]);
-    });
-  }
-
-  return imagoPage;
-
-})();
-
-angular.module('imago.widgets.angular').controller('imagoPage', ['$scope', '$state', 'imagoModel', imagoPage]);
-
 var imagoCompile;
 
 imagoCompile = (function() {
@@ -1067,7 +1049,6 @@ imagoModel = (function() {
         asset.assets = this.findChildren(asset);
         if (asset.count || asset.assets.length) {
           if (asset.assets.length !== asset.count) {
-            console.log("count not same as assets.length - go to server", asset.count, asset.assets.length);
             defer.reject(query);
           } else {
             asset.assets = this.filterAssets(asset.assets, query);
@@ -1349,6 +1330,9 @@ imagoModel = (function() {
         this.data.push(copy);
       }
       if (options.save) {
+        if (copy.status === 'processing') {
+          delete copy.serving_url;
+        }
         this.assets.update(copy);
       }
     } else if (_.isArray(copy)) {
@@ -1364,6 +1348,9 @@ imagoModel = (function() {
           _.assign(this.data[idx], asset);
         } else {
           this.data.push(asset);
+        }
+        if (asset.status === 'processing') {
+          delete asset.serving_url;
         }
       }
       if (options.save) {
@@ -1552,15 +1539,15 @@ imagoModel = (function() {
   };
 
   imagoModel.prototype.orderChanged = function(start, finish, dropped, list) {
-    var asset, assets, count, next, orderedList, prev, _i, _len;
+    var asset, assets, count, next, prev, _i, _len;
     if (dropped < finish) {
       finish = finish + 1;
-      prev = list[dropped - 1] ? list[dropped - 1].order : list[0].order + 1000;
+      prev = list[dropped - 1] ? list[dropped - 1].order : list[list.length - 1].order + 1000;
       next = list[finish] ? list[finish].order : 0;
       assets = list.slice(dropped, finish);
     } else if (dropped > start) {
       dropped = dropped + 1;
-      prev = list[start - 1] ? list[start - 1].order : list[0].order + 1000;
+      prev = list[start - 1] ? list[start - 1].order : list[list.length - 1].order + 1000;
       next = list[dropped] ? list[dropped].order : 0;
       assets = list.slice(start, dropped);
     } else {
@@ -1572,10 +1559,7 @@ imagoModel = (function() {
       asset.order = count;
       count = count - 1000;
     }
-    orderedList = {
-      assets: assets
-    };
-    return orderedList;
+    return assets;
   };
 
   imagoModel.prototype.batchChange = function(assets) {
@@ -1611,10 +1595,13 @@ imagoModel = (function() {
     });
   };
 
-  imagoModel.prototype.isDuplicated = function(asset, rename) {
-    var assets, assetsChildren, defer, exists, findName, i, name, original_name, result;
-    if (rename == null) {
-      rename = false;
+  imagoModel.prototype.isDuplicated = function(asset, assets, options) {
+    var assetsChildren, defer, exists, findName, i, name, original_name, result;
+    if (options == null) {
+      options = {};
+    }
+    if (_.isUndefined(options.rename)) {
+      options.rename = false;
     }
     defer = this.$q.defer();
     if (!asset.name) {
@@ -1622,7 +1609,7 @@ imagoModel = (function() {
     }
     name = this.imagoUtils.normalize(asset.name);
     result = void 0;
-    assetsChildren = _.where(this.currentCollection.assets, (function(_this) {
+    assetsChildren = _.where(assets, (function(_this) {
       return function(chr) {
         var normalizeName;
         if (!chr.name) {
@@ -1636,8 +1623,7 @@ imagoModel = (function() {
       if (assetsChildren.length === 1 && assetsChildren[0]._id === asset._id) {
         defer.resolve(false);
       }
-      if (rename) {
-        assets = this.currentCollection.assets;
+      if (options.rename) {
         i = 1;
         exists = true;
         original_name = name;
@@ -1672,7 +1658,9 @@ imagoModel = (function() {
     if (!asset.name) {
       defer.reject(asset.name);
     }
-    this.isDuplicated(asset, rename).then((function(_this) {
+    this.isDuplicated(asset, parent.assets, {
+      rename: rename
+    }).then((function(_this) {
       return function(isDuplicated) {
         var assets, orderedList;
         if (isDuplicated && _.isBoolean(isDuplicated)) {
@@ -2303,6 +2291,32 @@ imagoWorker = (function() {
 
 angular.module('imago.widgets.angular').service('imagoWorker', ['$q', imagoWorker]);
 
+var lodash;
+
+lodash = angular.module('lodash', []);
+
+lodash.factory('_', function() {
+  return window._();
+});
+
+var imagoPage;
+
+imagoPage = (function() {
+  function imagoPage($scope, $state, imagoModel) {
+    var path;
+    path = '/';
+    imagoModel.getData(path).then(function(response) {
+      $scope.collection = response[0];
+      return $scope.assets = imagoModel.getChildren(response[0]);
+    });
+  }
+
+  return imagoPage;
+
+})();
+
+angular.module('imago.widgets.angular').controller('imagoPage', ['$scope', '$state', 'imagoModel', imagoPage]);
+
 var Meta;
 
 Meta = (function() {
@@ -2359,11 +2373,3 @@ Time = (function() {
 })();
 
 angular.module('imago.widgets.angular').filter('time', [Time]);
-
-var lodash;
-
-lodash = angular.module('lodash', []);
-
-lodash.factory('_', function() {
-  return window._();
-});

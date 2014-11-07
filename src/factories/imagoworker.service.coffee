@@ -15,8 +15,5 @@ class imagoWorker extends Service
       defer.resolve e.data
       worker.terminate()
 
-    , false
-
     worker.postMessage data
     defer.promise
-
