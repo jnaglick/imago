@@ -1,34 +1,13 @@
-div(ng-class="elementStyle")
-  div(ng-transclude)
-  .nexslider(ng-style="sliderStyle",
-            class="{{confSlider.animation}}",
-            ng-swipe-left="goPrev()",
-            ng-swipe-right="goNext()"
-            )
-    //- .debug {{slideSource | json}}
-    .prev(ng-show="confSlider.enablearrows && loadedData",
-          ng-click="goPrev($event)"
-          stop-propagation)
-    .next(ng-show="confSlider.enablearrows && loadedData",
-          ng-click="goNext($event)"
-          stop-propagation)
-    .slide(ng-class="{'active': $index === currentIndex, 'nextslide': $index === nextIndex, 'prevslide': $index === prevIndex}",
-          ng-repeat="slide in slideSource",
-          ng-show="displaySlides($index)"
-          ng-switch="slide.kind")
+.imagoslider(
+    class="{{slider.conf.animation}} {{slider.action}}"
+    ng-swipe-left="goPrev()"
+    ng-swipe-right="goNext()"
+    )
+  .prev(ng-show="slider.conf.enablearrows"
+        ng-click="goPrev($event)"
+        stop-propagation)
+  .next(ng-show="slider.conf.enablearrows"
+        ng-click="goNext($event)"
+        stop-propagation)
 
-      div(imago-video,
-          dimensions="dimensions",
-          source="slide",
-          sizemode="{{ $parent.confSlider.sizemode }}"
-          align=" slide | meta: 'align' "
-          ng-switch-when="Video"
-          )
-
-      div(imago-image,
-          dimensions="dimensions",
-          source="slide",
-          sizemode="{{ $parent.confSlider.sizemode }}"
-          align=" slide | meta: 'align' "
-          ng-switch-default
-          )
+  div.slides(ng-transclude)

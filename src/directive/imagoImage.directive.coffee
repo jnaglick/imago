@@ -54,7 +54,7 @@ class imagoImage extends Directive
 
           render source
 
-        self.watch = scope.$watch attrs['source'], (data) =>
+        self.watch = scope.$watch attrs['imagoImage'], (data) =>
           return unless data
           self.watch() unless attrs['watch']
           calculateData(data)

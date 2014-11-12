@@ -7,7 +7,8 @@ class imagoSlider extends Directive
       templateUrl: '/imagoWidgets/imagoSlider.html'
       controllerAs: 'slider'
       controller: ($scope) ->
-        $scope.confSlider = {}
+        @conf = {}
+        @currentIndex = 0
 
         @defaults =
           animation:    'fade'
@@ -23,14 +24,14 @@ class imagoSlider extends Directive
           lazy:         false
           align:        'center center'
 
-        angular.forEach @defaults, (value, key) ->
-          $scope.confSlider[key] = value
+        angular.forEach @defaults, (value, key) =>
+          @conf[key] = value
 
-        @getCurrentSlideIndex = () ->
-          return $scope.currentIndex
+        @getCurrent = () ->
+          return @currentIndex
 
-        @setCurrentSlideIndex = (index) =>
-          $scope.currentIndex = index
+        @setCurrent = (index) =>
+          @currentIndex = index
           $scope.getSiblings()
 
       link: (scope, element, attrs) ->
@@ -40,62 +41,63 @@ class imagoSlider extends Directive
         angular.forEach attrs, (value, key) ->
           if value is 'true' or value is 'false'
             value = JSON.parse value
-          scope.confSlider[key] = value
+          scope.slider.conf[key] = value
 
-        computeData = (data) ->
-          unless angular.isArray(data)
-            imagoModel.getData(data.path).then (response) ->
-              data = imagoModel.findChildren(response[0])
-              prepareSlides(data)
-          else
-            prepareSlides(data)
+        # computeData = (data) ->
+        #   unless angular.isArray(data)
+        #     imagoModel.getData(data.path).then (response) ->
+        #       data = imagoModel.findChildren(response[0])
+        #       prepareSlides(data)
+        #   else
+        #     prepareSlides(data)
 
-        self.watch = scope.$watch attrs['source'], (data) =>
-          return unless data
-          computeData data
-          self.watch() unless attrs['watch']
+        # self.watch = scope.$watch attrs['source'], (data) =>
+        #   return unless data
+        #   computeData data
+        #   self.watch() unless attrs['watch']
 
 
-        prepareSlides = (data) ->
-          scope.loadedData = true
-          scope.slideSource = []
+        # prepareSlides = (data) ->
+        #   scope.loadedData = true
+        #   scope.slideSource = []
 
-          scope.dimensions = {width: element[0].clientWidth, height: element[0].clientHeight}
+        #   scope.dimensions = {width: element[0].clientWidth, height: element[0].clientHeight}
 
-          for item in data
-            if item.serving_url
-              scope.slideSource.push item
+        #   for item in data
+        #     if item.serving_url
+        #       scope.slideSource.push item
 
-          if scope.slideSource?.length <= 1 or !scope.slideSource
-              scope.confSlider.enablearrows = false
-              scope.confSlider.enablekeys   = false
+        #   if scope.slideSource?.length <= 1 or !scope.slideSource
+        #       scope.slider.conf.enablearrows = false
+        #       scope.slider.conf.enablekeys   = false
 
-          scope.currentIndex = 0 unless scope.currentIndex
-          scope.sliderLength = scope.slideSource.length - 1
-          scope.getSiblings()
+        #   scope.slider.currentIndex = 0 unless scope.slider.currentIndex
+        #   scope.sliderLength = parseInt(attrs.length) - 1
+        #   scope.getSiblings()
 
         scope.displaySlides = (index) ->
-          return true if index is scope.currentIndex or scope.nextIndex or scope.prevIndex
+          return true if index is scope.slider.currentIndex or scope.nextIndex or scope.prevIndex
 
         scope.goPrev = ($event) ->
-          scope.currentIndex = if (scope.currentIndex > 0) then --scope.currentIndex else scope.slideSource.length - 1
-          scope.getSiblings()
-          scope.$broadcast 'slide'
+          scope.slider.currentIndex = if (scope.slider.currentIndex > 0) then --scope.slider.currentIndex else parseInt(attrs.length) - 1
+          scope.slider.action = 'prev'
+          # scope.getSiblings()
+          # scope.$broadcast 'slide'
 
         scope.goNext = ($event) ->
-          scope.currentIndex = if (scope.currentIndex < scope.slideSource.length - 1) then ++scope.currentIndex else 0
-          scope.getSiblings()
-          scope.$broadcast 'slide'
+          scope.slider.currentIndex = if (scope.slider.currentIndex < parseInt(attrs.length) - 1) then ++scope.slider.currentIndex else 0
+          scope.slider.action = 'next'
+          # scope.getSiblings()
 
         scope.getSiblings = () ->
-          scope.nextIndex = if scope.currentIndex is scope.sliderLength then 0 else scope.currentIndex + 1
-          scope.prevIndex = if scope.currentIndex is 0 then scope.sliderLength else scope.currentIndex - 1
+          scope.nextIndex = if scope.slider.currentIndex is scope.sliderLength then 0 else scope.slider.currentIndex + 1
+          scope.prevIndex = if scope.slider.currentIndex is 0 then scope.sliderLength else scope.slider.currentIndex - 1
 
         scope.getLast = () ->
-          scope.slideSource.length - 1
+          parseInt(attrs.length) - 1
 
         $document.on 'keydown', (e) ->
-          return unless scope.confSlider.enablekeys
+          return unless scope.slider.conf.enablekeys
           switch e.keyCode
             when 37
               scope.$apply(()->
