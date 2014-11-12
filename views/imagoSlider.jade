@@ -1,5 +1,5 @@
 .imagoslider(
-    class="{{slider.conf.animation}} {{slider.action}}"
+    ng-class="[slider.conf.animation, slider.action]"
     ng-swipe-left="goPrev()"
     ng-swipe-right="goNext()"
     )
@@ -10,4 +10,4 @@
         ng-click="goNext($event)"
         stop-propagation)
 
-  div.slides(ng-transclude)
+  .slides(ng-transclude)

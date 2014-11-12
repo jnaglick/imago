@@ -11,6 +11,24 @@ App = (function() {
 
 angular.module('imago.widgets.angular', App());
 
+var imagoPage;
+
+imagoPage = (function() {
+  function imagoPage($scope, $state, imagoModel) {
+    var path;
+    path = '/';
+    imagoModel.getData(path).then(function(response) {
+      $scope.collection = response[0];
+      return $scope.assets = imagoModel.getChildren(response[0]);
+    });
+  }
+
+  return imagoPage;
+
+})();
+
+angular.module('imago.widgets.angular').controller('imagoPage', ['$scope', '$state', 'imagoModel', imagoPage]);
+
 var imagoCompile;
 
 imagoCompile = (function() {
@@ -138,7 +156,7 @@ angular.module('imago.widgets.angular').directive('imagoControls', [imagoControl
 var imagoImage;
 
 imagoImage = (function() {
-  function imagoImage($window, $q, $log, imagoUtils) {
+  function imagoImage($window, $log, imagoUtils) {
     return {
       replace: true,
       scope: true,
@@ -148,11 +166,13 @@ imagoImage = (function() {
         return $scope.imageStyle = {};
       },
       link: function(scope, element, attrs) {
-        var calculateData, createWatcher, defaults, key, lazyLoad, opts, render, renderImage, self, source, value;
-        self = {};
-        opts = {};
+        var calcMediaSize, calcSize, createServingUrl, key, opts, render, self, source, value;
+        self = {
+          visible: false
+        };
         source = {};
-        defaults = {
+        scope.elementStyle = {};
+        opts = {
           align: 'center center',
           sizemode: 'fit',
           hires: true,
@@ -160,37 +180,21 @@ imagoImage = (function() {
           scale: 1,
           lazy: true,
           maxsize: 2560,
-          mediasize: false,
           width: '',
           height: ''
         };
-        for (key in defaults) {
-          value = defaults[key];
-          opts[key] = value;
-        }
         for (key in attrs) {
           value = attrs[key];
           if (value === 'true' || value === 'false') {
             value = JSON.parse(value);
           }
-          opts[key] = value;
-        }
-        opts.initialWidth = opts.width;
-        opts.initialHeight = opts.height;
-        calculateData = function(data) {
-          source = data;
-          if (opts.dimensions && attrs['dimensions']) {
-            scope.$watch(attrs['dimensions'], (function(_this) {
-              return function(value) {
-                return angular.forEach(value, function(value, key) {
-                  return opts[key] = value || 'auto';
-                });
-              };
-            })(this));
+          if (key === 'width' || key === 'height') {
+            opts[key] = value === 'auto' ? value : parseInt(value);
+          } else {
+            opts[key] = value;
           }
-          return render(source);
-        };
-        self.watch = scope.$watch(attrs['source'], (function(_this) {
+        }
+        self.watch = scope.$watch(attrs['imagoImage'], (function(_this) {
           return function(data) {
             if (!data) {
               return;
@@ -198,140 +202,133 @@ imagoImage = (function() {
             if (!attrs['watch']) {
               self.watch();
             }
-            return calculateData(data);
-          };
-        })(this));
-        renderImage = function(servingUrl, opts) {
-          var img;
-          img = angular.element('<img>');
-          img.on('load', (function(_this) {
-            return function(e) {
-              scope.imageStyle.backgroundImage = "url(" + servingUrl + ")";
-              scope.imageStyle.backgroundSize = scope.calcMediaSize();
-              scope.imageStyle.backgroundPosition = opts.align;
-              scope.imageStyle.display = 'inline-block';
-              scope.status = 'loaded';
-              return scope.$apply();
-            };
-          })(this));
-          return img[0].src = servingUrl;
-        };
-        createWatcher = (function(_this) {
-          return function(servingUrl, opts) {
-            return self.visibleFunc = scope.$watch(attrs['visible'], function(value) {
-              if (!value) {
-                return;
-              }
-              self.watcherCreated = true;
-              self.visibleFunc();
-              return renderImage(servingUrl, opts);
-            });
-          };
-        })(this);
-        lazyLoad = function(servingUrl, opts) {
-          if (self.watcherCreated) {
-            return renderImage(servingUrl, opts);
-          } else {
-            return createWatcher(servingUrl, opts);
-          }
-        };
-        render = (function(_this) {
-          return function(data) {
-            var dpr, height, r, servingSize, servingUrl, width, wrapperRatio, _ref;
-            if (!(data != null ? data.serving_url : void 0)) {
+            source = data;
+            if (!(source != null ? source.serving_url : void 0)) {
               element.remove();
               return;
             }
-            if (!data.fields.crop) {
-              if ((_ref = scope.confSlider) != null ? _ref.align : void 0) {
-                opts.align = scope.confSlider.align;
-              }
+            if (source.fields.hasOwnProperty('crop') && !attrs['align']) {
+              opts.align = source.fields.crop.value;
+            }
+            if (source.fields.hasOwnProperty('sizemode') && !attrs['sizemode']) {
+              opts.sizemode = source.fields.sizemode.value;
+            }
+            return calcSize();
+          };
+        })(this));
+        calcSize = function() {
+          var height, r, width;
+          if (angular.isString(source.resolution)) {
+            r = source.resolution.split('x');
+            opts.resolution = {
+              width: r[0],
+              height: r[1]
+            };
+            opts.assetRatio = r[0] / r[1];
+          }
+          if (scope.status === 'preloading') {
+            return console.log('tried to render during rendering!!');
+          }
+          scope.status = 'preloading';
+          if (angular.isNumber(opts.width) && angular.isNumber(opts.height)) {
+            width = parseInt(opts.width);
+            height = parseInt(opts.height);
+          } else if (opts.height === 'auto' && angular.isNumber(opts.width)) {
+            height = parseInt(opts.width / opts.assetRatio);
+            width = opts.width;
+          } else if (opts.width === 'auto' && angular.isNumber(opts.height)) {
+            height = opts.height;
+            width = opts.height * opts.assetRatio;
+          } else if (opts.width === 'auto' && opts.height === 'auto') {
+            width = element[0].clientWidth;
+            height = width / opts.assetRatio;
+          } else {
+            width = element[0].clientWidth;
+            height = element[0].clientHeight;
+          }
+          if (opts.width === 'auto' && opts.height === 'auto') {
+            scope.elementStyle = {
+              height: parseInt(height) + 'px'
+            };
+          } else if (opts.width === 'auto' || opts.height === 'auto') {
+            scope.elementStyle = {
+              width: parseInt(width) + 'px',
+              height: parseInt(height) + 'px'
+            };
+          }
+          return createServingUrl(width, height);
+        };
+        createServingUrl = function(width, height) {
+          var dpr, servingSize, servingUrl, wrapperRatio;
+          wrapperRatio = width / height;
+          dpr = opts.hires ? Math.ceil($window.devicePixelRatio) || 1 : 1;
+          if (opts.sizemode === 'crop') {
+            if (opts.assetRatio <= wrapperRatio) {
+              servingSize = Math.round(Math.max(width, width / opts.assetRatio));
             } else {
-              opts.align = data.fields.crop.value;
+              servingSize = Math.round(Math.max(height, height * opts.assetRatio));
             }
-            if (data.fields.sizemode) {
-              opts.sizemode = data.fields.sizemode.value;
+          } else {
+            if (opts.assetRatio <= wrapperRatio) {
+              servingSize = Math.round(Math.max(height, height * opts.assetRatio));
+            } else {
+              servingSize = Math.round(Math.max(width, width / opts.assetRatio));
             }
-            if (!scope.elementStyle) {
-              scope.elementStyle = {};
-            }
-            if (angular.isString(data.resolution)) {
-              r = data.resolution.split('x');
-              opts.resolution = {
-                width: r[0],
-                height: r[1]
+          }
+          servingSize = parseInt(Math.min(servingSize * dpr, opts.maxsize), 10);
+          if (servingSize === opts.servingSize) {
+            scope.status = 'loaded';
+            return;
+          }
+          opts.servingSize = servingSize;
+          if (imagoUtils.isBaseString(source.serving_url)) {
+            servingUrl = source.serving_url;
+          } else {
+            servingUrl = "" + source.serving_url + "=s" + (servingSize * opts.scale);
+          }
+          if (!opts.responsive) {
+            scope.imageStyle.width = "" + (parseInt(width, 10)) + "px";
+            scope.imageStyle.height = "" + (parseInt(height, 10)) + "px";
+          }
+          return render(servingUrl);
+        };
+        render = function(servingUrl) {
+          var img;
+          if (opts.lazy && !self.visible) {
+            return self.visibleFunc = scope.$watch(attrs['visible'], (function(_this) {
+              return function(value) {
+                if (!value) {
+                  return;
+                }
+                self.visible = true;
+                self.visibleFunc();
+                return render(servingUrl);
               };
-              opts.assetRatio = r[0] / r[1];
-            }
-            if (scope.status === 'preloading') {
-              return console.log('tried to render during rendering!!');
-            }
-            scope.status = 'preloading';
-            if (angular.isNumber(opts.width) && angular.isNumber(opts.height)) {
-              width = parseInt(opts.width);
-              height = parseInt(opts.height);
-            } else if (opts.height === 'auto' && angular.isNumber(opts.width)) {
-              height = parseInt(opts.width / opts.assetRatio);
-              width = opts.width;
-              scope.elementStyle.height = parseInt(height) + 'px';
-            } else if (opts.width === 'auto' && angular.isNumber(opts.height)) {
-              height = opts.height;
-              width = opts.height * opts.assetRatio;
-              scope.elementStyle.width = parseInt(width) + 'px';
-            } else if (opts.width === 'auto' && opts.height === 'auto') {
-              width = element[0].clientWidth;
-              height = width / opts.assetRatio;
-              scope.elementStyle.height = parseInt(height) + 'px';
-            } else {
-              width = element[0].clientWidth;
-              height = element[0].clientHeight;
+            })(this));
+          } else {
+            img = angular.element('<img>');
+            img.on('load', (function(_this) {
+              return function(e) {
+                scope.imageStyle.backgroundImage = "url(" + servingUrl + ")";
+                scope.imageStyle.backgroundSize = calcMediaSize();
+                scope.imageStyle.backgroundPosition = opts.align;
+                scope.imageStyle.display = 'inline-block';
+                scope.status = 'loaded';
+                return scope.$apply();
+              };
+            })(this));
+            return img[0].src = servingUrl;
+          }
+        };
+        calcMediaSize = (function(_this) {
+          return function() {
+            var height, width, wrapperRatio;
+            width = element[0].clientWidth || opts.width;
+            height = element[0].clientHeight || opts.height;
+            if (!(width && height)) {
+              return;
             }
             wrapperRatio = width / height;
-            dpr = opts.hires ? Math.ceil($window.devicePixelRatio) || 1 : 1;
-            if (opts.sizemode === 'crop') {
-              if (opts.assetRatio <= wrapperRatio) {
-                servingSize = Math.round(Math.max(width, width / opts.assetRatio));
-              } else {
-                servingSize = Math.round(Math.max(height, height * opts.assetRatio));
-              }
-            } else {
-              if (opts.assetRatio <= wrapperRatio) {
-                servingSize = Math.round(Math.max(height, height * opts.assetRatio));
-              } else {
-                servingSize = Math.round(Math.max(width, width / opts.assetRatio));
-              }
-            }
-            servingSize = parseInt(Math.min(servingSize * dpr, opts.maxsize), 10);
-            if (servingSize === opts.servingSize) {
-              scope.status = 'loaded';
-              return;
-            }
-            opts.servingSize = servingSize;
-            if (imagoUtils.isBaseString(data.serving_url)) {
-              servingUrl = data.serving_url;
-            } else {
-              servingUrl = "" + data.serving_url + "=s" + (servingSize * opts.scale);
-            }
-            if (!opts.responsive) {
-              scope.imageStyle.width = "" + (parseInt(width, 10)) + "px";
-              scope.imageStyle.height = "" + (parseInt(height, 10)) + "px";
-            }
-            if (!opts.lazy) {
-              return renderImage(servingUrl, opts);
-            } else {
-              return lazyLoad(servingUrl, opts);
-            }
-          };
-        })(this);
-        scope.calcMediaSize = (function(_this) {
-          return function() {
-            var wrapperRatio;
-            opts.width = element[0].clientWidth || opts.width;
-            opts.height = element[0].clientHeight || opts.height;
-            if (!(opts.width && opts.height)) {
-              return;
-            }
-            wrapperRatio = opts.width / opts.height;
             if (opts.sizemode === 'crop') {
               if (opts.assetRatio < wrapperRatio) {
                 return "100% auto";
@@ -349,33 +346,19 @@ imagoImage = (function() {
         })(this);
         scope.onResize = (function(_this) {
           return function() {
-            return scope.imageStyle['background-size'] = scope.calcMediaSize();
+            return scope.imageStyle['background-size'] = calcMediaSize();
           };
         })(this);
-        scope.$on('resizelimit', (function(_this) {
-          return function() {
-            if (opts.responsive) {
-              return scope.onResize();
-            }
-          };
-        })(this));
-        scope.$on('resizestop', (function(_this) {
-          return function() {
-            scope.status = 'loading';
-            if (opts.responsive) {
-              return render(source);
-            }
-          };
-        })(this));
-        return angular.element($window).on("orientationchange", (function(_this) {
-          return function() {
-            if (opts.responsive) {
-              opts.width = opts.initialWidth;
-              opts.height = opts.initalHeight;
-              return render(source);
-            }
-          };
-        })(this));
+        if (opts.responsive) {
+          scope.$on('resizelimit', scope.onResize);
+          scope.$on('resizestop', (function(_this) {
+            return function() {
+              scope.status = 'loading';
+              return calcSize();
+            };
+          })(this));
+        }
+        return angular.element($window).on("orientationchange", calcSize);
       }
     };
   }
@@ -384,7 +367,7 @@ imagoImage = (function() {
 
 })();
 
-angular.module('imago.widgets.angular').directive('imagoImage', ['$window', '$q', '$log', 'imagoUtils', imagoImage]);
+angular.module('imago.widgets.angular').directive('imagoImage', ['$window', '$log', 'imagoUtils', imagoImage]);
 
 var imagoSlider;
 
@@ -396,112 +379,54 @@ imagoSlider = (function() {
       templateUrl: '/imagoWidgets/imagoSlider.html',
       controllerAs: 'slider',
       controller: function($scope) {
-        $scope.confSlider = {};
-        this.defaults = {
+        this.conf = {
           animation: 'fade',
-          sizemode: 'fit',
-          current: 0,
           enablekeys: true,
           enablearrows: true,
-          enablehtml: true,
-          subslides: false,
           loop: true,
-          noResize: false,
-          current: 0,
-          lazy: false,
-          align: 'center center'
+          current: 0
         };
-        angular.forEach(this.defaults, function(value, key) {
-          return $scope.confSlider[key] = value;
-        });
-        this.getCurrentSlideIndex = function() {
-          return $scope.currentIndex;
+        this.currentIndex = 0;
+        this.getCurrent = function() {
+          return this.currentIndex;
         };
-        return this.setCurrentSlideIndex = (function(_this) {
+        return this.setCurrent = (function(_this) {
           return function(index) {
-            $scope.currentIndex = index;
+            _this.currentIndex = index;
             return $scope.getSiblings();
           };
         })(this);
       },
       link: function(scope, element, attrs) {
-        var computeData, prepareSlides, self;
-        self = {};
         angular.forEach(attrs, function(value, key) {
           if (value === 'true' || value === 'false') {
             value = JSON.parse(value);
           }
-          return scope.confSlider[key] = value;
+          return scope.slider.conf[key] = value;
         });
-        computeData = function(data) {
-          if (!angular.isArray(data)) {
-            return imagoModel.getData(data.path).then(function(response) {
-              data = imagoModel.findChildren(response[0]);
-              return prepareSlides(data);
-            });
-          } else {
-            return prepareSlides(data);
-          }
-        };
-        self.watch = scope.$watch(attrs['source'], (function(_this) {
-          return function(data) {
-            if (!data) {
-              return;
-            }
-            computeData(data);
-            if (!attrs['watch']) {
-              return self.watch();
-            }
-          };
-        })(this));
-        prepareSlides = function(data) {
-          var item, _i, _len, _ref;
-          scope.loadedData = true;
-          scope.slideSource = [];
-          scope.dimensions = {
-            width: element[0].clientWidth,
-            height: element[0].clientHeight
-          };
-          for (_i = 0, _len = data.length; _i < _len; _i++) {
-            item = data[_i];
-            if (item.serving_url) {
-              scope.slideSource.push(item);
-            }
-          }
-          if (((_ref = scope.slideSource) != null ? _ref.length : void 0) <= 1 || !scope.slideSource) {
-            scope.confSlider.enablearrows = false;
-            scope.confSlider.enablekeys = false;
-          }
-          if (!scope.currentIndex) {
-            scope.currentIndex = 0;
-          }
-          scope.sliderLength = scope.slideSource.length - 1;
-          return scope.getSiblings();
-        };
+        console.log(scope.slider.conf.animation);
         scope.displaySlides = function(index) {
-          if (index === scope.currentIndex || scope.nextIndex || scope.prevIndex) {
+          if (index === scope.slider.currentIndex || scope.nextIndex || scope.prevIndex) {
             return true;
           }
         };
         scope.goPrev = function($event) {
-          scope.currentIndex = scope.currentIndex > 0 ? --scope.currentIndex : scope.slideSource.length - 1;
-          scope.getSiblings();
-          return scope.$broadcast('slide');
+          scope.slider.currentIndex = scope.slider.currentIndex > 0 ? --scope.slider.currentIndex : parseInt(attrs.length) - 1;
+          return scope.slider.action = 'prev';
         };
         scope.goNext = function($event) {
-          scope.currentIndex = scope.currentIndex < scope.slideSource.length - 1 ? ++scope.currentIndex : 0;
-          scope.getSiblings();
-          return scope.$broadcast('slide');
+          scope.slider.currentIndex = scope.slider.currentIndex < parseInt(attrs.length) - 1 ? ++scope.slider.currentIndex : 0;
+          return scope.slider.action = 'next';
         };
         scope.getSiblings = function() {
-          scope.nextIndex = scope.currentIndex === scope.sliderLength ? 0 : scope.currentIndex + 1;
-          return scope.prevIndex = scope.currentIndex === 0 ? scope.sliderLength : scope.currentIndex - 1;
+          scope.nextIndex = scope.slider.currentIndex === scope.sliderLength ? 0 : scope.slider.currentIndex + 1;
+          return scope.prevIndex = scope.slider.currentIndex === 0 ? scope.sliderLength : scope.slider.currentIndex - 1;
         };
         scope.getLast = function() {
-          return scope.slideSource.length - 1;
+          return parseInt(attrs.length) - 1;
         };
         return $document.on('keydown', function(e) {
-          if (!scope.confSlider.enablekeys) {
+          if (!scope.slider.conf.enablekeys) {
             return;
           }
           switch (e.keyCode) {
@@ -2280,7 +2205,7 @@ imagoWorker = (function() {
         defer.resolve(e.data);
         return worker.terminate();
       };
-    })(this), false);
+    })(this));
     worker.postMessage(data);
     return defer.promise;
   };
@@ -2290,32 +2215,6 @@ imagoWorker = (function() {
 })();
 
 angular.module('imago.widgets.angular').service('imagoWorker', ['$q', imagoWorker]);
-
-var lodash;
-
-lodash = angular.module('lodash', []);
-
-lodash.factory('_', function() {
-  return window._();
-});
-
-var imagoPage;
-
-imagoPage = (function() {
-  function imagoPage($scope, $state, imagoModel) {
-    var path;
-    path = '/';
-    imagoModel.getData(path).then(function(response) {
-      $scope.collection = response[0];
-      return $scope.assets = imagoModel.getChildren(response[0]);
-    });
-  }
-
-  return imagoPage;
-
-})();
-
-angular.module('imago.widgets.angular').controller('imagoPage', ['$scope', '$state', 'imagoModel', imagoPage]);
 
 var Meta;
 
@@ -2373,3 +2272,11 @@ Time = (function() {
 })();
 
 angular.module('imago.widgets.angular').filter('time', [Time]);
+
+var lodash;
+
+lodash = angular.module('lodash', []);
+
+lodash.factory('_', function() {
+  return window._();
+});
