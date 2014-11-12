@@ -15,7 +15,6 @@ class imagoImage extends Directive
 
         self = {visible: false}
         source = {}
-        scope.elementStyle = {}
 
         opts =
           align     : 'center center'

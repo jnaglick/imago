@@ -171,7 +171,6 @@ imagoImage = (function() {
           visible: false
         };
         source = {};
-        scope.elementStyle = {};
         opts = {
           align: 'center center',
           sizemode: 'fit',
