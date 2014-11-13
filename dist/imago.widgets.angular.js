@@ -16,6 +16,24 @@ App = (function() {
 
 angular.module('imago.widgets.angular', App());
 
+var imagoPage;
+
+imagoPage = (function() {
+  function imagoPage($scope, $state, imagoModel) {
+    var path;
+    path = '/';
+    imagoModel.getData(path).then(function(response) {
+      $scope.collection = response[0];
+      return $scope.assets = imagoModel.getChildren(response[0]);
+    });
+  }
+
+  return imagoPage;
+
+})();
+
+angular.module('imago.widgets.angular').controller('imagoPage', ['$scope', '$state', 'imagoModel', imagoPage]);
+
 var imagoCompile;
 
 imagoCompile = (function() {
@@ -386,12 +404,10 @@ imagoSlider = (function() {
         });
         scope.currentIndex = scope.conf.current;
         scope.goPrev = function($event) {
-          scope.action = 'prev';
-          return scope.setCurrent(scope.currentIndex > 0 ? --scope.currentIndex : parseInt(attrs.length) - 1);
+          return scope.setCurrent(scope.currentIndex > 0 ? scope.currentIndex - 1 : parseInt(attrs.length) - 1);
         };
         scope.goNext = function($event) {
-          scope.action = 'next';
-          return scope.setCurrent(scope.currentIndex < parseInt(attrs.length) - 1 ? ++scope.currentIndex : 0);
+          return scope.setCurrent(scope.currentIndex < parseInt(attrs.length) - 1 ? scope.currentIndex + 1 : 0);
         };
         scope.getLast = function() {
           return parseInt(attrs.length) - 1;
@@ -401,6 +417,16 @@ imagoSlider = (function() {
         };
         scope.setCurrent = (function(_this) {
           return function(index) {
+            scope.action = (function() {
+              switch (false) {
+                case !(index > scope.currentIndex):
+                  return 'next';
+                case !(index < scope.currentIndex):
+                  return 'prev';
+                default:
+                  return '';
+              }
+            })();
             scope.currentIndex = index;
             return scope.$emit("" + scope.conf.namespace + ":changed", index);
           };
@@ -809,24 +835,6 @@ StopPropagation = (function() {
 })();
 
 angular.module('imago.widgets.angular').directive('stopPropagation', [StopPropagation]);
-
-var imagoPage;
-
-imagoPage = (function() {
-  function imagoPage($scope, $state, imagoModel) {
-    var path;
-    path = '/';
-    imagoModel.getData(path).then(function(response) {
-      $scope.collection = response[0];
-      return $scope.assets = imagoModel.getChildren(response[0]);
-    });
-  }
-
-  return imagoPage;
-
-})();
-
-angular.module('imago.widgets.angular').controller('imagoPage', ['$scope', '$state', 'imagoModel', imagoPage]);
 
 var imagoModel,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };

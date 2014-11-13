@@ -29,12 +29,10 @@ class imagoSlider extends Directive
         scope.currentIndex = scope.conf.current
 
         scope.goPrev = ($event) ->
-          scope.action = 'prev'
-          scope.setCurrent(if (scope.currentIndex > 0) then --scope.currentIndex else parseInt(attrs.length) - 1)
+          scope.setCurrent(if (scope.currentIndex > 0) then scope.currentIndex - 1 else parseInt(attrs.length) - 1)
 
         scope.goNext = ($event) ->
-          scope.action = 'next'
-          scope.setCurrent(if (scope.currentIndex < parseInt(attrs.length) - 1) then ++scope.currentIndex else 0)
+          scope.setCurrent(if (scope.currentIndex < parseInt(attrs.length) - 1) then scope.currentIndex + 1 else 0)
 
         scope.getLast = () ->
           parseInt(attrs.length) - 1
@@ -43,6 +41,11 @@ class imagoSlider extends Directive
           return scope.currentIndex
 
         scope.setCurrent = (index) =>
+          scope.action = switch
+            when index > scope.currentIndex then 'next'
+            when index < scope.currentIndex then 'prev'
+            else ''
+
           scope.currentIndex = index
           scope.$emit "#{scope.conf.namespace}:changed", index
 
