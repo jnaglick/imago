@@ -42,6 +42,8 @@ class imagoSlider extends Directive
 
         scope.setCurrent = (index) =>
           scope.action = switch
+            when index is 0 and scope.currentIndex is (parseInt(attrs.length) - 1) then 'next'
+            when index is (parseInt(attrs.length) - 1) and scope.currentIndex is 0 then 'prev'
             when index > scope.currentIndex then 'next'
             when index < scope.currentIndex then 'prev'
             else ''

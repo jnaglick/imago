@@ -414,6 +414,10 @@ imagoSlider = (function() {
           return function(index) {
             scope.action = (function() {
               switch (false) {
+                case !(index === 0 && scope.currentIndex === (parseInt(attrs.length) - 1)):
+                  return 'next';
+                case !(index === (parseInt(attrs.length) - 1) && scope.currentIndex === 0):
+                  return 'prev';
                 case !(index > scope.currentIndex):
                   return 'next';
                 case !(index < scope.currentIndex):
