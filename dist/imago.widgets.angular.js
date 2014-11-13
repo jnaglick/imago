@@ -16,24 +16,6 @@ App = (function() {
 
 angular.module('imago.widgets.angular', App());
 
-var imagoPage;
-
-imagoPage = (function() {
-  function imagoPage($scope, $state, imagoModel) {
-    var path;
-    path = '/';
-    imagoModel.getData(path).then(function(response) {
-      $scope.collection = response[0];
-      return $scope.assets = imagoModel.getChildren(response[0]);
-    });
-  }
-
-  return imagoPage;
-
-})();
-
-angular.module('imago.widgets.angular').controller('imagoPage', ['$scope', '$state', 'imagoModel', imagoPage]);
-
 var imagoCompile;
 
 imagoCompile = (function() {
@@ -388,7 +370,8 @@ imagoSlider = (function() {
           enablekeys: true,
           enablearrows: true,
           loop: true,
-          current: 0
+          current: 0,
+          namespace: 'slider'
         };
       },
       link: function(scope, element, attrs, ctrl, transclude) {
@@ -402,49 +385,42 @@ imagoSlider = (function() {
           return scope.conf[key] = value;
         });
         scope.currentIndex = scope.conf.current;
-        scope.displaySlides = function(index) {
-          if (index === scope.currentIndex || scope.nextIndex || scope.prevIndex) {
-            return true;
-          }
-        };
         scope.goPrev = function($event) {
-          scope.currentIndex = scope.currentIndex > 0 ? --scope.currentIndex : parseInt(attrs.length) - 1;
-          return scope.action = 'prev';
+          scope.action = 'prev';
+          return scope.setCurrent(scope.currentIndex > 0 ? --scope.currentIndex : parseInt(attrs.length) - 1);
         };
         scope.goNext = function($event) {
-          scope.currentIndex = scope.currentIndex < parseInt(attrs.length) - 1 ? ++scope.currentIndex : 0;
-          return scope.action = 'next';
-        };
-        scope.getSiblings = function() {
-          scope.nextIndex = scope.currentIndex === scopeLength ? 0 : scope.currentIndex + 1;
-          return scope.prevIndex = scope.currentIndex === 0 ? scopeLength : scope.currentIndex - 1;
+          scope.action = 'next';
+          return scope.setCurrent(scope.currentIndex < parseInt(attrs.length) - 1 ? ++scope.currentIndex : 0);
         };
         scope.getLast = function() {
           return parseInt(attrs.length) - 1;
         };
         scope.getCurrent = function() {
-          return $scope.currentIndex;
+          return scope.currentIndex;
         };
         scope.setCurrent = (function(_this) {
           return function(index) {
-            $scope.currentIndex = index;
-            return $scope.getSiblings();
+            scope.currentIndex = index;
+            return scope.$emit("" + scope.conf.namespace + ":changed", index);
           };
         })(this);
-        return $document.on('keydown', function(e) {
-          if (!scope.conf.enablekeys) {
-            return;
-          }
-          switch (e.keyCode) {
-            case 37:
-              return scope.$apply(function() {
-                return scope.goPrev();
-              });
-            case 39:
-              return scope.$apply(function() {
-                return scope.goNext();
-              });
-          }
+        if (scope.conf.enablekeys) {
+          $document.on('keydown', function(e) {
+            switch (e.keyCode) {
+              case 37:
+                return scope.$apply(function() {
+                  return scope.goPrev();
+                });
+              case 39:
+                return scope.$apply(function() {
+                  return scope.goNext();
+                });
+            }
+          });
+        }
+        return scope.$on("" + scope.conf.namespace + ":change", function(event, index) {
+          return scope.setCurrent(index);
         });
       }
     };
@@ -833,6 +809,24 @@ StopPropagation = (function() {
 })();
 
 angular.module('imago.widgets.angular').directive('stopPropagation', [StopPropagation]);
+
+var imagoPage;
+
+imagoPage = (function() {
+  function imagoPage($scope, $state, imagoModel) {
+    var path;
+    path = '/';
+    imagoModel.getData(path).then(function(response) {
+      $scope.collection = response[0];
+      return $scope.assets = imagoModel.getChildren(response[0]);
+    });
+  }
+
+  return imagoPage;
+
+})();
+
+angular.module('imago.widgets.angular').controller('imagoPage', ['$scope', '$state', 'imagoModel', imagoPage]);
 
 var imagoModel,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
