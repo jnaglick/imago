@@ -4,76 +4,61 @@
   .slide
     transition: transform 250ms
 
-  &.slide.prev
+  &.prev
     .slide
 
-      &.ng-enter,
-      &.ng-hide-remove
+      &.ng-enter
         transform: translate3d(-100%, 0, 0)
-
-      &.ng-enter-active,
-      &.ng-leave,
-      &.ng-hide-remove-active
+      &.ng-enter-active
         transform: translate3d(0, 0, 0)
 
-      &.ng-leave-active,
-      &.ng-hide-add-active
+      &.ng-leave
+        transform: translate3d(0, 0, 0)
+      &.ng-leave-active
         transform: translate3d(100%, 0, 0)
 
-  &.slide.next
+  &.next
     .slide
 
-      &.ng-enter,
-      &.ng-hide-remove
+      &.ng-enter
         transform: translate3d(100%, 0, 0)
-
-      &.ng-enter-active,
-      &.ng-leave,
-      &.ng-hide-remove-active
+      &.ng-enter-active
         transform: translate3d(0, 0, 0)
 
-      &.ng-leave-active,
-      &.ng-hide-add-active
+      &.ng-leave
+        transform: translate3d(0, 0, 0)
+      &.ng-leave-active
         transform: translate3d(-100%, 0, 0)
 
 .imagoslider.carousel
 
   .slide
     transition: all 0.35s
-    z-index: 2
 
   &.prev
     .slide
 
-      &.ng-enter,
-      &.ng-hide-remove
+      &.ng-enter
         transform: scale(0) translateX(-200%) rotateY(180deg)
-
-      &.ng-enter-active,
-      &.ng-leave,
-      &.ng-hide-remove-active
+      &.ng-enter-active
         transform: scale(1) translateX(0) rotateY(0deg)
-        z-index: 1
 
-      &.ng-leave-active,
-      &.ng-hide-add-active
+      &.ng-leave
+        transform: scale(1) translateX(0) rotateY(0deg)
+      &.ng-leave-active
         transform: scale(0) translateX(200%) rotateY(-180deg)
 
   &.next
     .slide
 
-      &.ng-enter,
-      &.ng-hide-remove
+      &.ng-enter
         transform: scale(0) translateX(200%) rotateY(-180deg)
-
-      &.ng-enter-active,
-      &.ng-leave,
-      &.ng-hide-remove-active
+      &.ng-enter-active
         transform: scale(1) translateX(0) rotateY(0deg)
-        z-index: 1
 
-      &.ng-leave-active,
-      &.ng-hide-add-active
+      &.ng-leave
+        transform: scale(1) translateX(0) rotateY(0deg)
+      &.ng-leave-active
         transform: scale(0) translateX(-200%) rotateY(180deg)
 
 
@@ -85,180 +70,154 @@
   &.prev
     .slide
 
-      &.ng-enter,
-      &.ng-hide-remove
+      &.ng-enter
         transform: scale(0) translateX(-100%)
-        z-index: 0
-
-      &.ng-enter-active,
-      &.ng-leave,
-      &.ng-hide-remove-active
+      &.ng-enter-active
         transform: scale(1) translateX(0)
-        z-index: 1
 
-      &.ng-leave-active,
-      &.ng-hide-add-active
+      &.ng-leave
+        transform: scale(1) translateX(0)
+      &.ng-leave-active
         transform: scale(0) translateX(100%)
-        z-index: 0
 
   &.next
     .slide
 
-      &.ng-enter,
-      &.ng-hide-remove
+      &.ng-enter
         transform: scale(0) translateX(100%)
-        z-index: 0
-
-      &.ng-enter-active,
-      &.ng-leave,
-      &.ng-hide-remove-active
+      &.ng-enter-active
         transform: scale(1) translateX(0)
-        z-index: 1
 
-
-      &.ng-leave-active,
-      &.ng-hide-add-active
+      &.ng-leave
+        transform: scale(1) translateX(0)
+      &.ng-leave-active
         transform: scale(0) translateX(-100%)
-        z-index: 0
 
 
 .imagoslider.fade
   .slide
     transition: opacity .25s
-    opacity: 1
-    z-index: 1
 
-    &.ng-enter-active,
-    &.ng-leave,
-    &.ng-hide-add-active,
-    &.ng-hide-remove
-      opacity: 1
-      z-index: 1
-
-    &.ng-enter,
-    &.ng-leave-active,
-    &.ng-hide-add,
-    &.ng-hide-remove-active
+    &.ng-enter
+      transition-delay: .25s
       opacity: 0
-      z-index: 0
+    &.ng-enter-active
+      opacity: 1
+
+    &.ng-leave
+      opacity: 1
+    &.ng-leave-active
+      opacity: 0
+
+.imagoslider.crossfade
+  .slide
+    transition: opacity .25s
+
+    &.ng-enter
+      opacity: 0
+    &.ng-enter-active
+      opacity: 1
+
+    &.ng-leave
+      opacity: 1
+    &.ng-leave-active
+      opacity: 0
+
 
 .imagoslider.fadeslide
   .slide
     transition: all .25s
 
-    &.ng-enter-active,
-    &.ng-leave,
-    &.ng-hide-add-active,
-    &.ng-hide-remove
-      opacity: 1
-      z-index: 1
-
-    &.ng-enter,
-    &.ng-leave-active,
-    &.ng-hide-add,
-    &.ng-hide-remove-active
-      opacity: 0
-      z-index: 0
-
   &.prev
     .slide
 
-      &.ng-enter,
-      &.ng-hide-remove
-        transform: translateX(-5%)
+      &.ng-enter
+        opacity: 0
+        transform: translate3d(-5%, 0, 0)
+      &.ng-enter-active
+        opacity: 1
+        transform: translate3d(0, 0, 0)
 
-      &.ng-enter-active,
-      &.ng-leave,
-      &.ng-hide-remove-active
-        transform: translateX(0)
-
-      &.ng-leave-active,
-      &.ng-hide-add-active
-        transform: translateX(5%)
+      &.ng-leave
+        opacity: 1
+        transform: translate3d(0, 0, 0)
+      &.ng-leave-active
+        opacity: 0
+        transform: translate3d(5%, 0, 0)
 
   &.next
     .slide
 
-      &.ng-enter,
-      &.ng-hide-remove
-        transform: translateX(5%)
+      &.ng-enter
+        opacity: 0
+        transform: translate3d(5%, 0, 0)
+      &.ng-enter-active
+        opacity: 1
+        transform: translate3d(0, 0, 0)
 
-      &.ng-enter-active,
-      &.ng-leave,
-      &.ng-hide-remove-active
-        transform: translateX(0)
-
-      &.ng-leave-active,
-      &.ng-hide-add-active
-        transform: translateX(-5%)
+      &.ng-leave
+        opacity: 1
+        transform: translate3d(0, 0, 0)
+      &.ng-leave-active
+        opacity: 0
+        transform: translate3d(-5%, 0, 0)
 
 .imagoslider.pulsefade
   .slide
     transition: all .25s
 
-    &.ng-enter-active,
-    &.ng-leave,
-    &.ng-hide-add-active,
-    &.ng-hide-remove
-      opacity: 1
-      z-index: 1
-
-    &.ng-enter,
-    &.ng-leave-active,
-    &.ng-hide-add,
-    &.ng-hide-remove-active
-      opacity: 0
-      z-index: 0
-
   &.prev
     .slide
 
-      &.ng-enter,
-      &.ng-hide-remove
+      &.ng-enter
+        opacity: 0
         transform: translateX(-15%) scale(2)
-
-      &.ng-enter-active,
-      &.ng-leave,
-      &.ng-hide-remove-active
+      &.ng-enter-active
+        opacity: 1
         transform: translateX(0) scale(1)
 
-      &.ng-leave-active,
-      &.ng-hide-add-active
+      &.ng-leave
+        opacity: 1
+        transform: translateX(0) scale(1)
+      &.ng-leave-active
+        opacity: 0
         transform: translateX(15%) scale(2)
 
   &.next
     .slide
 
-      &.ng-enter,
-      &.ng-hide-remove
+      &.ng-enter
+        opacity: 0
         transform: translateX(15%) scale(2)
-
-      &.ng-enter-active,
-      &.ng-leave,
-      &.ng-hide-remove-active
+      &.ng-enter-active
+        opacity: 1
         transform: translateX(0) scale(1)
 
-      &.ng-leave-active,
-      &.ng-hide-add-active
+      &.ng-leave
+        opacity: 1
+        transform: translateX(0) scale(1)
+      &.ng-leave-active
+        opacity: 0
         transform: translateX(-15%) scale(2)
 
 .imagoslider.scale
   .slide
     transition: all .25s
-    transform: scale(1)
 
-    &.ng-enter-active,
-    &.ng-leave,
-    &.ng-hide-add-active,
-    &.ng-hide-remove
+    &.ng-enter
+      opacity: 0
+      z-index: 0
+      transform: scale(0)
+    &.ng-enter-active
       opacity: 1
       z-index: 1
       transform: scale(1)
 
-    &.ng-enter,
-    &.ng-leave-active,
-    &.ng-hide-add,
-    &.ng-hide-remove-active
+    &.ng-leave
+      opacity: 1
+      z-index: 1
+      transform: scale(1)
+    &.ng-leave-active
       opacity: 0
       z-index: 0
       transform: scale(0)
@@ -267,51 +226,45 @@
 
   .slide
     transition: all .25s
-    opacity: 1
-    z-index: 1
-
-    &.ng-enter-active,
-    &.ng-leave,
-    &.ng-hide-add-active,
-    &.ng-hide-remove
-      opacity: 1
-      z-index: 1
-
-    &.ng-enter,
-    &.ng-leave-active,
-    &.ng-hide-add,
-    &.ng-hide-remove-active
-      opacity: 0
-      z-index: 0
 
   &.prev
     .slide
 
-      &.ng-enter,
-      &.ng-hide-remove
+      &.ng-enter
+        opacity: 0
+        z-index: 0
         transform: scale(0) rotateZ(-30deg)
-
-      &.ng-enter-active,
-      &.ng-leave,
-      &.ng-hide-remove-active
+      &.ng-enter-active
+        opacity: 1
+        z-index: 1
         transform: scale(1) rotateZ(0deg)
 
-      &.ng-leave-active,
-      &.ng-hide-add-active
+      &.ng-leave
+        opacity: 1
+        z-index: 1
+        transform: scale(1) rotateZ(0deg)
+      &.ng-leave-active
+        opacity: 0
+        z-index: 0
         transform: scale(0) rotateZ(30deg)
 
   &.next
     .slide
 
-      &.ng-enter,
-      &.ng-hide-remove
+      &.ng-enter
+        opacity: 0
+        z-index: 0
         transform: scale(0) rotateZ(30deg)
-
-      &.ng-enter-active,
-      &.ng-leave,
-      &.ng-hide-remove-active
+      &.ng-enter-active
+        opacity: 1
+        z-index: 1
         transform: scale(1) rotateZ(0deg)
 
-      &.ng-leave-active,
-      &.ng-hide-add-active
+      &.ng-leave
+        opacity: 1
+        z-index: 1
+        transform: scale(1) rotateZ(0deg)
+      &.ng-leave-active
+        opacity: 0
+        z-index: 0
         transform: scale(0) rotateZ(-30deg)
