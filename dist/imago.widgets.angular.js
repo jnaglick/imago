@@ -1,7 +1,7 @@
 angular.module("ImagoWidgetsTemplates", []).run(["$templateCache", function($templateCache) {$templateCache.put("/imagoWidgets/contact-widget.html","<div class=\"nex form\"><form name=\"nexContact\" ng-submit=\"submitForm(nexContact.$valid)\" novalidate=\"novalidate\"><div class=\"nex field\"><label for=\"name\">Name</label><input type=\"text\" name=\"name\" ng-model=\"contact.name\" placeholder=\"Name\" require=\"require\"/></div><div class=\"nex field\"><label for=\"email\">Email</label><input type=\"email\" name=\"email\" ng-model=\"contact.email\" placeholder=\"Email\" require=\"require\"/></div><div class=\"nex field\"><label for=\"message\">Message</label><textarea name=\"message\" ng-model=\"contact.message\" placeholder=\"Your message.\" require=\"require\"></textarea></div><div class=\"nex checkbox\"><input type=\"checkbox\" name=\"subscribe\" ng-model=\"contact.subscribe\" checked=\"checked\"/><label for=\"subscribe\">Subscribe</label></div><div class=\"formcontrols\"><button type=\"submit\" ng-disabled=\"nexContact.$invalid\" class=\"send\">Send</button></div></form><div class=\"sucess\"><span>Thank You!</span></div><div class=\"error\"><span>Error!</span></div></div>");
 $templateCache.put("/imagoWidgets/controlsVideo.html","<div stop-propagation=\"stop-propagation\" class=\"controls\"><a ng-click=\"togglePlay()\" ng-hide=\"isPlaying\" class=\"video-play fa fa-play\"></a><a ng-click=\"togglePlay()\" ng-show=\"isPlaying\" class=\"video-pause fa fa-pause\"></a><span class=\"video-time\">{{currentTime | time}}</span><span class=\"video-seekbar\"><input type=\"range\" ng-model=\"currentTime\" min=\"0\" max=\"{{duration}}\" ng-change=\"seek(currentTime)\" class=\"seek\"/></span><a ng-click=\"toggleSize()\" class=\"size\">{{wrapperStyle.size}}</a><span class=\"volume\"><span ng-click=\"volumeUp()\" class=\"fa fa-volume-up icon-volume-up\"></span><input type=\"range\" ng-model=\"volumeInput\" ng-change=\"onVolumeChange(volumeInput)\"/><span ng-click=\"volumeDown()\" class=\"fa fa-volume-down icon-volume-down\"></span></span><a ng-click=\"fullScreen()\" class=\"video-fullscreen fa fa-expand\"></a><a class=\"video-screen fa fa-compress\"></a></div>");
 $templateCache.put("/imagoWidgets/imagoImage.html","<div in-view=\"visible = $inview\" responsive-events=\"responsive-events\" ng-style=\"elementStyle\" ng-class=\"status\" visible=\"visible\" class=\"imagoimage imagowrapper\"><div ng-style=\"imageStyle\" class=\"imagox23\"></div><div class=\"loading\"><div class=\"spin\"></div><div class=\"spin2\"></div></div></div>");
-$templateCache.put("/imagoWidgets/imagoSlider.html","<div ng-class=\"[slider.conf.animation, slider.action]\" ng-swipe-left=\"goPrev()\" ng-swipe-right=\"goNext()\" class=\"imagoslider\"><div ng-show=\"slider.conf.enablearrows\" ng-click=\"goPrev($event)\" stop-propagation=\"stop-propagation\" class=\"prev\"></div><div ng-show=\"slider.conf.enablearrows\" ng-click=\"goNext($event)\" stop-propagation=\"stop-propagation\" class=\"next\"></div><div ng-transclude=\"ng-transclude\" class=\"slides\"></div></div>");
+$templateCache.put("/imagoWidgets/imagoSlider.html","<div ng-class=\"[conf.animation, action]\" ng-swipe-left=\"goPrev()\" ng-swipe-right=\"goNext()\" class=\"imagoslider\"><div ng-show=\"conf.enablearrows\" ng-click=\"goPrev($event)\" stop-propagation=\"stop-propagation\" class=\"prev\"></div><div ng-show=\"conf.enablearrows\" ng-click=\"goNext($event)\" stop-propagation=\"stop-propagation\" class=\"next\"></div></div>");
 $templateCache.put("/imagoWidgets/imagoVideo.html","<div ng-class=\"{loading: loading}\" in-view=\"visible = $inview\" visible=\"visible\" responsive-events=\"responsive-events\" class=\"imagovideo {{wrapperStyle.backgroundPosition}} {{wrapperStyle.size}} {{wrapperStyle.sizemode}}\"><div ng-style=\"wrapperStyle\" ng-class=\"{playing: isPlaying}\" class=\"imagowrapper\"><a ng-hide=\"loading\" ng-click=\"togglePlay()\" ng-class=\"{playing: isPlaying}\" stop-propagation=\"stop-propagation\" class=\"playbig fa fa-play\"></a><video ng-style=\"videoStyle\"><source ng-repeat=\"format in videoFormats\" src=\"{{format.src}}\" data-size=\"{{format.size}}\" data-codec=\"{{format.codec}}\" type=\"{{format.type}}\"/></video><div imago-controls=\"imago-controls\" ng-style=\"controlStyle\" ng-if=\"controls\" ng-show=\"hasPlayed\"></div></div></div>");}]);
 var App;
 
@@ -380,57 +380,59 @@ imagoSlider = (function() {
     return {
       replace: true,
       transclude: true,
+      scope: true,
       templateUrl: '/imagoWidgets/imagoSlider.html',
-      controllerAs: 'slider',
       controller: function($scope) {
-        this.conf = {
+        return $scope.conf = {
           animation: 'fade',
           enablekeys: true,
           enablearrows: true,
           loop: true,
           current: 0
         };
-        this.currentIndex = 0;
-        this.getCurrent = function() {
-          return this.currentIndex;
-        };
-        return this.setCurrent = (function(_this) {
-          return function(index) {
-            _this.currentIndex = index;
-            return $scope.getSiblings();
-          };
-        })(this);
       },
-      link: function(scope, element, attrs) {
+      link: function(scope, element, attrs, ctrl, transclude) {
+        transclude(scope, function(clone, scope) {
+          return element.append(clone);
+        });
         angular.forEach(attrs, function(value, key) {
           if (value === 'true' || value === 'false') {
             value = JSON.parse(value);
           }
-          return scope.slider.conf[key] = value;
+          return scope.conf[key] = value;
         });
-        console.log(scope.slider.conf.animation);
+        scope.currentIndex = scope.conf.current;
         scope.displaySlides = function(index) {
-          if (index === scope.slider.currentIndex || scope.nextIndex || scope.prevIndex) {
+          if (index === scope.currentIndex || scope.nextIndex || scope.prevIndex) {
             return true;
           }
         };
         scope.goPrev = function($event) {
-          scope.slider.currentIndex = scope.slider.currentIndex > 0 ? --scope.slider.currentIndex : parseInt(attrs.length) - 1;
-          return scope.slider.action = 'prev';
+          scope.currentIndex = scope.currentIndex > 0 ? --scope.currentIndex : parseInt(attrs.length) - 1;
+          return scope.action = 'prev';
         };
         scope.goNext = function($event) {
-          scope.slider.currentIndex = scope.slider.currentIndex < parseInt(attrs.length) - 1 ? ++scope.slider.currentIndex : 0;
-          return scope.slider.action = 'next';
+          scope.currentIndex = scope.currentIndex < parseInt(attrs.length) - 1 ? ++scope.currentIndex : 0;
+          return scope.action = 'next';
         };
         scope.getSiblings = function() {
-          scope.nextIndex = scope.slider.currentIndex === scope.sliderLength ? 0 : scope.slider.currentIndex + 1;
-          return scope.prevIndex = scope.slider.currentIndex === 0 ? scope.sliderLength : scope.slider.currentIndex - 1;
+          scope.nextIndex = scope.currentIndex === scopeLength ? 0 : scope.currentIndex + 1;
+          return scope.prevIndex = scope.currentIndex === 0 ? scopeLength : scope.currentIndex - 1;
         };
         scope.getLast = function() {
           return parseInt(attrs.length) - 1;
         };
+        scope.getCurrent = function() {
+          return $scope.currentIndex;
+        };
+        scope.setCurrent = (function(_this) {
+          return function(index) {
+            $scope.currentIndex = index;
+            return $scope.getSiblings();
+          };
+        })(this);
         return $document.on('keydown', function(e) {
-          if (!scope.slider.conf.enablekeys) {
+          if (!scope.conf.enablekeys) {
             return;
           }
           switch (e.keyCode) {

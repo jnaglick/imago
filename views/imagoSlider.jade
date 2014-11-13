@@ -1,13 +1,11 @@
 .imagoslider(
-    ng-class="[slider.conf.animation, slider.action]"
+    ng-class="[conf.animation, action]"
     ng-swipe-left="goPrev()"
     ng-swipe-right="goNext()"
     )
-  .prev(ng-show="slider.conf.enablearrows"
+  .prev(ng-show="conf.enablearrows"
         ng-click="goPrev($event)"
         stop-propagation)
-  .next(ng-show="slider.conf.enablearrows"
+  .next(ng-show="conf.enablearrows"
         ng-click="goNext($event)"
         stop-propagation)
-
-  .slides(ng-transclude)

@@ -375,57 +375,59 @@ imagoSlider = (function() {
     return {
       replace: true,
       transclude: true,
+      scope: true,
       templateUrl: '/imagoWidgets/imagoSlider.html',
-      controllerAs: 'slider',
       controller: function($scope) {
-        this.conf = {
+        return $scope.conf = {
           animation: 'fade',
           enablekeys: true,
           enablearrows: true,
           loop: true,
           current: 0
         };
-        this.currentIndex = 0;
-        this.getCurrent = function() {
-          return this.currentIndex;
-        };
-        return this.setCurrent = (function(_this) {
-          return function(index) {
-            _this.currentIndex = index;
-            return $scope.getSiblings();
-          };
-        })(this);
       },
-      link: function(scope, element, attrs) {
+      link: function(scope, element, attrs, ctrl, transclude) {
+        transclude(scope, function(clone, scope) {
+          return element.append(clone);
+        });
         angular.forEach(attrs, function(value, key) {
           if (value === 'true' || value === 'false') {
             value = JSON.parse(value);
           }
-          return scope.slider.conf[key] = value;
+          return scope.conf[key] = value;
         });
-        console.log(scope.slider.conf.animation);
+        scope.currentIndex = scope.conf.current;
         scope.displaySlides = function(index) {
-          if (index === scope.slider.currentIndex || scope.nextIndex || scope.prevIndex) {
+          if (index === scope.currentIndex || scope.nextIndex || scope.prevIndex) {
             return true;
           }
         };
         scope.goPrev = function($event) {
-          scope.slider.currentIndex = scope.slider.currentIndex > 0 ? --scope.slider.currentIndex : parseInt(attrs.length) - 1;
-          return scope.slider.action = 'prev';
+          scope.currentIndex = scope.currentIndex > 0 ? --scope.currentIndex : parseInt(attrs.length) - 1;
+          return scope.action = 'prev';
         };
         scope.goNext = function($event) {
-          scope.slider.currentIndex = scope.slider.currentIndex < parseInt(attrs.length) - 1 ? ++scope.slider.currentIndex : 0;
-          return scope.slider.action = 'next';
+          scope.currentIndex = scope.currentIndex < parseInt(attrs.length) - 1 ? ++scope.currentIndex : 0;
+          return scope.action = 'next';
         };
         scope.getSiblings = function() {
-          scope.nextIndex = scope.slider.currentIndex === scope.sliderLength ? 0 : scope.slider.currentIndex + 1;
-          return scope.prevIndex = scope.slider.currentIndex === 0 ? scope.sliderLength : scope.slider.currentIndex - 1;
+          scope.nextIndex = scope.currentIndex === scopeLength ? 0 : scope.currentIndex + 1;
+          return scope.prevIndex = scope.currentIndex === 0 ? scopeLength : scope.currentIndex - 1;
         };
         scope.getLast = function() {
           return parseInt(attrs.length) - 1;
         };
+        scope.getCurrent = function() {
+          return $scope.currentIndex;
+        };
+        scope.setCurrent = (function(_this) {
+          return function(index) {
+            $scope.currentIndex = index;
+            return $scope.getSiblings();
+          };
+        })(this);
         return $document.on('keydown', function(e) {
-          if (!scope.slider.conf.enablekeys) {
+          if (!scope.conf.enablekeys) {
             return;
           }
           switch (e.keyCode) {
