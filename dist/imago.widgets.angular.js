@@ -171,7 +171,7 @@ imagoImage = (function() {
         return $scope.imageStyle = {};
       },
       link: function(scope, element, attrs) {
-        var calcMediaSize, calcSize, createServingUrl, key, opts, render, self, source, value;
+        var calcMediaSize, calcSize, createServingUrl, key, opts, render, self, setImageStyle, source, value;
         self = {
           visible: false
         };
@@ -313,10 +313,7 @@ imagoImage = (function() {
             img = angular.element('<img>');
             img.on('load', (function(_this) {
               return function(e) {
-                scope.imageStyle.backgroundImage = "url(" + servingUrl + ")";
-                scope.imageStyle.backgroundSize = calcMediaSize();
-                scope.imageStyle.backgroundPosition = opts.align;
-                scope.imageStyle.display = 'inline-block';
+                scope.imageStyle = setImageStyle(servingUrl);
                 scope.status = 'loaded';
                 return scope.$apply();
               };
@@ -348,6 +345,29 @@ imagoImage = (function() {
             }
           };
         })(this);
+        setImageStyle = function(servingUrl) {
+          var height, styles, width, wrapperRatio;
+          width = element[0].clientWidth || opts.width;
+          height = element[0].clientHeight || opts.height;
+          if (!(width && height)) {
+            return;
+          }
+          wrapperRatio = width / height;
+          styles = {
+            backgroundImage: "url(" + servingUrl + ")",
+            backgroundSize: calcMediaSize(),
+            backgroundPosition: opts.align,
+            display: 'inline-block'
+          };
+          if (opts.assetRatio > wrapperRatio) {
+            styles.width = "" + width + "px";
+            styles.height = "" + (parseInt(width / opts.assetRatio)) + "px";
+          } else {
+            styles.width = "" + (parseInt(height * opts.assetRatio)) + "px";
+            styles.height = "" + height + "px";
+          }
+          return styles;
+        };
         scope.onResize = (function(_this) {
           return function() {
             return scope.imageStyle['background-size'] = calcMediaSize();

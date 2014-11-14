@@ -173,11 +173,8 @@ class imagoImage extends Directive
           else
             img = angular.element('<img>')
             img.on 'load', (e) =>
-              scope.imageStyle.backgroundImage     = "url(#{servingUrl})"
-              scope.imageStyle.backgroundSize      = calcMediaSize()
-              scope.imageStyle.backgroundPosition  = opts.align
-              scope.imageStyle.display             = 'inline-block'
-              scope.status                         = 'loaded'
+              scope.imageStyle = setImageStyle(servingUrl)
+              scope.status     = 'loaded'
               scope.$apply()
             # console.log 'scope.imageStyle', scope.imageStyle
 
@@ -199,6 +196,28 @@ class imagoImage extends Directive
           else
             # $log.log 'opts.sizemode fit', opts.assetRatio, wrapperRatio
             if opts.assetRatio > wrapperRatio then "100% auto" else "auto 100%"
+
+        setImageStyle = (servingUrl) ->
+          width  = element[0].clientWidth  or opts.width
+          height = element[0].clientHeight or opts.height
+
+          return unless width and height
+          wrapperRatio = width / height
+
+          styles =
+            backgroundImage:    "url(#{servingUrl})"
+            backgroundSize:     calcMediaSize()
+            backgroundPosition: opts.align
+            display:            'inline-block'
+
+          if opts.assetRatio > wrapperRatio
+            styles.width  = "#{width}px"
+            styles.height = "#{parseInt(width / opts.assetRatio)}px"
+          else
+            styles.width  = "#{parseInt(height * opts.assetRatio)}px"
+            styles.height = "#{height}px"
+
+          styles
 
         scope.onResize = () =>
           # console.log 'onResize func', scope.calcMediaSize()
