@@ -70,13 +70,13 @@ class imagoImage extends Directive
           # use pvrovided dimentions.
           if angular.isNumber(opts.width) and angular.isNumber(opts.height)
             # $log.log 'fixed size', opts.width, opts.height
-            width  = parseInt(opts.width)
-            height = parseInt(opts.height)
+            width  = opts.width
+            height = opts.height
 
           #
           # # fit width
           else if opts.height is 'auto' and angular.isNumber(opts.width)
-            height =  parseInt opts.width / opts.assetRatio
+            height =  opts.width / opts.assetRatio
             width  =  opts.width
             # $log.log 'fit width', opts.width, opts.height
           #
@@ -103,11 +103,11 @@ class imagoImage extends Directive
 
           if opts.width is 'auto' and opts.height is 'auto'
             scope.elementStyle =
-              height: parseInt(height) + 'px'
+              height: Math.round(height) + 'px'
           else if opts.width is 'auto' or opts.height is 'auto'
             scope.elementStyle =
-              width: parseInt(width) + 'px'
-              height: parseInt(height) + 'px'
+              width: Math.round(width) + 'px'
+              height: Math.round(height) + 'px'
 
           createServingUrl(width, height)
 
@@ -212,9 +212,9 @@ class imagoImage extends Directive
 
           if opts.assetRatio > wrapperRatio
             styles.width  = "#{width}px"
-            styles.height = "#{parseInt(width / opts.assetRatio)}px"
+            styles.height = "#{Math.round(width / opts.assetRatio)}px"
           else
-            styles.width  = "#{parseInt(height * opts.assetRatio)}px"
+            styles.width  = "#{Math.round(height * opts.assetRatio)}px"
             styles.height = "#{height}px"
 
           styles

@@ -235,10 +235,10 @@ imagoImage = (function() {
           }
           scope.status = 'preloading';
           if (angular.isNumber(opts.width) && angular.isNumber(opts.height)) {
-            width = parseInt(opts.width);
-            height = parseInt(opts.height);
+            width = opts.width;
+            height = opts.height;
           } else if (opts.height === 'auto' && angular.isNumber(opts.width)) {
-            height = parseInt(opts.width / opts.assetRatio);
+            height = opts.width / opts.assetRatio;
             width = opts.width;
           } else if (opts.width === 'auto' && angular.isNumber(opts.height)) {
             height = opts.height;
@@ -252,12 +252,12 @@ imagoImage = (function() {
           }
           if (opts.width === 'auto' && opts.height === 'auto') {
             scope.elementStyle = {
-              height: parseInt(height) + 'px'
+              height: Math.round(height) + 'px'
             };
           } else if (opts.width === 'auto' || opts.height === 'auto') {
             scope.elementStyle = {
-              width: parseInt(width) + 'px',
-              height: parseInt(height) + 'px'
+              width: Math.round(width) + 'px',
+              height: Math.round(height) + 'px'
             };
           }
           return createServingUrl(width, height);
@@ -361,9 +361,9 @@ imagoImage = (function() {
           };
           if (opts.assetRatio > wrapperRatio) {
             styles.width = "" + width + "px";
-            styles.height = "" + (parseInt(width / opts.assetRatio)) + "px";
+            styles.height = "" + (Math.round(width / opts.assetRatio)) + "px";
           } else {
-            styles.width = "" + (parseInt(height * opts.assetRatio)) + "px";
+            styles.width = "" + (Math.round(height * opts.assetRatio)) + "px";
             styles.height = "" + height + "px";
           }
           return styles;
