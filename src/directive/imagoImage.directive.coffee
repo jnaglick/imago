@@ -70,13 +70,13 @@ class imagoImage extends Directive
           # use pvrovided dimentions.
           if angular.isNumber(opts.width) and angular.isNumber(opts.height)
             # $log.log 'fixed size', opts.width, opts.height
-            width  = opts.width
-            height = opts.height
+            width  = parseInt(opts.width)
+            height = parseInt(opts.height)
 
           #
           # # fit width
           else if opts.height is 'auto' and angular.isNumber(opts.width)
-            height =  opts.width / opts.assetRatio
+            height =  parseInt opts.width / opts.assetRatio
             width  =  opts.width
             # $log.log 'fit width', opts.width, opts.height
           #
@@ -108,6 +108,8 @@ class imagoImage extends Directive
             scope.elementStyle =
               width: Math.round(width) + 'px'
               height: Math.round(height) + 'px'
+
+          scope.align = opts.align
 
           createServingUrl(width, height)
 

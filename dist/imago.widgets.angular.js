@@ -235,10 +235,10 @@ imagoImage = (function() {
           }
           scope.status = 'preloading';
           if (angular.isNumber(opts.width) && angular.isNumber(opts.height)) {
-            width = opts.width;
-            height = opts.height;
+            width = parseInt(opts.width);
+            height = parseInt(opts.height);
           } else if (opts.height === 'auto' && angular.isNumber(opts.width)) {
-            height = opts.width / opts.assetRatio;
+            height = parseInt(opts.width / opts.assetRatio);
             width = opts.width;
           } else if (opts.width === 'auto' && angular.isNumber(opts.height)) {
             height = opts.height;
@@ -260,6 +260,7 @@ imagoImage = (function() {
               height: Math.round(height) + 'px'
             };
           }
+          scope.align = opts.align;
           return createServingUrl(width, height);
         };
         createServingUrl = function(width, height) {
