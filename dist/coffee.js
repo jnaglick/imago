@@ -2247,6 +2247,14 @@ imagoWorker = (function() {
 
 angular.module('imago.widgets.angular').service('imagoWorker', ['$q', imagoWorker]);
 
+var lodash;
+
+lodash = angular.module('lodash', []);
+
+lodash.factory('_', function() {
+  return window._();
+});
+
 var Meta;
 
 Meta = (function() {
@@ -2303,11 +2311,3 @@ Time = (function() {
 })();
 
 angular.module('imago.widgets.angular').filter('time', [Time]);
-
-var lodash;
-
-lodash = angular.module('lodash', []);
-
-lodash.factory('_', function() {
-  return window._();
-});

@@ -1,7 +1,7 @@
 .imagoslider(
     ng-class="[conf.animation, action]"
-    ng-swipe-left="goPrev()"
-    ng-swipe-right="goNext()"
+    ng-swipe-left="goNext($event)"
+    ng-swipe-right="goPrev($event)"
     )
   .prev(ng-show="conf.enablearrows"
         ng-click="goPrev($event)"
