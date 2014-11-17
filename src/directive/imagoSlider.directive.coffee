@@ -65,6 +65,10 @@ class imagoSlider extends Directive
                   scope.goNext()
                 )
 
-        $rootScope.$on "#{scope.conf.namespace}:change", (event, index) ->
+
+        watcher = $rootScope.$on "#{scope.conf.namespace}:change", (event, index) ->
           scope.setCurrent(index)
+
+        scope.$on '$destroy', ->
+          watcher()
   }

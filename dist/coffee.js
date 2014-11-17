@@ -409,6 +409,7 @@ imagoSlider = (function() {
         };
       },
       link: function(scope, element, attrs, ctrl, transclude) {
+        var watcher;
         transclude(scope, function(clone, scope) {
           return element.append(clone);
         });
@@ -465,8 +466,11 @@ imagoSlider = (function() {
             }
           });
         }
-        return $rootScope.$on("" + scope.conf.namespace + ":change", function(event, index) {
+        watcher = $rootScope.$on("" + scope.conf.namespace + ":change", function(event, index) {
           return scope.setCurrent(index);
+        });
+        return scope.$on('$destroy', function() {
+          return watcher();
         });
       }
     };
