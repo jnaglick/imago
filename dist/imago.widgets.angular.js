@@ -190,9 +190,8 @@ imagoImage = (function() {
         for (key in attrs) {
           value = attrs[key];
           if (value === 'true' || value === 'false') {
-            value = JSON.parse(value);
-          }
-          if (key === 'width' || key === 'height') {
+            opts[key] = JSON.parse(value);
+          } else if (key === 'width' || key === 'height') {
             opts[key] = value === 'auto' ? value : parseInt(value);
           } else {
             opts[key] = value;
