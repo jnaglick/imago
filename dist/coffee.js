@@ -489,22 +489,23 @@ imagoVideo = (function() {
       replace: true,
       scope: true,
       templateUrl: '/imagoWidgets/imagoVideo.html',
-      controllerAs: 'video',
       controller: function($scope, $element, $attrs, $transclude) {
-        $scope.player = $element.find('video')[0];
+        this.player = $element.find('video')[0];
         $scope.loading = true;
-        return angular.element($scope.player).bind('ended', (function(_this) {
+        angular.element(this.player).bind('ended', (function(_this) {
           return function(e) {
-            $scope.player.currentTime = 0;
+            _this.player.currentTime = 0;
             return $scope.isPlaying = false;
           };
         })(this));
+        return this;
       },
-      link: function(scope, element, attrs) {
-        var compileData, defaults, detectCodec, render, resize, self, videoOpts, visiblePromise;
-        self = {};
-        videoOpts = {};
-        defaults = {
+      link: function(scope, element, attrs, ctrl) {
+        var detectCodec, key, loadFormats, opts, preload, render, self, setPlayerAttrs, styleVideo, styleWrapper, value;
+        self = {
+          visible: false
+        };
+        opts = {
           autobuffer: null,
           autoplay: false,
           controls: true,
@@ -517,188 +518,201 @@ imagoVideo = (function() {
           height: '',
           hires: true
         };
-        angular.forEach(defaults, (function(_this) {
-          return function(value, key) {
-            return videoOpts[key] = value;
-          };
-        })(this));
-        angular.forEach(attrs, (function(_this) {
-          return function(value, key) {
-            if (value === 'true' || value === 'false') {
-              value = JSON.parse(value);
-            }
-            return videoOpts[key] = value;
-          };
-        })(this));
-        if (videoOpts.lazy) {
-          visiblePromise = (function(_this) {
-            return function() {
-              var deffered;
-              deffered = $q.defer();
-              self.visibleFunc = scope.$watch(attrs['visible'], function(value) {
-                if (!value) {
-                  return;
-                }
-                return deffered.resolve(value);
-              });
-              return deffered.promise;
-            };
-          })(this)();
+        for (key in attrs) {
+          value = attrs[key];
+          if (value === 'true' || value === 'false') {
+            opts[key] = JSON.parse(value);
+          } else if (key === 'width' || key === 'height') {
+            opts[key] = value === 'auto' ? value : parseInt(value);
+          } else {
+            opts[key] = value;
+          }
         }
-        compileData = function(data) {
-          var r, resolution, _ref;
-          self.source = data;
-          if (!self.source.fields.crop) {
-            if ((_ref = scope.confSlider) != null ? _ref.align : void 0) {
-              videoOpts.align = scope.confSlider.align;
-            }
-          } else {
-            videoOpts.align = self.source.fields.crop.value;
-          }
-          if (angular.isString(data.resolution)) {
-            r = data.resolution.split('x');
-            resolution = {
-              width: r[0],
-              height: r[1]
-            };
-            videoOpts.assetRatio = r[0] / r[1];
-          }
-          scope.loading = false;
-          if (videoOpts.lazy) {
-            return visiblePromise.then((function(_this) {
-              return function(value) {
-                self.visibleFunc();
-                return render(self.source);
-              };
-            })(this));
-          } else {
-            return render(self.source);
-          }
-        };
-        self.watch = scope.$watch(attrs['source'], (function(_this) {
+        self.watch = scope.$watch(attrs['imagoVideo'], (function(_this) {
           return function(data) {
+            var _ref;
             if (!data) {
               return;
             }
             if (!attrs['watch']) {
               self.watch();
             }
-            return compileData(data);
-          };
-        })(this));
-        render = (function(_this) {
-          return function(data) {
-            var codec, dpr, format, height, i, serving_url, width, _i, _len, _ref;
-            if (!scope.wrapperStyle) {
-              scope.wrapperStyle = {};
-            }
-            scope.controls = videoOpts.controls;
-            if (videoOpts.width && videoOpts.height) {
-              width = parseInt(videoOpts.width);
-              height = parseInt(videoOpts.height);
-            } else {
-              width = element[0].clientWidth;
-              height = element[0].clientHeight;
-            }
-            dpr = _this.hires ? Math.ceil(window.devicePixelRatio) || 1 : 1;
-            serving_url = data.serving_url;
-            serving_url += "=s" + (Math.ceil(Math.min(Math.max(width, height) * dpr)) || 1600);
-            scope.wrapperStyle = {
-              size: videoOpts.size,
-              sizemode: videoOpts.sizemode,
-              backgroundPosition: videoOpts.align,
-              backgroundImage: "url(" + serving_url + ")",
-              backgroundRepeat: "no-repeat"
-            };
-            if (videoOpts.autoplay === true) {
-              scope.player.setAttribute("autoplay", true);
-            }
-            scope.player.setAttribute("preload", videoOpts.preload);
-            scope.player.setAttribute("x-webkit-airplay", "allow");
-            scope.player.setAttribute("webkitAllowFullscreen", true);
-            scope.videoFormats = [];
-            codec = detectCodec();
-            data.fields.formats.sort(function(a, b) {
-              return b.height - a.height;
-            });
-            _ref = data.fields.formats;
-            for (i = _i = 0, _len = _ref.length; _i < _len; i = ++_i) {
-              format = _ref[i];
-              if (codec !== format.codec) {
-                continue;
-              }
-              scope.videoFormats.push({
-                "src": "//api.2.imagoapp.com/api/play_redirect?uuid=" + data.uuid + "&codec=" + format.codec + "&quality=hd&max_size=" + format.size,
-                "size": format.size,
-                "codec": format.codec,
-                "type": "video/" + codec
-              });
-            }
-            return resize();
-          };
-        })(this);
-        resize = (function(_this) {
-          return function() {
-            var height, videoStyle, width, wrapperRatio;
-            if (!videoOpts) {
+            self.source = data;
+            if (!((_ref = self.source) != null ? _ref.serving_url : void 0)) {
+              element.remove();
               return;
             }
-            videoStyle = {};
+            if (self.source.fields.hasOwnProperty('crop') && !attrs['align']) {
+              opts.align = self.source.fields.crop.value;
+            }
+            if (self.source.fields.hasOwnProperty('sizemode') && !attrs['sizemode']) {
+              opts.sizemode = self.source.fields.sizemode.value;
+            }
+            return preload(self.source);
+          };
+        })(this));
+        preload = function(data) {
+          var dpr, height, r, resolution, serving_url, width;
+          if (angular.isString(data.resolution)) {
+            r = data.resolution.split('x');
+            resolution = {
+              width: r[0],
+              height: r[1]
+            };
+            opts.assetRatio = r[0] / r[1];
+          }
+          scope.controls = opts.controls;
+          if (opts.width && opts.height) {
+            width = opts.width;
+            height = opts.height;
+          } else {
             width = element[0].clientWidth;
             height = element[0].clientHeight;
+          }
+          dpr = opts.hires ? Math.ceil(window.devicePixelRatio) || 1 : 1;
+          serving_url = "" + data.serving_url + "=s" + (Math.ceil(Math.min(Math.max(width, height) * dpr)) || 1600);
+          setPlayerAttrs();
+          return render(width, height, serving_url);
+        };
+        setPlayerAttrs = function() {
+          if (opts.autoplay === true) {
+            ctrl.player.setAttribute("autoplay", true);
+          }
+          ctrl.player.setAttribute("preload", opts.preload);
+          ctrl.player.setAttribute("x-webkit-airplay", "allow");
+          return ctrl.player.setAttribute("webkitAllowFullscreen", true);
+        };
+        render = (function(_this) {
+          return function(width, height, servingUrl) {
+            var img;
+            if (opts.lazy && !self.visible) {
+              return self.visibleFunc = scope.$watch(attrs['visible'], function(value) {
+                if (!value) {
+                  return;
+                }
+                self.visible = true;
+                self.visibleFunc();
+                return render(width, height, servingUrl);
+              });
+            } else {
+              img = angular.element('<img>');
+              img.on('load', function(e) {
+                scope.wrapperStyle = styleWrapper(width, height, servingUrl);
+                scope.videoStyle = styleVideo(width, height);
+                scope.videoFormats = loadFormats(self.source);
+                scope.loading = false;
+                return scope.$apply();
+              });
+              return img[0].src = servingUrl;
+            }
+          };
+        })(this);
+        styleWrapper = function(width, height, servingUrl) {
+          var style, wrapperRatio;
+          if (!(width && height && servingUrl)) {
+            return;
+          }
+          style = {
+            size: opts.size,
+            sizemode: opts.sizemode,
+            backgroundPosition: opts.align,
+            backgroundImage: "url(" + servingUrl + ")",
+            backgroundRepeat: "no-repeat"
+          };
+          wrapperRatio = width / height;
+          if (opts.sizemode === 'crop') {
+            if (opts.assetRatio < wrapperRatio) {
+              style.backgroundSize = '100% auto';
+            } else {
+              style.backgroundSize = 'auto 100%';
+            }
+          } else {
+            if (opts.assetRatio < wrapperRatio) {
+              style.width = "" + (Math.round(height * opts.assetRatio)) + "px";
+              style.height = "" + height + "px";
+              style.backgroundSize = 'auto 100%';
+            } else {
+              style.width = "" + width + "px";
+              style.height = "" + (Math.round(width / opts.assetRatio)) + "px";
+              style.backgroundSize = '100% auto';
+            }
+          }
+          return style;
+        };
+        styleVideo = (function(_this) {
+          return function(width, height) {
+            var style, wrapperRatio;
+            if (!(width && height)) {
+              return;
+            }
+            style = {};
             wrapperRatio = width / height;
             if (imagoUtils.isiOS()) {
-              videoStyle.width = '100%';
-              videoStyle.height = '100%';
-              if (videoOpts.align === 'center center' && videoOpts.sizemode === 'crop') {
-                videoStyle.top = '0';
-                videoStyle.left = '0';
+              style.width = '100%';
+              style.height = '100%';
+              if (opts.align === 'center center' && opts.sizemode === 'crop') {
+                style.top = '0';
+                style.left = '0';
               }
             } else {
-              if (videoOpts.sizemode === 'crop') {
-                if (videoOpts.assetRatio < wrapperRatio) {
-                  videoStyle.width = '100%';
-                  videoStyle.height = 'auto';
-                  if (videoOpts.align === 'center center') {
-                    videoStyle.top = '50%';
-                    videoStyle.left = 'auto';
-                    videoStyle.marginTop = "-" + (parseInt(height / 2)) + "px";
-                    videoStyle.marginLeft = '0px';
+              if (opts.sizemode === 'crop') {
+                if (opts.assetRatio < wrapperRatio) {
+                  style.width = '100%';
+                  style.height = 'auto';
+                  if (opts.align === 'center center') {
+                    style.top = '50%';
+                    style.left = 'auto';
+                    style.marginTop = "-" + (Math.round(height / 2)) + "px";
+                    style.marginLeft = '0px';
                   }
-                  scope.wrapperStyle.backgroundSize = '100% auto';
                 } else {
-                  videoStyle.width = 'auto';
-                  videoStyle.height = '100%';
-                  if (videoOpts.align === 'center center') {
-                    videoStyle.top = 'auto';
-                    videoStyle.left = '50%';
-                    videoStyle.marginTop = '0px';
-                    videoStyle.marginLeft = "-" + (parseInt(width / 2)) + "px";
+                  style.width = 'auto';
+                  style.height = '100%';
+                  if (opts.align === 'center center') {
+                    style.top = 'auto';
+                    style.left = '50%';
+                    style.marginTop = '0px';
+                    style.marginLeft = "-" + (Math.round(width / 2)) + "px";
                   }
-                  scope.wrapperStyle.backgroundSize = 'auto 100%';
                 }
               } else {
-                if (videoOpts.assetRatio < wrapperRatio) {
-                  videoStyle.width = 'auto';
-                  videoStyle.height = '100%';
-                  scope.wrapperStyle.width = "" + (parseInt(height * videoOpts.assetRatio)) + "px";
-                  scope.wrapperStyle.height = "" + height + "px";
-                  scope.wrapperStyle.backgroundSize = 'auto 100%';
+                if (opts.assetRatio < wrapperRatio) {
+                  style.width = 'auto';
+                  style.height = '100%';
                 } else {
-                  videoStyle.width = '100%';
-                  videoStyle.height = 'auto';
-                  scope.wrapperStyle.width = "" + width + "px";
-                  scope.wrapperStyle.height = "" + (parseInt(width / videoOpts.assetRatio)) + "px";
-                  scope.wrapperStyle.backgroundSize = '100% auto';
+                  style.width = '100%';
+                  style.height = 'auto';
                 }
               }
             }
-            return scope.videoStyle = videoStyle;
+            return style;
           };
         })(this);
+        loadFormats = function(data) {
+          var codec, format, formats, i, _i, _len, _ref;
+          formats = [];
+          codec = detectCodec();
+          data.fields.formats.sort(function(a, b) {
+            return b.height - a.height;
+          });
+          _ref = data.fields.formats;
+          for (i = _i = 0, _len = _ref.length; _i < _len; i = ++_i) {
+            format = _ref[i];
+            if (codec !== format.codec) {
+              continue;
+            }
+            formats.push({
+              "src": "//api.2.imagoapp.com/api/play_redirect?uuid=" + data.uuid + "&codec=" + format.codec + "&quality=hd&max_size=" + format.size,
+              "size": format.size,
+              "codec": format.codec,
+              "type": "video/" + codec
+            });
+          }
+          return formats;
+        };
         detectCodec = function() {
-          var codecs, key, value;
-          if (!scope.player.canPlayType) {
+          var codecs;
+          if (!ctrl.player.canPlayType) {
             return;
           }
           codecs = {
@@ -710,46 +724,39 @@ imagoVideo = (function() {
           };
           for (key in codecs) {
             value = codecs[key];
-            if (scope.player.canPlayType(value)) {
+            if (ctrl.player.canPlayType(value)) {
               return key;
             }
           }
         };
         scope.togglePlay = (function(_this) {
           return function() {
-            if (scope.player.paused) {
+            if (ctrl.player.paused) {
               scope.isPlaying = true;
               scope.hasPlayed = true;
-              return scope.player.play();
+              return ctrl.player.play();
             } else {
               scope.isPlaying = false;
-              return scope.player.pause();
+              return ctrl.player.pause();
             }
           };
         })(this);
         scope.toggleSize = function() {
-          if (videoOpts.size === 'hd') {
-            videoOpts.size = 'sd';
+          if (opts.size === 'hd') {
+            opts.size = 'sd';
             scope.wrapperStyle.size = 'sd';
           } else {
-            videoOpts.size = 'hd';
+            opts.size = 'hd';
             scope.wrapperStyle.size = 'hd';
           }
           scope.videoFormats.reverse();
           return $timeout(function() {
-            scope.player.load();
-            return scope.player.play();
+            ctrl.player.load();
+            return ctrl.player.play();
           });
         };
-        scope.$on('resizelimit', function() {
-          return scope.$apply(resize);
-        });
-        return scope.$on('slide', function() {
-          if (!scope.isPlaying) {
-            return;
-          }
-          scope.isPlaying = false;
-          return scope.player.pause();
+        return scope.$on('resizestop', function() {
+          return preload(self.source);
         });
       }
     };
@@ -2247,14 +2254,6 @@ imagoWorker = (function() {
 
 angular.module('imago.widgets.angular').service('imagoWorker', ['$q', imagoWorker]);
 
-var lodash;
-
-lodash = angular.module('lodash', []);
-
-lodash.factory('_', function() {
-  return window._();
-});
-
 var Meta;
 
 Meta = (function() {
@@ -2311,3 +2310,11 @@ Time = (function() {
 })();
 
 angular.module('imago.widgets.angular').filter('time', [Time]);
+
+var lodash;
+
+lodash = angular.module('lodash', []);
+
+lodash.factory('_', function() {
+  return window._();
+});

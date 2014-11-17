@@ -1,4 +1,4 @@
-div(class="imagovideo {{wrapperStyle.backgroundPosition}} {{wrapperStyle.size}} {{wrapperStyle.sizemode}}" ng-class="{loading: loading}" in-view="visible = $inview"
+.imagovideo(class="{{wrapperStyle.backgroundPosition}} {{wrapperStyle.size}} {{wrapperStyle.sizemode}}" ng-class="{loading: loading}" in-view="visible = $inview"
 visible="visible" responsive-events)
   .imagowrapper(ng-style="wrapperStyle" ng-class="{playing: isPlaying}")
     a.playbig.fa.fa-play(ng-hide="loading" ng-click="togglePlay()" ng-class="{playing: isPlaying}" stop-propagation)

@@ -5,21 +5,21 @@ class imagoVideo extends Directive
       replace: true
       scope: true
       templateUrl: '/imagoWidgets/imagoVideo.html'
-      controllerAs: 'video'
       controller: ($scope, $element, $attrs, $transclude) ->
 
-        $scope.player  = $element.find('video')[0]
+        @player  = $element.find('video')[0]
         $scope.loading = true
 
-        angular.element($scope.player).bind 'ended', (e) =>
-          $scope.player.currentTime = 0
+        angular.element(@player).bind 'ended', (e) =>
+          @player.currentTime = 0
           $scope.isPlaying = false
 
-      link: (scope, element, attrs) ->
-        self = {}
-        videoOpts = {}
+        @
 
-        defaults =
+      link: (scope, element, attrs, ctrl) ->
+        self = {visible: false}
+
+        opts =
           autobuffer  : null
           autoplay    : false
           controls    : true
@@ -32,153 +32,168 @@ class imagoVideo extends Directive
           height      : ''
           hires       : true
 
-        angular.forEach defaults, (value, key) =>
-          videoOpts[key] = value
-
-        angular.forEach attrs, (value, key) =>
+        for key, value of attrs
           if value is 'true' or value is 'false'
-            value = JSON.parse value
-          videoOpts[key] = value
+            opts[key] = JSON.parse value
+          else if key is 'width' or key is 'height'
+            opts[key] = if value is 'auto' then value else parseInt value
+          else
+            opts[key] = value
 
-
-        if videoOpts.lazy
-          visiblePromise = do () =>
-            deffered = $q.defer()
-            self.visibleFunc = scope.$watch attrs['visible'], (value) =>
-              return unless value
-              deffered.resolve(value)
-
-            return deffered.promise
-
-        compileData = (data) ->
-
+        self.watch = scope.$watch attrs['imagoVideo'], (data) =>
+          return unless data
+          self.watch() unless attrs['watch']
           self.source = data
 
-          unless !!self.source.fields.crop
-            if scope.confSlider?.align
-              videoOpts.align = scope.confSlider.align
-          else
-            videoOpts.align = self.source.fields.crop.value
+          unless self.source?.serving_url
+            element.remove()
+            return
 
+          if self.source.fields.hasOwnProperty('crop') and not attrs['align']
+            opts.align = self.source.fields.crop.value
+
+          if self.source.fields.hasOwnProperty('sizemode') and not attrs['sizemode']
+            opts.sizemode = self.source.fields.sizemode.value
+
+          preload self.source
+
+        preload = (data) ->
 
           if angular.isString(data.resolution)
             r = data.resolution.split('x')
             resolution =
               width:  r[0]
               height: r[1]
-            videoOpts.assetRatio = r[0]/r[1]
+            opts.assetRatio = r[0]/r[1]
 
-          scope.loading = false
-          if videoOpts.lazy
-            visiblePromise.then (value) =>
-              self.visibleFunc()
-              render self.source
-          else
-            render self.source
+          scope.controls = opts.controls
 
-        self.watch = scope.$watch attrs['source'], (data) =>
-          return unless data
-
-          self.watch() unless attrs['watch']
-          compileData data
-
-        render = (data) =>
-          scope.wrapperStyle = {} unless scope.wrapperStyle
-          scope.controls = videoOpts.controls
-
-          if videoOpts.width and videoOpts.height
-            width = parseInt videoOpts.width
-            height = parseInt videoOpts.height
+          if opts.width and opts.height
+            width  = opts.width
+            height = opts.height
           else
             width = element[0].clientWidth
             height = element[0].clientHeight
             # console.log 'height' ,@height, 'width ' ,@width
 
-          dpr = if @hires then Math.ceil(window.devicePixelRatio) or 1 else 1
+          dpr = if opts.hires then Math.ceil(window.devicePixelRatio) or 1 else 1
 
-          serving_url = data.serving_url
-          serving_url += "=s#{ Math.ceil(Math.min(Math.max(width, height) * dpr)) or 1600 }"
+          serving_url = "#{data.serving_url}=s#{ Math.ceil(Math.min(Math.max(width, height) * dpr)) or 1600 }"
 
-          scope.wrapperStyle =
-            size:                 videoOpts.size
-            sizemode:             videoOpts.sizemode
-            backgroundPosition:   videoOpts.align
-            backgroundImage:      "url(#{serving_url})"
+          setPlayerAttrs()
+          render(width, height, serving_url)
+
+        setPlayerAttrs = ->
+          ctrl.player.setAttribute("autoplay", true) if opts.autoplay is true
+          ctrl.player.setAttribute("preload", opts.preload)
+          ctrl.player.setAttribute("x-webkit-airplay", "allow")
+          ctrl.player.setAttribute("webkitAllowFullscreen", true)
+
+        render = (width, height, servingUrl) =>
+          if  opts.lazy and not self.visible
+            self.visibleFunc = scope.$watch attrs['visible'], (value) =>
+              return unless value
+              self.visible = true
+              self.visibleFunc()
+              render(width, height, servingUrl)
+          else
+            img = angular.element('<img>')
+            img.on 'load', (e) =>
+              scope.wrapperStyle = styleWrapper(width, height, servingUrl)
+              scope.videoStyle   = styleVideo(width, height)
+              scope.videoFormats = loadFormats(self.source)
+              scope.loading = false
+              scope.$apply()
+
+            img[0].src = servingUrl
+
+        styleWrapper = (width, height, servingUrl) ->
+          return unless width and height and servingUrl
+
+          style =
+            size:                 opts.size
+            sizemode:             opts.sizemode
+            backgroundPosition:   opts.align
+            backgroundImage:      "url(#{servingUrl})"
             backgroundRepeat:     "no-repeat"
 
-          scope.player.setAttribute("autoplay", true) if videoOpts.autoplay is true
-          scope.player.setAttribute("preload", videoOpts.preload)
-          scope.player.setAttribute("x-webkit-airplay", "allow")
-          scope.player.setAttribute("webkitAllowFullscreen", true)
+          wrapperRatio = width / height
 
-          scope.videoFormats = []
+          if opts.sizemode is 'crop'
+            if opts.assetRatio < wrapperRatio
+              style.backgroundSize = '100% auto'
+            else
+              style.backgroundSize = 'auto 100%'
+          else
+            if opts.assetRatio < wrapperRatio
+              style.width  = "#{ Math.round(height * opts.assetRatio) }px"
+              style.height = "#{ height }px"
+              style.backgroundSize = 'auto 100%'
+            else
+              style.width  = "#{ width }px"
+              style.height = "#{ Math.round(width / opts.assetRatio) }px"
+              style.backgroundSize = '100% auto'
+
+          style
+
+        styleVideo = (width, height)=>
+          return unless width and height
+
+          style = {}
+
+          wrapperRatio = width / height
+
+          if imagoUtils.isiOS()
+            style.width  = '100%'
+            style.height = '100%'
+            if opts.align is 'center center' and opts.sizemode is 'crop'
+              style.top  = '0'
+              style.left = '0'
+          else # Not iOS
+            if opts.sizemode is 'crop'
+              if opts.assetRatio < wrapperRatio
+                style.width  = '100%'
+                style.height = 'auto'
+                if opts.align is 'center center'
+                  style.top  = '50%'
+                  style.left = 'auto'
+                  style.marginTop  = "-#{ Math.round(height / 2) }px"
+                  style.marginLeft = '0px'
+              else #assetRatio > wrapperRatio
+                style.width  = 'auto'
+                style.height = '100%'
+                if opts.align is 'center center'
+                  style.top  = 'auto'
+                  style.left = '50%'
+                  style.marginTop  = '0px'
+                  style.marginLeft = "-#{ Math.round(width / 2) }px"
+            else #sizemode Fit
+              if opts.assetRatio < wrapperRatio
+                style.width  = 'auto'
+                style.height = '100%'
+              else #assetRatio > wrapperRatio
+                style.width  = '100%'
+                style.height = 'auto'
+
+          style
+
+        loadFormats = (data) ->
+          formats = []
           codec = detectCodec()
           data.fields.formats.sort( (a, b) -> return b.height - a.height )
           for format, i in data.fields.formats
             continue unless codec is format.codec
-            scope.videoFormats.push(
+            formats.push(
                 "src" : """//api.2.imagoapp.com/api/play_redirect?uuid=#{data.uuid}&codec=#{format.codec}&quality=hd&max_size=#{format.size}"""
                 "size": format.size
                 "codec": format.codec
                 "type": "video/#{codec}"
             )
 
-          resize()
-
-        resize = =>
-          return unless videoOpts
-
-          videoStyle = {}
-
-          width  = element[0].clientWidth
-          height = element[0].clientHeight
-          wrapperRatio = width / height
-
-          if imagoUtils.isiOS()
-            videoStyle.width  = '100%'
-            videoStyle.height = '100%'
-            if videoOpts.align is 'center center' and videoOpts.sizemode is 'crop'
-              videoStyle.top  = '0'
-              videoStyle.left = '0'
-          else # Not iOS
-            if videoOpts.sizemode is 'crop'
-              if videoOpts.assetRatio < wrapperRatio
-                videoStyle.width  = '100%'
-                videoStyle.height = 'auto'
-                if videoOpts.align is 'center center'
-                  videoStyle.top  = '50%'
-                  videoStyle.left = 'auto'
-                  videoStyle.marginTop  = "-#{ parseInt(height / 2) }px"
-                  videoStyle.marginLeft = '0px'
-                scope.wrapperStyle.backgroundSize = '100% auto'
-              else #assetRatio > wrapperRatio
-                videoStyle.width  = 'auto'
-                videoStyle.height = '100%'
-                if videoOpts.align is 'center center'
-                  videoStyle.top  = 'auto'
-                  videoStyle.left = '50%'
-                  videoStyle.marginTop  = '0px'
-                  videoStyle.marginLeft = "-#{ parseInt(width / 2) }px"
-                scope.wrapperStyle.backgroundSize = 'auto 100%'
-            else #sizemode Fit
-              if videoOpts.assetRatio < wrapperRatio
-                videoStyle.width  = 'auto'
-                videoStyle.height = '100%'
-                scope.wrapperStyle.width  = "#{ parseInt(height * videoOpts.assetRatio) }px"
-                scope.wrapperStyle.height = "#{ height }px"
-                scope.wrapperStyle.backgroundSize = 'auto 100%'
-              else #assetRatio > wrapperRatio
-                videoStyle.width  = '100%'
-                videoStyle.height = 'auto'
-                scope.wrapperStyle.width  = "#{ width }px"
-                scope.wrapperStyle.height = "#{ parseInt(width / videoOpts.assetRatio) }px"
-                scope.wrapperStyle.backgroundSize = '100% auto'
-
-          scope.videoStyle = videoStyle
-
+          formats
 
         detectCodec = ->
-          return unless scope.player.canPlayType
+          return unless ctrl.player.canPlayType
           codecs =
             mp4:  'video/mp4; codecs="mp4v.20.8"'
             mp4:  'video/mp4; codecs="avc1.42E01E"'
@@ -187,40 +202,40 @@ class imagoVideo extends Directive
             ogg:  'video/ogg; codecs="theora"'
 
           for key, value of codecs
-            if scope.player.canPlayType value
+            if ctrl.player.canPlayType value
               return key
 
         scope.togglePlay = =>
-          if scope.player.paused
+          if ctrl.player.paused
             scope.isPlaying = true
             scope.hasPlayed = true
-            scope.player.play()
+            ctrl.player.play()
           else
             scope.isPlaying = false
-            scope.player.pause()
+            ctrl.player.pause()
 
         scope.toggleSize = ->
 
-          if videoOpts.size is 'hd'
-            videoOpts.size = 'sd'
+          if opts.size is 'hd'
+            opts.size = 'sd'
             scope.wrapperStyle.size = 'sd'
 
           else
-            videoOpts.size = 'hd'
+            opts.size = 'hd'
             scope.wrapperStyle.size = 'hd'
 
           scope.videoFormats.reverse()
 
           $timeout ->
-            scope.player.load()
-            scope.player.play()
+            ctrl.player.load()
+            ctrl.player.play()
 
         # we should only do this if the video changes actually size
-        scope.$on 'resizelimit', () ->
-          scope.$apply( resize )
+        scope.$on 'resizestop', () ->
+          preload(self.source)
 
-        scope.$on 'slide', () ->
-          return unless scope.isPlaying
-          scope.isPlaying = false
-          scope.player.pause()
+        # scope.$on 'slide', () ->
+        #   return unless scope.isPlaying
+        #   scope.isPlaying = false
+        #   ctrl.player.pause()
     }
