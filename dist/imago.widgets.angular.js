@@ -397,7 +397,7 @@ angular.module('imago.widgets.angular').directive('imagoImage', ['$window', '$lo
 var imagoSlider;
 
 imagoSlider = (function() {
-  function imagoSlider($q, $document, imagoModel) {
+  function imagoSlider($rootScope, $q, $document, imagoModel) {
     return {
       replace: true,
       transclude: true,
@@ -453,7 +453,7 @@ imagoSlider = (function() {
               }
             })();
             scope.currentIndex = index;
-            return scope.$emit("" + scope.conf.namespace + ":changed", index);
+            return $rootScope.$emit("" + scope.conf.namespace + ":changed", index);
           };
         })(this);
         if (scope.conf.enablekeys) {
@@ -470,7 +470,7 @@ imagoSlider = (function() {
             }
           });
         }
-        return scope.$on("" + scope.conf.namespace + ":change", function(event, index) {
+        return $rootScope.$on("" + scope.conf.namespace + ":change", function(event, index) {
           return scope.setCurrent(index);
         });
       }
@@ -481,7 +481,7 @@ imagoSlider = (function() {
 
 })();
 
-angular.module('imago.widgets.angular').directive('imagoSlider', ['$q', '$document', 'imagoModel', imagoSlider]);
+angular.module('imago.widgets.angular').directive('imagoSlider', ['$rootScope', '$q', '$document', 'imagoModel', imagoSlider]);
 
 var imagoVideo;
 

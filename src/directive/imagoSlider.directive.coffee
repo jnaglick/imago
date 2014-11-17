@@ -1,6 +1,6 @@
 class imagoSlider extends Directive
 
-  constructor: ($q, $document, imagoModel) ->
+  constructor: ($rootScope, $q, $document, imagoModel) ->
     return {
       replace: true
       transclude: true
@@ -49,7 +49,7 @@ class imagoSlider extends Directive
             else ''
 
           scope.currentIndex = index
-          scope.$emit "#{scope.conf.namespace}:changed", index
+          $rootScope.$emit "#{scope.conf.namespace}:changed", index
 
         if scope.conf.enablekeys
 
@@ -65,6 +65,6 @@ class imagoSlider extends Directive
                   scope.goNext()
                 )
 
-        scope.$on "#{scope.conf.namespace}:change", (event, index) ->
+        $rootScope.$on "#{scope.conf.namespace}:change", (event, index) ->
           scope.setCurrent(index)
   }
