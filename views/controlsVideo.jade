@@ -1,6 +1,6 @@
-.controls(stop-propagation)
-  a.video-play.fa.fa-play(ng-click="togglePlay()", ng-hide="isPlaying")
-  a.video-pause.fa.fa-pause(ng-click="togglePlay()", ng-show="isPlaying")
+.controls(stop-propagation ng-switch="isPlaying")
+  a.video-play.fa.fa-play(ng-click="togglePlay()", ng-switch-when="false")
+  a.video-pause.fa.fa-pause(ng-click="togglePlay()", ng-switch-when="true")
   span.video-time {{currentTime | time}}
   span.video-seekbar
     input.seek(type='range' ng-model="currentTime" min="0" max="{{duration}}" ng-change="seek(currentTime)")

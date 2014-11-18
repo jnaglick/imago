@@ -7,16 +7,15 @@ class imagoVideo extends Directive
       templateUrl: '/imagoWidgets/imagoVideo.html'
       controller: ($scope, $element, $attrs, $transclude) ->
 
-        @player  = $element.find('video')[0]
+        $scope.player  = $element.find('video')[0]
         $scope.loading = true
 
-        angular.element(@player).bind 'ended', (e) =>
-          @player.currentTime = 0
+        angular.element($scope.player).bind 'ended', (e) =>
+          $scope.player.currentTime = 0
           $scope.isPlaying = false
 
-        @
 
-      link: (scope, element, attrs, ctrl) ->
+      link: (scope, element, attrs) ->
         self = {visible: false}
 
         opts =
@@ -25,7 +24,7 @@ class imagoVideo extends Directive
           controls    : true
           preload     : 'none'
           size        : 'hd'
-          align       : 'top left'
+          align       : 'center center'
           sizemode    : 'fit'
           lazy        : true
           width       : ''
@@ -84,10 +83,10 @@ class imagoVideo extends Directive
           render(width, height, serving_url)
 
         setPlayerAttrs = ->
-          ctrl.player.setAttribute("autoplay", true) if opts.autoplay is true
-          ctrl.player.setAttribute("preload", opts.preload)
-          ctrl.player.setAttribute("x-webkit-airplay", "allow")
-          ctrl.player.setAttribute("webkitAllowFullscreen", true)
+          scope.player.setAttribute("autoplay", true) if opts.autoplay is true
+          scope.player.setAttribute("preload", opts.preload)
+          scope.player.setAttribute("x-webkit-airplay", "allow")
+          scope.player.setAttribute("webkitAllowFullscreen", true)
 
         render = (width, height, servingUrl) =>
           if  opts.lazy and not self.visible
@@ -193,7 +192,7 @@ class imagoVideo extends Directive
           formats
 
         detectCodec = ->
-          return unless ctrl.player.canPlayType
+          return unless scope.player.canPlayType
           codecs =
             mp4:  'video/mp4; codecs="mp4v.20.8"'
             mp4:  'video/mp4; codecs="avc1.42E01E"'
@@ -202,17 +201,17 @@ class imagoVideo extends Directive
             ogg:  'video/ogg; codecs="theora"'
 
           for key, value of codecs
-            if ctrl.player.canPlayType value
+            if scope.player.canPlayType value
               return key
 
         scope.togglePlay = =>
-          if ctrl.player.paused
+          if scope.player.paused
             scope.isPlaying = true
             scope.hasPlayed = true
-            ctrl.player.play()
+            scope.player.play()
           else
             scope.isPlaying = false
-            ctrl.player.pause()
+            scope.player.pause()
 
         scope.toggleSize = ->
 
@@ -227,8 +226,8 @@ class imagoVideo extends Directive
           scope.videoFormats.reverse()
 
           $timeout ->
-            ctrl.player.load()
-            ctrl.player.play()
+            scope.player.load()
+            scope.player.play()
 
         # we should only do this if the video changes actually size
         scope.$on 'resizestop', () ->

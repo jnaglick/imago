@@ -1,5 +1,5 @@
 angular.module("ImagoWidgetsTemplates", []).run(["$templateCache", function($templateCache) {$templateCache.put("/imagoWidgets/contact-widget.html","<div class=\"nex form\"><form name=\"nexContact\" ng-submit=\"submitForm(nexContact.$valid)\" novalidate=\"novalidate\"><div class=\"nex field\"><label for=\"name\">Name</label><input type=\"text\" name=\"name\" ng-model=\"contact.name\" placeholder=\"Name\" require=\"require\"/></div><div class=\"nex field\"><label for=\"email\">Email</label><input type=\"email\" name=\"email\" ng-model=\"contact.email\" placeholder=\"Email\" require=\"require\"/></div><div class=\"nex field\"><label for=\"message\">Message</label><textarea name=\"message\" ng-model=\"contact.message\" placeholder=\"Your message.\" require=\"require\"></textarea></div><div class=\"nex checkbox\"><input type=\"checkbox\" name=\"subscribe\" ng-model=\"contact.subscribe\" checked=\"checked\"/><label for=\"subscribe\">Subscribe</label></div><div class=\"formcontrols\"><button type=\"submit\" ng-disabled=\"nexContact.$invalid\" class=\"send\">Send</button></div></form><div class=\"sucess\"><span>Thank You!</span></div><div class=\"error\"><span>Error!</span></div></div>");
-$templateCache.put("/imagoWidgets/controlsVideo.html","<div stop-propagation=\"stop-propagation\" class=\"controls\"><a ng-click=\"togglePlay()\" ng-hide=\"isPlaying\" class=\"video-play fa fa-play\"></a><a ng-click=\"togglePlay()\" ng-show=\"isPlaying\" class=\"video-pause fa fa-pause\"></a><span class=\"video-time\">{{currentTime | time}}</span><span class=\"video-seekbar\"><input type=\"range\" ng-model=\"currentTime\" min=\"0\" max=\"{{duration}}\" ng-change=\"seek(currentTime)\" class=\"seek\"/></span><a ng-click=\"toggleSize()\" class=\"size\">{{wrapperStyle.size}}</a><span class=\"volume\"><span ng-click=\"volumeUp()\" class=\"fa fa-volume-up icon-volume-up\"></span><input type=\"range\" ng-model=\"volumeInput\" ng-change=\"onVolumeChange(volumeInput)\"/><span ng-click=\"volumeDown()\" class=\"fa fa-volume-down icon-volume-down\"></span></span><a ng-click=\"fullScreen()\" class=\"video-fullscreen fa fa-expand\"></a><a class=\"video-screen fa fa-compress\"></a></div>");
+$templateCache.put("/imagoWidgets/controlsVideo.html","<div stop-propagation=\"stop-propagation\" ng-switch=\"isPlaying\" class=\"controls\"><a ng-click=\"togglePlay()\" ng-switch-when=\"false\" class=\"video-play fa fa-play\"></a><a ng-click=\"togglePlay()\" ng-switch-when=\"true\" class=\"video-pause fa fa-pause\"></a><span class=\"video-time\">{{currentTime | time}}</span><span class=\"video-seekbar\"><input type=\"range\" ng-model=\"currentTime\" min=\"0\" max=\"{{duration}}\" ng-change=\"seek(currentTime)\" class=\"seek\"/></span><a ng-click=\"toggleSize()\" class=\"size\">{{wrapperStyle.size}}</a><span class=\"volume\"><span ng-click=\"volumeUp()\" class=\"fa fa-volume-up icon-volume-up\"></span><input type=\"range\" ng-model=\"volumeInput\" ng-change=\"onVolumeChange(volumeInput)\"/><span ng-click=\"volumeDown()\" class=\"fa fa-volume-down icon-volume-down\"></span></span><a ng-click=\"fullScreen()\" class=\"video-fullscreen fa fa-expand\"></a><a class=\"video-screen fa fa-compress\"></a></div>");
 $templateCache.put("/imagoWidgets/imagoImage.html","<div in-view=\"visible = $inview\" responsive-events=\"responsive-events\" ng-style=\"elementStyle\" ng-class=\"status\" visible=\"visible\" class=\"imagoimage imagowrapper {{align}}\"><div ng-style=\"imageStyle\" class=\"imagox23\"></div><div class=\"loading\"><div class=\"spin\"></div><div class=\"spin2\"></div></div></div>");
 $templateCache.put("/imagoWidgets/imagoSlider.html","<div ng-class=\"[conf.animation, action]\" ng-swipe-left=\"goNext($event)\" ng-swipe-right=\"goPrev($event)\" class=\"imagoslider\"><div ng-show=\"conf.enablearrows\" ng-click=\"goPrev($event)\" stop-propagation=\"stop-propagation\" class=\"prev\"></div><div ng-show=\"conf.enablearrows\" ng-click=\"goNext($event)\" stop-propagation=\"stop-propagation\" class=\"next\"></div></div>");
 $templateCache.put("/imagoWidgets/imagoVideo.html","<div ng-class=\"{loading: loading}\" in-view=\"visible = $inview\" visible=\"visible\" responsive-events=\"responsive-events\" class=\"imagovideo {{wrapperStyle.backgroundPosition}} {{wrapperStyle.size}} {{wrapperStyle.sizemode}}\"><div ng-style=\"wrapperStyle\" ng-class=\"{playing: isPlaying}\" class=\"imagowrapper\"><a ng-hide=\"loading\" ng-click=\"togglePlay()\" ng-class=\"{playing: isPlaying}\" stop-propagation=\"stop-propagation\" class=\"playbig fa fa-play\"></a><video ng-style=\"videoStyle\"><source ng-repeat=\"format in videoFormats\" src=\"{{format.src}}\" data-size=\"{{format.size}}\" data-codec=\"{{format.codec}}\" type=\"{{format.type}}\"/></video><div imago-controls=\"imago-controls\" ng-style=\"controlStyle\" ng-if=\"controls\" ng-show=\"hasPlayed\"></div></div></div>");}]);
@@ -495,17 +495,16 @@ imagoVideo = (function() {
       scope: true,
       templateUrl: '/imagoWidgets/imagoVideo.html',
       controller: function($scope, $element, $attrs, $transclude) {
-        this.player = $element.find('video')[0];
+        $scope.player = $element.find('video')[0];
         $scope.loading = true;
-        angular.element(this.player).bind('ended', (function(_this) {
+        return angular.element($scope.player).bind('ended', (function(_this) {
           return function(e) {
-            _this.player.currentTime = 0;
+            $scope.player.currentTime = 0;
             return $scope.isPlaying = false;
           };
         })(this));
-        return this;
       },
-      link: function(scope, element, attrs, ctrl) {
+      link: function(scope, element, attrs) {
         var detectCodec, key, loadFormats, opts, preload, render, self, setPlayerAttrs, styleVideo, styleWrapper, value;
         self = {
           visible: false
@@ -516,7 +515,7 @@ imagoVideo = (function() {
           controls: true,
           preload: 'none',
           size: 'hd',
-          align: 'top left',
+          align: 'center center',
           sizemode: 'fit',
           lazy: true,
           width: '',
@@ -581,11 +580,11 @@ imagoVideo = (function() {
         };
         setPlayerAttrs = function() {
           if (opts.autoplay === true) {
-            ctrl.player.setAttribute("autoplay", true);
+            scope.player.setAttribute("autoplay", true);
           }
-          ctrl.player.setAttribute("preload", opts.preload);
-          ctrl.player.setAttribute("x-webkit-airplay", "allow");
-          return ctrl.player.setAttribute("webkitAllowFullscreen", true);
+          scope.player.setAttribute("preload", opts.preload);
+          scope.player.setAttribute("x-webkit-airplay", "allow");
+          return scope.player.setAttribute("webkitAllowFullscreen", true);
         };
         render = (function(_this) {
           return function(width, height, servingUrl) {
@@ -717,7 +716,7 @@ imagoVideo = (function() {
         };
         detectCodec = function() {
           var codecs;
-          if (!ctrl.player.canPlayType) {
+          if (!scope.player.canPlayType) {
             return;
           }
           codecs = {
@@ -729,20 +728,20 @@ imagoVideo = (function() {
           };
           for (key in codecs) {
             value = codecs[key];
-            if (ctrl.player.canPlayType(value)) {
+            if (scope.player.canPlayType(value)) {
               return key;
             }
           }
         };
         scope.togglePlay = (function(_this) {
           return function() {
-            if (ctrl.player.paused) {
+            if (scope.player.paused) {
               scope.isPlaying = true;
               scope.hasPlayed = true;
-              return ctrl.player.play();
+              return scope.player.play();
             } else {
               scope.isPlaying = false;
-              return ctrl.player.pause();
+              return scope.player.pause();
             }
           };
         })(this);
@@ -756,8 +755,8 @@ imagoVideo = (function() {
           }
           scope.videoFormats.reverse();
           return $timeout(function() {
-            ctrl.player.load();
-            return ctrl.player.play();
+            scope.player.load();
+            return scope.player.play();
           });
         };
         return scope.$on('resizestop', function() {

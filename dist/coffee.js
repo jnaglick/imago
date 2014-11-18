@@ -490,17 +490,16 @@ imagoVideo = (function() {
       scope: true,
       templateUrl: '/imagoWidgets/imagoVideo.html',
       controller: function($scope, $element, $attrs, $transclude) {
-        this.player = $element.find('video')[0];
+        $scope.player = $element.find('video')[0];
         $scope.loading = true;
-        angular.element(this.player).bind('ended', (function(_this) {
+        return angular.element($scope.player).bind('ended', (function(_this) {
           return function(e) {
-            _this.player.currentTime = 0;
+            $scope.player.currentTime = 0;
             return $scope.isPlaying = false;
           };
         })(this));
-        return this;
       },
-      link: function(scope, element, attrs, ctrl) {
+      link: function(scope, element, attrs) {
         var detectCodec, key, loadFormats, opts, preload, render, self, setPlayerAttrs, styleVideo, styleWrapper, value;
         self = {
           visible: false
@@ -511,7 +510,7 @@ imagoVideo = (function() {
           controls: true,
           preload: 'none',
           size: 'hd',
-          align: 'top left',
+          align: 'center center',
           sizemode: 'fit',
           lazy: true,
           width: '',
@@ -576,11 +575,11 @@ imagoVideo = (function() {
         };
         setPlayerAttrs = function() {
           if (opts.autoplay === true) {
-            ctrl.player.setAttribute("autoplay", true);
+            scope.player.setAttribute("autoplay", true);
           }
-          ctrl.player.setAttribute("preload", opts.preload);
-          ctrl.player.setAttribute("x-webkit-airplay", "allow");
-          return ctrl.player.setAttribute("webkitAllowFullscreen", true);
+          scope.player.setAttribute("preload", opts.preload);
+          scope.player.setAttribute("x-webkit-airplay", "allow");
+          return scope.player.setAttribute("webkitAllowFullscreen", true);
         };
         render = (function(_this) {
           return function(width, height, servingUrl) {
@@ -712,7 +711,7 @@ imagoVideo = (function() {
         };
         detectCodec = function() {
           var codecs;
-          if (!ctrl.player.canPlayType) {
+          if (!scope.player.canPlayType) {
             return;
           }
           codecs = {
@@ -724,20 +723,20 @@ imagoVideo = (function() {
           };
           for (key in codecs) {
             value = codecs[key];
-            if (ctrl.player.canPlayType(value)) {
+            if (scope.player.canPlayType(value)) {
               return key;
             }
           }
         };
         scope.togglePlay = (function(_this) {
           return function() {
-            if (ctrl.player.paused) {
+            if (scope.player.paused) {
               scope.isPlaying = true;
               scope.hasPlayed = true;
-              return ctrl.player.play();
+              return scope.player.play();
             } else {
               scope.isPlaying = false;
-              return ctrl.player.pause();
+              return scope.player.pause();
             }
           };
         })(this);
@@ -751,8 +750,8 @@ imagoVideo = (function() {
           }
           scope.videoFormats.reverse();
           return $timeout(function() {
-            ctrl.player.load();
-            return ctrl.player.play();
+            scope.player.load();
+            return scope.player.play();
           });
         };
         return scope.$on('resizestop', function() {
