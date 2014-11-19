@@ -229,7 +229,26 @@ class imagoVideo extends Directive
             scope.player.load()
             scope.player.play()
 
+        onResize = () ->
+          width  = element[0].clientWidth  or opts.width
+          height = element[0].clientHeight or opts.height
+
+          return unless width and height
+
+          wrapperRatio = width / height
+
+          if opts.sizemode is 'crop'
+            # $log.log 'opts.sizemode crop', opts.assetRatio, wrapperRatio
+            if opts.assetRatio < wrapperRatio then "100% auto" else "auto 100%"
+          else
+            # $log.log 'opts.sizemode fit', opts.assetRatio, wrapperRatio
+            if opts.assetRatio > wrapperRatio then "100% auto" else "auto 100%"
+
         # we should only do this if the video changes actually size
+        scope.$on 'resizelimit', () ->
+          scope.wrapperStyle.backgroundSize = onResize()
+
+
         scope.$on 'resizestop', () ->
           preload(self.source)
 

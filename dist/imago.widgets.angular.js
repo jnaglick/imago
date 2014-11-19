@@ -505,7 +505,7 @@ imagoVideo = (function() {
         })(this));
       },
       link: function(scope, element, attrs) {
-        var detectCodec, key, loadFormats, opts, preload, render, self, setPlayerAttrs, styleVideo, styleWrapper, value;
+        var detectCodec, key, loadFormats, onResize, opts, preload, render, self, setPlayerAttrs, styleVideo, styleWrapper, value;
         self = {
           visible: false
         };
@@ -759,6 +759,31 @@ imagoVideo = (function() {
             return scope.player.play();
           });
         };
+        onResize = function() {
+          var height, width, wrapperRatio;
+          width = element[0].clientWidth || opts.width;
+          height = element[0].clientHeight || opts.height;
+          if (!(width && height)) {
+            return;
+          }
+          wrapperRatio = width / height;
+          if (opts.sizemode === 'crop') {
+            if (opts.assetRatio < wrapperRatio) {
+              return "100% auto";
+            } else {
+              return "auto 100%";
+            }
+          } else {
+            if (opts.assetRatio > wrapperRatio) {
+              return "100% auto";
+            } else {
+              return "auto 100%";
+            }
+          }
+        };
+        scope.$on('resizelimit', function() {
+          return scope.wrapperStyle.backgroundSize = onResize();
+        });
         return scope.$on('resizestop', function() {
           return preload(self.source);
         });
@@ -2286,7 +2311,7 @@ Time = (function() {
   function Time() {
     return function(input) {
       var calc, hours, minutes, pad, seconds;
-      if (!input) {
+      if (typeof input !== 'number') {
         return;
       }
       pad = function(num) {

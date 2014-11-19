@@ -2,7 +2,7 @@ class Time extends Filter
 
   constructor: () ->
     return (input) ->
-      return unless input
+      return unless typeof input is 'number'
 
       pad = (num) ->
         return "0" + num  if num < 10
