@@ -10,9 +10,13 @@ class imagoVideo extends Directive
         $scope.player  = $element.find('video')[0]
         $scope.loading = true
 
-        angular.element($scope.player).bind 'ended', (e) =>
+        angular.element($scope.player).bind 'ended', (e) ->
           $scope.player.currentTime = 0
           $scope.isPlaying = false
+
+        angular.element($scope.player).bind 'loadeddata', () ->
+          $scope.hasPlayed = true
+          angular.element($scope.player).unbind 'loadeddata'
 
 
       link: (scope, element, attrs) ->
@@ -73,7 +77,6 @@ class imagoVideo extends Directive
           else
             width = element[0].clientWidth
             height = element[0].clientHeight
-            # console.log 'height' ,@height, 'width ' ,@width
 
           dpr = if opts.hires then Math.ceil(window.devicePixelRatio) or 1 else 1
 
@@ -207,7 +210,6 @@ class imagoVideo extends Directive
         scope.togglePlay = =>
           if scope.player.paused
             scope.isPlaying = true
-            scope.hasPlayed = true
             scope.player.play()
           else
             scope.isPlaying = false
@@ -248,12 +250,7 @@ class imagoVideo extends Directive
         scope.$on 'resizelimit', () ->
           scope.wrapperStyle.backgroundSize = onResize()
 
-
         scope.$on 'resizestop', () ->
           preload(self.source)
 
-        # scope.$on 'slide', () ->
-        #   return unless scope.isPlaying
-        #   scope.isPlaying = false
-        #   ctrl.player.pause()
     }

@@ -11,12 +11,16 @@ class imagoControls extends Directive
         videoPlayer = angular.element($scope.player)
         $scope.currentTime = 0
 
-        videoPlayer.bind 'loadeddata', () ->
-          $scope.duration = parseInt $scope.player.duration
+        videoPlayer.bind 'loadeddata', (e) ->
+          $scope.duration = parseInt e.target.duration
           $scope.$apply()
 
         videoPlayer.bind 'timeupdate', (e) ->
-          $scope.currentTime = $scope.player.currentTime
+          $scope.currentTime = e.target.currentTime
+          $scope.$apply()
+
+        videoPlayer.bind 'seeking', (e) ->
+          $scope.currentTime = e.target.currentTime
           $scope.$apply()
 
       link: (scope, element, attrs) ->

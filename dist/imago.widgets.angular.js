@@ -99,12 +99,16 @@ imagoControls = (function() {
         var videoPlayer;
         videoPlayer = angular.element($scope.player);
         $scope.currentTime = 0;
-        videoPlayer.bind('loadeddata', function() {
-          $scope.duration = parseInt($scope.player.duration);
+        videoPlayer.bind('loadeddata', function(e) {
+          $scope.duration = parseInt(e.target.duration);
           return $scope.$apply();
         });
-        return videoPlayer.bind('timeupdate', function(e) {
-          $scope.currentTime = $scope.player.currentTime;
+        videoPlayer.bind('timeupdate', function(e) {
+          $scope.currentTime = e.target.currentTime;
+          return $scope.$apply();
+        });
+        return videoPlayer.bind('seeking', function(e) {
+          $scope.currentTime = e.target.currentTime;
           return $scope.$apply();
         });
       },
@@ -497,12 +501,14 @@ imagoVideo = (function() {
       controller: function($scope, $element, $attrs, $transclude) {
         $scope.player = $element.find('video')[0];
         $scope.loading = true;
-        return angular.element($scope.player).bind('ended', (function(_this) {
-          return function(e) {
-            $scope.player.currentTime = 0;
-            return $scope.isPlaying = false;
-          };
-        })(this));
+        angular.element($scope.player).bind('ended', function(e) {
+          $scope.player.currentTime = 0;
+          return $scope.isPlaying = false;
+        });
+        return angular.element($scope.player).bind('loadeddata', function() {
+          $scope.hasPlayed = true;
+          return angular.element($scope.player).unbind('loadeddata');
+        });
       },
       link: function(scope, element, attrs) {
         var detectCodec, key, loadFormats, onResize, opts, preload, render, self, setPlayerAttrs, styleVideo, styleWrapper, value;
@@ -737,7 +743,6 @@ imagoVideo = (function() {
           return function() {
             if (scope.player.paused) {
               scope.isPlaying = true;
-              scope.hasPlayed = true;
               return scope.player.play();
             } else {
               scope.isPlaying = false;
@@ -894,6 +899,63 @@ StopPropagation = (function() {
 })();
 
 angular.module('imago.widgets.angular').directive('stopPropagation', [StopPropagation]);
+
+var Meta;
+
+Meta = (function() {
+  function Meta() {
+    return function(input, value) {
+      if (!(input && value && input.fields[value])) {
+        return;
+      }
+      if (input.fields[value].value.type) {
+        return input.fields[value].value.value;
+      } else {
+        return input.fields[value].value;
+      }
+    };
+  }
+
+  return Meta;
+
+})();
+
+angular.module('imago.widgets.angular').filter('meta', [Meta]);
+
+var Time;
+
+Time = (function() {
+  function Time() {
+    return function(input) {
+      var calc, hours, minutes, pad, seconds;
+      if (typeof input !== 'number') {
+        return;
+      }
+      pad = function(num) {
+        if (num < 10) {
+          return "0" + num;
+        }
+        return num;
+      };
+      calc = [];
+      minutes = Math.floor(input / 60);
+      hours = Math.floor(input / 3600);
+      seconds = (input === 0 ? 0 : input % 60);
+      seconds = Math.round(seconds);
+      if (hours > 0) {
+        calc.push(pad(hours));
+      }
+      calc.push(pad(minutes));
+      calc.push(pad(seconds));
+      return calc.join(":");
+    };
+  }
+
+  return Time;
+
+})();
+
+angular.module('imago.widgets.angular').filter('time', [Time]);
 
 var imagoModel,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
@@ -2282,63 +2344,6 @@ imagoWorker = (function() {
 })();
 
 angular.module('imago.widgets.angular').service('imagoWorker', ['$q', imagoWorker]);
-
-var Meta;
-
-Meta = (function() {
-  function Meta() {
-    return function(input, value) {
-      if (!(input && value && input.fields[value])) {
-        return;
-      }
-      if (input.fields[value].value.type) {
-        return input.fields[value].value.value;
-      } else {
-        return input.fields[value].value;
-      }
-    };
-  }
-
-  return Meta;
-
-})();
-
-angular.module('imago.widgets.angular').filter('meta', [Meta]);
-
-var Time;
-
-Time = (function() {
-  function Time() {
-    return function(input) {
-      var calc, hours, minutes, pad, seconds;
-      if (typeof input !== 'number') {
-        return;
-      }
-      pad = function(num) {
-        if (num < 10) {
-          return "0" + num;
-        }
-        return num;
-      };
-      calc = [];
-      minutes = Math.floor(input / 60);
-      hours = Math.floor(input / 3600);
-      seconds = (input === 0 ? 0 : input % 60);
-      seconds = Math.round(seconds);
-      if (hours > 0) {
-        calc.push(pad(hours));
-      }
-      calc.push(pad(minutes));
-      calc.push(pad(seconds));
-      return calc.join(":");
-    };
-  }
-
-  return Time;
-
-})();
-
-angular.module('imago.widgets.angular').filter('time', [Time]);
 
 var lodash;
 
