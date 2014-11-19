@@ -18,6 +18,8 @@ class imagoVideo extends Directive
           $scope.hasPlayed = true
           angular.element($scope.player).unbind 'loadeddata'
 
+        angular.element($scope.player).bind 'play', () ->
+          $scope.isPlaying = true
 
       link: (scope, element, attrs) ->
         self = {visible: false}
@@ -31,9 +33,10 @@ class imagoVideo extends Directive
           align       : 'center center'
           sizemode    : 'fit'
           lazy        : true
+          hires       : true
+          loop        : false
           width       : ''
           height      : ''
-          hires       : true
 
         for key, value of attrs
           if value is 'true' or value is 'false'
@@ -82,7 +85,17 @@ class imagoVideo extends Directive
 
           serving_url = "#{data.serving_url}=s#{ Math.ceil(Math.min(Math.max(width, height) * dpr)) or 1600 }"
 
+          style =
+            size:                 opts.size
+            sizemode:             opts.sizemode
+            backgroundPosition:   opts.align
+            backgroundImage:      "url(#{serving_url})"
+            backgroundRepeat:     "no-repeat"
+
+          scope.wrapperStyle = style
+
           setPlayerAttrs()
+          scope.videoFormats = loadFormats(self.source)
           render(width, height, serving_url)
 
         setPlayerAttrs = ->
@@ -90,6 +103,7 @@ class imagoVideo extends Directive
           scope.player.setAttribute("preload", opts.preload)
           scope.player.setAttribute("x-webkit-airplay", "allow")
           scope.player.setAttribute("webkitAllowFullscreen", true)
+          scope.player.setAttribute("loop", opts.loop)
 
         render = (width, height, servingUrl) =>
           if  opts.lazy and not self.visible
@@ -101,23 +115,17 @@ class imagoVideo extends Directive
           else
             img = angular.element('<img>')
             img.on 'load', (e) =>
-              scope.wrapperStyle = styleWrapper(width, height, servingUrl)
+              _.assign(scope.wrapperStyle, styleWrapper(width, height))
               scope.videoStyle   = styleVideo(width, height)
-              scope.videoFormats = loadFormats(self.source)
               scope.loading = false
               scope.$apply()
 
             img[0].src = servingUrl
 
-        styleWrapper = (width, height, servingUrl) ->
-          return unless width and height and servingUrl
+        styleWrapper = (width, height) ->
+          return unless width and height
 
-          style =
-            size:                 opts.size
-            sizemode:             opts.sizemode
-            backgroundPosition:   opts.align
-            backgroundImage:      "url(#{servingUrl})"
-            backgroundRepeat:     "no-repeat"
+          style = {}
 
           wrapperRatio = width / height
 
@@ -209,7 +217,6 @@ class imagoVideo extends Directive
 
         scope.togglePlay = =>
           if scope.player.paused
-            scope.isPlaying = true
             scope.player.play()
           else
             scope.isPlaying = false
@@ -235,20 +242,13 @@ class imagoVideo extends Directive
           width  = element[0].clientWidth  or opts.width
           height = element[0].clientHeight or opts.height
 
-          return unless width and height
+          _.assign(scope.wrapperStyle, styleWrapper(width, height))
+          scope.videoStyle = styleVideo(width, height)
 
-          wrapperRatio = width / height
-
-          if opts.sizemode is 'crop'
-            # $log.log 'opts.sizemode crop', opts.assetRatio, wrapperRatio
-            if opts.assetRatio < wrapperRatio then "100% auto" else "auto 100%"
-          else
-            # $log.log 'opts.sizemode fit', opts.assetRatio, wrapperRatio
-            if opts.assetRatio > wrapperRatio then "100% auto" else "auto 100%"
+          scope.$apply()
 
         # we should only do this if the video changes actually size
-        scope.$on 'resizelimit', () ->
-          scope.wrapperStyle.backgroundSize = onResize()
+        scope.$on 'resize', onResize
 
         scope.$on 'resizestop', () ->
           preload(self.source)

@@ -27,6 +27,8 @@ class ResponsiveEvents extends Directive
           @isMouseWheeling = true
           w.one 'mousewheelstop', => @isMouseWheeling = false
 
+        w.on 'resize', -> $scope.$broadcast 'resize'
+
         w.on 'resize', onResizeStart
         w.on 'resize', _.debounce ( -> $scope.$broadcast 'resizestop' ),  200
         w.on 'resize', _.throttle ( -> $scope.$broadcast 'resizelimit' ), 150

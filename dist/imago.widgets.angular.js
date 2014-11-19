@@ -505,9 +505,12 @@ imagoVideo = (function() {
           $scope.player.currentTime = 0;
           return $scope.isPlaying = false;
         });
-        return angular.element($scope.player).bind('loadeddata', function() {
+        angular.element($scope.player).bind('loadeddata', function() {
           $scope.hasPlayed = true;
           return angular.element($scope.player).unbind('loadeddata');
+        });
+        return angular.element($scope.player).bind('play', function() {
+          return $scope.isPlaying = true;
         });
       },
       link: function(scope, element, attrs) {
@@ -524,9 +527,10 @@ imagoVideo = (function() {
           align: 'center center',
           sizemode: 'fit',
           lazy: true,
+          hires: true,
+          loop: false,
           width: '',
-          height: '',
-          hires: true
+          height: ''
         };
         for (key in attrs) {
           value = attrs[key];
@@ -562,7 +566,7 @@ imagoVideo = (function() {
           };
         })(this));
         preload = function(data) {
-          var dpr, height, r, resolution, serving_url, width;
+          var dpr, height, r, resolution, serving_url, style, width;
           if (angular.isString(data.resolution)) {
             r = data.resolution.split('x');
             resolution = {
@@ -581,7 +585,16 @@ imagoVideo = (function() {
           }
           dpr = opts.hires ? Math.ceil(window.devicePixelRatio) || 1 : 1;
           serving_url = "" + data.serving_url + "=s" + (Math.ceil(Math.min(Math.max(width, height) * dpr)) || 1600);
+          style = {
+            size: opts.size,
+            sizemode: opts.sizemode,
+            backgroundPosition: opts.align,
+            backgroundImage: "url(" + serving_url + ")",
+            backgroundRepeat: "no-repeat"
+          };
+          scope.wrapperStyle = style;
           setPlayerAttrs();
+          scope.videoFormats = loadFormats(self.source);
           return render(width, height, serving_url);
         };
         setPlayerAttrs = function() {
@@ -590,7 +603,8 @@ imagoVideo = (function() {
           }
           scope.player.setAttribute("preload", opts.preload);
           scope.player.setAttribute("x-webkit-airplay", "allow");
-          return scope.player.setAttribute("webkitAllowFullscreen", true);
+          scope.player.setAttribute("webkitAllowFullscreen", true);
+          return scope.player.setAttribute("loop", opts.loop);
         };
         render = (function(_this) {
           return function(width, height, servingUrl) {
@@ -607,9 +621,8 @@ imagoVideo = (function() {
             } else {
               img = angular.element('<img>');
               img.on('load', function(e) {
-                scope.wrapperStyle = styleWrapper(width, height, servingUrl);
+                _.assign(scope.wrapperStyle, styleWrapper(width, height));
                 scope.videoStyle = styleVideo(width, height);
-                scope.videoFormats = loadFormats(self.source);
                 scope.loading = false;
                 return scope.$apply();
               });
@@ -617,18 +630,12 @@ imagoVideo = (function() {
             }
           };
         })(this);
-        styleWrapper = function(width, height, servingUrl) {
+        styleWrapper = function(width, height) {
           var style, wrapperRatio;
-          if (!(width && height && servingUrl)) {
+          if (!(width && height)) {
             return;
           }
-          style = {
-            size: opts.size,
-            sizemode: opts.sizemode,
-            backgroundPosition: opts.align,
-            backgroundImage: "url(" + servingUrl + ")",
-            backgroundRepeat: "no-repeat"
-          };
+          style = {};
           wrapperRatio = width / height;
           if (opts.sizemode === 'crop') {
             if (opts.assetRatio < wrapperRatio) {
@@ -742,7 +749,6 @@ imagoVideo = (function() {
         scope.togglePlay = (function(_this) {
           return function() {
             if (scope.player.paused) {
-              scope.isPlaying = true;
               return scope.player.play();
             } else {
               scope.isPlaying = false;
@@ -765,30 +771,14 @@ imagoVideo = (function() {
           });
         };
         onResize = function() {
-          var height, width, wrapperRatio;
+          var height, width;
           width = element[0].clientWidth || opts.width;
           height = element[0].clientHeight || opts.height;
-          if (!(width && height)) {
-            return;
-          }
-          wrapperRatio = width / height;
-          if (opts.sizemode === 'crop') {
-            if (opts.assetRatio < wrapperRatio) {
-              return "100% auto";
-            } else {
-              return "auto 100%";
-            }
-          } else {
-            if (opts.assetRatio > wrapperRatio) {
-              return "100% auto";
-            } else {
-              return "auto 100%";
-            }
-          }
+          _.assign(scope.wrapperStyle, styleWrapper(width, height));
+          scope.videoStyle = styleVideo(width, height);
+          return scope.$apply();
         };
-        scope.$on('resizelimit', function() {
-          return scope.wrapperStyle.backgroundSize = onResize();
-        });
+        scope.$on('resize', onResize);
         return scope.$on('resizestop', function() {
           return preload(self.source);
         });
@@ -847,6 +837,9 @@ ResponsiveEvents = (function() {
             });
           };
         })(this);
+        w.on('resize', function() {
+          return $scope.$broadcast('resize');
+        });
         w.on('resize', onResizeStart);
         w.on('resize', _.debounce((function() {
           return $scope.$broadcast('resizestop');
@@ -899,63 +892,6 @@ StopPropagation = (function() {
 })();
 
 angular.module('imago.widgets.angular').directive('stopPropagation', [StopPropagation]);
-
-var Meta;
-
-Meta = (function() {
-  function Meta() {
-    return function(input, value) {
-      if (!(input && value && input.fields[value])) {
-        return;
-      }
-      if (input.fields[value].value.type) {
-        return input.fields[value].value.value;
-      } else {
-        return input.fields[value].value;
-      }
-    };
-  }
-
-  return Meta;
-
-})();
-
-angular.module('imago.widgets.angular').filter('meta', [Meta]);
-
-var Time;
-
-Time = (function() {
-  function Time() {
-    return function(input) {
-      var calc, hours, minutes, pad, seconds;
-      if (typeof input !== 'number') {
-        return;
-      }
-      pad = function(num) {
-        if (num < 10) {
-          return "0" + num;
-        }
-        return num;
-      };
-      calc = [];
-      minutes = Math.floor(input / 60);
-      hours = Math.floor(input / 3600);
-      seconds = (input === 0 ? 0 : input % 60);
-      seconds = Math.round(seconds);
-      if (hours > 0) {
-        calc.push(pad(hours));
-      }
-      calc.push(pad(minutes));
-      calc.push(pad(seconds));
-      return calc.join(":");
-    };
-  }
-
-  return Time;
-
-})();
-
-angular.module('imago.widgets.angular').filter('time', [Time]);
 
 var imagoModel,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
@@ -2344,6 +2280,63 @@ imagoWorker = (function() {
 })();
 
 angular.module('imago.widgets.angular').service('imagoWorker', ['$q', imagoWorker]);
+
+var Meta;
+
+Meta = (function() {
+  function Meta() {
+    return function(input, value) {
+      if (!(input && value && input.fields[value])) {
+        return;
+      }
+      if (input.fields[value].value.type) {
+        return input.fields[value].value.value;
+      } else {
+        return input.fields[value].value;
+      }
+    };
+  }
+
+  return Meta;
+
+})();
+
+angular.module('imago.widgets.angular').filter('meta', [Meta]);
+
+var Time;
+
+Time = (function() {
+  function Time() {
+    return function(input) {
+      var calc, hours, minutes, pad, seconds;
+      if (typeof input !== 'number') {
+        return;
+      }
+      pad = function(num) {
+        if (num < 10) {
+          return "0" + num;
+        }
+        return num;
+      };
+      calc = [];
+      minutes = Math.floor(input / 60);
+      hours = Math.floor(input / 3600);
+      seconds = (input === 0 ? 0 : input % 60);
+      seconds = Math.round(seconds);
+      if (hours > 0) {
+        calc.push(pad(hours));
+      }
+      calc.push(pad(minutes));
+      calc.push(pad(seconds));
+      return calc.join(":");
+    };
+  }
+
+  return Time;
+
+})();
+
+angular.module('imago.widgets.angular').filter('time', [Time]);
 
 var lodash;
 
