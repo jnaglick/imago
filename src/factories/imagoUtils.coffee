@@ -433,7 +433,7 @@ class imagoUtils extends Factory
         if angular.isArray(elem) then elem else [elem]
 
       getMeta: (asset, attribute) ->
-        return console.log "This asset does not contain a #{attribute} attribute" unless asset.meta[attribute]
+        return console.log "This asset does not contain a #{attribute} attribute" unless asset.fields[attribute]
         return asset.fields[attribute].value
 
       isBaseString: (string = '') ->

@@ -2226,7 +2226,7 @@ imagoUtils = (function() {
         }
       },
       getMeta: function(asset, attribute) {
-        if (!asset.meta[attribute]) {
+        if (!asset.fields[attribute]) {
           return console.log("This asset does not contain a " + attribute + " attribute");
         }
         return asset.fields[attribute].value;
