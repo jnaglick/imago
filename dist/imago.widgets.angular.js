@@ -1009,15 +1009,20 @@ imagoModel = (function() {
     return this.$http.post(this.getSearchUrl(), angular.toJson(params));
   };
 
-  imagoModel.prototype.getLocalData = function(query) {
+  imagoModel.prototype.getLocalData = function(query, opts) {
     var asset, defer, key, path, value;
+    if (opts == null) {
+      opts = {};
+    }
     defer = this.$q.defer();
-    for (key in query) {
-      value = query[key];
-      if (key === 'fetch') {
-        delete query[key];
+    for (key in opts) {
+      value = opts[key];
+      if (key === 'localData' && value === false) {
         defer.reject(query);
       }
+    }
+    for (key in query) {
+      value = query[key];
       if (key === 'fts') {
         defer.reject(query);
       } else if (key === 'collection') {
@@ -1061,8 +1066,11 @@ imagoModel = (function() {
     return defer.promise;
   };
 
-  imagoModel.prototype.getData = function(query) {
+  imagoModel.prototype.getData = function(query, opts) {
     var data, defer, fetches, promises, resolve;
+    if (opts == null) {
+      opts = {};
+    }
     defer = this.$q.defer();
     if (!query) {
       query = this.$location.path();
@@ -1087,7 +1095,7 @@ imagoModel = (function() {
     })(this);
     _.forEach(query, (function(_this) {
       return function(value) {
-        return promises.push(_this.getLocalData(value).then(function(result) {
+        return promises.push(_this.getLocalData(value, opts).then(function(result) {
           var worker;
           if (result.assets) {
             worker = {

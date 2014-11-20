@@ -56,15 +56,15 @@ class imagoModel extends Service
     params = @formatQuery query
     return @$http.post(@getSearchUrl(), angular.toJson(params))
 
-  getLocalData: (query) =>
+  getLocalData: (query, opts = {}) =>
 
     defer = @$q.defer()
 
-    for key, value of query
-
-      if key is 'fetch'
-        delete query[key]
+    for key, value of opts
+      if key is 'localData' and value is false
         defer.reject query
+
+    for key, value of query
 
       if key is 'fts'
         defer.reject query
@@ -114,7 +114,7 @@ class imagoModel extends Service
 
     defer.promise
 
-  getData: (query) =>
+  getData: (query , opts = {}) =>
 
     defer = @$q.defer()
 
@@ -134,7 +134,7 @@ class imagoModel extends Service
         defer.resolve data
 
     _.forEach query, (value) =>
-      promises.push @getLocalData(value).then (result) =>
+      promises.push @getLocalData(value, opts).then (result) =>
 
         if result.assets
           worker =
