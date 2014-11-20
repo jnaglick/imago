@@ -62,6 +62,10 @@ class imagoModel extends Service
 
     for key, value of query
 
+      if key is 'fetch'
+        delete query[key]
+        defer.reject query
+
       if key is 'fts'
         defer.reject query
 
@@ -87,6 +91,7 @@ class imagoModel extends Service
 
         asset.assets = @findChildren(asset)
 
+
         if asset.count or asset.assets.length
 
           if asset.assets.length isnt asset.count
@@ -94,6 +99,7 @@ class imagoModel extends Service
             defer.reject query
 
           else
+            delete query.path
             asset.assets = @filterAssets(asset.assets, query)
             defer.resolve asset
 

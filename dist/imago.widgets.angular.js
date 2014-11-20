@@ -1014,6 +1014,10 @@ imagoModel = (function() {
     defer = this.$q.defer();
     for (key in query) {
       value = query[key];
+      if (key === 'fetch') {
+        delete query[key];
+        defer.reject(query);
+      }
       if (key === 'fts') {
         defer.reject(query);
       } else if (key === 'collection') {
@@ -1041,6 +1045,7 @@ imagoModel = (function() {
           if (asset.assets.length !== asset.count) {
             defer.reject(query);
           } else {
+            delete query.path;
             asset.assets = this.filterAssets(asset.assets, query);
             defer.resolve(asset);
           }
