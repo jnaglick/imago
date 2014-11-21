@@ -54,6 +54,7 @@ class imagoModel extends Service
   search: (query) ->
     # console.log 'search...', query
     params = @formatQuery query
+    # console.log 'params', params
     return @$http.post(@getSearchUrl(), angular.toJson(params))
 
   getLocalData: (query, opts = {}) =>
@@ -67,6 +68,7 @@ class imagoModel extends Service
     for key, value of query
 
       if key is 'fts'
+        console.log 'reject if fts', query
         defer.reject query
 
       else if key is 'collection'
@@ -99,7 +101,6 @@ class imagoModel extends Service
             defer.reject query
 
           else
-            delete query.path
             asset.assets = @filterAssets(asset.assets, query)
             defer.resolve asset
 
@@ -152,6 +153,7 @@ class imagoModel extends Service
           data = _.flatten data
 
       , (reject) =>
+        console.log 'rejected query', reject
         fetches.push @search(reject).then (response) =>
           return unless response.data
           response.data.page = reject.page if reject.page
@@ -212,6 +214,7 @@ class imagoModel extends Service
     _.findIndex @data, options
 
   filterAssets: (assets, query) =>
+    delete query.path if query.path
     if _.keys(query).length > 0
       for key, value of query
         for params in value

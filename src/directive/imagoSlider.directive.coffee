@@ -54,7 +54,7 @@ class imagoSlider extends Directive
           $rootScope.$emit "#{scope.conf.namespace}:changed", index
 
         if scope.conf.autoplay
-          $interval scope.goNext, parseInt(scope.conf.autoplay)
+          interval = $interval scope.goNext, parseInt(scope.conf.autoplay)
 
         if scope.conf.enablekeys
 
@@ -75,5 +75,6 @@ class imagoSlider extends Directive
           scope.setCurrent(index)
 
         scope.$on '$destroy', ->
+          $interval.cancel interval
           watcher()
   }
