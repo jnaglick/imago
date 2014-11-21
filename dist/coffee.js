@@ -395,7 +395,7 @@ angular.module('imago.widgets.angular').directive('imagoImage', ['$window', '$lo
 var imagoSlider;
 
 imagoSlider = (function() {
-  function imagoSlider($rootScope, $q, $document, imagoModel) {
+  function imagoSlider($rootScope, $q, $document, imagoModel, $interval) {
     return {
       replace: true,
       transclude: true,
@@ -408,7 +408,8 @@ imagoSlider = (function() {
           enablearrows: true,
           loop: true,
           current: 0,
-          namespace: 'slider'
+          namespace: 'slider',
+          autoplay: 0
         };
       },
       link: function(scope, element, attrs, ctrl, transclude) {
@@ -455,6 +456,9 @@ imagoSlider = (function() {
             return $rootScope.$emit("" + scope.conf.namespace + ":changed", index);
           };
         })(this);
+        if (scope.conf.autoplay) {
+          $interval(scope.goNext, parseInt(scope.conf.autoplay));
+        }
         if (scope.conf.enablekeys) {
           $document.on('keydown', function(e) {
             switch (e.keyCode) {
@@ -483,7 +487,7 @@ imagoSlider = (function() {
 
 })();
 
-angular.module('imago.widgets.angular').directive('imagoSlider', ['$rootScope', '$q', '$document', 'imagoModel', imagoSlider]);
+angular.module('imago.widgets.angular').directive('imagoSlider', ['$rootScope', '$q', '$document', 'imagoModel', '$interval', imagoSlider]);
 
 var imagoVideo;
 

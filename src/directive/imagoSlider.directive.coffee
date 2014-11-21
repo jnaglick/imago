@@ -1,6 +1,6 @@
 class imagoSlider extends Directive
 
-  constructor: ($rootScope, $q, $document, imagoModel) ->
+  constructor: ($rootScope, $q, $document, imagoModel, $interval) ->
     return {
       replace: true
       transclude: true
@@ -15,6 +15,7 @@ class imagoSlider extends Directive
           loop:         true
           current:      0
           namespace:    'slider'
+          autoplay:     0
 
       link: (scope, element, attrs, ctrl, transclude) ->
 
@@ -41,6 +42,7 @@ class imagoSlider extends Directive
           return scope.currentIndex
 
         scope.setCurrent = (index) =>
+
           scope.action = switch
             when index is 0 and scope.currentIndex is (parseInt(attrs.length) - 1) then 'next'
             when index is (parseInt(attrs.length) - 1) and scope.currentIndex is 0 then 'prev'
@@ -50,6 +52,9 @@ class imagoSlider extends Directive
 
           scope.currentIndex = index
           $rootScope.$emit "#{scope.conf.namespace}:changed", index
+
+        if scope.conf.autoplay
+          $interval scope.goNext, parseInt(scope.conf.autoplay)
 
         if scope.conf.enablekeys
 
