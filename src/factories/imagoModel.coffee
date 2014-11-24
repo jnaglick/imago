@@ -115,9 +115,11 @@ class imagoModel extends Service
 
     defer.promise
 
-  getData: (query , opts = {}) =>
+  getData: (query, opts = {}) =>
 
     defer = @$q.defer()
+
+    query = angular.copy query
 
     query = @$location.path() unless query
     if angular.isString query
