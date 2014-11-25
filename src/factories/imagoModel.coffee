@@ -1,26 +1,22 @@
 class imagoModel extends Service
 
-  constructor: (@$rootScope, @$http, @$location, @$q, @imagoUtils, @imagoWorker, @sortWorker) ->
-    if (data is 'online' and debug)
-      @host = window.location.protocol + "//api.2.imagoapp.com"
-    else
-      @host = window.location.protocol + "//localhost:8000"
+  constructor: (@$rootScope, @$http, @$location, @$q, @imagoUtils, @imagoWorker, @imagoConf) ->
 
     @assets =
       get: (id) =>
-        $http.get "#{@host}/api/assets/#{id}"
+        $http.get "#{@imagoConf.host}/api/assets/#{id}"
 
       create: (assets) =>
-        $http.post "#{@host}/api/assets", assets
+        $http.post "#{@imagoConf.host}/api/assets", assets
 
       update: (item) =>
-        $http.put "#{@host}/api/assets/#{item._id}", item
+        $http.put "#{@imagoConf.host}/api/assets/#{item._id}", item
 
       delete: (id) =>
-        $http.delete "#{@host}/api/assets/#{id}"
+        $http.delete "#{@imagoConf.host}/api/assets/#{id}"
 
       trash: (assets) =>
-        $http.post "#{@host}/api/assets/trash", assets
+        $http.post "#{@imagoConf.host}/api/assets/trash", assets
 
       move: (items, src, dest) =>
         data =
@@ -28,7 +24,7 @@ class imagoModel extends Service
           dest  : dest
           items : items
 
-        $http.post "#{@host}/api/assets/move", data
+        $http.post "#{@imagoConf.host}/api/assets/move", data
 
       copy: (items, src, dest) =>
         data =
@@ -36,10 +32,10 @@ class imagoModel extends Service
           dest  : dest
           items : items
 
-        $http.post "#{@host}/api/assets/copy", data
+        $http.post "#{@imagoConf.host}/api/assets/copy", data
 
       batch: (list) =>
-        $http.put "#{@host}/api/assets/update", {assets: list}
+        $http.put "#{@imagoConf.host}/api/assets/update", {assets: list}
 
   data: []
 
@@ -93,7 +89,6 @@ class imagoModel extends Service
 
         asset.assets = @findChildren(asset)
 
-
         if asset.count or asset.assets.length
 
           if asset.assets.length isnt asset.count
@@ -143,7 +138,7 @@ class imagoModel extends Service
           worker =
             assets :  result.assets
             order  :  result.sortorder
-            path   :  @sortWorker
+            path   :  @imagoConf.sort_worker
 
           fetches.push @imagoWorker.work(worker).then (response) =>
             result.assets = response.assets
@@ -431,7 +426,7 @@ class imagoModel extends Service
     count = list.length
 
     for asset, key in list
-      asset.order = (count-key) * 1000
+      asset.order = (count-key) * @imagoConf.indexCount
       ordered =
         '_id'   : asset._id
         'order' : asset.order
@@ -440,29 +435,37 @@ class imagoModel extends Service
 
     return newList
 
-  orderChanged:  (start, finish, dropped, list) =>
-    if dropped < finish
-      finish = finish+1
-      prev = if list[dropped-1] then list[dropped-1].order else list[list.length-1].order+1000
-      next = if list[finish] then list[finish].order else 0
-      assets = list.slice dropped, finish
+  reorder:  (dropped, list, selection, options = {}) =>
+    options.process = true if _.isUndefined options.process
 
-    else if dropped > start
-      dropped = dropped+1
-      prev = if list[start-1] then list[start-1].order else list[list.length-1].order+1000
-      next = if list[dropped] then list[dropped].order else 0
-      assets = list.slice(start, dropped)
+    if options.reverse
+      count = dropped - selection.length
+      idxOne = list[count]
+      idxTwo = if list[dropped+1] then list[dropped+1] else {order: 0}
+      selection = selection.reverse()
+
+    else if options.process is false
+      idxOne = list[dropped-1]
+      idxTwo = if list[dropped] then list[dropped] else {order: 0}
 
     else
-      return
+      count = dropped + selection.length
+      idxOne = if list[dropped-1] then list[dropped-1]
+      idxTwo = list[count]
 
-    count = prev-1000
+    if not idxOne
+      minusOrder = @imagoConf.indexCount
 
-    for asset in assets
-      asset.order = count
-      count = count-1000
+    else
+      minusOrder = (idxOne.order-idxTwo.order) / (selection.length+1)
 
-    return assets
+    data =
+      minus  : parseInt(minusOrder)
+      order  : parseInt(idxTwo.order + minusOrder)
+
+    # console.log 'selection.length', idxOne, idxTwo, data
+
+    return data
 
   batchChange: (assets) =>
     for asset, idx in assets
@@ -551,16 +554,16 @@ class imagoModel extends Service
         else
           if parent.sortorder is '-order'
             assets = parent.assets
-            asset.order = (if assets.length then assets[0].order + 1000 else 1000)
+            asset.order = (if assets.length then assets[0].order + @imagoConf.indexCount else @imagoConf.indexCount)
 
           else
             if parent.assets.length
               orderedList = @reindexAll(parent.assets)
               @update orderedList, {save: true}
-              asset.order = orderedList[0].order + 1000
+              asset.order = orderedList[0].order + @imagoConf.indexCount
 
             else
-              asset.order = 1000
+              asset.order = @imagoConf.indexCount
 
             parent.sortorder = '-order'
             @update parent, {save: true}
