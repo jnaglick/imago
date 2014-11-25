@@ -426,7 +426,7 @@ class imagoModel extends Service
     count = list.length
 
     for asset, key in list
-      asset.order = (count-key) * @imagoConf.indexCount
+      asset.order = (count-key) * @imagoConf.index
       ordered =
         '_id'   : asset._id
         'order' : asset.order
@@ -454,7 +454,7 @@ class imagoModel extends Service
       idxTwo = list[count]
 
     if not idxOne
-      minusOrder = @imagoConf.indexCount
+      minusOrder = @imagoConf.index
 
     else
       minusOrder = (idxOne.order-idxTwo.order) / (selection.length+1)
@@ -462,8 +462,6 @@ class imagoModel extends Service
     data =
       minus  : parseInt(minusOrder)
       order  : parseInt(idxTwo.order + minusOrder)
-
-    # console.log 'selection.length', idxOne, idxTwo, data
 
     return data
 
@@ -507,7 +505,7 @@ class imagoModel extends Service
       normalizeName = angular.copy(@imagoUtils.normalize(chr.name))
       return normalizeName is name
 
-    if assetsChildren.length > 0
+    if assetsChildren.length
 
       if assetsChildren.length is 1 and assetsChildren[0]._id is asset._id
         defer.resolve false
@@ -544,7 +542,6 @@ class imagoModel extends Service
         defer.resolve('duplicated')
 
       else
-
         if _.isString isDuplicated
           asset.name = isDuplicated
 
@@ -554,16 +551,16 @@ class imagoModel extends Service
         else
           if parent.sortorder is '-order'
             assets = parent.assets
-            asset.order = (if assets.length then assets[0].order + @imagoConf.indexCount else @imagoConf.indexCount)
+            asset.order = (if assets.length then assets[0].order + @imagoConf.index else @imagoConf.index)
 
           else
             if parent.assets.length
               orderedList = @reindexAll(parent.assets)
               @update orderedList, {save: true}
-              asset.order = orderedList[0].order + @imagoConf.indexCount
+              asset.order = orderedList[0].order + @imagoConf.index
 
             else
-              asset.order = @imagoConf.indexCount
+              asset.order = @imagoConf.index
 
             parent.sortorder = '-order'
             @update parent, {save: true}
