@@ -41,23 +41,16 @@ class imagoModel extends Service
 
   currentCollection: undefined
 
-  getSearchUrl: ->
-    if (data is 'online' and debug)
-      return "#{window.location.protocol}//api.2.imagoapp.com/api/search"
-    else
-      return "http://localhost:8000/api/search"
-
   search: (query) ->
     # console.log 'search...', query
     params = @formatQuery query
     # console.log 'params', params
-    return @$http.post(@getSearchUrl(), angular.toJson(params))
+    return @$http.post("#{@imagoConf.host}/api/search", angular.toJson(params))
 
-  getLocalData: (query, opts = {}) =>
-
+  getLocalData: (query, options = {}) =>
     defer = @$q.defer()
 
-    for key, value of opts
+    for key, value of options
       if key is 'localData' and value is false
         defer.reject query
 
@@ -110,7 +103,7 @@ class imagoModel extends Service
 
     defer.promise
 
-  getData: (query, opts = {}) =>
+  getData: (query, options = {}) =>
 
     defer = @$q.defer()
 
@@ -132,7 +125,7 @@ class imagoModel extends Service
         defer.resolve data
 
     _.forEach query, (value) =>
-      promises.push @getLocalData(value, opts).then (result) =>
+      promises.push @getLocalData(value, options).then (result) =>
 
         if result.assets
           worker =

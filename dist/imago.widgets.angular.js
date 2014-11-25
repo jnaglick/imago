@@ -995,28 +995,20 @@ imagoModel = (function() {
 
   imagoModel.prototype.currentCollection = void 0;
 
-  imagoModel.prototype.getSearchUrl = function() {
-    if (data === 'online' && debug) {
-      return "" + window.location.protocol + "//api.2.imagoapp.com/api/search";
-    } else {
-      return "http://localhost:8000/api/search";
-    }
-  };
-
   imagoModel.prototype.search = function(query) {
     var params;
     params = this.formatQuery(query);
-    return this.$http.post(this.getSearchUrl(), angular.toJson(params));
+    return this.$http.post("" + this.imagoConf.host + "/api/search", angular.toJson(params));
   };
 
-  imagoModel.prototype.getLocalData = function(query, opts) {
+  imagoModel.prototype.getLocalData = function(query, options) {
     var asset, defer, key, path, value;
-    if (opts == null) {
-      opts = {};
+    if (options == null) {
+      options = {};
     }
     defer = this.$q.defer();
-    for (key in opts) {
-      value = opts[key];
+    for (key in options) {
+      value = options[key];
       if (key === 'localData' && value === false) {
         defer.reject(query);
       }
@@ -1066,10 +1058,10 @@ imagoModel = (function() {
     return defer.promise;
   };
 
-  imagoModel.prototype.getData = function(query, opts) {
+  imagoModel.prototype.getData = function(query, options) {
     var data, defer, fetches, promises, resolve;
-    if (opts == null) {
-      opts = {};
+    if (options == null) {
+      options = {};
     }
     defer = this.$q.defer();
     query = angular.copy(query);
@@ -1096,7 +1088,7 @@ imagoModel = (function() {
     })(this);
     _.forEach(query, (function(_this) {
       return function(value) {
-        return promises.push(_this.getLocalData(value, opts).then(function(result) {
+        return promises.push(_this.getLocalData(value, options).then(function(result) {
           var worker;
           if (result.assets) {
             worker = {
