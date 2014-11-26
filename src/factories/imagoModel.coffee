@@ -41,16 +41,23 @@ class imagoModel extends Service
 
   currentCollection: undefined
 
+  getSearchUrl: ->
+    if (data is 'online' and debug)
+      return "#{window.location.protocol}//api.2.imagoapp.com/api/search"
+    else
+      return "http://localhost:8000/api/search"
+
   search: (query) ->
     # console.log 'search...', query
     params = @formatQuery query
-    # console.log 'params', params
-    return @$http.post("#{@imagoConf.host}/api/search", angular.toJson(params))
+    console.log 'params', params
+    return @$http.post(@getSearchUrl(), angular.toJson(params))
 
-  getLocalData: (query, options = {}) =>
+  getLocalData: (query, opts = {}) =>
+
     defer = @$q.defer()
 
-    for key, value of options
+    for key, value of opts
       if key is 'localData' and value is false
         defer.reject query
 
@@ -103,7 +110,7 @@ class imagoModel extends Service
 
     defer.promise
 
-  getData: (query, options = {}) =>
+  getData: (query, opts = {}) =>
 
     defer = @$q.defer()
 
@@ -125,7 +132,7 @@ class imagoModel extends Service
         defer.resolve data
 
     _.forEach query, (value) =>
-      promises.push @getLocalData(value, options).then (result) =>
+      promises.push @getLocalData(value, opts).then (result) =>
 
         if result.assets
           worker =
@@ -156,16 +163,20 @@ class imagoModel extends Service
 
   formatQuery: (query) ->
     querydict = {}
-    if angular.isArray(query)
+    if _.isArray query
       for elem in query
         for key of elem
           value = elem[key]
           querydict[key] or= []
           querydict[key].push(value)
-    else
+    else if _.isPlainObject query
       for key of query
         value = query[key]
         querydict[key] = if angular.isArray(value) then value else [value]
+
+    else if _.isString query
+      querydict['path'] = [query]
+
     for key in ['page', 'pagesize']
       if querydict.hasOwnProperty(key)
         querydict[key] = querydict[key][0]
