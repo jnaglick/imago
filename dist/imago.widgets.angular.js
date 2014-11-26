@@ -1068,7 +1068,7 @@ imagoModel = (function() {
     if (!query) {
       query = this.$location.path();
     }
-    if (angular.isString(query)) {
+    if (_.isString(query)) {
       query = [
         {
           path: query
@@ -1128,7 +1128,7 @@ imagoModel = (function() {
   imagoModel.prototype.formatQuery = function(query) {
     var elem, key, querydict, value, _i, _j, _len, _len1, _ref;
     querydict = {};
-    if (angular.isArray(query)) {
+    if (_.isArray(query)) {
       for (_i = 0, _len = query.length; _i < _len; _i++) {
         elem = query[_i];
         for (key in elem) {
@@ -1137,11 +1137,13 @@ imagoModel = (function() {
           querydict[key].push(value);
         }
       }
-    } else {
+    } else if (_.isPlainObject(query)) {
       for (key in query) {
         value = query[key];
         querydict[key] = angular.isArray(value) ? value : [value];
       }
+    } else if (_.isString(query)) {
+      querydict['path'] = [query];
     }
     _ref = ['page', 'pagesize'];
     for (_j = 0, _len1 = _ref.length; _j < _len1; _j++) {
