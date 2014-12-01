@@ -220,7 +220,7 @@ imagoImage = (function() {
               }
             }
             if (source.fields.hasOwnProperty('sizemode')) {
-              if (source.fields.crop.value !== 'default' && !attrs['sizemode']) {
+              if (source.fields.sizemode.value !== 'default' && !attrs['sizemode']) {
                 opts.sizemode = source.fields.sizemode.value;
               }
             }

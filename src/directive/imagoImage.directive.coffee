@@ -51,7 +51,7 @@ class imagoImage extends Directive
               opts.align = source.fields.crop.value
 
           if source.fields.hasOwnProperty('sizemode')
-            if source.fields.crop.value isnt 'default' and not attrs['sizemode']
+            if source.fields.sizemode.value isnt 'default' and not attrs['sizemode']
               opts.sizemode = source.fields.sizemode.value
 
           calcSize()
