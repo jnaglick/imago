@@ -12,26 +12,33 @@ class ResponsiveEvents extends Directive
           return if @resizeing
           $scope.$broadcast 'resizestart'
           @resizeing = true
-          w.one 'resizestop', => @resizeing = false
+          resizeStop = $scope.$on 'resizestop', =>
+            @resizeing = false
+            resizeStop()
 
         onScrollStart = (e) =>
           # console.log 'start scrolling', @
           return if @scrolling
           $scope.$broadcast 'scrollstart'
           @scrolling = true
-          w.one 'scrollstop', => @scrolling = false
+          scrollStop = $scope.$on 'scrollstop', =>
+            @scrolling = false
+            scrollStop()
 
         onMouseWheelStart = (e) =>
           return if @isMouseWheeling
           $scope.$broadcast 'mousewheelstart'
           @isMouseWheeling = true
-          w.one 'mousewheelstop', => @isMouseWheeling = false
+          mouseStop = $scope.$on 'mousewheelstop', =>
+            @isMouseWheeling = false
+            mouseStop()
 
         w.on 'resize', -> $scope.$broadcast 'resize'
 
         w.on 'resize', onResizeStart
         w.on 'resize', _.debounce ( -> $scope.$broadcast 'resizestop' ),  200
         w.on 'resize', _.throttle ( -> $scope.$broadcast 'resizelimit' ), 150
+
 
         w.on 'scroll', onScrollStart
         w.on 'scroll', _.debounce ( -> $scope.$broadcast 'scrollstop' ),  200

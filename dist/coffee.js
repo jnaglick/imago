@@ -11,24 +11,6 @@ App = (function() {
 
 angular.module('imago.widgets.angular', App());
 
-var imagoPage;
-
-imagoPage = (function() {
-  function imagoPage($scope, $state, imagoModel) {
-    var path;
-    path = '/';
-    imagoModel.getData(path).then(function(response) {
-      $scope.collection = response[0];
-      return $scope.assets = imagoModel.getChildren(response[0]);
-    });
-  }
-
-  return imagoPage;
-
-})();
-
-angular.module('imago.widgets.angular').controller('imagoPage', ['$scope', '$state', 'imagoModel', imagoPage]);
-
 var imagoCompile;
 
 imagoCompile = (function() {
@@ -162,6 +144,7 @@ var imagoImage;
 imagoImage = (function() {
   function imagoImage($window, $log, imagoUtils) {
     return {
+      replace: true,
       scope: true,
       templateUrl: '/imagoWidgets/imagoImage.html',
       controller: function($scope, $element, $attrs) {
@@ -169,7 +152,7 @@ imagoImage = (function() {
         return $scope.imageStyle = {};
       },
       link: function(scope, element, attrs) {
-        var calcMediaSize, calcSize, createServingUrl, key, opts, render, self, setImageStyle, source, value;
+        var calcMediaSize, initialize, key, opts, render, self, setImageStyle, source, value;
         self = {
           visible: false
         };
@@ -181,16 +164,12 @@ imagoImage = (function() {
           responsive: true,
           scale: 1,
           lazy: true,
-          maxsize: 2560,
-          width: '',
-          height: ''
+          maxsize: 2560
         };
         for (key in attrs) {
           value = attrs[key];
           if (value === 'true' || value === 'false') {
             opts[key] = JSON.parse(value);
-          } else if (key === 'width' || key === 'height') {
-            opts[key] = value === 'auto' ? value : parseInt(value);
           } else {
             opts[key] = value;
           }
@@ -208,21 +187,27 @@ imagoImage = (function() {
               element.remove();
               return;
             }
-            if (source.fields.hasOwnProperty('crop')) {
-              if (source.fields.crop.value !== 'default' && !attrs['align']) {
-                opts.align = source.fields.crop.value;
-              }
+            if (source.fields.hasOwnProperty('crop') && !attrs['align']) {
+              opts.align = source.fields.crop.value;
             }
             if (source.fields.hasOwnProperty('sizemode')) {
               if (source.fields.sizemode.value !== 'default' && !attrs['sizemode']) {
                 opts.sizemode = source.fields.sizemode.value;
               }
             }
-            return calcSize();
+            if (opts.responsive) {
+              if (opts.sizemode === 'crop') {
+                scope.$on('resizelimit', function() {
+                  calcMediaSize();
+                  return scope.$digest();
+                });
+              }
+            }
+            return initialize();
           };
         })(this));
-        calcSize = function() {
-          var height, r, width;
+        initialize = function() {
+          var dpr, height, r, servingSize, width, wrapperRatio;
           if (angular.isString(source.resolution)) {
             r = source.resolution.split('x');
             opts.resolution = {
@@ -235,47 +220,25 @@ imagoImage = (function() {
             return console.log('tried to render during rendering!!');
           }
           scope.status = 'preloading';
-          if (angular.isNumber(opts.width) && angular.isNumber(opts.height)) {
-            width = parseInt(opts.width);
-            height = parseInt(opts.height);
-          } else if (opts.height === 'auto' && angular.isNumber(opts.width)) {
-            height = parseInt(opts.width / opts.assetRatio);
-            width = opts.width;
-          } else if (opts.width === 'auto' && angular.isNumber(opts.height)) {
-            height = opts.height;
-            width = opts.height * opts.assetRatio;
-          } else if (opts.width === 'auto' && opts.height === 'auto') {
-            width = element[0].clientWidth;
-            height = width / opts.assetRatio;
-          } else {
-            width = element[0].clientWidth;
-            height = element[0].clientHeight;
-          }
-          if (opts.width === 'auto' && opts.height === 'auto') {
-            scope.elementStyle = {
-              height: Math.round(height) + 'px'
-            };
-          } else if (opts.width === 'auto' || opts.height === 'auto') {
-            scope.elementStyle = {
-              width: Math.round(width) + 'px',
-              height: Math.round(height) + 'px'
-            };
-          }
           scope.align = opts.align;
-          return createServingUrl(width, height);
-        };
-        createServingUrl = function(width, height) {
-          var dpr, servingSize, servingUrl, wrapperRatio;
-          wrapperRatio = width / height;
+          scope.sizemode = opts.sizemode;
+          width = element[0].clientWidth;
+          height = element[0].clientHeight;
+          if (height) {
+            wrapperRatio = width / height;
+          }
           dpr = opts.hires ? Math.ceil($window.devicePixelRatio) || 1 : 1;
-          if (opts.sizemode === 'crop') {
+          if (opts.sizemode === 'crop' && height) {
             if (opts.assetRatio <= wrapperRatio) {
               servingSize = Math.round(Math.max(width, width / opts.assetRatio));
             } else {
               servingSize = Math.round(Math.max(height, height * opts.assetRatio));
             }
           } else {
-            if (opts.assetRatio <= wrapperRatio) {
+            if (!height || opts.autosize) {
+              opts.autosize = true;
+              servingSize = Math.round(Math.max(width, width / opts.assetRatio));
+            } else if (opts.assetRatio <= wrapperRatio) {
               servingSize = Math.round(Math.max(height, height * opts.assetRatio));
             } else {
               servingSize = Math.round(Math.max(width, width / opts.assetRatio));
@@ -288,17 +251,13 @@ imagoImage = (function() {
           }
           opts.servingSize = servingSize;
           if (imagoUtils.isBaseString(source.serving_url)) {
-            servingUrl = source.serving_url;
+            opts.servingUrl = source.serving_url;
           } else {
-            servingUrl = "" + source.serving_url + "=s" + (servingSize * opts.scale);
+            opts.servingUrl = "" + source.serving_url + "=s" + (servingSize * opts.scale);
           }
-          if (!opts.responsive) {
-            scope.imageStyle.width = "" + (parseInt(width, 10)) + "px";
-            scope.imageStyle.height = "" + (parseInt(height, 10)) + "px";
-          }
-          return render(servingUrl);
+          return render();
         };
-        render = function(servingUrl) {
+        render = function() {
           var img;
           if (opts.lazy && !self.visible) {
             return self.visibleFunc = scope.$watch(attrs['visible'], (function(_this) {
@@ -308,83 +267,62 @@ imagoImage = (function() {
                 }
                 self.visible = true;
                 self.visibleFunc();
-                return render(servingUrl);
+                return render();
               };
             })(this));
           } else {
             img = angular.element('<img>');
-            img.on('load', (function(_this) {
-              return function(e) {
-                scope.imageStyle = setImageStyle(servingUrl);
-                scope.status = 'loaded';
-                return scope.$apply();
-              };
-            })(this));
-            return img[0].src = servingUrl;
+            img.on('load', function(e) {
+              if (opts.sizemode === 'crop') {
+                scope.imageStyle = {
+                  backgroundImage: "url(" + opts.servingUrl + ")",
+                  backgroundSize: calcMediaSize(),
+                  backgroundPosition: opts.align
+                };
+              } else {
+                scope.servingUrl = opts.servingUrl;
+              }
+              scope.status = 'loaded';
+              return scope.$digest();
+            });
+            return img[0].src = opts.servingUrl;
           }
         };
-        calcMediaSize = (function(_this) {
-          return function() {
-            var height, width, wrapperRatio;
-            width = element[0].clientWidth || opts.width;
-            height = element[0].clientHeight || opts.height;
-            if (!(width && height)) {
-              return;
-            }
+        calcMediaSize = function() {
+          var height, width, wrapperRatio;
+          width = element[0].clientWidth;
+          height = element[0].clientHeight;
+          if (height) {
             wrapperRatio = width / height;
-            if (opts.sizemode === 'crop') {
-              if (opts.assetRatio < wrapperRatio) {
-                return "100% auto";
-              } else {
-                return "auto 100%";
-              }
+          }
+          if (opts.sizemode === 'crop') {
+            if (opts.assetRatio < wrapperRatio) {
+              return scope.imageStyle['background-size'] = "100% auto";
             } else {
-              if (opts.assetRatio > wrapperRatio) {
-                return "100% auto";
-              } else {
-                return "auto 100%";
-              }
+              return scope.imageStyle['background-size'] = "auto 100%";
             }
-          };
-        })(this);
-        setImageStyle = function(servingUrl) {
-          var height, styles, width, wrapperRatio;
-          width = element[0].clientWidth || opts.width;
-          height = element[0].clientHeight || opts.height;
-          if (!(width && height)) {
-            return;
           }
-          wrapperRatio = width / height;
-          styles = {
-            backgroundImage: "url(" + servingUrl + ")",
-            backgroundSize: calcMediaSize(),
-            backgroundPosition: opts.align,
-            display: 'inline-block'
-          };
-          if (opts.assetRatio > wrapperRatio) {
-            styles.width = "" + width + "px";
-            styles.height = "" + (Math.round(width / opts.assetRatio)) + "px";
-          } else {
-            styles.width = "" + (Math.round(height * opts.assetRatio)) + "px";
-            styles.height = "" + height + "px";
-          }
-          return styles;
         };
-        scope.onResize = (function(_this) {
-          return function() {
-            return scope.imageStyle['background-size'] = calcMediaSize();
-          };
-        })(this);
-        if (opts.responsive) {
-          scope.$on('resizelimit', scope.onResize);
-          scope.$on('resizestop', (function(_this) {
-            return function() {
-              scope.status = 'loading';
-              return calcSize();
+        setImageStyle = function() {
+          var styles;
+          if (opts.sizemode === 'crop') {
+            styles = {
+              backgroundImage: "url(" + opts.servingUrl + ")",
+              backgroundSize: calcMediaSize(),
+              backgroundPosition: opts.align
             };
-          })(this));
+            return styles;
+          } else {
+            scope.servingUrl = opts.servingUrl;
+          }
+        };
+        if (opts.responsive) {
+          scope.$on('resizestop', function() {
+            scope.status = 'loading';
+            return initialize();
+          });
         }
-        return angular.element($window).on("orientationchange", calcSize);
+        return angular.element($window).on("orientationchange", initialize);
       }
     };
   }
@@ -804,37 +742,43 @@ ResponsiveEvents = (function() {
         w = angular.element($window);
         onResizeStart = (function(_this) {
           return function(e) {
+            var resizeStop;
             if (_this.resizeing) {
               return;
             }
             $scope.$broadcast('resizestart');
             _this.resizeing = true;
-            return w.one('resizestop', function() {
-              return _this.resizeing = false;
+            return resizeStop = $scope.$on('resizestop', function() {
+              _this.resizeing = false;
+              return resizeStop();
             });
           };
         })(this);
         onScrollStart = (function(_this) {
           return function(e) {
+            var scrollStop;
             if (_this.scrolling) {
               return;
             }
             $scope.$broadcast('scrollstart');
             _this.scrolling = true;
-            return w.one('scrollstop', function() {
-              return _this.scrolling = false;
+            return scrollStop = $scope.$on('scrollstop', function() {
+              _this.scrolling = false;
+              return scrollStop();
             });
           };
         })(this);
         onMouseWheelStart = (function(_this) {
           return function(e) {
+            var mouseStop;
             if (_this.isMouseWheeling) {
               return;
             }
             $scope.$broadcast('mousewheelstart');
             _this.isMouseWheeling = true;
-            return w.one('mousewheelstop', function() {
-              return _this.isMouseWheeling = false;
+            return mouseStop = $scope.$on('mousewheelstop', function() {
+              _this.isMouseWheeling = false;
+              return mouseStop();
             });
           };
         })(this);
@@ -893,6 +837,24 @@ StopPropagation = (function() {
 })();
 
 angular.module('imago.widgets.angular').directive('stopPropagation', [StopPropagation]);
+
+var imagoPage;
+
+imagoPage = (function() {
+  function imagoPage($scope, $state, imagoModel) {
+    var path;
+    path = '/';
+    imagoModel.getData(path).then(function(response) {
+      $scope.collection = response[0];
+      return $scope.assets = imagoModel.getChildren(response[0]);
+    });
+  }
+
+  return imagoPage;
+
+})();
+
+angular.module('imago.widgets.angular').controller('imagoPage', ['$scope', '$state', 'imagoModel', imagoPage]);
 
 var imagoModel,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
