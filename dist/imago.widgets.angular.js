@@ -214,11 +214,15 @@ imagoImage = (function() {
               element.remove();
               return;
             }
-            if (source.fields.hasOwnProperty('crop') && !attrs['align']) {
-              opts.align = source.fields.crop.value;
+            if (source.fields.hasOwnProperty('crop')) {
+              if (source.fields.crop.value !== 'default' && !attrs['align']) {
+                opts.align = source.fields.crop.value;
+              }
             }
-            if (source.fields.hasOwnProperty('sizemode') && !attrs['sizemode']) {
-              opts.sizemode = source.fields.sizemode.value;
+            if (source.fields.hasOwnProperty('sizemode')) {
+              if (source.fields.crop.value !== 'default' && !attrs['sizemode']) {
+                opts.sizemode = source.fields.sizemode.value;
+              }
             }
             return calcSize();
           };
