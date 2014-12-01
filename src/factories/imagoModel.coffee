@@ -1,22 +1,22 @@
 class imagoModel extends Service
 
-  constructor: (@$rootScope, @$http, @$location, @$q, @imagoUtils, @imagoWorker, @imagoConf) ->
+  constructor: (@$rootScope, @$http, @$location, @$q, @imagoUtils, @imagoWorker, @imagoSettings) ->
 
     @assets =
       get: (id) =>
-        $http.get "#{@imagoConf.host}/api/assets/#{id}"
+        $http.get "#{@imagoSettings.host}/api/assets/#{id}"
 
       create: (assets) =>
-        $http.post "#{@imagoConf.host}/api/assets", assets
+        $http.post "#{@imagoSettings.host}/api/assets", assets
 
       update: (item) =>
-        $http.put "#{@imagoConf.host}/api/assets/#{item._id}", item
+        $http.put "#{@imagoSettings.host}/api/assets/#{item._id}", item
 
       delete: (id) =>
-        $http.delete "#{@imagoConf.host}/api/assets/#{id}"
+        $http.delete "#{@imagoSettings.host}/api/assets/#{id}"
 
       trash: (assets) =>
-        $http.post "#{@imagoConf.host}/api/assets/trash", assets
+        $http.post "#{@imagoSettings.host}/api/assets/trash", assets
 
       move: (items, src, dest) =>
         data =
@@ -24,7 +24,7 @@ class imagoModel extends Service
           dest  : dest
           items : items
 
-        $http.post "#{@imagoConf.host}/api/assets/move", data
+        $http.post "#{@imagoSettings.host}/api/assets/move", data
 
       copy: (items, src, dest) =>
         data =
@@ -32,10 +32,10 @@ class imagoModel extends Service
           dest  : dest
           items : items
 
-        $http.post "#{@imagoConf.host}/api/assets/copy", data
+        $http.post "#{@imagoSettings.host}/api/assets/copy", data
 
       batch: (list) =>
-        $http.put "#{@imagoConf.host}/api/assets/update", {assets: list}
+        $http.put "#{@imagoSettings.host}/api/assets/update", {assets: list}
 
   data: []
 
@@ -45,7 +45,7 @@ class imagoModel extends Service
     # console.log 'search...', query
     params = @formatQuery query
     # console.log 'params', params
-    return @$http.post("#{@imagoConf.host}/api/search", angular.toJson(params))
+    return @$http.post("#{@imagoSettings.host}/api/search", angular.toJson(params))
 
   getLocalData: (query, options = {}) =>
     defer = @$q.defer()
@@ -131,7 +131,7 @@ class imagoModel extends Service
           worker =
             assets :  result.assets
             order  :  result.sortorder
-            path   :  @imagoConf.sort_worker
+            path   :  @imagoSettings.sort_worker
 
           fetches.push @imagoWorker.work(worker).then (response) =>
             result.assets = response.assets
@@ -423,7 +423,7 @@ class imagoModel extends Service
     count = list.length
 
     for asset, key in list
-      asset.order = (count-key) * @imagoConf.index
+      asset.order = (count-key) * @imagoSettings.index
       ordered =
         '_id'   : asset._id
         'order' : asset.order
@@ -451,7 +451,7 @@ class imagoModel extends Service
       idxTwo = list[count]
 
     if not idxOne
-      minusOrder = @imagoConf.index
+      minusOrder = @imagoSettings.index
 
     else
       minusOrder = (idxOne.order-idxTwo.order) / (selection.length+1)
@@ -548,16 +548,16 @@ class imagoModel extends Service
         else
           if parent.sortorder is '-order'
             assets = parent.assets
-            asset.order = (if assets.length then assets[0].order + @imagoConf.index else @imagoConf.index)
+            asset.order = (if assets.length then assets[0].order + @imagoSettings.index else @imagoSettings.index)
 
           else
             if parent.assets.length
               orderedList = @reindexAll(parent.assets)
               @update orderedList, {save: true}
-              asset.order = orderedList[0].order + @imagoConf.index
+              asset.order = orderedList[0].order + @imagoSettings.index
 
             else
-              asset.order = @imagoConf.index
+              asset.order = @imagoSettings.index
 
             parent.sortorder = '-order'
             @update parent, {save: true}
