@@ -3,7 +3,6 @@ class imagoImage extends Directive
   constructor: ($window, $log, imagoUtils) ->
 
     return {
-      replace: true
       scope: true
       templateUrl: '/imagoWidgets/imagoImage.html'
       controller: ($scope, $element, $attrs) ->

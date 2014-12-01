@@ -167,7 +167,6 @@ var imagoImage;
 imagoImage = (function() {
   function imagoImage($window, $log, imagoUtils) {
     return {
-      replace: true,
       scope: true,
       templateUrl: '/imagoWidgets/imagoImage.html',
       controller: function($scope, $element, $attrs) {
@@ -406,7 +405,6 @@ var imagoSlider;
 imagoSlider = (function() {
   function imagoSlider($rootScope, $q, $document, imagoModel, $interval) {
     return {
-      replace: true,
       transclude: true,
       scope: true,
       templateUrl: '/imagoWidgets/imagoSlider.html',
@@ -504,7 +502,6 @@ var imagoVideo;
 imagoVideo = (function() {
   function imagoVideo($q, $timeout, $window, imagoUtils) {
     return {
-      replace: true,
       scope: true,
       templateUrl: '/imagoWidgets/imagoVideo.html',
       controller: function($scope, $element, $attrs, $transclude) {
