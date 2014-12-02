@@ -43,7 +43,7 @@ class imagoModel extends Service
 
   search: (query) ->
     # console.log 'search...', query
-    params = @formatQuery query
+    params = _.map query, @formatQuery
     # console.log 'params', params
     return @$http.post("#{@imagoSettings.host}/api/search", angular.toJson(params))
 
@@ -104,9 +104,7 @@ class imagoModel extends Service
     defer.promise
 
   getData: (query, options = {}) =>
-
     defer = @$q.defer()
-
     query = angular.copy query
 
     query = @$location.path() unless query
@@ -119,10 +117,22 @@ class imagoModel extends Service
     promises = []
     fetches = []
     data = []
+    rejected = []
+
+    # resolve = =>
+    #   @$q.all(fetches).then (resolve) =>
+    #     console.log 'data', data
+    #     defer.resolve data
 
     resolve = =>
-      @$q.all(fetches).then (resolve) =>
+      dif = @$q.defer()
+      fetches.push @search(rejected).then (response) =>
+        console.log 'rejected query', rejected
+        return unless response.data
+        for res in response.data
+          data.push @create res
         defer.resolve data
+      dif.promise
 
     _.forEach query, (value) =>
       promises.push @getLocalData(value, options).then (result) =>
@@ -134,20 +144,17 @@ class imagoModel extends Service
             path   :  @imagoSettings.sort_worker
 
           fetches.push @imagoWorker.work(worker).then (response) =>
-            result.assets = response.assets
-            data.push result
-            data = _.flatten data
+              result.assets = response.assets
+              data.push result
+              data = _.flatten data
 
         else
           data.push result
           data = _.flatten data
 
       , (reject) =>
-        console.log 'rejected query', reject
-        fetches.push @search(reject).then (response) =>
-          return unless response.data
-          response.data.page = reject.page if reject.page
-          data.push @create response.data
+        # console.log 'rejected query', reject
+        rejected.push reject
 
     @$q.all(promises).then (response) ->
       resolve()
