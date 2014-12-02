@@ -13,6 +13,7 @@ class imagoImage extends Directive
 
       link: (scope, element, attrs) ->
 
+
         self = {visible: false}
         source = {}
 
@@ -24,14 +25,14 @@ class imagoImage extends Directive
           scale     : 1
           lazy      : true
           maxsize   : 2560
-          width     : ''
-          height    : ''
+          # width     : ''
+          # height    : ''
 
         for key, value of attrs
           if value is 'true' or value is 'false'
             opts[key] = JSON.parse value
-          else if key is 'width' or key is 'height'
-            opts[key] = if value is 'auto' then value else parseInt value
+          # else if key is 'width' or key is 'height'
+          #   opts[key] = if value is 'auto' then value else parseInt value
           else
             opts[key] = value
 
@@ -46,17 +47,23 @@ class imagoImage extends Directive
             element.remove()
             return
 
-          if source.fields.hasOwnProperty('crop')
-            if source.fields.crop.value isnt 'default' and not attrs['align']
+          if source.fields.hasOwnProperty('crop') and not attrs['align']
               opts.align = source.fields.crop.value
-
           if source.fields.hasOwnProperty('sizemode')
             if source.fields.sizemode.value isnt 'default' and not attrs['sizemode']
               opts.sizemode = source.fields.sizemode.value
 
-          calcSize()
 
-        calcSize = ->
+          if opts.responsive
+            if opts.sizemode is 'crop'
+              scope.$on 'resizelimit', () ->
+                calcMediaSize()
+                scope.$digest()
+
+          initialize()
+
+
+        initialize = () ->
 
           if angular.isString(source.resolution)
             r = source.resolution.split('x')
@@ -68,56 +75,13 @@ class imagoImage extends Directive
           return console.log('tried to render during rendering!!') if scope.status is 'preloading'
           scope.status = 'preloading'
 
-          # console.log 'opts.assetRatio', opts.assetRatio
-          # use pvrovided dimentions.
-          if angular.isNumber(opts.width) and angular.isNumber(opts.height)
-            # $log.log 'fixed size', opts.width, opts.height
-            width  = parseInt(opts.width)
-            height = parseInt(opts.height)
-
-          #
-          # # fit width
-          else if opts.height is 'auto' and angular.isNumber(opts.width)
-            height =  parseInt opts.width / opts.assetRatio
-            width  =  opts.width
-            # $log.log 'fit width', opts.width, opts.height
-          #
-          # # fit height
-          else if opts.width is 'auto' and angular.isNumber(opts.height)
-            height = opts.height
-            width  = opts.height * opts.assetRatio
-            # $log.log 'fit height', width, opts.height
-          #
-          # # we want dynamic resizing without css.
-          # # like standard image behaviour. will get a height according to the width
-          else if opts.width is 'auto' and opts.height is 'auto'
-            width  = element[0].clientWidth
-            height = width / opts.assetRatio
-
-            # $log.log 'both auto', opts.width, opts.height, width, height, opts.assetRatio
-          #
-          # # width and height dynamic, needs to be defined via css
-          # # either width height or position
-          else
-            width  = element[0].clientWidth
-            height = element[0].clientHeight
-            # $log.log 'width and height dynamic', width, height
-
-          if opts.width is 'auto' and opts.height is 'auto'
-            scope.elementStyle =
-              height: Math.round(height) + 'px'
-          else if opts.width is 'auto' or opts.height is 'auto'
-            scope.elementStyle =
-              width: Math.round(width) + 'px'
-              height: Math.round(height) + 'px'
-
           scope.align = opts.align
+          scope.sizemode = opts.sizemode
 
-          createServingUrl(width, height)
+          width  = element[0].clientWidth
+          height = element[0].clientHeight
 
-        createServingUrl = (width, height) ->
-
-          wrapperRatio = width / height
+          wrapperRatio = width / height if height
 
           # $log.log 'width, height, wrapperRatio, opts.assetRatio', width, height, wrapperRatio, opts.assetRatio
           # debugger
@@ -126,7 +90,7 @@ class imagoImage extends Directive
 
           # $log.log 'width, height', width, height
 
-          if opts.sizemode is 'crop'
+          if opts.sizemode is 'crop' and height
             if opts.assetRatio <= wrapperRatio
               # $log.log 'crop full width'
               servingSize = Math.round(Math.max(width, width / opts.assetRatio))
@@ -137,7 +101,12 @@ class imagoImage extends Directive
           # sizemode fit
           else
             # $log.log 'assetratio: ', opts.assetRatio, 'wrapperraito: ' , wrapperRatio
-            if opts.assetRatio <= wrapperRatio
+            if not height or opts.autosize
+              opts.autosize = true
+              # console.log 'opts.autosize inside', opts.autosize
+              servingSize = Math.round(Math.max(width, width / opts.assetRatio))
+
+            else if opts.assetRatio <= wrapperRatio
               # $log.log 'fit full height', opts.width, opts.height, opts.assetRatio, opts.height * assetRatio
               servingSize = Math.round(Math.max(height, height * opts.assetRatio))
             else
@@ -155,86 +124,93 @@ class imagoImage extends Directive
           opts.servingSize = servingSize
 
           if imagoUtils.isBaseString(source.serving_url)
-            servingUrl = source.serving_url
+            opts.servingUrl = source.serving_url
 
           else
-            servingUrl = "#{ source.serving_url }=s#{ servingSize * opts.scale }"
+            opts.servingUrl = "#{ source.serving_url }=s#{ servingSize * opts.scale }"
 
           # $log.log 'servingURl', servingUrl
-          unless opts.responsive
-            scope.imageStyle.width  = "#{parseInt width,  10}px"
-            scope.imageStyle.height = "#{parseInt height, 10}px"
 
-          render(servingUrl)
+          render()
 
-        render = (servingUrl) ->
+
+        render = () ->
+
           if  opts.lazy and not self.visible
             self.visibleFunc = scope.$watch attrs['visible'], (value) =>
               return unless value
               self.visible = true
               self.visibleFunc()
-              render(servingUrl)
+              render()
           else
             img = angular.element('<img>')
-            img.on 'load', (e) =>
-              scope.imageStyle = setImageStyle(servingUrl)
+            img.on 'load', (e) ->
+
+              if opts.sizemode is 'crop'
+                scope.imageStyle =
+                  backgroundImage:    "url(#{opts.servingUrl})"
+                  backgroundSize:     calcMediaSize()
+                  backgroundPosition: opts.align
+
+              else
+                scope.servingUrl = opts.servingUrl
+
               scope.status     = 'loaded'
-              scope.$apply()
+              scope.$digest()
             # console.log 'scope.imageStyle', scope.imageStyle
 
-            img[0].src = servingUrl
+            img[0].src = opts.servingUrl
 
-        calcMediaSize = () =>
+        calcMediaSize = () ->
 
           # $log.log 'calcMediaSize', opts.sizemode
-          width  = element[0].clientWidth  or opts.width
-          height = element[0].clientHeight or opts.height
+          width  = element[0].clientWidth
+          height = element[0].clientHeight
 
-          return unless width and height
+          # return unless width and height
 
-          wrapperRatio = width / height
+          wrapperRatio = width / height if height
 
           if opts.sizemode is 'crop'
-            # $log.log 'opts.sizemode crop', opts.assetRatio, wrapperRatio
-            if opts.assetRatio < wrapperRatio then "100% auto" else "auto 100%"
+            # crop
+            if opts.assetRatio < wrapperRatio
+              scope.imageStyle['background-size'] = "100% auto"
+            else
+              scope.imageStyle['background-size'] = "auto 100%"
+          # else
+          #   # fit
+          #   if opts.assetRatio > wrapperRatio
+          #     scope.imageStyle['width']  = 'auto'
+          #     scope.imageStyle['height'] = '100%'
+          #   else
+          #     scope.imageStyle['width']  = '100%'
+          #     scope.imageStyle['height'] = 'auto'
+
+        setImageStyle = () ->
+          if opts.sizemode is 'crop'
+            styles =
+              backgroundImage:    "url(#{opts.servingUrl})"
+              backgroundSize:     calcMediaSize()
+              backgroundPosition: opts.align
+            return styles
+
           else
-            # $log.log 'opts.sizemode fit', opts.assetRatio, wrapperRatio
-            if opts.assetRatio > wrapperRatio then "100% auto" else "auto 100%"
+            scope.servingUrl = opts.servingUrl
+            # styles = calcMediaSize()
+          return
 
-        setImageStyle = (servingUrl) ->
-          width  = element[0].clientWidth  or opts.width
-          height = element[0].clientHeight or opts.height
-
-          return unless width and height
-          wrapperRatio = width / height
-
-          styles =
-            backgroundImage:    "url(#{servingUrl})"
-            backgroundSize:     calcMediaSize()
-            backgroundPosition: opts.align
-            display:            'inline-block'
-
-          if opts.assetRatio > wrapperRatio
-            styles.width  = "#{width}px"
-            styles.height = "#{Math.round(width / opts.assetRatio)}px"
-          else
-            styles.width  = "#{Math.round(height * opts.assetRatio)}px"
-            styles.height = "#{height}px"
-
-          styles
-
-        scope.onResize = () =>
-          # console.log 'onResize func', scope.calcMediaSize()
-          scope.imageStyle['background-size'] = calcMediaSize()
 
         if opts.responsive
-          scope.$on 'resizelimit', scope.onResize
+          # console.log 'resize', scope.onResize()
 
-          scope.$on 'resizestop', () =>
-            # console.log 'resizestop'
+          # scope.$on 'resizestart', () ->
+          #   scope.resizing = 'resizing'
+
+          scope.$on 'resizestop', () ->
             scope.status = 'loading'
-            calcSize()
+            # scope.resizing = ''
+            initialize()
 
-        angular.element($window).on "orientationchange", calcSize
+        angular.element($window).on "orientationchange", initialize
 
     }

@@ -2,7 +2,6 @@ class imagoSlider extends Directive
 
   constructor: ($rootScope, $q, $document, imagoModel, $interval) ->
     return {
-      replace: true
       transclude: true
       scope: true
       templateUrl: '/imagoWidgets/imagoSlider.html'
