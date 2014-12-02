@@ -119,20 +119,15 @@ class imagoModel extends Service
     data = []
     rejected = []
 
-    # resolve = =>
-    #   @$q.all(fetches).then (resolve) =>
-    #     console.log 'data', data
-    #     defer.resolve data
-
     resolve = =>
-      dif = @$q.defer()
       fetches.push @search(rejected).then (response) =>
         console.log 'rejected query', rejected
         return unless response.data
         for res in response.data
           data.push @create res
+
+      @$q.all(fetches).then (resolve) =>
         defer.resolve data
-      dif.promise
 
     _.forEach query, (value) =>
       promises.push @getLocalData(value, options).then (result) =>
@@ -153,7 +148,6 @@ class imagoModel extends Service
           data = _.flatten data
 
       , (reject) =>
-        # console.log 'rejected query', reject
         rejected.push reject
 
     @$q.all(promises).then (response) ->

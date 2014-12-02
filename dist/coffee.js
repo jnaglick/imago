@@ -11,6 +11,24 @@ App = (function() {
 
 angular.module('imago.widgets.angular', App());
 
+var imagoPage;
+
+imagoPage = (function() {
+  function imagoPage($scope, $state, imagoModel) {
+    var path;
+    path = '/';
+    imagoModel.getData(path).then(function(response) {
+      $scope.collection = response[0];
+      return $scope.assets = imagoModel.getChildren(response[0]);
+    });
+  }
+
+  return imagoPage;
+
+})();
+
+angular.module('imago.widgets.angular').controller('imagoPage', ['$scope', '$state', 'imagoModel', imagoPage]);
+
 var imagoCompile;
 
 imagoCompile = (function() {
@@ -838,81 +856,6 @@ StopPropagation = (function() {
 
 angular.module('imago.widgets.angular').directive('stopPropagation', [StopPropagation]);
 
-var imagoPage;
-
-imagoPage = (function() {
-  function imagoPage($scope, $state, imagoModel) {
-    var path;
-    path = '/';
-    imagoModel.getData(path).then(function(response) {
-      $scope.collection = response[0];
-      return $scope.assets = imagoModel.getChildren(response[0]);
-    });
-  }
-
-  return imagoPage;
-
-})();
-
-angular.module('imago.widgets.angular').controller('imagoPage', ['$scope', '$state', 'imagoModel', imagoPage]);
-
-var Meta;
-
-Meta = (function() {
-  function Meta() {
-    return function(input, value) {
-      if (!(input && value && input.fields[value])) {
-        return;
-      }
-      if (input.fields[value].value.type) {
-        return input.fields[value].value.value;
-      } else {
-        return input.fields[value].value;
-      }
-    };
-  }
-
-  return Meta;
-
-})();
-
-angular.module('imago.widgets.angular').filter('meta', [Meta]);
-
-var Time;
-
-Time = (function() {
-  function Time() {
-    return function(input) {
-      var calc, hours, minutes, pad, seconds;
-      if (typeof input !== 'number') {
-        return;
-      }
-      pad = function(num) {
-        if (num < 10) {
-          return "0" + num;
-        }
-        return num;
-      };
-      calc = [];
-      minutes = Math.floor(input / 60);
-      hours = Math.floor(input / 3600);
-      seconds = (input === 0 ? 0 : input % 60);
-      seconds = Math.round(seconds);
-      if (hours > 0) {
-        calc.push(pad(hours));
-      }
-      calc.push(pad(minutes));
-      calc.push(pad(seconds));
-      return calc.join(":");
-    };
-  }
-
-  return Time;
-
-})();
-
-angular.module('imago.widgets.angular').filter('time', [Time]);
-
 var imagoModel,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 
@@ -1097,22 +1040,23 @@ imagoModel = (function() {
     rejected = [];
     resolve = (function(_this) {
       return function() {
-        var dif;
-        dif = _this.$q.defer();
         fetches.push(_this.search(rejected).then(function(response) {
-          var res, _i, _len, _ref;
+          var res, _i, _len, _ref, _results;
           console.log('rejected query', rejected);
           if (!response.data) {
             return;
           }
           _ref = response.data;
+          _results = [];
           for (_i = 0, _len = _ref.length; _i < _len; _i++) {
             res = _ref[_i];
-            data.push(_this.create(res));
+            _results.push(data.push(_this.create(res)));
           }
-          return defer.resolve(data);
+          return _results;
         }));
-        return dif.promise;
+        return _this.$q.all(fetches).then(function(resolve) {
+          return defer.resolve(data);
+        });
       };
     })(this);
     _.forEach(query, (function(_this) {
@@ -2587,6 +2531,63 @@ imagoWorker = (function() {
 })();
 
 angular.module('imago.widgets.angular').service('imagoWorker', ['$q', imagoWorker]);
+
+var Meta;
+
+Meta = (function() {
+  function Meta() {
+    return function(input, value) {
+      if (!(input && value && input.fields[value])) {
+        return;
+      }
+      if (input.fields[value].value.type) {
+        return input.fields[value].value.value;
+      } else {
+        return input.fields[value].value;
+      }
+    };
+  }
+
+  return Meta;
+
+})();
+
+angular.module('imago.widgets.angular').filter('meta', [Meta]);
+
+var Time;
+
+Time = (function() {
+  function Time() {
+    return function(input) {
+      var calc, hours, minutes, pad, seconds;
+      if (typeof input !== 'number') {
+        return;
+      }
+      pad = function(num) {
+        if (num < 10) {
+          return "0" + num;
+        }
+        return num;
+      };
+      calc = [];
+      minutes = Math.floor(input / 60);
+      hours = Math.floor(input / 3600);
+      seconds = (input === 0 ? 0 : input % 60);
+      seconds = Math.round(seconds);
+      if (hours > 0) {
+        calc.push(pad(hours));
+      }
+      calc.push(pad(minutes));
+      calc.push(pad(seconds));
+      return calc.join(":");
+    };
+  }
+
+  return Time;
+
+})();
+
+angular.module('imago.widgets.angular').filter('time', [Time]);
 
 var lodash;
 
