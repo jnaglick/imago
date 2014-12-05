@@ -4,8 +4,11 @@ class imagoSlider extends Directive
     return {
       transclude: true
       scope: true
+      replace: true
       templateUrl: '/imagoWidgets/imagoSlider.html'
+      controllerAs: 'slider'
       controller: ($scope) ->
+        @test = 'dhsajkdh'
 
         $scope.conf =
           animation:    'fade'
@@ -16,17 +19,20 @@ class imagoSlider extends Directive
           namespace:    'slider'
           autoplay:     0
 
-      link: (scope, element, attrs, ctrl, transclude) ->
+        @currentIndex = 0
 
-        transclude scope, (clone, scope) ->
-          element.append(clone)
+      link: (scope, element, attrs, ctrl, transclude) ->
+        console.log 'slider', ctrl
+        # transclude scope, (clone, scope) ->
+        #   console.log 'element, clone', element, clone
+        #   element.append(clone)
 
         angular.forEach attrs, (value, key) ->
           if value is 'true' or value is 'false'
             value = JSON.parse value
           scope.conf[key] = value
 
-        scope.currentIndex = scope.conf.current
+        ctrl.currentIndex = scope.conf.current
 
         scope.goPrev = ($event) ->
           scope.setCurrent(if (scope.currentIndex > 0) then scope.currentIndex - 1 else parseInt(attrs.length) - 1)
