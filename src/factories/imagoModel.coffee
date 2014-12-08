@@ -90,7 +90,7 @@ class imagoModel extends Service
             defer.reject query
 
           else
-            # console.log 'passed assets resolve'
+            console.log 'passed assets resolve'
             asset.assets = @filterAssets(asset.assets, query)
             defer.resolve asset
 
@@ -214,7 +214,8 @@ class imagoModel extends Service
     _.findIndex @data, options
 
   filterAssets: (assets, query) =>
-    delete query.path if query.path
+    # delete query.path if query.path
+    query = _.omit query, 'path'
     if _.keys(query).length > 0
       for key, value of query
         for params in value
