@@ -1,4 +1,5 @@
 .imagoimage
+  position: relative
   overflow: hidden
   flex-direction: row
   display: inline-flex
@@ -6,13 +7,13 @@
   &.center
     justify-content: center
     align-items: center
-  &.left
-    align-items: flex-start
-  &.right
-    align-items: flex-end
   &.top
-    justify-content: flex-start
+    align-items: flex-start
   &.bottom
+    align-items: flex-end
+  &.left
+    justify-content: flex-start
+  &.right
     justify-content: flex-end
   // box-sizing: content-box
 
