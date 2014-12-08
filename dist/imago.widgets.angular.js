@@ -35,6 +35,897 @@ imagoPage = (function() {
 
 angular.module('imago.widgets.angular').controller('imagoPage', ['$scope', '$state', 'imagoModel', imagoPage]);
 
+var imagoCompile;
+
+imagoCompile = (function() {
+  function imagoCompile($compile) {
+    return function(scope, element, attrs) {
+      var compile, htmlName;
+      compile = function(newHTML) {
+        newHTML = $compile(newHTML)(scope);
+        return element.html("").append(newHTML);
+      };
+      htmlName = attrs.compile;
+      return scope.$watch(htmlName, function(newHTML) {
+        if (!newHTML) {
+          return;
+        }
+        return compile(newHTML);
+      });
+    };
+  }
+
+  return imagoCompile;
+
+})();
+
+angular.module('imago.widgets.angular').directive('imagoCompile', ['$compile', imagoCompile]);
+
+var imagoContact;
+
+imagoContact = (function() {
+  function imagoContact(imagoSubmit) {
+    return {
+      replace: true,
+      scope: {},
+      templateUrl: '/imagoWidgets/contact-widget.html',
+      controller: function($scope) {
+        return $scope.submitForm = (function(_this) {
+          return function(isValid) {
+            if (isValid) {
+              return imagoSubmit.send($scope.contact);
+            }
+          };
+        })(this);
+      }
+    };
+  }
+
+  return imagoContact;
+
+})();
+
+angular.module('imago.widgets.angular').directive('imagoContact', ['imagoSubmit', imagoContact]);
+
+var imagoControls;
+
+imagoControls = (function() {
+  function imagoControls() {
+    return {
+      replace: true,
+      scope: true,
+      require: '^imagoVideo',
+      templateUrl: '/imagoWidgets/controlsVideo.html',
+      controller: function($scope) {
+        var videoPlayer;
+        videoPlayer = angular.element($scope.player);
+        $scope.currentTime = 0;
+        videoPlayer.bind('loadeddata', function(e) {
+          $scope.duration = parseInt(e.target.duration);
+          return $scope.$apply();
+        });
+        videoPlayer.bind('timeupdate', function(e) {
+          $scope.currentTime = e.target.currentTime;
+          return $scope.$apply();
+        });
+        return videoPlayer.bind('seeking', function(e) {
+          $scope.currentTime = e.target.currentTime;
+          return $scope.$apply();
+        });
+      },
+      link: function(scope, element, attrs) {
+        scope.seek = function(value) {
+          return scope.player.currentTime = value;
+        };
+        scope.onVolumeChange = (function(_this) {
+          return function(e) {
+            return scope.player.volume = parseFloat(e / 100);
+          };
+        })(this);
+        scope.volumeDown = (function(_this) {
+          return function() {
+            scope.player.volume = 0;
+            return scope.volumeInput = 0;
+          };
+        })(this);
+        scope.volumeUp = (function(_this) {
+          return function() {
+            scope.player.volume = 1;
+            return scope.volumeInput = 100;
+          };
+        })(this);
+        scope.fullScreen = (function(_this) {
+          return function() {
+            if (scope.player.requestFullscreen) {
+              return scope.player.requestFullscreen();
+            } else if (scope.player.webkitRequestFullscreen) {
+              return scope.player.webkitRequestFullscreen();
+            } else if (scope.player.mozRequestFullScreen) {
+              return scope.player.mozRequestFullScreen();
+            } else if (scope.player.msRequestFullscreen) {
+              return scope.player.msRequestFullscreen();
+            }
+          };
+        })(this);
+        element.bind('mouseup', function(e) {
+          return e.stopPropagation();
+        });
+        return element.bind('mousedown', function(e) {
+          return e.stopPropagation();
+        });
+      }
+    };
+  }
+
+  return imagoControls;
+
+})();
+
+angular.module('imago.widgets.angular').directive('imagoControls', [imagoControls]);
+
+var imagoImage;
+
+imagoImage = (function() {
+  function imagoImage($window, $log, imagoUtils) {
+    return {
+      replace: true,
+      scope: true,
+      templateUrl: '/imagoWidgets/imagoImage.html',
+      controller: function($scope, $element, $attrs) {
+        $scope.status = 'loading';
+        return $scope.imageStyle = {};
+      },
+      link: function(scope, element, attrs) {
+        var calcMediaSize, initialize, key, opts, render, self, setImageStyle, source, value;
+        self = {
+          visible: false
+        };
+        source = {};
+        opts = {
+          align: 'center center',
+          sizemode: 'fit',
+          hires: true,
+          responsive: true,
+          scale: 1,
+          lazy: true,
+          maxsize: 2560
+        };
+        for (key in attrs) {
+          value = attrs[key];
+          if (value === 'true' || value === 'false') {
+            opts[key] = JSON.parse(value);
+          } else {
+            opts[key] = value;
+          }
+        }
+        self.watch = scope.$watch(attrs['imagoImage'], (function(_this) {
+          return function(data) {
+            if (!data) {
+              return;
+            }
+            if (!attrs['watch']) {
+              self.watch();
+            }
+            source = data;
+            if (!(source != null ? source.serving_url : void 0)) {
+              element.remove();
+              return;
+            }
+            if (source.fields.hasOwnProperty('crop') && !attrs['align']) {
+              opts.align = source.fields.crop.value;
+            }
+            if (source.fields.hasOwnProperty('sizemode')) {
+              if (source.fields.sizemode.value !== 'default' && !attrs['sizemode']) {
+                opts.sizemode = source.fields.sizemode.value;
+              }
+            }
+            if (opts.responsive) {
+              if (opts.sizemode === 'crop') {
+                scope.$on('resizelimit', function() {
+                  calcMediaSize();
+                  return scope.$digest();
+                });
+              }
+            }
+            return initialize();
+          };
+        })(this));
+        initialize = function() {
+          var dpr, height, r, servingSize, width, wrapperRatio;
+          if (angular.isString(source.resolution)) {
+            r = source.resolution.split('x');
+            opts.resolution = {
+              width: r[0],
+              height: r[1]
+            };
+            opts.assetRatio = r[0] / r[1];
+          }
+          if (scope.status === 'preloading') {
+            return console.log('tried to render during rendering!!');
+          }
+          scope.status = 'preloading';
+          scope.align = opts.align;
+          scope.sizemode = opts.sizemode;
+          width = element[0].clientWidth;
+          height = element[0].clientHeight;
+          if (height) {
+            wrapperRatio = width / height;
+          }
+          dpr = opts.hires ? Math.ceil($window.devicePixelRatio) || 1 : 1;
+          if (opts.sizemode === 'crop' && height) {
+            if (opts.assetRatio <= wrapperRatio) {
+              servingSize = Math.round(Math.max(width, width / opts.assetRatio));
+            } else {
+              servingSize = Math.round(Math.max(height, height * opts.assetRatio));
+            }
+          } else {
+            if (!height || opts.autosize) {
+              opts.autosize = true;
+              servingSize = Math.round(Math.max(width, width / opts.assetRatio));
+            } else if (opts.assetRatio <= wrapperRatio) {
+              servingSize = Math.round(Math.max(height, height * opts.assetRatio));
+            } else {
+              servingSize = Math.round(Math.max(width, width / opts.assetRatio));
+            }
+          }
+          servingSize = parseInt(Math.min(servingSize * dpr, opts.maxsize), 10);
+          if (servingSize === opts.servingSize) {
+            scope.status = 'loaded';
+            return;
+          }
+          opts.servingSize = servingSize;
+          if (imagoUtils.isBaseString(source.serving_url)) {
+            opts.servingUrl = source.serving_url;
+          } else {
+            opts.servingUrl = "" + source.serving_url + "=s" + (servingSize * opts.scale);
+          }
+          return render();
+        };
+        render = function() {
+          var img;
+          if (opts.lazy && !self.visible) {
+            return self.visibleFunc = scope.$watch(attrs['visible'], (function(_this) {
+              return function(value) {
+                if (!value) {
+                  return;
+                }
+                self.visible = true;
+                self.visibleFunc();
+                return render();
+              };
+            })(this));
+          } else {
+            img = angular.element('<img>');
+            img.on('load', function(e) {
+              if (opts.sizemode === 'crop') {
+                scope.imageStyle = {
+                  backgroundImage: "url(" + opts.servingUrl + ")",
+                  backgroundSize: calcMediaSize(),
+                  backgroundPosition: opts.align
+                };
+              } else {
+                scope.servingUrl = opts.servingUrl;
+              }
+              scope.status = 'loaded';
+              return scope.$digest();
+            });
+            return img[0].src = opts.servingUrl;
+          }
+        };
+        calcMediaSize = function() {
+          var height, width, wrapperRatio;
+          width = element[0].clientWidth;
+          height = element[0].clientHeight;
+          if (height) {
+            wrapperRatio = width / height;
+          }
+          if (opts.sizemode === 'crop') {
+            if (opts.assetRatio < wrapperRatio) {
+              return scope.imageStyle['background-size'] = "100% auto";
+            } else {
+              return scope.imageStyle['background-size'] = "auto 100%";
+            }
+          }
+        };
+        setImageStyle = function() {
+          var styles;
+          if (opts.sizemode === 'crop') {
+            styles = {
+              backgroundImage: "url(" + opts.servingUrl + ")",
+              backgroundSize: calcMediaSize(),
+              backgroundPosition: opts.align
+            };
+            return styles;
+          } else {
+            scope.servingUrl = opts.servingUrl;
+          }
+        };
+        if (opts.responsive) {
+          scope.$on('resizestop', function() {
+            scope.status = 'loading';
+            return initialize();
+          });
+        }
+        return angular.element($window).on("orientationchange", initialize);
+      }
+    };
+  }
+
+  return imagoImage;
+
+})();
+
+angular.module('imago.widgets.angular').directive('imagoImage', ['$window', '$log', 'imagoUtils', imagoImage]);
+
+var imagoPager;
+
+imagoPager = (function() {
+  function imagoPager(imagoModel) {
+    return {
+      scope: {
+        posts: '=',
+        next: '&',
+        prev: '&',
+        path: '@',
+        pageSize: '@'
+      },
+      templateUrl: '/imagoWidgets/imagoPager.html',
+      controller: function($scope, $element, $attrs) {
+        this.fetchPosts = function() {
+          var pageSize;
+          pageSize = parseInt($scope.pageSize);
+          return imagoModel.getData([
+            {
+              path: $scope.path,
+              page: $scope.currentPage,
+              pagesize: pageSize
+            }
+          ], {
+            localData: false
+          }).then((function(_this) {
+            return function(response) {
+              var collection, _i, _len, _results;
+              _results = [];
+              for (_i = 0, _len = response.length; _i < _len; _i++) {
+                collection = response[_i];
+                $scope.posts = collection.assets;
+                $scope.totalPages = collection.count / collection.assets.length;
+                break;
+              }
+              return _results;
+            };
+          })(this));
+        };
+        $scope.currentPage = 1;
+        $scope.onNext = (function(_this) {
+          return function() {
+            $scope.currentPage += 1;
+            return $scope.next();
+          };
+        })(this);
+        $scope.onPrev = (function(_this) {
+          return function() {
+            $scope.currentPage -= 1;
+            return $scope.prev();
+          };
+        })(this);
+        return $scope.$watch('currentPage', this.fetchPosts);
+      }
+    };
+  }
+
+  return imagoPager;
+
+})();
+
+angular.module('imago.widgets.angular').directive('imagoPager', ['imagoModel', imagoPager]);
+
+var imagoSlider;
+
+imagoSlider = (function() {
+  function imagoSlider($rootScope, $q, $document, imagoModel, $interval) {
+    return {
+      transclude: true,
+      scope: true,
+      templateUrl: '/imagoWidgets/imagoSlider.html',
+      controller: function($scope) {
+        return $scope.conf = {
+          animation: 'fade',
+          enablekeys: true,
+          enablearrows: true,
+          loop: true,
+          current: 0,
+          namespace: 'slider',
+          autoplay: 0
+        };
+      },
+      link: function(scope, element, attrs, ctrl, transclude) {
+        var interval, slider, watcher;
+        slider = element.children();
+        transclude(scope, function(clone, scope) {
+          return slider.append(clone);
+        });
+        angular.forEach(attrs, function(value, key) {
+          if (value === 'true' || value === 'false') {
+            value = JSON.parse(value);
+          }
+          return scope.conf[key] = value;
+        });
+        scope.currentIndex = scope.conf.current;
+        scope.goPrev = function($event) {
+          return scope.setCurrent(scope.currentIndex > 0 ? scope.currentIndex - 1 : parseInt(attrs.length) - 1);
+        };
+        scope.goNext = function($event) {
+          return scope.setCurrent(scope.currentIndex < parseInt(attrs.length) - 1 ? scope.currentIndex + 1 : 0);
+        };
+        scope.getLast = function() {
+          return parseInt(attrs.length) - 1;
+        };
+        scope.getCurrent = function() {
+          return scope.currentIndex;
+        };
+        scope.setCurrent = (function(_this) {
+          return function(index) {
+            scope.action = (function() {
+              switch (false) {
+                case !(index === 0 && scope.currentIndex === (parseInt(attrs.length) - 1)):
+                  return 'next';
+                case !(index === (parseInt(attrs.length) - 1) && scope.currentIndex === 0):
+                  return 'prev';
+                case !(index > scope.currentIndex):
+                  return 'next';
+                case !(index < scope.currentIndex):
+                  return 'prev';
+                default:
+                  return '';
+              }
+            })();
+            scope.currentIndex = index;
+            return $rootScope.$emit("" + scope.conf.namespace + ":changed", index);
+          };
+        })(this);
+        if (scope.conf.autoplay) {
+          interval = $interval(scope.goNext, parseInt(scope.conf.autoplay));
+        }
+        if (scope.conf.enablekeys) {
+          $document.on('keydown', function(e) {
+            switch (e.keyCode) {
+              case 37:
+                return scope.$apply(function() {
+                  return scope.goPrev();
+                });
+              case 39:
+                return scope.$apply(function() {
+                  return scope.goNext();
+                });
+            }
+          });
+        }
+        watcher = $rootScope.$on("" + scope.conf.namespace + ":change", function(event, index) {
+          return scope.setCurrent(index);
+        });
+        return scope.$on('$destroy', function() {
+          $interval.cancel(interval);
+          return watcher();
+        });
+      }
+    };
+  }
+
+  return imagoSlider;
+
+})();
+
+angular.module('imago.widgets.angular').directive('imagoSlider', ['$rootScope', '$q', '$document', 'imagoModel', '$interval', imagoSlider]);
+
+var imagoVideo;
+
+imagoVideo = (function() {
+  function imagoVideo($q, $timeout, $window, imagoUtils) {
+    return {
+      scope: true,
+      templateUrl: '/imagoWidgets/imagoVideo.html',
+      controller: function($scope, $element, $attrs, $transclude) {
+        $scope.player = $element.find('video')[0];
+        $scope.loading = true;
+        angular.element($scope.player).bind('ended', function(e) {
+          $scope.player.currentTime = 0;
+          return $scope.isPlaying = false;
+        });
+        angular.element($scope.player).bind('loadeddata', function() {
+          $scope.hasPlayed = true;
+          return angular.element($scope.player).unbind('loadeddata');
+        });
+        return angular.element($scope.player).bind('play', function() {
+          return $scope.isPlaying = true;
+        });
+      },
+      link: function(scope, element, attrs) {
+        var detectCodec, key, loadFormats, onResize, opts, preload, render, self, setPlayerAttrs, styleVideo, styleWrapper, value;
+        self = {
+          visible: false
+        };
+        opts = {
+          autobuffer: null,
+          autoplay: false,
+          controls: true,
+          preload: 'none',
+          size: 'hd',
+          align: 'center center',
+          sizemode: 'fit',
+          lazy: true,
+          hires: true,
+          loop: false,
+          width: '',
+          height: ''
+        };
+        for (key in attrs) {
+          value = attrs[key];
+          if (value === 'true' || value === 'false') {
+            opts[key] = JSON.parse(value);
+          } else if (key === 'width' || key === 'height') {
+            opts[key] = value === 'auto' ? value : parseInt(value);
+          } else {
+            opts[key] = value;
+          }
+        }
+        self.watch = scope.$watch(attrs['imagoVideo'], (function(_this) {
+          return function(data) {
+            var _ref;
+            if (!data) {
+              return;
+            }
+            if (!attrs['watch']) {
+              self.watch();
+            }
+            self.source = data;
+            if (!((_ref = self.source) != null ? _ref.serving_url : void 0)) {
+              element.remove();
+              return;
+            }
+            if (self.source.fields.hasOwnProperty('crop') && !attrs['align']) {
+              opts.align = self.source.fields.crop.value;
+            }
+            if (self.source.fields.hasOwnProperty('sizemode') && !attrs['sizemode']) {
+              opts.sizemode = self.source.fields.sizemode.value;
+            }
+            return preload(self.source);
+          };
+        })(this));
+        preload = function(data) {
+          var dpr, height, r, resolution, serving_url, style, width;
+          if (angular.isString(data.resolution)) {
+            r = data.resolution.split('x');
+            resolution = {
+              width: r[0],
+              height: r[1]
+            };
+            opts.assetRatio = r[0] / r[1];
+          }
+          scope.controls = opts.controls;
+          if (opts.width && opts.height) {
+            width = opts.width;
+            height = opts.height;
+          } else {
+            width = element[0].clientWidth;
+            height = element[0].clientHeight;
+          }
+          dpr = opts.hires ? Math.ceil(window.devicePixelRatio) || 1 : 1;
+          serving_url = "" + data.serving_url + "=s" + (Math.ceil(Math.min(Math.max(width, height) * dpr)) || 1600);
+          style = {
+            size: opts.size,
+            sizemode: opts.sizemode,
+            backgroundPosition: opts.align,
+            backgroundImage: "url(" + serving_url + ")",
+            backgroundRepeat: "no-repeat"
+          };
+          scope.wrapperStyle = style;
+          setPlayerAttrs();
+          scope.videoFormats = loadFormats(self.source);
+          return render(width, height, serving_url);
+        };
+        setPlayerAttrs = function() {
+          if (opts.autoplay === true) {
+            scope.player.setAttribute("autoplay", true);
+          }
+          scope.player.setAttribute("preload", opts.preload);
+          scope.player.setAttribute("x-webkit-airplay", "allow");
+          scope.player.setAttribute("webkitAllowFullscreen", true);
+          return scope.player.setAttribute("loop", opts.loop);
+        };
+        render = (function(_this) {
+          return function(width, height, servingUrl) {
+            var img;
+            if (opts.lazy && !self.visible) {
+              return self.visibleFunc = scope.$watch(attrs['visible'], function(value) {
+                if (!value) {
+                  return;
+                }
+                self.visible = true;
+                self.visibleFunc();
+                return render(width, height, servingUrl);
+              });
+            } else {
+              img = angular.element('<img>');
+              img.on('load', function(e) {
+                _.assign(scope.wrapperStyle, styleWrapper(width, height));
+                scope.videoStyle = styleVideo(width, height);
+                scope.loading = false;
+                return scope.$apply();
+              });
+              return img[0].src = servingUrl;
+            }
+          };
+        })(this);
+        styleWrapper = function(width, height) {
+          var style, wrapperRatio;
+          if (!(width && height)) {
+            return;
+          }
+          style = {};
+          wrapperRatio = width / height;
+          if (opts.sizemode === 'crop') {
+            if (opts.assetRatio < wrapperRatio) {
+              style.backgroundSize = '100% auto';
+            } else {
+              style.backgroundSize = 'auto 100%';
+            }
+          } else {
+            if (opts.assetRatio < wrapperRatio) {
+              style.width = "" + (Math.round(height * opts.assetRatio)) + "px";
+              style.height = "" + height + "px";
+              style.backgroundSize = 'auto 100%';
+            } else {
+              style.width = "" + width + "px";
+              style.height = "" + (Math.round(width / opts.assetRatio)) + "px";
+              style.backgroundSize = '100% auto';
+            }
+          }
+          return style;
+        };
+        styleVideo = (function(_this) {
+          return function(width, height) {
+            var style, wrapperRatio;
+            if (!(width && height)) {
+              return;
+            }
+            style = {};
+            wrapperRatio = width / height;
+            if (imagoUtils.isiOS()) {
+              style.width = '100%';
+              style.height = '100%';
+              if (opts.align === 'center center' && opts.sizemode === 'crop') {
+                style.top = '0';
+                style.left = '0';
+              }
+            } else {
+              if (opts.sizemode === 'crop') {
+                if (opts.assetRatio < wrapperRatio) {
+                  style.width = '100%';
+                  style.height = 'auto';
+                  if (opts.align === 'center center') {
+                    style.top = '50%';
+                    style.left = 'auto';
+                    style.marginTop = "-" + (Math.round(height / 2)) + "px";
+                    style.marginLeft = '0px';
+                  }
+                } else {
+                  style.width = 'auto';
+                  style.height = '100%';
+                  if (opts.align === 'center center') {
+                    style.top = 'auto';
+                    style.left = '50%';
+                    style.marginTop = '0px';
+                    style.marginLeft = "-" + (Math.round(width / 2)) + "px";
+                  }
+                }
+              } else {
+                if (opts.assetRatio < wrapperRatio) {
+                  style.width = 'auto';
+                  style.height = '100%';
+                } else {
+                  style.width = '100%';
+                  style.height = 'auto';
+                }
+              }
+            }
+            return style;
+          };
+        })(this);
+        loadFormats = function(data) {
+          var codec, format, formats, i, _i, _len, _ref;
+          formats = [];
+          codec = detectCodec();
+          data.fields.formats.sort(function(a, b) {
+            return b.height - a.height;
+          });
+          _ref = data.fields.formats;
+          for (i = _i = 0, _len = _ref.length; _i < _len; i = ++_i) {
+            format = _ref[i];
+            if (codec !== format.codec) {
+              continue;
+            }
+            formats.push({
+              "src": "//api.2.imagoapp.com/api/play_redirect?uuid=" + data.uuid + "&codec=" + format.codec + "&quality=hd&max_size=" + format.size,
+              "size": format.size,
+              "codec": format.codec,
+              "type": "video/" + codec
+            });
+          }
+          return formats;
+        };
+        detectCodec = function() {
+          var codecs;
+          if (!scope.player.canPlayType) {
+            return;
+          }
+          codecs = {
+            mp4: 'video/mp4; codecs="mp4v.20.8"',
+            mp4: 'video/mp4; codecs="avc1.42E01E"',
+            mp4: 'video/mp4; codecs="avc1.42E01E, mp4a.40.2"',
+            webm: 'video/webm; codecs="vp8, vorbis"',
+            ogg: 'video/ogg; codecs="theora"'
+          };
+          for (key in codecs) {
+            value = codecs[key];
+            if (scope.player.canPlayType(value)) {
+              return key;
+            }
+          }
+        };
+        scope.togglePlay = (function(_this) {
+          return function() {
+            if (scope.player.paused) {
+              return scope.player.play();
+            } else {
+              scope.isPlaying = false;
+              return scope.player.pause();
+            }
+          };
+        })(this);
+        scope.toggleSize = function() {
+          if (opts.size === 'hd') {
+            opts.size = 'sd';
+            scope.wrapperStyle.size = 'sd';
+          } else {
+            opts.size = 'hd';
+            scope.wrapperStyle.size = 'hd';
+          }
+          scope.videoFormats.reverse();
+          return $timeout(function() {
+            scope.player.load();
+            return scope.player.play();
+          });
+        };
+        onResize = function() {
+          var height, width;
+          width = element[0].clientWidth || opts.width;
+          height = element[0].clientHeight || opts.height;
+          _.assign(scope.wrapperStyle, styleWrapper(width, height));
+          scope.videoStyle = styleVideo(width, height);
+          return scope.$apply();
+        };
+        scope.$on('resize', onResize);
+        return scope.$on('resizestop', function() {
+          return preload(self.source);
+        });
+      }
+    };
+  }
+
+  return imagoVideo;
+
+})();
+
+angular.module('imago.widgets.angular').directive('imagoVideo', ['$q', '$timeout', '$window', 'imagoUtils', imagoVideo]);
+
+var ResponsiveEvents;
+
+ResponsiveEvents = (function() {
+  function ResponsiveEvents($window) {
+    return {
+      restrict: 'A',
+      link: function($scope) {
+        var onMouseWheelStart, onResizeStart, onScrollStart, w;
+        w = angular.element($window);
+        onResizeStart = (function(_this) {
+          return function(e) {
+            var resizeStop;
+            if (_this.resizeing) {
+              return;
+            }
+            $scope.$broadcast('resizestart');
+            _this.resizeing = true;
+            return resizeStop = $scope.$on('resizestop', function() {
+              _this.resizeing = false;
+              return resizeStop();
+            });
+          };
+        })(this);
+        onScrollStart = (function(_this) {
+          return function(e) {
+            var scrollStop;
+            if (_this.scrolling) {
+              return;
+            }
+            $scope.$broadcast('scrollstart');
+            _this.scrolling = true;
+            return scrollStop = $scope.$on('scrollstop', function() {
+              _this.scrolling = false;
+              return scrollStop();
+            });
+          };
+        })(this);
+        onMouseWheelStart = (function(_this) {
+          return function(e) {
+            var mouseStop;
+            if (_this.isMouseWheeling) {
+              return;
+            }
+            $scope.$broadcast('mousewheelstart');
+            _this.isMouseWheeling = true;
+            return mouseStop = $scope.$on('mousewheelstop', function() {
+              _this.isMouseWheeling = false;
+              return mouseStop();
+            });
+          };
+        })(this);
+        w.on('resize', function() {
+          return $scope.$broadcast('resize');
+        });
+        w.on('resize', onResizeStart);
+        w.on('resize', _.debounce((function() {
+          return $scope.$broadcast('resizestop');
+        }), 200));
+        w.on('resize', _.throttle((function() {
+          return $scope.$broadcast('resizelimit');
+        }), 150));
+        w.on('scroll', onScrollStart);
+        w.on('scroll', _.debounce((function() {
+          return $scope.$broadcast('scrollstop');
+        }), 200));
+        w.on('scroll', _.throttle((function() {
+          return $scope.$broadcast('scrolllimit');
+        }), 150));
+        w.on('mousewheel', onMouseWheelStart);
+        w.on('mousewheel', _.debounce((function() {
+          return $scope.$broadcast('mousewheelstop');
+        }), 200));
+        return w.on('mousewheel', _.throttle((function() {
+          return $scope.$broadcast('mousewheellimit');
+        }), 150));
+      }
+    };
+  }
+
+  return ResponsiveEvents;
+
+})();
+
+angular.module('imago.widgets.angular').directive('responsiveEvents', ['$window', ResponsiveEvents]);
+
+var StopPropagation;
+
+StopPropagation = (function() {
+  function StopPropagation() {
+    return {
+      link: function(scope, element, attr) {
+        element.bind('click', function(e) {
+          return e.stopPropagation();
+        });
+        return element.bind('dblclick', function(e) {
+          return e.stopPropagation();
+        });
+      }
+    };
+  }
+
+  return StopPropagation;
+
+})();
+
+angular.module('imago.widgets.angular').directive('stopPropagation', [StopPropagation]);
+
 var imagoModel,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 
@@ -147,7 +1038,6 @@ imagoModel = (function() {
     for (key in options) {
       value = options[key];
       if (key === 'localData' && value === false) {
-        console.log('localdata false', query);
         defer.reject(query);
       }
     }
@@ -180,7 +1070,6 @@ imagoModel = (function() {
           if (asset.assets.length !== asset.count) {
             defer.reject(query);
           } else {
-            console.log('passed assets resolve');
             asset.assets = this.filterAssets(asset.assets, query);
             defer.resolve(asset);
           }
@@ -1709,897 +2598,6 @@ imagoWorker = (function() {
 })();
 
 angular.module('imago.widgets.angular').service('imagoWorker', ['$q', imagoWorker]);
-
-var imagoCompile;
-
-imagoCompile = (function() {
-  function imagoCompile($compile) {
-    return function(scope, element, attrs) {
-      var compile, htmlName;
-      compile = function(newHTML) {
-        newHTML = $compile(newHTML)(scope);
-        return element.html("").append(newHTML);
-      };
-      htmlName = attrs.compile;
-      return scope.$watch(htmlName, function(newHTML) {
-        if (!newHTML) {
-          return;
-        }
-        return compile(newHTML);
-      });
-    };
-  }
-
-  return imagoCompile;
-
-})();
-
-angular.module('imago.widgets.angular').directive('imagoCompile', ['$compile', imagoCompile]);
-
-var imagoContact;
-
-imagoContact = (function() {
-  function imagoContact(imagoSubmit) {
-    return {
-      replace: true,
-      scope: {},
-      templateUrl: '/imagoWidgets/contact-widget.html',
-      controller: function($scope) {
-        return $scope.submitForm = (function(_this) {
-          return function(isValid) {
-            if (isValid) {
-              return imagoSubmit.send($scope.contact);
-            }
-          };
-        })(this);
-      }
-    };
-  }
-
-  return imagoContact;
-
-})();
-
-angular.module('imago.widgets.angular').directive('imagoContact', ['imagoSubmit', imagoContact]);
-
-var imagoControls;
-
-imagoControls = (function() {
-  function imagoControls() {
-    return {
-      replace: true,
-      scope: true,
-      require: '^imagoVideo',
-      templateUrl: '/imagoWidgets/controlsVideo.html',
-      controller: function($scope) {
-        var videoPlayer;
-        videoPlayer = angular.element($scope.player);
-        $scope.currentTime = 0;
-        videoPlayer.bind('loadeddata', function(e) {
-          $scope.duration = parseInt(e.target.duration);
-          return $scope.$apply();
-        });
-        videoPlayer.bind('timeupdate', function(e) {
-          $scope.currentTime = e.target.currentTime;
-          return $scope.$apply();
-        });
-        return videoPlayer.bind('seeking', function(e) {
-          $scope.currentTime = e.target.currentTime;
-          return $scope.$apply();
-        });
-      },
-      link: function(scope, element, attrs) {
-        scope.seek = function(value) {
-          return scope.player.currentTime = value;
-        };
-        scope.onVolumeChange = (function(_this) {
-          return function(e) {
-            return scope.player.volume = parseFloat(e / 100);
-          };
-        })(this);
-        scope.volumeDown = (function(_this) {
-          return function() {
-            scope.player.volume = 0;
-            return scope.volumeInput = 0;
-          };
-        })(this);
-        scope.volumeUp = (function(_this) {
-          return function() {
-            scope.player.volume = 1;
-            return scope.volumeInput = 100;
-          };
-        })(this);
-        scope.fullScreen = (function(_this) {
-          return function() {
-            if (scope.player.requestFullscreen) {
-              return scope.player.requestFullscreen();
-            } else if (scope.player.webkitRequestFullscreen) {
-              return scope.player.webkitRequestFullscreen();
-            } else if (scope.player.mozRequestFullScreen) {
-              return scope.player.mozRequestFullScreen();
-            } else if (scope.player.msRequestFullscreen) {
-              return scope.player.msRequestFullscreen();
-            }
-          };
-        })(this);
-        element.bind('mouseup', function(e) {
-          return e.stopPropagation();
-        });
-        return element.bind('mousedown', function(e) {
-          return e.stopPropagation();
-        });
-      }
-    };
-  }
-
-  return imagoControls;
-
-})();
-
-angular.module('imago.widgets.angular').directive('imagoControls', [imagoControls]);
-
-var imagoImage;
-
-imagoImage = (function() {
-  function imagoImage($window, $log, imagoUtils) {
-    return {
-      replace: true,
-      scope: true,
-      templateUrl: '/imagoWidgets/imagoImage.html',
-      controller: function($scope, $element, $attrs) {
-        $scope.status = 'loading';
-        return $scope.imageStyle = {};
-      },
-      link: function(scope, element, attrs) {
-        var calcMediaSize, initialize, key, opts, render, self, setImageStyle, source, value;
-        self = {
-          visible: false
-        };
-        source = {};
-        opts = {
-          align: 'center center',
-          sizemode: 'fit',
-          hires: true,
-          responsive: true,
-          scale: 1,
-          lazy: true,
-          maxsize: 2560
-        };
-        for (key in attrs) {
-          value = attrs[key];
-          if (value === 'true' || value === 'false') {
-            opts[key] = JSON.parse(value);
-          } else {
-            opts[key] = value;
-          }
-        }
-        self.watch = scope.$watch(attrs['imagoImage'], (function(_this) {
-          return function(data) {
-            if (!data) {
-              return;
-            }
-            if (!attrs['watch']) {
-              self.watch();
-            }
-            source = data;
-            if (!(source != null ? source.serving_url : void 0)) {
-              element.remove();
-              return;
-            }
-            if (source.fields.hasOwnProperty('crop') && !attrs['align']) {
-              opts.align = source.fields.crop.value;
-            }
-            if (source.fields.hasOwnProperty('sizemode')) {
-              if (source.fields.sizemode.value !== 'default' && !attrs['sizemode']) {
-                opts.sizemode = source.fields.sizemode.value;
-              }
-            }
-            if (opts.responsive) {
-              if (opts.sizemode === 'crop') {
-                scope.$on('resizelimit', function() {
-                  calcMediaSize();
-                  return scope.$digest();
-                });
-              }
-            }
-            return initialize();
-          };
-        })(this));
-        initialize = function() {
-          var dpr, height, r, servingSize, width, wrapperRatio;
-          if (angular.isString(source.resolution)) {
-            r = source.resolution.split('x');
-            opts.resolution = {
-              width: r[0],
-              height: r[1]
-            };
-            opts.assetRatio = r[0] / r[1];
-          }
-          if (scope.status === 'preloading') {
-            return console.log('tried to render during rendering!!');
-          }
-          scope.status = 'preloading';
-          scope.align = opts.align;
-          scope.sizemode = opts.sizemode;
-          width = element[0].clientWidth;
-          height = element[0].clientHeight;
-          if (height) {
-            wrapperRatio = width / height;
-          }
-          dpr = opts.hires ? Math.ceil($window.devicePixelRatio) || 1 : 1;
-          if (opts.sizemode === 'crop' && height) {
-            if (opts.assetRatio <= wrapperRatio) {
-              servingSize = Math.round(Math.max(width, width / opts.assetRatio));
-            } else {
-              servingSize = Math.round(Math.max(height, height * opts.assetRatio));
-            }
-          } else {
-            if (!height || opts.autosize) {
-              opts.autosize = true;
-              servingSize = Math.round(Math.max(width, width / opts.assetRatio));
-            } else if (opts.assetRatio <= wrapperRatio) {
-              servingSize = Math.round(Math.max(height, height * opts.assetRatio));
-            } else {
-              servingSize = Math.round(Math.max(width, width / opts.assetRatio));
-            }
-          }
-          servingSize = parseInt(Math.min(servingSize * dpr, opts.maxsize), 10);
-          if (servingSize === opts.servingSize) {
-            scope.status = 'loaded';
-            return;
-          }
-          opts.servingSize = servingSize;
-          if (imagoUtils.isBaseString(source.serving_url)) {
-            opts.servingUrl = source.serving_url;
-          } else {
-            opts.servingUrl = "" + source.serving_url + "=s" + (servingSize * opts.scale);
-          }
-          return render();
-        };
-        render = function() {
-          var img;
-          if (opts.lazy && !self.visible) {
-            return self.visibleFunc = scope.$watch(attrs['visible'], (function(_this) {
-              return function(value) {
-                if (!value) {
-                  return;
-                }
-                self.visible = true;
-                self.visibleFunc();
-                return render();
-              };
-            })(this));
-          } else {
-            img = angular.element('<img>');
-            img.on('load', function(e) {
-              if (opts.sizemode === 'crop') {
-                scope.imageStyle = {
-                  backgroundImage: "url(" + opts.servingUrl + ")",
-                  backgroundSize: calcMediaSize(),
-                  backgroundPosition: opts.align
-                };
-              } else {
-                scope.servingUrl = opts.servingUrl;
-              }
-              scope.status = 'loaded';
-              return scope.$digest();
-            });
-            return img[0].src = opts.servingUrl;
-          }
-        };
-        calcMediaSize = function() {
-          var height, width, wrapperRatio;
-          width = element[0].clientWidth;
-          height = element[0].clientHeight;
-          if (height) {
-            wrapperRatio = width / height;
-          }
-          if (opts.sizemode === 'crop') {
-            if (opts.assetRatio < wrapperRatio) {
-              return scope.imageStyle['background-size'] = "100% auto";
-            } else {
-              return scope.imageStyle['background-size'] = "auto 100%";
-            }
-          }
-        };
-        setImageStyle = function() {
-          var styles;
-          if (opts.sizemode === 'crop') {
-            styles = {
-              backgroundImage: "url(" + opts.servingUrl + ")",
-              backgroundSize: calcMediaSize(),
-              backgroundPosition: opts.align
-            };
-            return styles;
-          } else {
-            scope.servingUrl = opts.servingUrl;
-          }
-        };
-        if (opts.responsive) {
-          scope.$on('resizestop', function() {
-            scope.status = 'loading';
-            return initialize();
-          });
-        }
-        return angular.element($window).on("orientationchange", initialize);
-      }
-    };
-  }
-
-  return imagoImage;
-
-})();
-
-angular.module('imago.widgets.angular').directive('imagoImage', ['$window', '$log', 'imagoUtils', imagoImage]);
-
-var imagoPager;
-
-imagoPager = (function() {
-  function imagoPager(imagoModel) {
-    return {
-      scope: {
-        posts: '=',
-        next: '&',
-        prev: '&',
-        path: '@',
-        pageSize: '@'
-      },
-      templateUrl: '/imagoWidgets/imagoPager.html',
-      controller: function($scope, $element, $attrs) {
-        this.fetchPosts = function() {
-          var pageSize;
-          pageSize = parseInt($scope.pageSize);
-          return imagoModel.getData([
-            {
-              path: $scope.path,
-              page: $scope.currentPage,
-              pagesize: pageSize
-            }
-          ], {
-            localData: false
-          }).then((function(_this) {
-            return function(response) {
-              var collection, _i, _len, _results;
-              _results = [];
-              for (_i = 0, _len = response.length; _i < _len; _i++) {
-                collection = response[_i];
-                $scope.posts = collection.assets;
-                $scope.totalPages = collection.count / collection.assets.length;
-                break;
-              }
-              return _results;
-            };
-          })(this));
-        };
-        $scope.currentPage = 1;
-        $scope.onNext = (function(_this) {
-          return function() {
-            $scope.currentPage += 1;
-            return $scope.next();
-          };
-        })(this);
-        $scope.onPrev = (function(_this) {
-          return function() {
-            $scope.currentPage -= 1;
-            return $scope.prev();
-          };
-        })(this);
-        return $scope.$watch('currentPage', this.fetchPosts);
-      }
-    };
-  }
-
-  return imagoPager;
-
-})();
-
-angular.module('imago.widgets.angular').directive('imagoPager', ['imagoModel', imagoPager]);
-
-var imagoSlider;
-
-imagoSlider = (function() {
-  function imagoSlider($rootScope, $q, $document, imagoModel, $interval) {
-    return {
-      transclude: true,
-      scope: true,
-      templateUrl: '/imagoWidgets/imagoSlider.html',
-      controller: function($scope) {
-        return $scope.conf = {
-          animation: 'fade',
-          enablekeys: true,
-          enablearrows: true,
-          loop: true,
-          current: 0,
-          namespace: 'slider',
-          autoplay: 0
-        };
-      },
-      link: function(scope, element, attrs, ctrl, transclude) {
-        var interval, slider, watcher;
-        slider = element.children();
-        transclude(scope, function(clone, scope) {
-          return slider.append(clone);
-        });
-        angular.forEach(attrs, function(value, key) {
-          if (value === 'true' || value === 'false') {
-            value = JSON.parse(value);
-          }
-          return scope.conf[key] = value;
-        });
-        scope.currentIndex = scope.conf.current;
-        scope.goPrev = function($event) {
-          return scope.setCurrent(scope.currentIndex > 0 ? scope.currentIndex - 1 : parseInt(attrs.length) - 1);
-        };
-        scope.goNext = function($event) {
-          return scope.setCurrent(scope.currentIndex < parseInt(attrs.length) - 1 ? scope.currentIndex + 1 : 0);
-        };
-        scope.getLast = function() {
-          return parseInt(attrs.length) - 1;
-        };
-        scope.getCurrent = function() {
-          return scope.currentIndex;
-        };
-        scope.setCurrent = (function(_this) {
-          return function(index) {
-            scope.action = (function() {
-              switch (false) {
-                case !(index === 0 && scope.currentIndex === (parseInt(attrs.length) - 1)):
-                  return 'next';
-                case !(index === (parseInt(attrs.length) - 1) && scope.currentIndex === 0):
-                  return 'prev';
-                case !(index > scope.currentIndex):
-                  return 'next';
-                case !(index < scope.currentIndex):
-                  return 'prev';
-                default:
-                  return '';
-              }
-            })();
-            scope.currentIndex = index;
-            return $rootScope.$emit("" + scope.conf.namespace + ":changed", index);
-          };
-        })(this);
-        if (scope.conf.autoplay) {
-          interval = $interval(scope.goNext, parseInt(scope.conf.autoplay));
-        }
-        if (scope.conf.enablekeys) {
-          $document.on('keydown', function(e) {
-            switch (e.keyCode) {
-              case 37:
-                return scope.$apply(function() {
-                  return scope.goPrev();
-                });
-              case 39:
-                return scope.$apply(function() {
-                  return scope.goNext();
-                });
-            }
-          });
-        }
-        watcher = $rootScope.$on("" + scope.conf.namespace + ":change", function(event, index) {
-          return scope.setCurrent(index);
-        });
-        return scope.$on('$destroy', function() {
-          $interval.cancel(interval);
-          return watcher();
-        });
-      }
-    };
-  }
-
-  return imagoSlider;
-
-})();
-
-angular.module('imago.widgets.angular').directive('imagoSlider', ['$rootScope', '$q', '$document', 'imagoModel', '$interval', imagoSlider]);
-
-var imagoVideo;
-
-imagoVideo = (function() {
-  function imagoVideo($q, $timeout, $window, imagoUtils) {
-    return {
-      scope: true,
-      templateUrl: '/imagoWidgets/imagoVideo.html',
-      controller: function($scope, $element, $attrs, $transclude) {
-        $scope.player = $element.find('video')[0];
-        $scope.loading = true;
-        angular.element($scope.player).bind('ended', function(e) {
-          $scope.player.currentTime = 0;
-          return $scope.isPlaying = false;
-        });
-        angular.element($scope.player).bind('loadeddata', function() {
-          $scope.hasPlayed = true;
-          return angular.element($scope.player).unbind('loadeddata');
-        });
-        return angular.element($scope.player).bind('play', function() {
-          return $scope.isPlaying = true;
-        });
-      },
-      link: function(scope, element, attrs) {
-        var detectCodec, key, loadFormats, onResize, opts, preload, render, self, setPlayerAttrs, styleVideo, styleWrapper, value;
-        self = {
-          visible: false
-        };
-        opts = {
-          autobuffer: null,
-          autoplay: false,
-          controls: true,
-          preload: 'none',
-          size: 'hd',
-          align: 'center center',
-          sizemode: 'fit',
-          lazy: true,
-          hires: true,
-          loop: false,
-          width: '',
-          height: ''
-        };
-        for (key in attrs) {
-          value = attrs[key];
-          if (value === 'true' || value === 'false') {
-            opts[key] = JSON.parse(value);
-          } else if (key === 'width' || key === 'height') {
-            opts[key] = value === 'auto' ? value : parseInt(value);
-          } else {
-            opts[key] = value;
-          }
-        }
-        self.watch = scope.$watch(attrs['imagoVideo'], (function(_this) {
-          return function(data) {
-            var _ref;
-            if (!data) {
-              return;
-            }
-            if (!attrs['watch']) {
-              self.watch();
-            }
-            self.source = data;
-            if (!((_ref = self.source) != null ? _ref.serving_url : void 0)) {
-              element.remove();
-              return;
-            }
-            if (self.source.fields.hasOwnProperty('crop') && !attrs['align']) {
-              opts.align = self.source.fields.crop.value;
-            }
-            if (self.source.fields.hasOwnProperty('sizemode') && !attrs['sizemode']) {
-              opts.sizemode = self.source.fields.sizemode.value;
-            }
-            return preload(self.source);
-          };
-        })(this));
-        preload = function(data) {
-          var dpr, height, r, resolution, serving_url, style, width;
-          if (angular.isString(data.resolution)) {
-            r = data.resolution.split('x');
-            resolution = {
-              width: r[0],
-              height: r[1]
-            };
-            opts.assetRatio = r[0] / r[1];
-          }
-          scope.controls = opts.controls;
-          if (opts.width && opts.height) {
-            width = opts.width;
-            height = opts.height;
-          } else {
-            width = element[0].clientWidth;
-            height = element[0].clientHeight;
-          }
-          dpr = opts.hires ? Math.ceil(window.devicePixelRatio) || 1 : 1;
-          serving_url = "" + data.serving_url + "=s" + (Math.ceil(Math.min(Math.max(width, height) * dpr)) || 1600);
-          style = {
-            size: opts.size,
-            sizemode: opts.sizemode,
-            backgroundPosition: opts.align,
-            backgroundImage: "url(" + serving_url + ")",
-            backgroundRepeat: "no-repeat"
-          };
-          scope.wrapperStyle = style;
-          setPlayerAttrs();
-          scope.videoFormats = loadFormats(self.source);
-          return render(width, height, serving_url);
-        };
-        setPlayerAttrs = function() {
-          if (opts.autoplay === true) {
-            scope.player.setAttribute("autoplay", true);
-          }
-          scope.player.setAttribute("preload", opts.preload);
-          scope.player.setAttribute("x-webkit-airplay", "allow");
-          scope.player.setAttribute("webkitAllowFullscreen", true);
-          return scope.player.setAttribute("loop", opts.loop);
-        };
-        render = (function(_this) {
-          return function(width, height, servingUrl) {
-            var img;
-            if (opts.lazy && !self.visible) {
-              return self.visibleFunc = scope.$watch(attrs['visible'], function(value) {
-                if (!value) {
-                  return;
-                }
-                self.visible = true;
-                self.visibleFunc();
-                return render(width, height, servingUrl);
-              });
-            } else {
-              img = angular.element('<img>');
-              img.on('load', function(e) {
-                _.assign(scope.wrapperStyle, styleWrapper(width, height));
-                scope.videoStyle = styleVideo(width, height);
-                scope.loading = false;
-                return scope.$apply();
-              });
-              return img[0].src = servingUrl;
-            }
-          };
-        })(this);
-        styleWrapper = function(width, height) {
-          var style, wrapperRatio;
-          if (!(width && height)) {
-            return;
-          }
-          style = {};
-          wrapperRatio = width / height;
-          if (opts.sizemode === 'crop') {
-            if (opts.assetRatio < wrapperRatio) {
-              style.backgroundSize = '100% auto';
-            } else {
-              style.backgroundSize = 'auto 100%';
-            }
-          } else {
-            if (opts.assetRatio < wrapperRatio) {
-              style.width = "" + (Math.round(height * opts.assetRatio)) + "px";
-              style.height = "" + height + "px";
-              style.backgroundSize = 'auto 100%';
-            } else {
-              style.width = "" + width + "px";
-              style.height = "" + (Math.round(width / opts.assetRatio)) + "px";
-              style.backgroundSize = '100% auto';
-            }
-          }
-          return style;
-        };
-        styleVideo = (function(_this) {
-          return function(width, height) {
-            var style, wrapperRatio;
-            if (!(width && height)) {
-              return;
-            }
-            style = {};
-            wrapperRatio = width / height;
-            if (imagoUtils.isiOS()) {
-              style.width = '100%';
-              style.height = '100%';
-              if (opts.align === 'center center' && opts.sizemode === 'crop') {
-                style.top = '0';
-                style.left = '0';
-              }
-            } else {
-              if (opts.sizemode === 'crop') {
-                if (opts.assetRatio < wrapperRatio) {
-                  style.width = '100%';
-                  style.height = 'auto';
-                  if (opts.align === 'center center') {
-                    style.top = '50%';
-                    style.left = 'auto';
-                    style.marginTop = "-" + (Math.round(height / 2)) + "px";
-                    style.marginLeft = '0px';
-                  }
-                } else {
-                  style.width = 'auto';
-                  style.height = '100%';
-                  if (opts.align === 'center center') {
-                    style.top = 'auto';
-                    style.left = '50%';
-                    style.marginTop = '0px';
-                    style.marginLeft = "-" + (Math.round(width / 2)) + "px";
-                  }
-                }
-              } else {
-                if (opts.assetRatio < wrapperRatio) {
-                  style.width = 'auto';
-                  style.height = '100%';
-                } else {
-                  style.width = '100%';
-                  style.height = 'auto';
-                }
-              }
-            }
-            return style;
-          };
-        })(this);
-        loadFormats = function(data) {
-          var codec, format, formats, i, _i, _len, _ref;
-          formats = [];
-          codec = detectCodec();
-          data.fields.formats.sort(function(a, b) {
-            return b.height - a.height;
-          });
-          _ref = data.fields.formats;
-          for (i = _i = 0, _len = _ref.length; _i < _len; i = ++_i) {
-            format = _ref[i];
-            if (codec !== format.codec) {
-              continue;
-            }
-            formats.push({
-              "src": "//api.2.imagoapp.com/api/play_redirect?uuid=" + data.uuid + "&codec=" + format.codec + "&quality=hd&max_size=" + format.size,
-              "size": format.size,
-              "codec": format.codec,
-              "type": "video/" + codec
-            });
-          }
-          return formats;
-        };
-        detectCodec = function() {
-          var codecs;
-          if (!scope.player.canPlayType) {
-            return;
-          }
-          codecs = {
-            mp4: 'video/mp4; codecs="mp4v.20.8"',
-            mp4: 'video/mp4; codecs="avc1.42E01E"',
-            mp4: 'video/mp4; codecs="avc1.42E01E, mp4a.40.2"',
-            webm: 'video/webm; codecs="vp8, vorbis"',
-            ogg: 'video/ogg; codecs="theora"'
-          };
-          for (key in codecs) {
-            value = codecs[key];
-            if (scope.player.canPlayType(value)) {
-              return key;
-            }
-          }
-        };
-        scope.togglePlay = (function(_this) {
-          return function() {
-            if (scope.player.paused) {
-              return scope.player.play();
-            } else {
-              scope.isPlaying = false;
-              return scope.player.pause();
-            }
-          };
-        })(this);
-        scope.toggleSize = function() {
-          if (opts.size === 'hd') {
-            opts.size = 'sd';
-            scope.wrapperStyle.size = 'sd';
-          } else {
-            opts.size = 'hd';
-            scope.wrapperStyle.size = 'hd';
-          }
-          scope.videoFormats.reverse();
-          return $timeout(function() {
-            scope.player.load();
-            return scope.player.play();
-          });
-        };
-        onResize = function() {
-          var height, width;
-          width = element[0].clientWidth || opts.width;
-          height = element[0].clientHeight || opts.height;
-          _.assign(scope.wrapperStyle, styleWrapper(width, height));
-          scope.videoStyle = styleVideo(width, height);
-          return scope.$apply();
-        };
-        scope.$on('resize', onResize);
-        return scope.$on('resizestop', function() {
-          return preload(self.source);
-        });
-      }
-    };
-  }
-
-  return imagoVideo;
-
-})();
-
-angular.module('imago.widgets.angular').directive('imagoVideo', ['$q', '$timeout', '$window', 'imagoUtils', imagoVideo]);
-
-var ResponsiveEvents;
-
-ResponsiveEvents = (function() {
-  function ResponsiveEvents($window) {
-    return {
-      restrict: 'A',
-      link: function($scope) {
-        var onMouseWheelStart, onResizeStart, onScrollStart, w;
-        w = angular.element($window);
-        onResizeStart = (function(_this) {
-          return function(e) {
-            var resizeStop;
-            if (_this.resizeing) {
-              return;
-            }
-            $scope.$broadcast('resizestart');
-            _this.resizeing = true;
-            return resizeStop = $scope.$on('resizestop', function() {
-              _this.resizeing = false;
-              return resizeStop();
-            });
-          };
-        })(this);
-        onScrollStart = (function(_this) {
-          return function(e) {
-            var scrollStop;
-            if (_this.scrolling) {
-              return;
-            }
-            $scope.$broadcast('scrollstart');
-            _this.scrolling = true;
-            return scrollStop = $scope.$on('scrollstop', function() {
-              _this.scrolling = false;
-              return scrollStop();
-            });
-          };
-        })(this);
-        onMouseWheelStart = (function(_this) {
-          return function(e) {
-            var mouseStop;
-            if (_this.isMouseWheeling) {
-              return;
-            }
-            $scope.$broadcast('mousewheelstart');
-            _this.isMouseWheeling = true;
-            return mouseStop = $scope.$on('mousewheelstop', function() {
-              _this.isMouseWheeling = false;
-              return mouseStop();
-            });
-          };
-        })(this);
-        w.on('resize', function() {
-          return $scope.$broadcast('resize');
-        });
-        w.on('resize', onResizeStart);
-        w.on('resize', _.debounce((function() {
-          return $scope.$broadcast('resizestop');
-        }), 200));
-        w.on('resize', _.throttle((function() {
-          return $scope.$broadcast('resizelimit');
-        }), 150));
-        w.on('scroll', onScrollStart);
-        w.on('scroll', _.debounce((function() {
-          return $scope.$broadcast('scrollstop');
-        }), 200));
-        w.on('scroll', _.throttle((function() {
-          return $scope.$broadcast('scrolllimit');
-        }), 150));
-        w.on('mousewheel', onMouseWheelStart);
-        w.on('mousewheel', _.debounce((function() {
-          return $scope.$broadcast('mousewheelstop');
-        }), 200));
-        return w.on('mousewheel', _.throttle((function() {
-          return $scope.$broadcast('mousewheellimit');
-        }), 150));
-      }
-    };
-  }
-
-  return ResponsiveEvents;
-
-})();
-
-angular.module('imago.widgets.angular').directive('responsiveEvents', ['$window', ResponsiveEvents]);
-
-var StopPropagation;
-
-StopPropagation = (function() {
-  function StopPropagation() {
-    return {
-      link: function(scope, element, attr) {
-        element.bind('click', function(e) {
-          return e.stopPropagation();
-        });
-        return element.bind('dblclick', function(e) {
-          return e.stopPropagation();
-        });
-      }
-    };
-  }
-
-  return StopPropagation;
-
-})();
-
-angular.module('imago.widgets.angular').directive('stopPropagation', [StopPropagation]);
 
 var Meta;
 

@@ -52,7 +52,7 @@ class imagoModel extends Service
 
     for key, value of options
       if key is 'localData' and value is false
-        console.log 'localdata false', query
+        # console.log 'localdata false', query
         defer.reject query
 
     for key, value of query
@@ -90,7 +90,7 @@ class imagoModel extends Service
             defer.reject query
 
           else
-            console.log 'passed assets resolve'
+            # console.log 'passed assets resolve'
             asset.assets = @filterAssets(asset.assets, query)
             defer.resolve asset
 
