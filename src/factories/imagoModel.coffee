@@ -52,12 +52,13 @@ class imagoModel extends Service
 
     for key, value of options
       if key is 'localData' and value is false
+        console.log 'localdata false', query
         defer.reject query
 
     for key, value of query
 
       if key is 'fts'
-        console.log 'reject if fts', query
+        # console.log 'fts'
         defer.reject query
 
       else if key is 'collection'
@@ -89,16 +90,20 @@ class imagoModel extends Service
             defer.reject query
 
           else
+            # console.log 'passed assets resolve'
             asset.assets = @filterAssets(asset.assets, query)
             defer.resolve asset
 
         else
+          # console.log 'asset found asset has no children'
           defer.resolve asset
 
       else
+        # console.log 'couldnt find asset'
         defer.reject query
 
     else
+      # console.log 'no path'
       defer.reject query
 
     defer.promise
