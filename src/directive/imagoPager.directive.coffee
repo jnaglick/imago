@@ -14,7 +14,7 @@ class imagoPager extends Directive
 
         @fetchPosts = () ->
             pageSize = parseInt $scope.pageSize
-            console.log 'fetchPost', $scope.path, $scope.currentPage, pageSize
+            # console.log 'fetchPost', $scope.path, $scope.currentPage, pageSize
             imagoModel.getData([{path: $scope.path, page: $scope.currentPage, pagesize: pageSize}], {localData: false}).then (response) =>
                 for collection in response
                     # console.log 'collection', collection
