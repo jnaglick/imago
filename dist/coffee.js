@@ -926,71 +926,6 @@ StopPropagation = (function() {
 
 angular.module('imago.widgets.angular').directive('stopPropagation', [StopPropagation]);
 
-var Meta;
-
-Meta = (function() {
-  function Meta() {
-    return function(input, value) {
-      if (!(input && value && input.fields[value])) {
-        return;
-      }
-      if (input.fields[value].value.type) {
-        return input.fields[value].value.value;
-      } else {
-        return input.fields[value].value;
-      }
-    };
-  }
-
-  return Meta;
-
-})();
-
-angular.module('imago.widgets.angular').filter('meta', [Meta]);
-
-var Time;
-
-Time = (function() {
-  function Time() {
-    return function(input) {
-      var calc, hours, minutes, pad, seconds;
-      if (typeof input !== 'number') {
-        return;
-      }
-      pad = function(num) {
-        if (num < 10) {
-          return "0" + num;
-        }
-        return num;
-      };
-      calc = [];
-      minutes = Math.floor(input / 60);
-      hours = Math.floor(input / 3600);
-      seconds = (input === 0 ? 0 : input % 60);
-      seconds = Math.round(seconds);
-      if (hours > 0) {
-        calc.push(pad(hours));
-      }
-      calc.push(pad(minutes));
-      calc.push(pad(seconds));
-      return calc.join(":");
-    };
-  }
-
-  return Time;
-
-})();
-
-angular.module('imago.widgets.angular').filter('time', [Time]);
-
-var lodash;
-
-lodash = angular.module('lodash', []);
-
-lodash.factory('_', function() {
-  return window._();
-});
-
 var imagoModel,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 
@@ -1260,6 +1195,8 @@ imagoModel = (function() {
       _ref = data.assets;
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         asset = _ref[_i];
+        asset.metakind = asset.metakind.toLowerCase();
+        asset.kind = asset.kind.toLowerCase();
         if (this.imagoUtils.isBaseString(asset.serving_url)) {
           asset.base64 = true;
         } else {
@@ -2663,3 +2600,68 @@ imagoWorker = (function() {
 })();
 
 angular.module('imago.widgets.angular').service('imagoWorker', ['$q', imagoWorker]);
+
+var Meta;
+
+Meta = (function() {
+  function Meta() {
+    return function(input, value) {
+      if (!(input && value && input.fields[value])) {
+        return;
+      }
+      if (input.fields[value].value.type) {
+        return input.fields[value].value.value;
+      } else {
+        return input.fields[value].value;
+      }
+    };
+  }
+
+  return Meta;
+
+})();
+
+angular.module('imago.widgets.angular').filter('meta', [Meta]);
+
+var Time;
+
+Time = (function() {
+  function Time() {
+    return function(input) {
+      var calc, hours, minutes, pad, seconds;
+      if (typeof input !== 'number') {
+        return;
+      }
+      pad = function(num) {
+        if (num < 10) {
+          return "0" + num;
+        }
+        return num;
+      };
+      calc = [];
+      minutes = Math.floor(input / 60);
+      hours = Math.floor(input / 3600);
+      seconds = (input === 0 ? 0 : input % 60);
+      seconds = Math.round(seconds);
+      if (hours > 0) {
+        calc.push(pad(hours));
+      }
+      calc.push(pad(minutes));
+      calc.push(pad(seconds));
+      return calc.join(":");
+    };
+  }
+
+  return Time;
+
+})();
+
+angular.module('imago.widgets.angular').filter('time', [Time]);
+
+var lodash;
+
+lodash = angular.module('lodash', []);
+
+lodash.factory('_', function() {
+  return window._();
+});

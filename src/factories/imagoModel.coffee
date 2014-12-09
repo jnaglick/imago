@@ -185,6 +185,8 @@ class imagoModel extends Service
     collection = data
     if data.assets
       for asset in data.assets
+        asset.metakind = asset.metakind.toLowerCase()
+        asset.kind = asset.kind.toLowerCase()
         if @imagoUtils.isBaseString(asset.serving_url)
           asset.base64 = true
         else
