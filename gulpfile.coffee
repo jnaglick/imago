@@ -52,6 +52,7 @@ compileFolder = (folder) ->
     .pipe gulpif /[.]jade$/, jade({locals: {}}).on('error', reportError)
     .pipe gulpif /[.]html$/, templateCache(
       module: moduleName
+      root: '/imago/'
     )
     .pipe gulpif /[.]coffee$/, ngClassify(
       appName: moduleName

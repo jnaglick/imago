@@ -5,7 +5,7 @@ imagoImage = (function() {
     return {
       replace: true,
       scope: true,
-      templateUrl: 'imagoImage.html',
+      templateUrl: '/imago/imagoImage.html',
       controller: function($scope, $element, $attrs) {
         $scope.status = 'loading';
         return $scope.imageStyle = {};
@@ -192,4 +192,4 @@ imagoImage = (function() {
 
 angular.module('imago').directive('imagoImage', ['$window', '$log', 'imagoUtils', imagoImage]);
 
-angular.module("imago").run(["$templateCache", function($templateCache) {$templateCache.put("imagoImage.html","<div in-view=\"visible = $inview\" responsive-events=\"responsive-events\" ng-style=\"elementStyle\" ng-class=\"[status, align]\" visible=\"visible\" ng-switch=\"sizemode\" class=\"imagoimage\"><img ng-src=\"{{servingUrl}}\" ng-style=\"imageStyle\" ng-switch-when=\"fit\" class=\"imagox23\"/><div ng-style=\"imageStyle\" ng-switch-when=\"crop\" class=\"imagox23\"></div><div class=\"loading\"><div class=\"spin\"></div><div class=\"spin2\"></div></div></div>");}]);
+angular.module("imago").run(["$templateCache", function($templateCache) {$templateCache.put("/imago/imagoImage.html","<div in-view=\"visible = $inview\" responsive-events=\"responsive-events\" ng-style=\"elementStyle\" ng-class=\"[status, align]\" visible=\"visible\" ng-switch=\"sizemode\" class=\"imagoimage\"><img ng-src=\"{{servingUrl}}\" ng-style=\"imageStyle\" ng-switch-when=\"fit\" class=\"imagox23\"/><div ng-style=\"imageStyle\" ng-switch-when=\"crop\" class=\"imagox23\"></div><div class=\"loading\"><div class=\"spin\"></div><div class=\"spin2\"></div></div></div>");}]);

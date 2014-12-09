@@ -12,7 +12,7 @@ imagoPager = (function() {
         tags: '=',
         currentPage: '='
       },
-      templateUrl: 'imagoPager.html',
+      templateUrl: '/imago/imagoPager.html',
       controller: function($scope, $element, $attrs) {
         this.fetchPosts = function() {
           var pageSize, query;
@@ -68,4 +68,4 @@ imagoPager = (function() {
 
 angular.module('imago').directive('imagoPager', ['imagoModel', imagoPager]);
 
-angular.module("imago").run(["$templateCache", function($templateCache) {$templateCache.put("imagoPager.html","<div class=\"pager\"><button ng-disabled=\"currentPage &lt;= 1\" ng-click=\"onPrev()\">Previous</button><button ng-disabled=\"currentPage &gt;= totalPages\" ng-click=\"onNext()\">Next</button></div>");}]);
+angular.module("imago").run(["$templateCache", function($templateCache) {$templateCache.put("/imago/imagoPager.html","<div class=\"pager\"><button ng-disabled=\"currentPage &lt;= 1\" ng-click=\"onPrev()\">Previous</button><button ng-disabled=\"currentPage &gt;= totalPages\" ng-click=\"onNext()\">Next</button></div>");}]);

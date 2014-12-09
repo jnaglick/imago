@@ -3,7 +3,7 @@ class imagoVideo extends Directive
   constructor: ($q, $timeout, $window, imagoUtils) ->
     return {
       scope: true
-      templateUrl: 'imagoVideo.html'
+      templateUrl: '/imago/imagoVideo.html'
       controller: ($scope, $element, $attrs, $transclude) ->
 
         $scope.player  = $element.find('video')[0]
