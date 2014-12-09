@@ -2,7 +2,7 @@ var App;
 
 App = (function() {
   function App() {
-    return ['ImagoWidgetsTemplates', 'lodash', 'angular-inview'];
+    return ['lodash'];
   }
 
   return App;
