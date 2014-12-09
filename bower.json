@@ -1,12 +1,12 @@
 {
-    "name": "imago.widgets.angular",
+    "name": "imago",
     "version": "1.0.62",
-    "homepage": "https://github.com/Nex9/imago.widgets.angular",
+    "homepage": "https://github.com/Nex9/imago",
     "authors": [
         "Nex9"
     ],
     "license": "MIT",
-    "private": true,
+    "private": false,
     "dependencies": {
         "angular-mocks": "^1.2.25",
         "angular-inview": "*",
