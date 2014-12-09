@@ -21,7 +21,7 @@ class imagoSubmit extends Service
         return angular.toJson(obj)
 
       send: (data) ->
-          postUrl =  imagoSettings.host + "/contact"
+          postUrl =  imagoSettings.host + "/api/contact"
           console.log 'postUrl', postUrl
           $http.post(postUrl,
             @formToJson(data)
