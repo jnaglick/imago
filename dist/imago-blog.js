@@ -15,18 +15,17 @@ imagoPager = (function() {
       templateUrl: '/imago/imagoPager.html',
       controller: function($scope, $element, $attrs) {
         this.fetchPosts = function() {
-          var pageSize, query;
+          var pageNo, pageSize, query;
           pageSize = parseInt($scope.pageSize);
-          console.log('currentPage', $scope.currentPage);
+          pageNo = parseInt($scope.currentPage);
           query = {
             path: $scope.path,
-            page: $scope.currentPage,
+            page: pageNo,
             pagesize: pageSize
           };
           if ($scope.tags) {
             query['tags'] = $scope.tags;
           }
-          console.log('query', query);
           return imagoModel.getData([query], {
             localData: false
           }).then((function(_this) {
@@ -35,7 +34,6 @@ imagoPager = (function() {
               _results = [];
               for (_i = 0, _len = response.length; _i < _len; _i++) {
                 collection = response[_i];
-                console.log('collection', collection);
                 $scope.posts = collection.assets;
                 $scope.totalPages = collection.count / collection.assets.length;
                 break;
@@ -46,13 +44,13 @@ imagoPager = (function() {
         };
         $scope.onNext = (function(_this) {
           return function() {
-            $scope.currentPage += 1;
+            $scope.currentPage = parseInt($scope.currentPage) + 1;
             return $scope.next();
           };
         })(this);
         $scope.onPrev = (function(_this) {
           return function() {
-            $scope.currentPage -= 1;
+            $scope.currentPage = parseInt($scope.currentPage) - 1;
             return $scope.prev();
           };
         })(this);

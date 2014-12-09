@@ -1,10 +1,10 @@
-class imagoSubmit extends Factory
+class imagoSubmit extends Service
 
-  constructor: ($http, imagoUtils) ->
+  constructor: ($http, imagoUtils, imagoSettings) ->
     return {
 
       getxsrf: () ->
-        url = if (data is 'online' and debug) then "http://#{tenant}.imagoapp.com/api/v2/getxsrf" else "/api/v2/getxsrf"
+        url = imagoSettings.host + "/getxsrf"
         $http.get(url)
 
       formToJson: (form) ->
@@ -21,21 +21,23 @@ class imagoSubmit extends Factory
         return angular.toJson(obj)
 
       send: (data) ->
-        @getxsrf().then (response) =>
+        @getxsrf().then((response) =>
           console.log 'getxsrf success: ', response
           xsrfHeader = {"Nex-Xsrf": response.data}
-          postUrl = if (data is 'online' and debug) then "http://#{tenant}.imagoapp.com/api/v2/contact" else "/api/v2/contact"
+          postUrl =  imagoSettings.host + "/contact"
 
           $http.post(postUrl,
             @formToJson(data),
             {headers: xsrfHeader}
-          ). then (response) =>
+          ).then (response) =>
             console.log 'success: ', response
-            return true
+            return {status: true, message: ""}
           , (error) ->
             console.log 'error: ', error
-            return false
+            return {status: false, message: "could not connect to Server."}
         , (error) ->
           console.log 'getxsrf error: ', error
+          return {status: false, message: "could not connect to Server."}
+        )
 
     }

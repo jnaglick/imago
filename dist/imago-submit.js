@@ -2,11 +2,11 @@ var imagoSubmit,
   __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
 
 imagoSubmit = (function() {
-  function imagoSubmit($http, imagoUtils) {
+  function imagoSubmit($http, imagoUtils, imagoSettings) {
     return {
       getxsrf: function() {
         var url;
-        url = data === 'online' && debug ? "http://" + tenant + ".imagoapp.com/api/v2/getxsrf" : "/api/v2/getxsrf";
+        url = imagoSettings.host + "/getxsrf";
         return $http.get(url);
       },
       formToJson: function(form) {
@@ -32,19 +32,29 @@ imagoSubmit = (function() {
             xsrfHeader = {
               "Nex-Xsrf": response.data
             };
-            postUrl = data === 'online' && debug ? "http://" + tenant + ".imagoapp.com/api/v2/contact" : "/api/v2/contact";
+            postUrl = imagoSettings.host + "/contact";
             return $http.post(postUrl, _this.formToJson(data), {
               headers: xsrfHeader
             }).then(function(response) {
               console.log('success: ', response);
-              return true;
+              return {
+                status: true,
+                message: ""
+              };
             }, function(error) {
               console.log('error: ', error);
-              return false;
+              return {
+                status: false,
+                message: "could not connect to Server."
+              };
             });
           };
         })(this), function(error) {
-          return console.log('getxsrf error: ', error);
+          console.log('getxsrf error: ', error);
+          return {
+            status: false,
+            message: "could not connect to Server."
+          };
         });
       }
     };
@@ -54,4 +64,4 @@ imagoSubmit = (function() {
 
 })();
 
-angular.module('imago').factory('imagoSubmit', ['$http', 'imagoUtils', imagoSubmit]);
+angular.module('imago').service('imagoSubmit', ['$http', 'imagoUtils', 'imagoSettings', imagoSubmit]);
