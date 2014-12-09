@@ -30,24 +30,10 @@ exec            = require('child_process').exec
 
 # Defaults
 
-dest = 'dist'
-src = 'src'
-test = 'tmp/'
-
-targets =
-  js      : 'imago.widgets.angular.js'
-  jade    : 'templates.js'
-  coffee  : 'coffee.js'
-  scripts : 'scripts.js'
-
-paths =
-  index: "index.coffee"
-  jade: [
-    "views/*.jade"
-  ]
-  js: [
-    "bower_components/angular-inview/angular-inview.js"
-  ]
+dest        = 'dist'
+src         = 'src'
+test        = 'tmp/'
+moduleName  = 'imago'
 
 # END Defaults
 
@@ -68,10 +54,10 @@ gulp.task "join", ->
         ])
       .pipe gulpif /[.]jade$/, jade({locals: {}}).on('error', reportError)
       .pipe gulpif /[.]html$/, templateCache(
-        module: "imago"
+        module: moduleName
       )
       .pipe gulpif /[.]coffee$/, ngClassify(
-        appName: 'imago'
+        appName: moduleName
         animation:
           format: 'camelCase'
           prefix: ''
@@ -106,50 +92,13 @@ gulp.task "join", ->
 
   return merge(tasks)
 
-gulp.task "jade", ->
-  gulp.src paths.jade
-    .pipe plumber(
-      errorHandler: reportError
-    )
-    .pipe jade({locals: {}}).on('error', reportError)
-    .pipe templateCache(
-      standalone: true
-      root: "/imagoWidgets/"
-      module: "ImagoWidgetsTemplates"
-    )
-    .pipe concat targets.jade
-    .pipe gulp.dest dest
-
-gulp.task "scripts", ->
-  gulp.src paths.js
-    .pipe plumber()
-    .pipe concat targets.scripts
-    .pipe gulp.dest dest
-
-combineJs = (production = false) ->
-  # We need to rethrow jade errors to see them
-  rethrow = (err, filename, lineno) -> throw err
-
-  files = [
-    targets.jade
-    targets.coffee
-    targets.scripts
-  ]
-  sources = files.map (file) -> "#{dest}/#{file}"
-
-  gulp.src sources
-    .pipe concat targets.js
-    .pipe gulp.dest dest
-
-gulp.task "combine", combineJs
-
 gulp.task "karma", ->
   gulp.src paths.coffee
     .pipe plumber(
       errorHandler: reportError
     )
     .pipe ngClassify(
-      appName: 'imago.widgets.angular'
+      appName: moduleName
       animation:
         format: 'camelCase'
         prefix: ''
@@ -197,22 +146,8 @@ gulp.task "clean", ->
   gulp.src("#{dest}/**/*.*", { read: false })
     .pipe(rimraf())
 
-gulp.task "js", ["join", "scripts"], (next) ->
-  next()
-
-gulp.task "prepare", ["clean"], ->
-  gulp.start 'join'
-
 gulp.task "build", ["clean"], ->
   gulp.start 'join'
-
-minify = ->
-  gulp.src "#{dest}/#{targets.js}"
-    .pipe uglify()
-    .pipe concat targets.js
-    .pipe gulp.dest dest
-
-gulp.task "minify", ['build'], minify
 
 
 ## Essentials Task
@@ -220,22 +155,9 @@ gulp.task "minify", ['build'], minify
 gulp.task "watch", ->
 
   watch
-    glob: paths.jade
+    glob: "#{src}/**/*.*"
   , ->
-    gulp.start('jade')
-
-  watch
-    glob: paths.coffee
-  , ->
-    gulp.start('coffee')
-
-  files = [targets.coffee, targets.jade]
-  sources = ("#{dest}/#{file}" for file in files)
-
-  watch
-    glob: sources
-  , ->
-    gulp.start('combine')
+    gulp.start('join')
 
 reportError = (err) ->
   gutil.beep()
