@@ -9,12 +9,14 @@ class imagoPager extends Directive
         path: '@'
         pageSize: '@'
         tags: '='
+        currentPage: '='
       }
       templateUrl: '/imagoWidgets/imagoPager.html'
       controller: ($scope, $element, $attrs)->
 
         @fetchPosts = () ->
           pageSize = parseInt $scope.pageSize
+          console.log 'currentPage', $scope.currentPage
           # console.log 'fetchPost', $scope.path, $scope.currentPage, pageSize
 
           query =
@@ -31,8 +33,6 @@ class imagoPager extends Directive
               $scope.posts = collection.assets
               $scope.totalPages = collection.count / collection.assets.length
               break
-
-        $scope.currentPage = 1
 
         $scope.onNext = =>
           $scope.currentPage += 1

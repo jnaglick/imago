@@ -15,7 +15,7 @@ App = (function() {
 
 })();
 
-angular.module('imago.widgets.angular', App());
+angular.module('imago.widgets.angular', new App());
 
 var imagoPage;
 
@@ -368,13 +368,15 @@ imagoPager = (function() {
         prev: '&',
         path: '@',
         pageSize: '@',
-        tags: '='
+        tags: '=',
+        currentPage: '='
       },
       templateUrl: '/imagoWidgets/imagoPager.html',
       controller: function($scope, $element, $attrs) {
         this.fetchPosts = function() {
           var pageSize, query;
           pageSize = parseInt($scope.pageSize);
+          console.log('currentPage', $scope.currentPage);
           query = {
             path: $scope.path,
             page: $scope.currentPage,
@@ -401,7 +403,6 @@ imagoPager = (function() {
             };
           })(this));
         };
-        $scope.currentPage = 1;
         $scope.onNext = (function(_this) {
           return function() {
             $scope.currentPage += 1;
