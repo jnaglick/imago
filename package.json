@@ -17,6 +17,7 @@
     "gulp-concat": "*",
     "gulp-jade": "*",
     "gulp-ng-classify": "*",
+    "gulp-order": "^1.1.1",
     "gulp-plumber": "*",
     "gulp-uglify": "*",
     "gulp-util": "*",

@@ -16,6 +16,14 @@ templateCache   = require 'gulp-angular-templatecache'
 uglify          = require 'gulp-uglify'
 watch           = require 'gulp-watch'
 gutil           = require 'gulp-util'
+fs              = require 'fs'
+merge           = require 'merge-stream'
+rename          = require 'gulp-rename'
+rimraf          = require 'gulp-rimraf'
+order           = require 'gulp-order'
+gulpif          = require 'gulp-if'
+path            = require 'path'
+tap             = require 'gulp-tap'
 notification    = require 'node-notifier'
 exec            = require('child_process').exec
 
@@ -33,10 +41,7 @@ targets =
   scripts : 'scripts.js'
 
 paths =
-  coffee: [
-    "index.coffee"
-    "#{src}/**/*.coffee"
-  ]
+  index: "index.coffee"
   jade: [
     "views/*.jade"
   ]
@@ -46,49 +51,67 @@ paths =
 
 # END Defaults
 
-gulp.task "coffee", ->
-  gulp.src paths.coffee
-    .pipe plumber(
-      errorHandler: reportError
-    )
-    .pipe ngClassify(
-      appName: 'imago.widgets.angular'
-      animation:
-        format: 'camelCase'
-        prefix: ''
-      constant:
-        format: 'camelCase'
-        prefix: ''
-      controller:
-        format: 'camelCase'
-        suffix: ''
-      factory:
-        format: 'camelCase'
-      filter:
-        format: 'camelCase'
-      provider:
-        format: 'camelCase'
-        suffix: ''
-      service:
-        format: 'camelCase'
-        suffix: ''
-      value:
-        format: 'camelCase'
+getFolders = (dir) ->
+  fs.readdirSync(dir).filter (file) ->
+    fs.statSync(path.join(dir, file)).isDirectory()
+
+gulp.task "join", ->
+  folders = getFolders(src)
+
+  tasks = folders.map (folder) ->
+    gulp.src(path.join(src, folder, "/*"))
+      .pipe plumber(
+        errorHandler: reportError
       )
-    .pipe coffee(
-      bare: true
-    ).on('error', reportError)
-    .pipe coffeelint()
-    .pipe concat targets.coffee
-    .pipe gulp.dest dest
+      .pipe order([
+          "index.coffee"
+        ])
+      .pipe gulpif /[.]jade$/, jade({locals: {}}).on('error', reportError)
+      .pipe gulpif /[.]html$/, templateCache(
+        module: "imago"
+      )
+      .pipe gulpif /[.]coffee$/, ngClassify(
+        appName: 'imago'
+        animation:
+          format: 'camelCase'
+          prefix: ''
+        constant:
+          format: 'camelCase'
+          prefix: ''
+        controller:
+          format: 'camelCase'
+          suffix: ''
+        factory:
+          format: 'camelCase'
+        filter:
+          format: 'camelCase'
+        provider:
+          format: 'camelCase'
+          suffix: ''
+        service:
+          format: 'camelCase'
+          suffix: ''
+        value:
+          format: 'camelCase'
+        )
+      .pipe gulpif /[.]coffee$/, coffee(
+          bare: true
+        ).on('error', reportError)
+      .pipe gulpif /[.]coffee$/, coffeelint()
+      .pipe(concat(folder + ".js"))
+      .pipe(gulp.dest(dest))
+      .pipe(uglify())
+      .pipe(rename(folder + ".min.js"))
+      .pipe gulp.dest(dest)
+
+  return merge(tasks)
 
 gulp.task "jade", ->
-  YOUR_LOCALS = {}
   gulp.src paths.jade
     .pipe plumber(
       errorHandler: reportError
     )
-    .pipe jade({locals: YOUR_LOCALS}).on('error', reportError)
+    .pipe jade({locals: {}}).on('error', reportError)
     .pipe templateCache(
       standalone: true
       root: "/imagoWidgets/"
@@ -118,8 +141,9 @@ combineJs = (production = false) ->
     .pipe concat targets.js
     .pipe gulp.dest dest
 
+gulp.task "combine", combineJs
+
 gulp.task "karma", ->
-  YOUR_LOCALS = {}
   gulp.src paths.coffee
     .pipe plumber(
       errorHandler: reportError
@@ -156,7 +180,7 @@ gulp.task "karma", ->
     .pipe plumber(
       errorHandler: reportError
     )
-    .pipe jade({locals: YOUR_LOCALS}).on('error', reportError)
+    .pipe jade({locals: {}}).on('error', reportError)
     .pipe templateCache(
       standalone: true
       root: "/imagoWidgets/"
@@ -169,18 +193,18 @@ gulp.task "karma", ->
     singleRun: true
     )
 
-gulp.task "combine", combineJs
+gulp.task "clean", ->
+  gulp.src("#{dest}/**/*.*", { read: false })
+    .pipe(rimraf())
 
-gulp.task "js", ["coffee", "jade", "scripts"], (next) ->
+gulp.task "js", ["join", "scripts"], (next) ->
   next()
 
-gulp.task "prepare", ["js"], ->
-  combineJs()
+gulp.task "prepare", ["clean"], ->
+  gulp.start 'join'
 
-gulp.task "build", ["js"], ->
-  combineJs()
-
-gulp.task "b", ["build"]
+gulp.task "build", ["clean"], ->
+  gulp.start 'join'
 
 minify = ->
   gulp.src "#{dest}/#{targets.js}"
