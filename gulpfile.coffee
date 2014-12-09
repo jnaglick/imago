@@ -87,17 +87,12 @@ compileFolder = (folder) ->
     .pipe(rename(folder + ".min.js"))
     .pipe gulp.dest(dest)
 
-join = (folder) ->
-  if typeof folder is 'string'
-    compileFolder folder
-  else
-    folders = getFolders(src)
-    tasks = folders.map (folder) ->
-      compileFolder(folder)
+gulp.task "join", ->
+  folders = getFolders(src)
+  tasks = folders.map (folder) ->
+    compileFolder(folder)
 
-    return merge(tasks)
-
-gulp.task "join", join
+  return merge(tasks)
 
 gulp.task "karma", ->
   gulp.src paths.coffee
@@ -159,12 +154,10 @@ gulp.task "build", ["clean"], ->
 
 ## Essentials Task
 
-gulp.task "watch", ->
+gulp.task "watch", ['join'], ->
   watch "#{src}/**/*.*"
     .pipe tap (file, t) ->
-      join(path.dirname(file.relative))
-
-    gulp.start('join')
+      compileFolder(path.dirname(file.relative))
 
 reportError = (err) ->
   gutil.beep()
