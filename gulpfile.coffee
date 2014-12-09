@@ -41,56 +41,63 @@ getFolders = (dir) ->
   fs.readdirSync(dir).filter (file) ->
     fs.statSync(path.join(dir, file)).isDirectory()
 
-gulp.task "join", ->
-  folders = getFolders(src)
-
-  tasks = folders.map (folder) ->
-    gulp.src(path.join(src, folder, "/*"))
-      .pipe plumber(
-        errorHandler: reportError
+compileFolder = (folder) ->
+  gulp.src(path.join(src, folder, "/*"))
+    .pipe plumber(
+      errorHandler: reportError
+    )
+    .pipe order([
+        "index.coffee"
+      ])
+    .pipe gulpif /[.]jade$/, jade({locals: {}}).on('error', reportError)
+    .pipe gulpif /[.]html$/, templateCache(
+      module: moduleName
+    )
+    .pipe gulpif /[.]coffee$/, ngClassify(
+      appName: moduleName
+      animation:
+        format: 'camelCase'
+        prefix: ''
+      constant:
+        format: 'camelCase'
+        prefix: ''
+      controller:
+        format: 'camelCase'
+        suffix: ''
+      factory:
+        format: 'camelCase'
+      filter:
+        format: 'camelCase'
+      provider:
+        format: 'camelCase'
+        suffix: ''
+      service:
+        format: 'camelCase'
+        suffix: ''
+      value:
+        format: 'camelCase'
       )
-      .pipe order([
-          "index.coffee"
-        ])
-      .pipe gulpif /[.]jade$/, jade({locals: {}}).on('error', reportError)
-      .pipe gulpif /[.]html$/, templateCache(
-        module: moduleName
-      )
-      .pipe gulpif /[.]coffee$/, ngClassify(
-        appName: moduleName
-        animation:
-          format: 'camelCase'
-          prefix: ''
-        constant:
-          format: 'camelCase'
-          prefix: ''
-        controller:
-          format: 'camelCase'
-          suffix: ''
-        factory:
-          format: 'camelCase'
-        filter:
-          format: 'camelCase'
-        provider:
-          format: 'camelCase'
-          suffix: ''
-        service:
-          format: 'camelCase'
-          suffix: ''
-        value:
-          format: 'camelCase'
-        )
-      .pipe gulpif /[.]coffee$/, coffee(
-          bare: true
-        ).on('error', reportError)
-      .pipe gulpif /[.]coffee$/, coffeelint()
-      .pipe(concat(folder + ".js"))
-      .pipe(gulp.dest(dest))
-      .pipe(uglify())
-      .pipe(rename(folder + ".min.js"))
-      .pipe gulp.dest(dest)
+    .pipe gulpif /[.]coffee$/, coffee(
+        bare: true
+      ).on('error', reportError)
+    .pipe gulpif /[.]coffee$/, coffeelint()
+    .pipe(concat(folder + ".js"))
+    .pipe(gulp.dest(dest))
+    .pipe(uglify())
+    .pipe(rename(folder + ".min.js"))
+    .pipe gulp.dest(dest)
 
-  return merge(tasks)
+join = (folder) ->
+  if typeof folder is 'string'
+    compileFolder folder
+  else
+    folders = getFolders(src)
+    tasks = folders.map (folder) ->
+      compileFolder(folder)
+
+    return merge(tasks)
+
+gulp.task "join", join
 
 gulp.task "karma", ->
   gulp.src paths.coffee
@@ -153,10 +160,10 @@ gulp.task "build", ["clean"], ->
 ## Essentials Task
 
 gulp.task "watch", ->
+  watch "#{src}/**/*.*"
+    .pipe tap (file, t) ->
+      join(path.dirname(file.relative))
 
-  watch
-    glob: "#{src}/**/*.*"
-  , ->
     gulp.start('join')
 
 reportError = (err) ->
