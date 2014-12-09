@@ -12,7 +12,7 @@ imagoPager = (function() {
         tags: '=',
         currentPage: '='
       },
-      templateUrl: '/imagoPager.html',
+      templateUrl: 'imagoPager.html',
       controller: function($scope, $element, $attrs) {
         this.fetchPosts = function() {
           var pageSize, query;

@@ -5,7 +5,7 @@ imagoSlider = (function() {
     return {
       transclude: true,
       scope: true,
-      templateUrl: '/imagoSlider.html',
+      templateUrl: 'imagoSlider.html',
       controller: function($scope) {
         return $scope.conf = {
           animation: 'fade',

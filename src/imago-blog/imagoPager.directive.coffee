@@ -11,7 +11,7 @@ class imagoPager extends Directive
         tags: '='
         currentPage: '='
       }
-      templateUrl: '/imagoPager.html'
+      templateUrl: 'imagoPager.html'
       controller: ($scope, $element, $attrs)->
 
         @fetchPosts = () ->

@@ -4,7 +4,7 @@ class imagoContact extends Directive
     return {
       replace: true
       scope: {}
-      templateUrl: '/contact-widget.html'
+      templateUrl: 'contactWidget.html'
       controller: ($scope) ->
 
         $scope.submitForm = (isValid) =>

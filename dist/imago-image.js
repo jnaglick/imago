@@ -5,7 +5,7 @@ imagoImage = (function() {
     return {
       replace: true,
       scope: true,
-      templateUrl: '/imagoImage.html',
+      templateUrl: 'imagoImage.html',
       controller: function($scope, $element, $attrs) {
         $scope.status = 'loading';
         return $scope.imageStyle = {};
