@@ -25,32 +25,19 @@ imagoSubmit = (function() {
         return angular.toJson(obj);
       },
       send: function(data) {
-        return this.getxsrf().then((function(_this) {
+        var postUrl;
+        postUrl = imagoSettings.host + "/contact";
+        console.log('postUrl', postUrl);
+        return $http.post(postUrl, this.formToJson(data)).then((function(_this) {
           return function(response) {
-            var postUrl, xsrfHeader;
-            console.log('getxsrf success: ', response);
-            xsrfHeader = {
-              "Nex-Xsrf": response.data
+            console.log('success: ', response);
+            return {
+              status: true,
+              message: ""
             };
-            postUrl = imagoSettings.host + "/contact";
-            return $http.post(postUrl, _this.formToJson(data), {
-              headers: xsrfHeader
-            }).then(function(response) {
-              console.log('success: ', response);
-              return {
-                status: true,
-                message: ""
-              };
-            }, function(error) {
-              console.log('error: ', error);
-              return {
-                status: false,
-                message: "could not connect to Server."
-              };
-            });
           };
         })(this), function(error) {
-          console.log('getxsrf error: ', error);
+          console.log('error: ', error);
           return {
             status: false,
             message: "could not connect to Server."

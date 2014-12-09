@@ -21,23 +21,15 @@ class imagoSubmit extends Service
         return angular.toJson(obj)
 
       send: (data) ->
-        @getxsrf().then((response) =>
-          console.log 'getxsrf success: ', response
-          xsrfHeader = {"Nex-Xsrf": response.data}
           postUrl =  imagoSettings.host + "/contact"
-
+          console.log 'postUrl', postUrl
           $http.post(postUrl,
-            @formToJson(data),
-            {headers: xsrfHeader}
+            @formToJson(data)
           ).then (response) =>
             console.log 'success: ', response
             return {status: true, message: ""}
           , (error) ->
             console.log 'error: ', error
             return {status: false, message: "could not connect to Server."}
-        , (error) ->
-          console.log 'getxsrf error: ', error
-          return {status: false, message: "could not connect to Server."}
-        )
 
     }
