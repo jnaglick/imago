@@ -31,7 +31,7 @@ class imagoPager extends Directive
             for collection in response
               # console.log 'collection', collection
               $scope.posts = collection.assets
-              $scope.totalPages = collection.count / collection.assets.length
+              $scope.totalPages = collection.count / pageSize
               break
 
         $scope.onNext = =>

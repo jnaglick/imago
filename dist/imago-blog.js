@@ -35,7 +35,7 @@ imagoPager = (function() {
               for (_i = 0, _len = response.length; _i < _len; _i++) {
                 collection = response[_i];
                 $scope.posts = collection.assets;
-                $scope.totalPages = collection.count / collection.assets.length;
+                $scope.totalPages = collection.count / pageSize;
                 break;
               }
               return _results;
@@ -66,4 +66,4 @@ imagoPager = (function() {
 
 angular.module('imago').directive('imagoPager', ['imagoModel', imagoPager]);
 
-angular.module("imago").run(["$templateCache", function($templateCache) {$templateCache.put("/imago/imagoPager.html","<div class=\"pager\"><button ng-disabled=\"currentPage &lt;= 1\" ng-click=\"onPrev()\">Previous</button><button ng-disabled=\"currentPage &gt;= totalPages\" ng-click=\"onNext()\">Next</button></div>");}]);
+angular.module("imago").run(["$templateCache", function($templateCache) {$templateCache.put("/imago/imagoPager.html","<div class=\"pager\"><button ng-disabled=\"currentPage &lt;= 1\" ng-click=\"onPrev()\">Previous</button><button ng-disabled=\"currentPage &gt;= totalPages || posts.length &lt; pageSize\" ng-click=\"onNext()\">Next</button></div>");}]);
