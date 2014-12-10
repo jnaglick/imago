@@ -22,7 +22,7 @@ class imagoSubmit extends Service
 
       send: (data) ->
           postUrl =  imagoSettings.host + "/api/contact"
-          console.log 'postUrl', postUrl
+
           $http.post(postUrl,
             @formToJson(data)
           ).then (response) =>

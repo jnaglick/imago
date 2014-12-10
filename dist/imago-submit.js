@@ -27,7 +27,6 @@ imagoSubmit = (function() {
       send: function(data) {
         var postUrl;
         postUrl = imagoSettings.host + "/api/contact";
-        console.log('postUrl', postUrl);
         return $http.post(postUrl, this.formToJson(data)).then((function(_this) {
           return function(response) {
             console.log('success: ', response);

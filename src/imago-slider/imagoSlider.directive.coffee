@@ -31,9 +31,11 @@ class imagoSlider extends Directive
         scope.currentIndex = scope.conf.current
 
         scope.goPrev = ($event) ->
+          $interval.cancel(interval) if interval
           scope.setCurrent(if (scope.currentIndex > 0) then scope.currentIndex - 1 else parseInt(attrs.length) - 1)
 
         scope.goNext = ($event) ->
+          $interval.cancel(interval) if interval
           scope.setCurrent(if (scope.currentIndex < parseInt(attrs.length) - 1) then scope.currentIndex + 1 else 0)
 
         scope.getLast = () ->
@@ -55,7 +57,9 @@ class imagoSlider extends Directive
           $rootScope.$emit "#{scope.conf.namespace}:changed", index
 
         if scope.conf.autoplay
-          interval = $interval scope.goNext, parseInt(scope.conf.autoplay)
+          interval = $interval () ->
+            scope.setCurrent(if (scope.currentIndex < parseInt(attrs.length) - 1) then scope.currentIndex + 1 else 0)
+          , parseInt(scope.conf.autoplay)
 
         if scope.conf.enablekeys
 
@@ -76,6 +80,6 @@ class imagoSlider extends Directive
           scope.setCurrent(index)
 
         scope.$on '$destroy', ->
-          $interval.cancel interval
+          $interval.cancel(interval) if interval
           watcher()
   }

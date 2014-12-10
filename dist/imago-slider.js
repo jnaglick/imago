@@ -31,9 +31,15 @@ imagoSlider = (function() {
         });
         scope.currentIndex = scope.conf.current;
         scope.goPrev = function($event) {
+          if (interval) {
+            $interval.cancel(interval);
+          }
           return scope.setCurrent(scope.currentIndex > 0 ? scope.currentIndex - 1 : parseInt(attrs.length) - 1);
         };
         scope.goNext = function($event) {
+          if (interval) {
+            $interval.cancel(interval);
+          }
           return scope.setCurrent(scope.currentIndex < parseInt(attrs.length) - 1 ? scope.currentIndex + 1 : 0);
         };
         scope.getLast = function() {
@@ -63,7 +69,9 @@ imagoSlider = (function() {
           };
         })(this);
         if (scope.conf.autoplay) {
-          interval = $interval(scope.goNext, parseInt(scope.conf.autoplay));
+          interval = $interval(function() {
+            return scope.setCurrent(scope.currentIndex < parseInt(attrs.length) - 1 ? scope.currentIndex + 1 : 0);
+          }, parseInt(scope.conf.autoplay));
         }
         if (scope.conf.enablekeys) {
           $document.on('keydown', function(e) {
@@ -83,7 +91,9 @@ imagoSlider = (function() {
           return scope.setCurrent(index);
         });
         return scope.$on('$destroy', function() {
-          $interval.cancel(interval);
+          if (interval) {
+            $interval.cancel(interval);
+          }
           return watcher();
         });
       }
