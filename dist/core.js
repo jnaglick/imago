@@ -437,7 +437,7 @@ imagoModel = (function() {
   };
 
   imagoModel.prototype.update = function(data, options) {
-    var asset, attribute, copy, idx, query, _i, _len, _ref;
+    var asset, attribute, copy, idx, query, _i, _len, _ref, _ref1;
     if (options == null) {
       options = {};
     }
@@ -471,7 +471,7 @@ imagoModel = (function() {
       for (_i = 0, _len = copy.length; _i < _len; _i++) {
         asset = copy[_i];
         asset.metakind = (_ref = asset.metakind) != null ? _ref.toLowerCase() : void 0;
-        asset.kind = asset != null ? asset.kind.toLowerCase() : void 0;
+        asset.kind = (_ref1 = asset.kind) != null ? _ref1.toLowerCase() : void 0;
         query = {};
         query[attribute] = asset[attribute];
         if (asset.assets) {

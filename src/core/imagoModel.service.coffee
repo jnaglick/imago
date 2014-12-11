@@ -299,7 +299,7 @@ class imagoModel extends Service
     else if _.isArray(copy)
       for asset in copy
         asset.metakind = asset.metakind?.toLowerCase()
-        asset.kind = asset?.kind.toLowerCase()
+        asset.kind = asset.kind?.toLowerCase()
         query = {}
         query[attribute] = asset[attribute]
         delete asset.assets if asset.assets
