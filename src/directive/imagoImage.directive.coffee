@@ -5,7 +5,7 @@ class imagoImage extends Directive
     return {
       replace: true
       scope: true
-      templateUrl: '/imagoWidgets/imagoImage.html'
+      templateUrl: '/imago/imagoImage.html'
       controller: ($scope, $element, $attrs) ->
 
         $scope.status = 'loading'
@@ -83,7 +83,7 @@ class imagoImage extends Directive
 
           wrapperRatio = width / height if height
 
-          # $log.log 'width, height, wrapperRatio, opts.assetRatio', width, height, wrapperRatio, opts.assetRatio
+          $log.log 'width, height, wrapperRatio, opts.assetRatio', width, height, wrapperRatio, opts.assetRatio
           # debugger
 
           dpr = if opts.hires then Math.ceil($window.devicePixelRatio) or 1 else 1
@@ -101,10 +101,15 @@ class imagoImage extends Directive
           # sizemode fit
           else
             # $log.log 'assetratio: ', opts.assetRatio, 'wrapperraito: ' , wrapperRatio
-            if not height or opts.autosize
-              opts.autosize = true
+            if not height or opts.autosize is 'height'
+              opts.autosize = 'height'
               # console.log 'opts.autosize inside', opts.autosize
               servingSize = Math.round(Math.max(width, width / opts.assetRatio))
+
+            else if not width or opts.autosize is 'width'
+              opts.autosize = 'width'
+              # console.log 'opts.autosize inside', opts.autosize
+              servingSize = Math.round(Math.max(height, height * opts.assetRatio))
 
             else if opts.assetRatio <= wrapperRatio
               # $log.log 'fit full height', opts.width, opts.height, opts.assetRatio, opts.height * assetRatio
