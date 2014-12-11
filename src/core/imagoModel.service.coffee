@@ -260,9 +260,10 @@ class imagoModel extends Service
       defer.promise
 
     else
-
       if options.push
         for asset in assets
+          asset.metakind = asset.metakind.toLowerCase()
+          asset.kind = asset.kind.toLowerCase()
           if @imagoUtils.isBaseString(asset.serving_url)
             asset.base64 = true
           else
@@ -295,6 +296,8 @@ class imagoModel extends Service
 
     else if _.isArray(copy)
       for asset in copy
+        asset.metakind = asset.metakind?.toLowerCase()
+        asset.kind = asset?.kind.toLowerCase()
         query = {}
         query[attribute] = asset[attribute]
         delete asset.assets if asset.assets

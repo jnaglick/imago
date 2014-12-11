@@ -418,6 +418,8 @@ imagoModel = (function() {
       if (options.push) {
         for (_i = 0, _len = assets.length; _i < _len; _i++) {
           asset = assets[_i];
+          asset.metakind = asset.metakind.toLowerCase();
+          asset.kind = asset.kind.toLowerCase();
           if (this.imagoUtils.isBaseString(asset.serving_url)) {
             asset.base64 = true;
           } else {
@@ -433,7 +435,7 @@ imagoModel = (function() {
   };
 
   imagoModel.prototype.update = function(data, options) {
-    var asset, attribute, copy, idx, query, _i, _len;
+    var asset, attribute, copy, idx, query, _i, _len, _ref;
     if (options == null) {
       options = {};
     }
@@ -466,6 +468,8 @@ imagoModel = (function() {
     } else if (_.isArray(copy)) {
       for (_i = 0, _len = copy.length; _i < _len; _i++) {
         asset = copy[_i];
+        asset.metakind = (_ref = asset.metakind) != null ? _ref.toLowerCase() : void 0;
+        asset.kind = asset != null ? asset.kind.toLowerCase() : void 0;
         query = {};
         query[attribute] = asset[attribute];
         if (asset.assets) {
