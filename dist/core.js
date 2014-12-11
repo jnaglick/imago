@@ -399,6 +399,8 @@ imagoModel = (function() {
             _ref = result.data.data;
             for (_i = 0, _len = _ref.length; _i < _len; _i++) {
               asset = _ref[_i];
+              asset.metakind = asset.metakind.toLowerCase();
+              asset.kind = asset.kind.toLowerCase();
               if (_this.imagoUtils.isBaseString(asset.serving_url)) {
                 asset.base64 = true;
               } else {

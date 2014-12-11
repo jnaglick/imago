@@ -247,6 +247,8 @@ class imagoModel extends Service
         if options.push
 
           for asset in result.data.data
+            asset.metakind = asset.metakind.toLowerCase()
+            asset.kind = asset.kind.toLowerCase()
             if @imagoUtils.isBaseString(asset.serving_url)
               asset.base64 = true
             else
