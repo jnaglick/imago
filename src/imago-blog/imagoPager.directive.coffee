@@ -15,6 +15,7 @@ class imagoPager extends Directive
       controller: ($scope, $element, $attrs) ->
 
         @fetchPosts = () ->
+          $scope.posts = []
           pageSize = parseInt $scope.pageSize
           pageNo = parseInt $scope.currentPage
           # console.log 'fetchPost', $scope.path, pageNo, pageSize

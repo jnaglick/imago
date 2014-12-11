@@ -16,6 +16,7 @@ imagoPager = (function() {
       controller: function($scope, $element, $attrs) {
         this.fetchPosts = function() {
           var pageNo, pageSize, query;
+          $scope.posts = [];
           pageSize = parseInt($scope.pageSize);
           pageNo = parseInt($scope.currentPage);
           query = {
