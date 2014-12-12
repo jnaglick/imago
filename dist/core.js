@@ -1522,7 +1522,7 @@ imagoUtils = (function() {
       getAssetKind: function(id) {
         var kind;
         if (id.indexOf('Collection-') === 0) {
-          kind = 'Collection';
+          kind = 'collection';
         } else if (id.indexOf('Proxy-') === 0) {
           kind = 'Proxy';
         } else if (id.indexOf('Order-') === 0) {
@@ -1530,9 +1530,9 @@ imagoUtils = (function() {
         } else if (id.indexOf('Generic') === 0) {
           kind = 'Generic';
         } else if (id.match(/[0-9a-z]{8}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{12}/)) {
-          kind = 'Image';
+          kind = 'image';
         } else if (id.match(/[0-9a-z]{56}/)) {
-          kind = 'Video';
+          kind = 'video';
         }
         return kind;
       },
