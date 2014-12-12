@@ -288,8 +288,6 @@ imagoModel = (function() {
       _ref = data.assets;
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         asset = _ref[_i];
-        asset.metakind = asset.metakind.toLowerCase();
-        asset.kind = asset.kind.toLowerCase();
         if (this.imagoUtils.isBaseString(asset.serving_url)) {
           asset.base64 = true;
         } else {
@@ -399,8 +397,6 @@ imagoModel = (function() {
             _ref = result.data.data;
             for (_i = 0, _len = _ref.length; _i < _len; _i++) {
               asset = _ref[_i];
-              asset.metakind = asset.metakind.toLowerCase();
-              asset.kind = asset.kind.toLowerCase();
               if (_this.imagoUtils.isBaseString(asset.serving_url)) {
                 asset.base64 = true;
               } else {
@@ -420,8 +416,6 @@ imagoModel = (function() {
       if (options.push) {
         for (_i = 0, _len = assets.length; _i < _len; _i++) {
           asset = assets[_i];
-          asset.metakind = asset.metakind.toLowerCase();
-          asset.kind = asset.kind.toLowerCase();
           if (this.imagoUtils.isBaseString(asset.serving_url)) {
             asset.base64 = true;
           } else {
@@ -437,7 +431,7 @@ imagoModel = (function() {
   };
 
   imagoModel.prototype.update = function(data, options) {
-    var asset, attribute, copy, idx, query, _i, _len, _ref, _ref1;
+    var asset, attribute, copy, idx, query, _i, _len;
     if (options == null) {
       options = {};
     }
@@ -470,8 +464,6 @@ imagoModel = (function() {
     } else if (_.isArray(copy)) {
       for (_i = 0, _len = copy.length; _i < _len; _i++) {
         asset = copy[_i];
-        asset.metakind = (_ref = asset.metakind) != null ? _ref.toLowerCase() : void 0;
-        asset.kind = (_ref1 = asset.kind) != null ? _ref1.toLowerCase() : void 0;
         query = {};
         query[attribute] = asset[attribute];
         if (asset.assets) {

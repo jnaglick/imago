@@ -185,8 +185,6 @@ class imagoModel extends Service
     collection = data
     if data.assets
       for asset in data.assets
-        asset.metakind = asset.metakind.toLowerCase()
-        asset.kind = asset.kind.toLowerCase()
         if @imagoUtils.isBaseString(asset.serving_url)
           asset.base64 = true
         else
@@ -247,8 +245,6 @@ class imagoModel extends Service
         if options.push
 
           for asset in result.data.data
-            asset.metakind = asset.metakind.toLowerCase()
-            asset.kind = asset.kind.toLowerCase()
             if @imagoUtils.isBaseString(asset.serving_url)
               asset.base64 = true
             else
@@ -264,8 +260,6 @@ class imagoModel extends Service
     else
       if options.push
         for asset in assets
-          asset.metakind = asset.metakind.toLowerCase()
-          asset.kind = asset.kind.toLowerCase()
           if @imagoUtils.isBaseString(asset.serving_url)
             asset.base64 = true
           else
@@ -298,8 +292,6 @@ class imagoModel extends Service
 
     else if _.isArray(copy)
       for asset in copy
-        asset.metakind = asset.metakind?.toLowerCase()
-        asset.kind = asset.kind?.toLowerCase()
         query = {}
         query[attribute] = asset[attribute]
         delete asset.assets if asset.assets
