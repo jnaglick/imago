@@ -86,6 +86,7 @@ imagoImage = (function() {
           if (height) {
             wrapperRatio = width / height;
           }
+          $log.log('width, height, wrapperRatio, opts.assetRatio', width, height, wrapperRatio, opts.assetRatio);
           dpr = opts.hires ? Math.ceil($window.devicePixelRatio) || 1 : 1;
           if (opts.sizemode === 'crop' && height) {
             if (opts.assetRatio <= wrapperRatio) {
@@ -94,9 +95,12 @@ imagoImage = (function() {
               servingSize = Math.round(Math.max(height, height * opts.assetRatio));
             }
           } else {
-            if (!height || opts.autosize) {
-              opts.autosize = true;
+            if (!height || opts.autosize === 'height') {
+              opts.autosize = 'height';
               servingSize = Math.round(Math.max(width, width / opts.assetRatio));
+            } else if (!width || opts.autosize === 'width') {
+              opts.autosize = 'width';
+              servingSize = Math.round(Math.max(height, height * opts.assetRatio));
             } else if (opts.assetRatio <= wrapperRatio) {
               servingSize = Math.round(Math.max(height, height * opts.assetRatio));
             } else {
