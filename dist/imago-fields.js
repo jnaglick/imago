@@ -1,3 +1,30 @@
+var ImagoFieldCheckbox;
+
+ImagoFieldCheckbox = (function() {
+  function ImagoFieldCheckbox() {
+    return {
+      require: 'ngModel',
+      scope: {
+        ngModel: '='
+      },
+      transclude: true,
+      templateUrl: '/imago/imago-field-checkbox.html',
+      link: function(scope, element, attrs, ngModelController) {
+        return scope.update = function(value) {
+          value = !value;
+          ngModelController.$setViewValue(value);
+          return ngModelController.$render();
+        };
+      }
+    };
+  }
+
+  return ImagoFieldCheckbox;
+
+})();
+
+angular.module('imago').directive('imagoFieldCheckbox', [ImagoFieldCheckbox]);
+
 var ImagoFieldNumber;
 
 ImagoFieldNumber = (function() {
@@ -9,18 +36,12 @@ ImagoFieldNumber = (function() {
         max: '=',
         ngModel: '='
       },
+      transclude: true,
       templateUrl: '/imago/imago-field-number.html',
       link: function(scope, element, attrs, ngModelController) {
-        var checkValidity, updateModel;
-        scope.label = '';
-        if (angular.isDefined(attrs.label)) {
-          attrs.$observe("label", function(value) {
-            scope.label = " " + value;
-            ngModelController.$render();
-          });
-        }
+        var change, checkValidity;
         ngModelController.$render = function() {
-          checkValidity();
+          return checkValidity();
         };
         ngModelController.$formatters.push(function(value) {
           return parseInt(value, 10);
@@ -33,8 +54,13 @@ ImagoFieldNumber = (function() {
           valid = !(scope.isOverMin(true) || scope.isOverMax(true));
           return ngModelController.$setValidity('outOfBounds', valid);
         };
-        updateModel = function(offset) {
-          ngModelController.$setViewValue(ngModelController.$viewValue + offset);
+        change = function(offset) {
+          var value;
+          value = ngModelController.$viewValue + offset;
+          return scope.update(value);
+        };
+        scope.update = function(value) {
+          ngModelController.$setViewValue(value);
           return ngModelController.$render();
         };
         scope.isOverMin = function() {
@@ -48,10 +74,10 @@ ImagoFieldNumber = (function() {
           }
         };
         scope.decrement = function() {
-          return updateModel(-1);
+          return change(-1);
         };
         scope.increment = function() {
-          return updateModel(+1);
+          return change(+1);
         };
         checkValidity();
         return scope.$watch('min+max', function() {
@@ -67,4 +93,5 @@ ImagoFieldNumber = (function() {
 
 angular.module('imago').directive('imagoFieldNumber', [ImagoFieldNumber]);
 
-angular.module("imago").run(["$templateCache", function($templateCache) {$templateCache.put("/imago/imago-field-number.html","<div class=\"imago-field number\"><input type=\"text\" ng-model=\"ngModel\"/><button type=\"button\" ng-disabled=\"isOverMin()\" ng-click=\"decrement()\" class=\"decrement\"></button><button type=\"button\" ng-disabled=\"isOverMax()\" ng-click=\"increment()\" class=\"increment\"></button></div>");}]);
+angular.module("imago").run(["$templateCache", function($templateCache) {$templateCache.put("/imago/imago-field-checkbox.html","<div class=\"imago-checkbox\"><label ng-class=\"{active: ngModel}\" class=\"topcoat-checkbox\"><div ng-click=\"update(ngModel)\" class=\"topcoat-checkbox__checkmark\"></div><span ng-transclude=\"ng-transclude\"></span></label></div>");
+$templateCache.put("/imago/imago-field-number.html","<div class=\"imago-field number\"><div ng-transclude=\"ng-transclude\"></div><input type=\"text\" ng-model=\"ngModel\" ng-blur=\"update(ngModel)\"/><button type=\"button\" ng-disabled=\"isOverMin()\" ng-click=\"decrement()\" class=\"decrement\"></button><button type=\"button\" ng-disabled=\"isOverMax()\" ng-click=\"increment()\" class=\"increment\"></button></div>");}]);
