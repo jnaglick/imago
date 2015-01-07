@@ -1,0 +1,11 @@
+.imago-field.date
+  div(ng-transclude)
+  input(
+    type="text"
+    date-time dismiss="true"
+    ng-model="ngModel"
+    ng-blur="update(ngModel)"
+    view="date"
+    min-view="date"
+    partial="true"
+      )

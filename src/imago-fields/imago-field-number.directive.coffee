@@ -17,13 +17,11 @@ class ImagoFieldNumber extends Directive
         ngModelController.$render = ->
           checkValidity()
 
-        # when model change, cast to integer
         ngModelController.$formatters.push (value) ->
-          parseInt value, 10
+          parseFloat value
 
-        # when view change, cast to integer
         ngModelController.$parsers.push (value) ->
-          parseInt value, 10
+          parseFloat value
 
         checkValidity = ->
           valid = !(scope.isOverMin(true) || scope.isOverMax(true))

@@ -1,4 +1,4 @@
-class ImagoFieldCheckbox extends Directive
+class ImagoFieldString extends Directive
 
   constructor: ->
 
@@ -8,12 +8,11 @@ class ImagoFieldCheckbox extends Directive
       scope:
         ngModel: '='
       transclude: true
-      templateUrl: '/imago/imago-field-checkbox.html'
+      templateUrl: '/imago/imago-field-string.html'
 
       link: (scope, element, attrs, ngModelController) ->
 
         scope.update = (value) ->
-          value = !value
           ngModelController.$setViewValue(value)
           ngModelController.$render()
 
