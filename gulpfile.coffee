@@ -19,7 +19,8 @@ gutil           = require 'gulp-util'
 fs              = require 'fs'
 merge           = require 'merge-stream'
 rename          = require 'gulp-rename'
-rimraf          = require 'gulp-rimraf'
+del             = require 'del'
+vinylPaths      = require('vinyl-paths')
 order           = require 'gulp-order'
 gulpif          = require 'gulp-if'
 path            = require 'path'
@@ -147,7 +148,7 @@ gulp.task "karma", ->
 
 gulp.task "clean", ->
   gulp.src("#{dest}/**/*.*", { read: false })
-    .pipe(rimraf())
+    .pipe(vinylPaths(del))
 
 gulp.task "build", ["clean"], ->
   gulp.start 'join'
