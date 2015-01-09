@@ -86,7 +86,6 @@ imagoImage = (function() {
           if (height) {
             wrapperRatio = width / height;
           }
-          $log.log('width, height, wrapperRatio, opts.assetRatio', width, height, wrapperRatio, opts.assetRatio);
           dpr = opts.hires ? Math.ceil($window.devicePixelRatio) || 1 : 1;
           if (opts.sizemode === 'crop' && height) {
             if (opts.assetRatio <= wrapperRatio) {
