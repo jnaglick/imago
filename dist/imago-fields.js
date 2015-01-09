@@ -90,6 +90,35 @@ ImagoFieldDate = (function() {
 
 angular.module('imago').directive('imagoFieldDate', [ImagoFieldDate]);
 
+var ImagoFieldEmail;
+
+ImagoFieldEmail = (function() {
+  function ImagoFieldEmail() {
+    return {
+      require: 'ngModel',
+      scope: {
+        ngModel: '='
+      },
+      transclude: true,
+      templateUrl: '/imago/imago-field-email.html',
+      link: function(scope, element, attrs, ngModelController) {
+        if (attrs.required) {
+          scope.required = true;
+        }
+        return scope.update = function(value) {
+          ngModelController.$setViewValue(value);
+          return ngModelController.$render();
+        };
+      }
+    };
+  }
+
+  return ImagoFieldEmail;
+
+})();
+
+angular.module('imago').directive('imagoFieldEmail', [ImagoFieldEmail]);
+
 var ImagoFieldNumber;
 
 ImagoFieldNumber = (function() {
@@ -116,7 +145,7 @@ ImagoFieldNumber = (function() {
         });
         checkValidity = function() {
           var valid;
-          valid = !(scope.isOverMin(true) || scope.isOverMax(true));
+          valid = !(scope.isLimitMin(true) || scope.isLimitMax(true));
           return ngModelController.$setValidity('outOfBounds', valid);
         };
         change = function(offset) {
@@ -127,6 +156,16 @@ ImagoFieldNumber = (function() {
         scope.update = function(value) {
           ngModelController.$setViewValue(value);
           return ngModelController.$render();
+        };
+        scope.isLimitMin = function() {
+          if (ngModelController.$viewValue < scope.min) {
+            return true;
+          }
+        };
+        scope.isLimitMax = function() {
+          if (ngModelController.$viewValue > scope.max) {
+            return true;
+          }
         };
         scope.isOverMin = function() {
           if (ngModelController.$viewValue < scope.min + 1) {
@@ -184,8 +223,9 @@ ImagoFieldString = (function() {
 
 angular.module('imago').directive('imagoFieldString', [ImagoFieldString]);
 
-angular.module("imago").run(["$templateCache", function($templateCache) {$templateCache.put("/imago/imago-field-checkbox.html","<div class=\"imago-checkbox\"><label ng-class=\"{active: ngModel}\" class=\"topcoat-checkbox\"><div ng-click=\"update(ngModel)\" class=\"topcoat-checkbox__checkmark\"></div><span ng-transclude=\"ng-transclude\"></span></label></div>");
+angular.module("imago").run(["$templateCache", function($templateCache) {$templateCache.put("/imago/imago-field-checkbox.html","<div class=\"imago-checkbox\"><label ng-class=\"{active: ngModel}\" ng-click=\"update(ngModel)\" class=\"topcoat-checkbox\"><div class=\"topcoat-checkbox__checkmark\"></div><span ng-transclude=\"ng-transclude\"></span></label></div>");
 $templateCache.put("/imago/imago-field-currency.html","<div class=\"imago-field currency\"><div ng-transclude=\"ng-transclude\"></div><select ng-model=\"currency\" ng-options=\"currency for currency in currencies\"></select><input type=\"text\" ng-model=\"ngModel[currency]\" ng-blur=\"update(ngModel)\" ng-disabled=\"!currency\"/></div>");
 $templateCache.put("/imago/imago-field-date.html","<div class=\"imago-field date\"><div ng-transclude=\"ng-transclude\"></div><input type=\"text\" date-time=\"date-time\" dismiss=\"true\" ng-model=\"ngModel\" ng-blur=\"update(ngModel)\" view=\"date\" min-view=\"date\" partial=\"true\"/></div>");
+$templateCache.put("/imago/imago-field-email.html","<div class=\"imago-field email\"><div ng-transclude=\"ng-transclude\"></div><input type=\"email\" ng-model=\"ngModel\" ng-blur=\"update(ngModel)\" ng-required=\"required\"/></div>");
 $templateCache.put("/imago/imago-field-number.html","<div class=\"imago-field number\"><div ng-transclude=\"ng-transclude\"></div><input type=\"text\" ng-model=\"ngModel\" ng-blur=\"update(ngModel)\"/><button type=\"button\" ng-disabled=\"isOverMin()\" ng-click=\"decrement()\" class=\"decrement\"></button><button type=\"button\" ng-disabled=\"isOverMax()\" ng-click=\"increment()\" class=\"increment\"></button></div>");
 $templateCache.put("/imago/imago-field-string.html","<div class=\"imago-field string\"><div ng-transclude=\"ng-transclude\"></div><input type=\"text\" ng-model=\"ngModel\" ng-change=\"update(ngModel)\"/></div>");}]);
