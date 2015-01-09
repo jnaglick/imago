@@ -4,6 +4,7 @@ class ImagoFieldString extends Directive
 
     return {
 
+      replace: true
       require: 'ngModel'
       scope:
         ngModel: '='

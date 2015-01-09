@@ -4,6 +4,7 @@ class ImagoFieldEmail extends Directive
 
     return {
 
+      replace: true
       require: 'ngModel'
       scope:
         ngModel: '='

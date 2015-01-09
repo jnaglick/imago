@@ -4,6 +4,7 @@ class ImagoFieldCurrency extends Directive
 
     return {
 
+      replace: true
       require: 'ngModel'
       scope:
         currencies: '='

@@ -3,6 +3,7 @@ var ImagoFieldCheckbox;
 ImagoFieldCheckbox = (function() {
   function ImagoFieldCheckbox() {
     return {
+      replace: true,
       require: 'ngModel',
       scope: {
         ngModel: '='
@@ -30,6 +31,7 @@ var ImagoFieldCurrency;
 ImagoFieldCurrency = (function() {
   function ImagoFieldCurrency() {
     return {
+      replace: true,
       require: 'ngModel',
       scope: {
         currencies: '=',
@@ -67,6 +69,7 @@ var ImagoFieldDate;
 ImagoFieldDate = (function() {
   function ImagoFieldDate() {
     return {
+      replace: true,
       require: 'ngModel',
       scope: {
         min: '=',
@@ -95,6 +98,7 @@ var ImagoFieldEmail;
 ImagoFieldEmail = (function() {
   function ImagoFieldEmail() {
     return {
+      replace: true,
       require: 'ngModel',
       scope: {
         ngModel: '='
@@ -124,6 +128,7 @@ var ImagoFieldNumber;
 ImagoFieldNumber = (function() {
   function ImagoFieldNumber() {
     return {
+      replace: true,
       require: 'ngModel',
       scope: {
         min: '=',
@@ -202,6 +207,7 @@ var ImagoFieldString;
 ImagoFieldString = (function() {
   function ImagoFieldString() {
     return {
+      replace: true,
       require: 'ngModel',
       scope: {
         ngModel: '='

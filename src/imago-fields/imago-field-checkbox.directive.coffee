@@ -4,6 +4,7 @@ class ImagoFieldCheckbox extends Directive
 
     return {
 
+      replace: true
       require: 'ngModel'
       scope:
         ngModel: '='

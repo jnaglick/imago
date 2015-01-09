@@ -4,6 +4,7 @@ class ImagoFieldNumber extends Directive
 
     return {
 
+      replace: true
       require: 'ngModel'
       scope:
         min: '='
