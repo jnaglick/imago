@@ -1,0 +1,8 @@
+.cart
+  .items
+    .item(ng-repeat="item in cart.utils.cart.items")
+      b {{ item._id }}
+      div(ng-model="item.qty")
+      button(ng-click="cart.utils.remove(item)") remove
+
+  button.checkout(type="submit" ng-click="cart.utils.checkout()") checkout
