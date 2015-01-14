@@ -1,13 +1,15 @@
 .imago-field.currency
-  div(ng-transclude)
-  select(
-    ng-model="currency"
-    ng-options="currency for currency in currencies"
-  )
+  .wrapper(ng-class="{focus:onfocus}")
+    div(ng-transclude)
+    select(
+      ng-model="currency"
+      ng-options="currency for currency in currencies"
+    )
 
-  input(
-    type="text"
-    ng-model="ngModel[currency]"
-    ng-blur="update(ngModel)"
-    ng-disabled="!currency"
-  )
+    input(
+      type="text"
+      ng-model="ngModel[currency]"
+      ng-blur="update(ngModel); onfocus = false"
+      ng-disabled="!currency"
+      ng-focus="onfocus = true"
+    )
