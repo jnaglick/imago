@@ -1,11 +1,11 @@
 .imagoslider(
     ng-class="[conf.animation, action]"
-    hm-swipe-left="goNext($event)"
-    hm-swipe-right="goPrev($event)"
+    hm-swipe-left="goNext"
+    hm-swipe-right="goPrev"
     )
     .prev(ng-show="conf.enablearrows"
-        hm-tap="goPrev($event)"
+        hm-tap="goPrev"
         stop-propagation)
     .next(ng-show="conf.enablearrows"
-        hm-tap="goNext($event)"
+        hm-tap="goNext"
         stop-propagation)
