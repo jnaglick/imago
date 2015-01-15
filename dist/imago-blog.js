@@ -56,7 +56,7 @@ imagoPager = (function() {
           };
         })(this);
         $scope.$watch('currentPage', this.fetchPosts);
-        return $scope.$watch('tag', this.fetchPosts);
+        return $scope.$watch('tags', this.fetchPosts);
       }
     };
   }
@@ -67,4 +67,4 @@ imagoPager = (function() {
 
 angular.module('imago').directive('imagoPager', ['imagoModel', imagoPager]);
 
-angular.module("imago").run(["$templateCache", function($templateCache) {$templateCache.put("/imago/imagoPager.html","<div class=\"pager\"><button ng-disabled=\"currentPage &lt;= 1\" hm-tap=\"onPrev()\">Previous</button><button ng-disabled=\"currentPage &gt;= totalPages || posts.length &lt; pageSize\" hm-tap=\"onNext()\">Next</button></div>");}]);
+angular.module("imago").run(["$templateCache", function($templateCache) {$templateCache.put("/imago/imagoPager.html","<div class=\"pager\"><button ng-disabled=\"currentPage &lt;= 1\" hm-tap=\"onPrev\">Previous</button><button ng-disabled=\"currentPage &gt;= totalPages || posts.length &lt; pageSize\" hm-tap=\"onNextre\">Next</button></div>");}]);

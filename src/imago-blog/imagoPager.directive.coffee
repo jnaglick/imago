@@ -44,5 +44,5 @@ class imagoPager extends Directive
           $scope.prev()
 
         $scope.$watch 'currentPage', @fetchPosts
-        $scope.$watch 'tag', @fetchPosts
+        $scope.$watch 'tags', @fetchPosts
     }
