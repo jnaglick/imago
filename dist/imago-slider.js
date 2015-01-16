@@ -18,7 +18,7 @@ imagoSlider = (function() {
         };
       },
       link: function(scope, element, attrs, ctrl, transclude) {
-        var interval, slider, watcher;
+        var slider, watcher;
         slider = element.children();
         transclude(scope, function(clone, scope) {
           return slider.append(clone);
@@ -31,14 +31,14 @@ imagoSlider = (function() {
         });
         scope.currentIndex = scope.conf.current;
         scope.goPrev = function($event) {
-          if (interval) {
-            $interval.cancel(interval);
+          if (scope.conf.interval && typeof $event === 'object') {
+            $interval.cancel(scope.conf.interval);
           }
           return scope.setCurrent(scope.currentIndex > 0 ? scope.currentIndex - 1 : parseInt(attrs.length) - 1);
         };
         scope.goNext = function($event) {
-          if (interval) {
-            $interval.cancel(interval);
+          if (scope.conf.interval && typeof $event === 'object') {
+            $interval.cancel(scope.conf.interval);
           }
           return scope.setCurrent(scope.currentIndex < parseInt(attrs.length) - 1 ? scope.currentIndex + 1 : 0);
         };
@@ -68,11 +68,17 @@ imagoSlider = (function() {
             return $rootScope.$emit("" + scope.conf.namespace + ":changed", index);
           };
         })(this);
-        if (scope.conf.autoplay) {
-          interval = $interval(function() {
-            return scope.setCurrent(scope.currentIndex < parseInt(attrs.length) - 1 ? scope.currentIndex + 1 : 0);
-          }, parseInt(scope.conf.autoplay));
-        }
+        scope.$watch(attrs.autoplay, (function(_this) {
+          return function(value) {
+            if (parseInt(value) > 0) {
+              return scope.conf.interval = $interval(scope.goNext, parseInt(value));
+            } else {
+              if (scope.conf.interval) {
+                return $interval.cancel(scope.conf.interval);
+              }
+            }
+          };
+        })(this));
         if (scope.conf.enablekeys) {
           $document.on('keydown', function(e) {
             switch (e.keyCode) {
@@ -91,8 +97,8 @@ imagoSlider = (function() {
           return scope.setCurrent(index);
         });
         return scope.$on('$destroy', function() {
-          if (interval) {
-            $interval.cancel(interval);
+          if (scope.conf.interval) {
+            $interval.cancel(scope.conf.interval);
           }
           return watcher();
         });
