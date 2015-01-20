@@ -1,12 +1,11 @@
 class imagoCart extends Service
 
-  constructor: (@$q, @$http, @imagoUtils, @imagoSettings) ->
+  constructor: (@$q, @$window, @$http, @imagoUtils, @imagoSettings) ->
+    @cart =
+      items: []
     local = localStorage.getItem('imagoCart')
     @checkStatus(local) if local
     @checkCurrency()
-
-    @cart =
-      items: []
 
   checkCurrency: =>
     promises = []
@@ -63,9 +62,11 @@ class imagoCart extends Service
     return unless @cart._id
     @$http.put("#{@imagoSettings.host}/api/carts/#{@cart._id}", @cart)
 
-  remove: (item) ->
+  remove: (item) =>
     idx = _.findIndex @cart.items, { _id: item._id }
     @cart.items.splice idx, 1
     @update()
 
   checkout: ->
+    return unless tenant
+    @$window.location.href = "https://#{tenant}.2.imagoapp.com/account/checkout/#{@cart._id}"

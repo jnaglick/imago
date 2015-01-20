@@ -29,26 +29,28 @@ var imagoCart,
   __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
 
 imagoCart = (function() {
-  function imagoCart($q, $http, imagoUtils, imagoSettings) {
+  function imagoCart($q, $window, $http, imagoUtils, imagoSettings) {
     var local;
     this.$q = $q;
+    this.$window = $window;
     this.$http = $http;
     this.imagoUtils = imagoUtils;
     this.imagoSettings = imagoSettings;
+    this.remove = __bind(this.remove, this);
     this.update = __bind(this.update, this);
     this.add = __bind(this.add, this);
     this.create = __bind(this.create, this);
     this.checkCart = __bind(this.checkCart, this);
     this.checkStatus = __bind(this.checkStatus, this);
     this.checkCurrency = __bind(this.checkCurrency, this);
+    this.cart = {
+      items: []
+    };
     local = localStorage.getItem('imagoCart');
     if (local) {
       this.checkStatus(local);
     }
     this.checkCurrency();
-    this.cart = {
-      items: []
-    };
   }
 
   imagoCart.prototype.checkCurrency = function() {
@@ -160,12 +162,17 @@ imagoCart = (function() {
     return this.update();
   };
 
-  imagoCart.prototype.checkout = function() {};
+  imagoCart.prototype.checkout = function() {
+    if (!tenant) {
+      return;
+    }
+    return this.$window.location.href = "https://" + tenant + ".2.imagoapp.com/account/checkout/" + this.cart._id;
+  };
 
   return imagoCart;
 
 })();
 
-angular.module('imago').service('imagoCart', ['$q', '$http', 'imagoUtils', 'imagoSettings', imagoCart]);
+angular.module('imago').service('imagoCart', ['$q', '$window', '$http', 'imagoUtils', 'imagoSettings', imagoCart]);
 
 angular.module("imago").run(["$templateCache", function($templateCache) {$templateCache.put("/imago/imago-cart.html","<div class=\"cart\"><div class=\"items\"><div ng-repeat=\"item in cart.utils.cart.items\" class=\"item\"><b>{{ item._id }}</b><div ng-model=\"item.qty\"></div><button ng-click=\"cart.utils.remove(item)\">remove</button></div></div><button type=\"submit\" ng-click=\"cart.utils.checkout()\" class=\"checkout\">checkout</button></div>");}]);
