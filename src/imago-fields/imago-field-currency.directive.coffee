@@ -1,6 +1,6 @@
 class ImagoFieldCurrency extends Directive
 
-  constructor: ->
+  constructor: ($filter) ->
 
     return {
 
@@ -17,13 +17,20 @@ class ImagoFieldCurrency extends Directive
 
         return console.log 'no currencies!!' unless scope.currencies
 
+        decimalPlaces = (num) ->
+          match = ("" + num).match(/(?:\.(\d+))?(?:[eE]([+-]?\d+))?$/)
+          return 0  unless match
+          Math.max 0, ((if match[1] then match[1].length else 0)) - ((if match[2] then +match[2] else 0))
+
         scope.currency = scope.currencies[0]
 
         scope.update = (value) ->
           for key of value
             value[key] = parseFloat value[key]
-          scope.save()
+            console.log 'decimalPlaces', decimalPlaces(value[key])
+          console.log 'value', value
           ngModelController.$setViewValue(value)
           ngModelController.$render()
+          scope.save()
 
     }

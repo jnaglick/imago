@@ -5,4 +5,8 @@
       div(ng-model="item.qty")
       button(ng-click="cart.utils.remove(item)") remove
 
-  button.checkout(type="submit" ng-click="cart.utils.checkout()") checkout
+  button.checkout(
+    type="submit"
+    ng-click="cart.utils.checkout()"
+    ng-disabled="!cart.utils.cart.items.length"
+    ) checkout

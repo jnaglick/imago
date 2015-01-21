@@ -1,6 +1,6 @@
 class imagoCart extends Service
 
-  constructor: (@$q, @$window, @$http, @imagoUtils, @imagoSettings) ->
+  constructor: (@$q, @$window, @$http, @imagoUtils, @imagoModel, @imagoSettings) ->
     @cart =
       items: []
     local = localStorage.getItem('imagoCart')
@@ -47,6 +47,9 @@ class imagoCart extends Service
 
   add: (item) =>
     return console.log 'quantity required' unless item.qty
+    unless item.serving_url
+      parent = @imagoModel.find {'_id' : item.parent}
+      item.serving_url = parent.serving_url if parent
     copy = angular.copy item
     filter = _.find @cart.items, { _id: copy._id }
 

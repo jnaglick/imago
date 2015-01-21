@@ -8,8 +8,10 @@
 
     input(
       type="text"
+      imago-filter-currency
       ng-model="ngModel[currency]"
-      ng-blur="update(ngModel); onfocus = false"
+      ng-model-options="{updateOn: 'blur'}"
+      ng-change="update(ngModel); onfocus = false"
       ng-disabled="!currency"
       ng-focus="onfocus = true"
     )
