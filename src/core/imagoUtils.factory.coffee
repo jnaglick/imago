@@ -32,12 +32,14 @@ class imagoUtils extends Factory
         '189' : 'onMinus'
 
       SYMBOLS:
-        EUR     : '&#128;'
-        USD     : '&#36;'
+        EUR     : '€'
+        USD     : '$'
         SEK     : 'SEK'
-        YEN     : '&#165;'
-        GBP     : '&#163;'
-        GENERIC : '&#164;'
+        YEN     : '¥'
+        GBP     : '£'
+        GENERIC : '¤'
+        CHF     : 'CHF'
+        NOK     : 'NOK'
 
       CURRENCY_MAPPING:
         "United Arab Emirates"     : "AED"

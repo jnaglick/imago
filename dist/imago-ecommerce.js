@@ -29,12 +29,13 @@ var imagoCart,
   __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
 
 imagoCart = (function() {
-  function imagoCart($q, $window, $http, imagoUtils, imagoSettings) {
+  function imagoCart($q, $window, $http, imagoUtils, imagoModel, imagoSettings) {
     var local;
     this.$q = $q;
     this.$window = $window;
     this.$http = $http;
     this.imagoUtils = imagoUtils;
+    this.imagoModel = imagoModel;
     this.imagoSettings = imagoSettings;
     this.remove = __bind(this.remove, this);
     this.update = __bind(this.update, this);
@@ -124,9 +125,17 @@ imagoCart = (function() {
   };
 
   imagoCart.prototype.add = function(item) {
-    var copy, filter;
+    var copy, filter, parent;
     if (!item.qty) {
       return console.log('quantity required');
+    }
+    if (!item.serving_url) {
+      parent = this.imagoModel.find({
+        '_id': item.parent
+      });
+      if (parent) {
+        item.serving_url = parent.serving_url;
+      }
     }
     copy = angular.copy(item);
     filter = _.find(this.cart.items, {
@@ -173,6 +182,6 @@ imagoCart = (function() {
 
 })();
 
-angular.module('imago').service('imagoCart', ['$q', '$window', '$http', 'imagoUtils', 'imagoSettings', imagoCart]);
+angular.module('imago').service('imagoCart', ['$q', '$window', '$http', 'imagoUtils', 'imagoModel', 'imagoSettings', imagoCart]);
 
-angular.module("imago").run(["$templateCache", function($templateCache) {$templateCache.put("/imago/imago-cart.html","<div class=\"cart\"><div class=\"items\"><div ng-repeat=\"item in cart.utils.cart.items\" class=\"item\"><b>{{ item._id }}</b><div ng-model=\"item.qty\"></div><button ng-click=\"cart.utils.remove(item)\">remove</button></div></div><button type=\"submit\" ng-click=\"cart.utils.checkout()\" class=\"checkout\">checkout</button></div>");}]);
+angular.module("imago").run(["$templateCache", function($templateCache) {$templateCache.put("/imago/imago-cart.html","<div class=\"cart\"><div class=\"items\"><div ng-repeat=\"item in cart.utils.cart.items\" class=\"item\"><b>{{ item._id }}</b><div ng-model=\"item.qty\"></div><button ng-click=\"cart.utils.remove(item)\">remove</button></div></div><button type=\"submit\" ng-click=\"cart.utils.checkout()\" ng-disabled=\"!cart.utils.cart.items.length\" class=\"checkout\">checkout</button></div>");}]);
