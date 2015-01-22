@@ -32,14 +32,14 @@ class imagoUtils extends Factory
         '189' : 'onMinus'
 
       SYMBOLS:
-        EUR     : '€'
-        USD     : '$'
-        SEK     : 'SEK'
-        YEN     : '¥'
-        GBP     : '£'
-        GENERIC : '¤'
-        CHF     : 'CHF'
-        NOK     : 'NOK'
+        'EUR'     : '€'
+        'USD'     : '$'
+        'SEK'     : 'SEK'
+        'YEN'     : '¥'
+        'GBP'     : '£'
+        'GENERIC' : '¤'
+        'CHF'     : 'CHF'
+        'NOK'     : 'NOK'
 
       CURRENCY_MAPPING:
         "United Arab Emirates"     : "AED"
@@ -982,11 +982,16 @@ class imagoUtils extends Factory
         msg.replace(/(\r\n\r\n|\r\n|\n|\r)/gm, "<br>")
 
       getCurrencySymbol: (currency) ->
-        SYMBOLS[currency] or SYMBOLS.GENERIC
+        @SYMBOLS[currency] or @SYMBOLS.GENERIC
 
       getCurrency: (country) ->
         CURRENCY_MAPPING[country]
 
+      includesTax: (currency) ->
+        TAXINCLUDED =
+          'USD' : false
+        return false if TAXINCLUDED[currency] isnt undefined
+        return true
 
       toArray: (elem) ->
         # type = imagoUtils.toType(elem)

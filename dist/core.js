@@ -879,14 +879,14 @@ imagoUtils = (function() {
         '189': 'onMinus'
       },
       SYMBOLS: {
-        EUR: '€',
-        USD: '$',
-        SEK: 'SEK',
-        YEN: '¥',
-        GBP: '£',
-        GENERIC: '¤',
-        CHF: 'CHF',
-        NOK: 'NOK'
+        'EUR': '€',
+        'USD': '$',
+        'SEK': 'SEK',
+        'YEN': '¥',
+        'GBP': '£',
+        'GENERIC': '¤',
+        'CHF': 'CHF',
+        'NOK': 'NOK'
       },
       CURRENCY_MAPPING: {
         "United Arab Emirates": "AED",
@@ -1561,10 +1561,20 @@ imagoUtils = (function() {
         return msg.replace(/(\r\n\r\n|\r\n|\n|\r)/gm, "<br>");
       },
       getCurrencySymbol: function(currency) {
-        return SYMBOLS[currency] || SYMBOLS.GENERIC;
+        return this.SYMBOLS[currency] || this.SYMBOLS.GENERIC;
       },
       getCurrency: function(country) {
         return CURRENCY_MAPPING[country];
+      },
+      includesTax: function(currency) {
+        var TAXINCLUDED;
+        TAXINCLUDED = {
+          'USD': false
+        };
+        if (TAXINCLUDED[currency] !== void 0) {
+          return false;
+        }
+        return true;
       },
       toArray: function(elem) {
         if (angular.isArray(elem)) {
