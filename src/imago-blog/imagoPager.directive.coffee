@@ -44,8 +44,5 @@ class imagoPager extends Directive
           $scope.currentPage = parseInt($scope.currentPage) - 1
           $scope.prev()
 
-        $scope.$watch 'currentPage', @fetchPosts
-        $scope.$watch 'tags', @fetchPosts
-
         $scope.$watchGroup ['currentPage', 'tags'], @fetchPosts
     }

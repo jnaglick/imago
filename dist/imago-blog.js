@@ -56,8 +56,6 @@ imagoPager = (function() {
             return $scope.prev();
           };
         })(this);
-        $scope.$watch('currentPage', this.fetchPosts);
-        $scope.$watch('tags', this.fetchPosts);
         return $scope.$watchGroup(['currentPage', 'tags'], this.fetchPosts);
       }
     };
