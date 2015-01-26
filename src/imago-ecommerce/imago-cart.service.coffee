@@ -22,7 +22,7 @@ class imagoCart extends Service
       else if @currencies.length
         @currency = @currencies[0]
       else
-        console.log 'you to enable at least one currency in the settings'
+        console.log 'you need to enable at least one currency in the settings'
 
       @cart.currency = @currency if @currency
 
