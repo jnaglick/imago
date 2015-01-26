@@ -85,7 +85,7 @@ imagoCart = (function() {
         } else if (_this.currencies.length) {
           _this.currency = _this.currencies[0];
         } else {
-          console.log('you to enable at least one currency in the settings');
+          console.log('you need to enable at least one currency in the settings');
         }
         if (_this.currency) {
           return _this.cart.currency = _this.currency;

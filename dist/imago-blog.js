@@ -16,6 +16,7 @@ imagoPager = (function() {
       controller: function($scope, $element, $attrs) {
         this.fetchPosts = function() {
           var pageNo, pageSize, query;
+          this.count += 1;
           $scope.posts = [];
           pageSize = parseInt($scope.pageSize);
           pageNo = parseInt($scope.currentPage);
@@ -56,7 +57,8 @@ imagoPager = (function() {
           };
         })(this);
         $scope.$watch('currentPage', this.fetchPosts);
-        return $scope.$watch('tags', this.fetchPosts);
+        $scope.$watch('tags', this.fetchPosts);
+        return $scope.$watchGroup(['currentPage', 'tags'], this.fetchPosts);
       }
     };
   }

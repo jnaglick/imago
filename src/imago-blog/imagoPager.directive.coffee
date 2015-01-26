@@ -15,10 +15,10 @@ class imagoPager extends Directive
       controller: ($scope, $element, $attrs) ->
 
         @fetchPosts = () ->
+          @count += 1
           $scope.posts = []
           pageSize = parseInt $scope.pageSize
           pageNo = parseInt $scope.currentPage
-          # console.log 'fetchPost', $scope.path, pageNo, pageSize
 
           query =
             path:     $scope.path
@@ -29,6 +29,7 @@ class imagoPager extends Directive
 
           # console.log 'query', query
           imagoModel.getData([query], {localData: false}).then (response) =>
+            # console.log 'response', response
             for collection in response
               # console.log 'collection', collection
               $scope.posts = collection.assets
@@ -45,4 +46,6 @@ class imagoPager extends Directive
 
         $scope.$watch 'currentPage', @fetchPosts
         $scope.$watch 'tags', @fetchPosts
+
+        $scope.$watchGroup ['currentPage', 'tags'], @fetchPosts
     }
