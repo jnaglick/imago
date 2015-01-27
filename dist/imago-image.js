@@ -62,7 +62,7 @@ imagoImage = (function() {
                 });
               }
             }
-            return initialize();
+            return scope.$evalAsync(initialize);
           };
         })(this));
         initialize = function() {
