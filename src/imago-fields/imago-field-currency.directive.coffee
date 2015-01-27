@@ -40,7 +40,6 @@ class imagoFilterCurrency extends Directive
           ctrl.$modelValue = (ctrl.$modelValue / 100).toFixed(2)
           if isNaN(ctrl.$modelValue)
             ctrl.$modelValue = null
-          console.log 'ctrl.$modelValue', ctrl.$modelValue
           return ctrl.$modelValue
 
         ctrl.$parsers.unshift (viewValue) ->

@@ -26,7 +26,7 @@ ImagoFieldCheckbox = (function() {
 
 angular.module('imago').directive('imagoFieldCheckbox', [ImagoFieldCheckbox]);
 
-var ImagoFieldCurrency;
+var ImagoFieldCurrency, imagoFilterCurrency;
 
 ImagoFieldCurrency = (function() {
   function ImagoFieldCurrency($filter) {
@@ -41,26 +41,15 @@ ImagoFieldCurrency = (function() {
       transclude: true,
       templateUrl: '/imago/imago-field-currency.html',
       link: function(scope, element, attrs, ngModelController) {
-        var decimalPlaces;
         if (!scope.currencies) {
           return console.log('no currencies!!');
         }
-        decimalPlaces = function(num) {
-          var match;
-          match = ("" + num).match(/(?:\.(\d+))?(?:[eE]([+-]?\d+))?$/);
-          if (!match) {
-            return 0;
-          }
-          return Math.max(0, (match[1] ? match[1].length : 0) - (match[2] ? +match[2] : 0));
-        };
         scope.currency = scope.currencies[0];
         return scope.update = function(value) {
           var key;
           for (key in value) {
             value[key] = parseFloat(value[key]);
-            console.log('decimalPlaces', decimalPlaces(value[key]));
           }
-          console.log('value', value);
           ngModelController.$setViewValue(value);
           ngModelController.$render();
           return scope.save();
@@ -73,7 +62,37 @@ ImagoFieldCurrency = (function() {
 
 })();
 
-angular.module('imago').directive('imagoFieldCurrency', ['$filter', ImagoFieldCurrency]);
+imagoFilterCurrency = (function() {
+  function imagoFilterCurrency($filter) {
+    return {
+      require: 'ngModel',
+      link: function(scope, elem, attrs, ctrl) {
+        ctrl.$formatters.unshift(function(a) {
+          ctrl.$modelValue = (ctrl.$modelValue / 100).toFixed(2);
+          if (isNaN(ctrl.$modelValue)) {
+            ctrl.$modelValue = null;
+          }
+          return ctrl.$modelValue;
+        });
+        return ctrl.$parsers.unshift(function(viewValue) {
+          var plainNumber;
+          if (viewValue) {
+            plainNumber = viewValue.replace(/[^\d|\-+|\.+]/g, "");
+            plainNumber = parseFloat(plainNumber * 100);
+            return plainNumber;
+          } else {
+            return 0.00;
+          }
+        });
+      }
+    };
+  }
+
+  return imagoFilterCurrency;
+
+})();
+
+angular.module('imago').directive('imagoFieldCurrency', ['$filter', ImagoFieldCurrency]).directive('imagoFilterCurrency', ['$filter', imagoFilterCurrency]);
 
 var ImagoFieldDate;
 
