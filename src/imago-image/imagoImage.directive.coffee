@@ -60,7 +60,10 @@ class imagoImage extends Directive
                 calcMediaSize()
                 scope.$digest()
 
-          initialize()
+          # testing with $evalAsync
+          scope.$evalAsync initialize
+
+          # initialize()
 
 
         initialize = () ->
@@ -125,13 +128,15 @@ class imagoImage extends Directive
 
           opts.servingSize = servingSize
 
+          # $log.log 'servingSize', servingSize, width, height
+
           if imagoUtils.isBaseString(source.serving_url)
             opts.servingUrl = source.serving_url
 
           else
             opts.servingUrl = "#{ source.serving_url }=s#{ servingSize * opts.scale }"
 
-          # $log.log 'servingURl', servingUrl
+          # $log.log 'servingURl', opts.servingUrl
 
           render()
 
