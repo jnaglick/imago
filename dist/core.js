@@ -1486,6 +1486,9 @@ imagoUtils = (function() {
       isSafari: function() {
         return !!navigator.userAgent.match(/Safari/i) && !this.isChrome();
       },
+      isMobile: function() {
+        return !!navigator.userAgent.match(/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i);
+      },
       isEven: function(n) {
         return this.isNumber(n) && (n % 2 === 0);
       },
