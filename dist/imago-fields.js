@@ -259,36 +259,6 @@ ImagoFieldString = (function() {
 
 angular.module('imago').directive('imagoFieldString', [ImagoFieldString]);
 
-var imagoFilterCurrency;
-
-imagoFilterCurrency = (function() {
-  function imagoFilterCurrency($filter) {
-    return {
-      require: 'ngModel',
-      link: function(scope, elem, attrs, ctrl) {
-        ctrl.$formatters.unshift(function(a) {
-          return $filter('number')(ctrl.$modelValue, 2);
-        });
-        return ctrl.$parsers.unshift(function(viewValue) {
-          var plainNumber;
-          if (viewValue) {
-            plainNumber = viewValue.replace(/[^\d|\-+|\.+]/g, "");
-            elem.val($filter('number')(plainNumber, 2));
-            return plainNumber;
-          } else {
-            return 0;
-          }
-        });
-      }
-    };
-  }
-
-  return imagoFilterCurrency;
-
-})();
-
-angular.module('imago').directive('imagoFilterCurrency', ['$filter', imagoFilterCurrency]);
-
 angular.module("imago").run(["$templateCache", function($templateCache) {$templateCache.put("/imago/imago-field-checkbox.html","<div class=\"imago-checkbox\"><label ng-class=\"{active: ngModel}\" ng-click=\"update(ngModel)\" class=\"topcoat-checkbox\"><div class=\"topcoat-checkbox__checkmark\"></div><span ng-transclude=\"ng-transclude\"></span></label></div>");
 $templateCache.put("/imago/imago-field-currency.html","<div class=\"imago-field currency\"><div ng-class=\"{focus:onfocus}\" class=\"wrapper\"><div ng-transclude=\"ng-transclude\"></div><select ng-model=\"currency\" ng-options=\"currency for currency in currencies\"></select><input type=\"text\" imago-filter-currency=\"imago-filter-currency\" ng-model=\"ngModel[currency]\" ng-model-options=\"{updateOn: \'blur\'}\" ng-change=\"update(ngModel); onfocus = false\" ng-disabled=\"!currency\" ng-focus=\"onfocus = true\"/></div></div>");
 $templateCache.put("/imago/imago-field-date.html","<div class=\"imago-field date\"><div ng-transclude=\"ng-transclude\"></div><input type=\"text\" date-time=\"date-time\" dismiss=\"true\" ng-model=\"ngModel\" ng-blur=\"update(ngModel)\" view=\"date\" min-view=\"date\" partial=\"true\"/></div>");
