@@ -1658,7 +1658,9 @@ Meta = (function() {
       if (!(input && value && input.fields[value])) {
         return;
       }
-      if (input.fields[value].value.type) {
+      if (input.fields[value].kind === 'file') {
+        return input.fields[value].download_url;
+      } else if (input.fields[value].kind === 'markup') {
         return input.fields[value].value.value;
       } else {
         return input.fields[value].value;
