@@ -9,7 +9,7 @@
   "author": "Nex9 LLC",
   "license": "ISC",
   "dependencies": {
-    "coffee-script": "*",
+    "coffee-script": "1.8.0",
     "del": "^1.1.1",
     "gulp": "*",
     "gulp-angular-templatecache": "*",
