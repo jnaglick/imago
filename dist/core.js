@@ -312,7 +312,7 @@ imagoModel = (function() {
   };
 
   imagoModel.prototype.findChildren = function(asset) {
-    return _.where(this.data, {
+    return _.filter(this.data, {
       parent: asset._id
     });
   };
@@ -327,7 +327,7 @@ imagoModel = (function() {
     if (options == null) {
       options = {};
     }
-    return _.where(this.data, options);
+    return _.filter(this.data, options);
   };
 
   imagoModel.prototype.find = function(options) {
@@ -599,7 +599,7 @@ imagoModel = (function() {
       return function(asset) {
         var deferAsset, exists, i, original_name;
         deferAsset = _this.$q.defer();
-        if (!options.checkdups || _.where(assetsChildren, {
+        if (!options.checkdups || _.filter(assetsChildren, {
           name: asset.name
         }).length === 0) {
           deferAsset.resolve(asset);
@@ -610,7 +610,7 @@ imagoModel = (function() {
           while (exists) {
             asset.name = "" + original_name + "_" + i;
             i++;
-            exists = (_.where(assetsChildren, {
+            exists = (_.filter(assetsChildren, {
               name: asset.name
             }).length > 0 ? true : false);
           }
@@ -748,7 +748,7 @@ imagoModel = (function() {
     }
     name = this.imagoUtils.normalize(asset.name);
     result = void 0;
-    assetsChildren = _.where(assets, (function(_this) {
+    assetsChildren = _.filter(assets, (function(_this) {
       return function(chr) {
         var normalizeName;
         if (!chr.name) {
