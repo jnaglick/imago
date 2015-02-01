@@ -382,3 +382,29 @@
     transform: rotate(0deg)
   100%
     transform: rotate(360deg)
+
+
+.inline-block
+  display: inline-block
+// pixel values
+@for $i from 1 to 200
+  .w#{$i}0px
+    width: #{$i}0px
+    @extend .inline-block
+  .h#{$i}0px
+    height: #{$i}0px
+    @extend .inline-block
+
+// percentage
+@for $i from 1 to 101
+  .w#{$i}
+    width: $i * 1%
+
+
+.browserwarning,
+.maintenance
+  margin: 0 auto
+  text-align: center
+  padding-top: 200px
+  a
+    text-decoration: underline
