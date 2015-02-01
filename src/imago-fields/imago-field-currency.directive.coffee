@@ -46,8 +46,10 @@ class imagoFilterCurrency extends Directive
           if viewValue
             plainNumber = viewValue.replace(/[^\d|\-+|\.+]/g, "")
             plainNumber = parseFloat(plainNumber * 100)
-            plainNumber
+            ctrl.$setViewValue((plainNumber / 100).toFixed(2))
+            ctrl.$render()
+            return plainNumber
           else
-            return 0.00
+            return '0.00'
 
     }

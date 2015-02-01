@@ -199,13 +199,13 @@ class imagoModel extends Service
     return data
 
   findChildren: (asset) =>
-    _.where @data, {parent: asset._id}
+    _.filter @data, {parent: asset._id}
 
   findParent: (asset) =>
     _.find @data, {'_id': asset.parent}
 
   findByAttr: (options = {}) =>
-    _.where @data, options
+    _.filter @data, options
 
   find: (options = {}) =>
     _.find @data, options
@@ -388,7 +388,7 @@ class imagoModel extends Service
     checkAsset = (asset) =>
       deferAsset = @$q.defer()
 
-      if not options.checkdups or _.where(assetsChildren, {name: asset.name}).length is 0
+      if not options.checkdups or _.filter(assetsChildren, {name: asset.name}).length is 0
         deferAsset.resolve asset
 
       else
@@ -398,7 +398,7 @@ class imagoModel extends Service
         while exists
           asset.name = "#{original_name}_#{i}"
           i++
-          exists = (if _.where(assetsChildren, {name: asset.name}).length > 0 then true else false)
+          exists = (if _.filter(assetsChildren, {name: asset.name}).length > 0 then true else false)
 
         deferAsset.resolve asset
 
@@ -503,7 +503,7 @@ class imagoModel extends Service
     name = @imagoUtils.normalize(asset.name)
     result = undefined
 
-    assetsChildren = _.where assets, (chr) =>
+    assetsChildren = _.filter assets, (chr) =>
       return false if not chr.name
       normalizeName = angular.copy(@imagoUtils.normalize(chr.name))
       return normalizeName is name
