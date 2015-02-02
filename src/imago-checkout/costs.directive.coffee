@@ -8,6 +8,6 @@ class Costs extends Directive
         costs: '='
         currency: '='
       controllerAs: 'costs'
-      templateUrl: '/app/views/costs.html'
+      templateUrl: '/imago/costs.html'
 
     }

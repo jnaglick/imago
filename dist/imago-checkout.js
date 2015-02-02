@@ -484,7 +484,7 @@ Costs = (function() {
         currency: '='
       },
       controllerAs: 'costs',
-      templateUrl: '/app/views/costs.html'
+      templateUrl: '/imago/costs.html'
     };
   }
 
