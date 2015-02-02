@@ -41,7 +41,7 @@ Calculation = (function() {
     this.changeAddress = __bind(this.changeAddress, this);
     this.deleteItem = __bind(this.deleteItem, this);
     this.updateCart = __bind(this.updateCart, this);
-    this.countries = imagoUtils.COUNTRIES;
+    this.countries = this.imagoUtils.COUNTRIES;
   }
 
   Calculation.prototype.updateCart = function() {

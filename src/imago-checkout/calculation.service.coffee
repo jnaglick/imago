@@ -9,7 +9,7 @@ class Calculation extends Service
   taxincluded     : undefined
 
   constructor: (@$q, @$state, @$http, @$auth, @imagoUtils, @imagoSettings, @orderStorage) ->
-    @countries = imagoUtils.COUNTRIES
+    @countries = @imagoUtils.COUNTRIES
 
   updateCart: =>
     @$http.put(@imagoSettings.host + '/api/carts/' + @cart._id, @cart)
