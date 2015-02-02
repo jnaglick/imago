@@ -79,6 +79,7 @@ var imagoVideo;
 imagoVideo = (function() {
   function imagoVideo($q, $timeout, $window, imagoUtils) {
     return {
+      replace: true,
       scope: true,
       templateUrl: '/imago/imagoVideo.html',
       controller: function($scope, $element, $attrs, $transclude) {
