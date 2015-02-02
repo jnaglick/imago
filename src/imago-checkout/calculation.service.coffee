@@ -8,7 +8,7 @@ class Calculation extends Service
   currencies      : undefined
   taxincluded     : undefined
 
-  constructor: (@$q, @$state, @$http, @$auth, @imagoUtils, @imagoSettings, @orderStorage) ->
+  constructor: (@$q, @$state, @$http, @$auth, @imagoUtils, @imagoSettings) ->
     @countries = @imagoUtils.COUNTRIES
 
   updateCart: =>

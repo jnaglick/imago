@@ -17,14 +17,13 @@ Calculation = (function() {
 
   Calculation.prototype.taxincluded = void 0;
 
-  function Calculation($q, $state, $http, $auth, imagoUtils, imagoSettings, orderStorage) {
+  function Calculation($q, $state, $http, $auth, imagoUtils, imagoSettings) {
     this.$q = $q;
     this.$state = $state;
     this.$http = $http;
     this.$auth = $auth;
     this.imagoUtils = imagoUtils;
     this.imagoSettings = imagoSettings;
-    this.orderStorage = orderStorage;
     this.submit = __bind(this.submit, this);
     this.calculate = __bind(this.calculate, this);
     this.calculateTotal = __bind(this.calculateTotal, this);
@@ -472,7 +471,7 @@ Calculation = (function() {
 
 })();
 
-angular.module('imago').service('calculation', ['$q', '$state', '$http', '$auth', 'imagoUtils', 'imagoSettings', 'orderStorage', Calculation]);
+angular.module('imago').service('calculation', ['$q', '$state', '$http', '$auth', 'imagoUtils', 'imagoSettings', Calculation]);
 
 var Costs;
 
