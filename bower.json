@@ -8,7 +8,7 @@
     "license": "MIT",
     "private": false,
     "dependencies": {
-        "angular-mocks": "^1.2.25",
+        "angular-mocks": "*",
         "angular-inview": "*",
         "lodash": "*"
     },
