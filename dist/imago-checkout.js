@@ -473,3 +473,25 @@ Calculation = (function() {
 })();
 
 angular.module('imago').service('calculation', ['$q', '$state', '$http', '$auth', 'imagoUtils', 'imagoSettings', 'orderStorage', Calculation]);
+
+var Costs;
+
+Costs = (function() {
+  function Costs() {
+    return {
+      scope: {
+        costs: '=',
+        currency: '='
+      },
+      controllerAs: 'costs',
+      templateUrl: '/app/views/costs.html'
+    };
+  }
+
+  return Costs;
+
+})();
+
+angular.module('imago').directive('costs', [Costs]);
+
+angular.module("imago").run(["$templateCache", function($templateCache) {$templateCache.put("/imago/costs.html","<table><tbody><tr><td>subtotal</td><td>{{ currency | currencySymbol }} {{ costs.subtotal | price }}</td></tr><tr><td>shipping</td><td>{{ currency | currencySymbol }} {{ costs.shipping | price }}</td></tr><tr ng-show=\"costs.includedTax\"><td>included tax</td><td>{{ currency | currencySymbol }} {{ costs.includedTax | price }}</td></tr><tr ng-show=\"!costs.includedTax\"><td>tax</td><td>{{ currency | currencySymbol }} {{ costs.tax | price }}</td></tr><tr class=\"total\"><td>total</td><td>{{ currency | currencySymbol }} {{ costs.total | price }}</td></tr></tbody></table>");}]);
