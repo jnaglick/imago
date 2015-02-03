@@ -10,6 +10,8 @@ class imagoForm extends Directive
       templateUrl: '/imago/imagoForm.html'
       link: (scope, element, attr, cntrl, transclude) ->
 
+        defaults = scope.data
+
         transclude scope, (clone, scope) ->
           element.append(clone)
 
@@ -18,5 +20,7 @@ class imagoForm extends Directive
             imagoSubmit.send(scope.data).then (result) =>
               scope.status = result.status
               scope.error = result.message or ''
+              if scope.status
+                scope.data = defaults
 
     }
