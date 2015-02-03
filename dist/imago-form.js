@@ -3,15 +3,12 @@ var imagoForm;
 imagoForm = (function() {
   function imagoForm(imagoSubmit) {
     return {
-      scope: {
-        data: '='
-      },
+      scope: {},
       replace: true,
       transclude: true,
       templateUrl: '/imago/imagoForm.html',
       link: function(scope, element, attr, cntrl, transclude) {
-        var defaults;
-        defaults = scope.data;
+        scope.data = {};
         transclude(scope, function(clone, scope) {
           return element.append(clone);
         });
@@ -22,7 +19,7 @@ imagoForm = (function() {
                 scope.status = result.status;
                 scope.error = result.message || '';
                 if (scope.status) {
-                  return scope.data = defaults;
+                  return scope.data = {};
                 }
               });
             }

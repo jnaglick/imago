@@ -2,15 +2,13 @@ class imagoForm extends Directive
 
   constructor: (imagoSubmit)->
     return {
-      scope: {
-        data: '='
-      }
+      scope: {}
       replace: true
       transclude: true
       templateUrl: '/imago/imagoForm.html'
       link: (scope, element, attr, cntrl, transclude) ->
 
-        defaults = scope.data
+        scope.data = {}
 
         transclude scope, (clone, scope) ->
           element.append(clone)
@@ -21,6 +19,6 @@ class imagoForm extends Directive
               scope.status = result.status
               scope.error = result.message or ''
               if scope.status
-                scope.data = defaults
+                scope.data = {}
 
     }
