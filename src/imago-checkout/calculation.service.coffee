@@ -274,8 +274,7 @@ class Calculation extends Service
       console.log 'response checkout', response
       @$auth.setToken(response.data.token)
       if response.data.code is 200
-        for order in response.data.message
-          console.log 'order', order
+        for order in response.data.result
           @$state.go('order', {number: order.number})
           break
 

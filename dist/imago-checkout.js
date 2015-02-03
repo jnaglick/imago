@@ -456,10 +456,9 @@ Calculation = (function() {
         console.log('response checkout', response);
         _this.$auth.setToken(response.data.token);
         if (response.data.code === 200) {
-          _ref = response.data.message;
+          _ref = response.data.result;
           for (_i = 0, _len = _ref.length; _i < _len; _i++) {
             order = _ref[_i];
-            console.log('order', order);
             _this.$state.go('order', {
               number: order.number
             });
