@@ -63,18 +63,18 @@ class Calculation extends Service
       else
         @couponState = 'invalid'
 
-  applyCoupon: =>
-    return unless @coupon
-    meta = @coupon.meta
+  applyCoupon: (coupon, costs) =>
+    return unless coupon
+    meta = coupon.meta
 
     if meta.type is 'flat'
-      value = Math.min(@costs.subtotal, meta.value[@currency])
-      @costs.subtotal = @costs.subtotal - value
+      value = Math.min(costs.subtotal, meta.value[@currency])
+      costs.subtotal = costs.subtotal - value
     else if meta.type is 'percent'
-      percentvalue = Number((@costs.subtotal * meta.value / 10000).toFixed(0))
-      @costs.subtotal = @costs.subtotal - percentvalue
+      percentvalue = Number((costs.subtotal * meta.value / 10000).toFixed(0))
+      costs.subtotal = costs.subtotal - percentvalue
     else if meta.type is 'free shipping'
-      @costs.shipping = 0
+      costs.shipping = 0
 
   setCurrency: (currency, country) =>
     if country
@@ -157,7 +157,7 @@ class Calculation extends Service
 
     range = _.find rate.ranges, (range) -> count <= range.to_unit and count >= range.from_unit
     range = rate.ranges[rate.ranges.length - 1] or 0 if not range
-    # console.log 'rage is', range
+    # console.log 'rage is', range, 'rate', rate
     if rate.type is 'weight'
       @costs.shipping = range.price[@currency] or 0
     else
@@ -176,7 +176,7 @@ class Calculation extends Service
       if @taxincluded
         deferred.resolve()
         return
-      # console.log 'currency', @currency, 'includestax', @includesTax(@currency)
+      # console.log 'currency', @currency, 'includestax', @imagoUtils.includesTax(@currency)
       if @imagoUtils.includesTax(@currency)
         @costs.includedTax = 0
         if @costs.taxRate
@@ -253,7 +253,7 @@ class Calculation extends Service
       @costs.subtotal += item.qty * item.fields.price.value[@currency]
     @costs.total = @costs.subtotal
 
-    @applyCoupon()
+    @applyCoupon(@coupon, @costs) if @coupon
 
     @$q.all([@calculateTax(), @calculateShipping()]).then =>
       @calculateTotal()
@@ -265,6 +265,8 @@ class Calculation extends Service
     @process.form.costs    = angular.copy @costs
     @process.form.currency = angular.copy @currency
     @process.form.billing_address.name = angular.copy @process.form.card.name
+    @process.form.costs.shipping_options = angular.copy(@shipping_options)
+    @process.form.costs.coupon = angular.copy(@coupon)
 
     if not @differentshipping
       @process.form['shipping_address'] = angular.copy @process.form['billing_address']
@@ -272,8 +274,7 @@ class Calculation extends Service
       console.log 'response checkout', response
       @$auth.setToken(response.data.token)
       if response.data.code is 200
-        for order in response.data.message
-          console.log 'order', order
+        for order in response.data.result
           @$state.go('order', {number: order.number})
           break
 

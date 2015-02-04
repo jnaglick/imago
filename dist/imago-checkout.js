@@ -108,20 +108,20 @@ Calculation = (function() {
     })(this));
   };
 
-  Calculation.prototype.applyCoupon = function() {
+  Calculation.prototype.applyCoupon = function(coupon, costs) {
     var meta, percentvalue, value;
-    if (!this.coupon) {
+    if (!coupon) {
       return;
     }
-    meta = this.coupon.meta;
+    meta = coupon.meta;
     if (meta.type === 'flat') {
-      value = Math.min(this.costs.subtotal, meta.value[this.currency]);
-      return this.costs.subtotal = this.costs.subtotal - value;
+      value = Math.min(costs.subtotal, meta.value[this.currency]);
+      return costs.subtotal = costs.subtotal - value;
     } else if (meta.type === 'percent') {
-      percentvalue = Number((this.costs.subtotal * meta.value / 10000).toFixed(0));
-      return this.costs.subtotal = this.costs.subtotal - percentvalue;
+      percentvalue = Number((costs.subtotal * meta.value / 10000).toFixed(0));
+      return costs.subtotal = costs.subtotal - percentvalue;
     } else if (meta.type === 'free shipping') {
-      return this.costs.shipping = 0;
+      return costs.shipping = 0;
     }
   };
 
@@ -426,7 +426,9 @@ Calculation = (function() {
       this.costs.subtotal += item.qty * item.fields.price.value[this.currency];
     }
     this.costs.total = this.costs.subtotal;
-    this.applyCoupon();
+    if (this.coupon) {
+      this.applyCoupon(this.coupon, this.costs);
+    }
     return this.$q.all([this.calculateTax(), this.calculateShipping()]).then((function(_this) {
       return function() {
         return _this.calculateTotal();
@@ -443,6 +445,8 @@ Calculation = (function() {
     this.process.form.costs = angular.copy(this.costs);
     this.process.form.currency = angular.copy(this.currency);
     this.process.form.billing_address.name = angular.copy(this.process.form.card.name);
+    this.process.form.costs.shipping_options = angular.copy(this.shipping_options);
+    this.process.form.costs.coupon = angular.copy(this.coupon);
     if (!this.differentshipping) {
       this.process.form['shipping_address'] = angular.copy(this.process.form['billing_address']);
     }
@@ -452,10 +456,9 @@ Calculation = (function() {
         console.log('response checkout', response);
         _this.$auth.setToken(response.data.token);
         if (response.data.code === 200) {
-          _ref = response.data.message;
+          _ref = response.data.result;
           for (_i = 0, _len = _ref.length; _i < _len; _i++) {
             order = _ref[_i];
-            console.log('order', order);
             _this.$state.go('order', {
               number: order.number
             });
