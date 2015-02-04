@@ -6,7 +6,7 @@
     input.seek(type='range' ng-model="currentTime" min="0" max="{{duration}}" ng-change="seek(currentTime)")
   a.size(hm-tap="toggleSize") {{wrapperStyle.size}}
   span.volume
-    span.fa.fa-volume-up.icon-volume-up(ng-click="volumeUp")
+    span.fa.fa-volume-up.icon-volume-up(hm-tap="volumeUp")
     input(type='range', ng-model="volumeInput", ng-change="onVolumeChange(volumeInput)")
     span.fa.fa-volume-down.icon-volume-down(hm-tap="volumeDown")
   a.video-fullscreen.fa.fa-expand(hm-tap="fullScreen")
