@@ -151,7 +151,7 @@
   .controls
     position: absolute
     left: 0
-    bottom: 1px
+    bottom: 0
     width: 100%
     height: 30px
     +vbg-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.8))
@@ -172,6 +172,7 @@
       color: white
       position: absolute
       bottom: 0
+      cursor: pointer
 
       // background: -webkit-linear-gradient(white, darken(white,10%))
       // -webkit-background-clip: text
@@ -188,7 +189,8 @@
 
     .video-play,
     .video-pause
-      left: 15px
+      left: 5px
+      padding: 0 10px
 
     .video-time
       left: 38px
