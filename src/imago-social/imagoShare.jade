@@ -1,7 +1,7 @@
 .share
-  a(href="http://www.facebook.com/share.php?u={{location}}" target="_blank" ng-if="facebook").fa.fa-facebook
-  a(href="http://twitter.com/home?status={{location}}" target="_blank" ng-if="twitter").fa.fa-twitter
-  a(href="https://plus.google.com/share?url={{location}}" ng-if="google").fa.fa-google
-  a(href="https://www.linkedin.com/shareArticle?mini=true&url=http://olas.2.imagoapp.com/press/gift&title={{asset | meta:'title'}}&summary=&source={{asset.serving_url}}" target="_blank" ng-if="linkedin").fa.fa-linkedin
+  a(href="http://www.facebook.com/share.php?u={{location}}" target="_blank" ng-if="facebook || all").fa.fa-facebook
+  a(href="http://twitter.com/home?status={{location}}" target="_blank" ng-if="twitter || all").fa.fa-twitter
+  a(href="https://plus.google.com/share?url={{location}}" ng-if="google || all").fa.fa-google
+  a(href="https://www.linkedin.com/shareArticle?mini=true&url=http://olas.2.imagoapp.com/press/gift&title={{asset | meta:'title'}}&summary=&source={{asset.serving_url}}" target="_blank" ng-if="linkedin || all").fa.fa-linkedin
   a(href="http://www.tumblr.com/share/photo?source={{asset.serving_url}}&caption={{asset | meta:'title'}}" target="_blank" ng-if="tumblr").fa.fa-tumblr
-  a(href="http://www.pinterest.com/pin/create/abutton/?url=http://www.server.com/&media={{asset.serving_url}}&description={{asset | meta:'title'}}" target="_blank" title="Pin It" ng-if="pintrest").fa.fa-pinterest
+  a(href="http://www.pinterest.com/pin/create/abutton/?url=http://www.server.com/&media={{asset.serving_url}}&description={{asset | meta:'title'}}" target="_blank" title="Pin It" ng-if="pintrest || all").fa.fa-pinterest
