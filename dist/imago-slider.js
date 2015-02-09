@@ -112,4 +112,4 @@ imagoSlider = (function() {
 
 angular.module('imago').directive('imagoSlider', ['$rootScope', '$q', '$document', 'imagoModel', '$interval', imagoSlider]);
 
-angular.module("imago").run(["$templateCache", function($templateCache) {$templateCache.put("/imago/imagoSlider.html","<div ng-class=\"[conf.animation, action]\" hm-swipe-left=\"goNext\" hm-swipe-right=\"goPrev\" class=\"imagoslider\"><div ng-show=\"conf.enablearrows\" hm-tap=\"goPrev\" stop-propagation=\"stop-propagation\" class=\"prev\"></div><div ng-show=\"conf.enablearrows\" hm-tap=\"goNext\" stop-propagation=\"stop-propagation\" class=\"next\"></div></div>");}]);
+angular.module("imago").run(["$templateCache", function($templateCache) {$templateCache.put("/imago/imagoSlider.html","<div ng-class=\"[conf.animation, action]\" hm-swipeleft=\"goNext\" hm-swiperight=\"goPrev\" class=\"imagoslider\"><div ng-show=\"conf.enablearrows\" hm-tap=\"goPrev\" stop-propagation=\"stop-propagation\" class=\"prev\"></div><div ng-show=\"conf.enablearrows\" hm-tap=\"goNext\" stop-propagation=\"stop-propagation\" class=\"next\"></div></div>");}]);
