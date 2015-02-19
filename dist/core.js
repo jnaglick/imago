@@ -57,27 +57,27 @@ imagoModel = (function() {
     this.assets = {
       get: (function(_this) {
         return function(id) {
-          return $http.get("" + _this.imagoSettings.host + "/api/assets/" + id);
+          return _this.$http.get("" + _this.imagoSettings.host + "/api/assets/" + id);
         };
       })(this),
       create: (function(_this) {
         return function(assets) {
-          return $http.post("" + _this.imagoSettings.host + "/api/assets", assets);
+          return _this.$http.post("" + _this.imagoSettings.host + "/api/assets", assets);
         };
       })(this),
       update: (function(_this) {
         return function(item) {
-          return $http.put("" + _this.imagoSettings.host + "/api/assets/" + item._id, item);
+          return _this.$http.put("" + _this.imagoSettings.host + "/api/assets/" + item._id, item);
         };
       })(this),
       "delete": (function(_this) {
         return function(id) {
-          return $http["delete"]("" + _this.imagoSettings.host + "/api/assets/" + id);
+          return _this.$http["delete"]("" + _this.imagoSettings.host + "/api/assets/" + id);
         };
       })(this),
       trash: (function(_this) {
         return function(assets) {
-          return $http.post("" + _this.imagoSettings.host + "/api/assets/trash", assets);
+          return _this.$http.post("" + _this.imagoSettings.host + "/api/assets/trash", assets);
         };
       })(this),
       move: (function(_this) {
@@ -88,7 +88,7 @@ imagoModel = (function() {
             dest: dest,
             items: items
           };
-          return $http.post("" + _this.imagoSettings.host + "/api/assets/move", data);
+          return _this.$http.post("" + _this.imagoSettings.host + "/api/assets/move", data);
         };
       })(this),
       copy: (function(_this) {
@@ -99,12 +99,12 @@ imagoModel = (function() {
             dest: dest,
             items: items
           };
-          return $http.post("" + _this.imagoSettings.host + "/api/assets/copy", data);
+          return _this.$http.post("" + _this.imagoSettings.host + "/api/assets/copy", data);
         };
       })(this),
       batch: (function(_this) {
         return function(list) {
-          return $http.put("" + _this.imagoSettings.host + "/api/assets/update", {
+          return _this.$http.put("" + _this.imagoSettings.host + "/api/assets/update", {
             assets: list
           });
         };

@@ -4,19 +4,19 @@ class imagoModel extends Service
 
     @assets =
       get: (id) =>
-        $http.get "#{@imagoSettings.host}/api/assets/#{id}"
+        @$http.get "#{@imagoSettings.host}/api/assets/#{id}"
 
       create: (assets) =>
-        $http.post "#{@imagoSettings.host}/api/assets", assets
+        @$http.post "#{@imagoSettings.host}/api/assets", assets
 
       update: (item) =>
-        $http.put "#{@imagoSettings.host}/api/assets/#{item._id}", item
+        @$http.put "#{@imagoSettings.host}/api/assets/#{item._id}", item
 
       delete: (id) =>
-        $http.delete "#{@imagoSettings.host}/api/assets/#{id}"
+        @$http.delete "#{@imagoSettings.host}/api/assets/#{id}"
 
       trash: (assets) =>
-        $http.post "#{@imagoSettings.host}/api/assets/trash", assets
+        @$http.post "#{@imagoSettings.host}/api/assets/trash", assets
 
       move: (items, src, dest) =>
         data =
@@ -24,7 +24,7 @@ class imagoModel extends Service
           dest  : dest
           items : items
 
-        $http.post "#{@imagoSettings.host}/api/assets/move", data
+        @$http.post "#{@imagoSettings.host}/api/assets/move", data
 
       copy: (items, src, dest) =>
         data =
@@ -32,10 +32,10 @@ class imagoModel extends Service
           dest  : dest
           items : items
 
-        $http.post "#{@imagoSettings.host}/api/assets/copy", data
+        @$http.post "#{@imagoSettings.host}/api/assets/copy", data
 
       batch: (list) =>
-        $http.put "#{@imagoSettings.host}/api/assets/update", {assets: list}
+        @$http.put "#{@imagoSettings.host}/api/assets/update", {assets: list}
 
   data: []
 
