@@ -29,7 +29,7 @@ angular.module('imago').directive('imagoFieldCheckbox', [ImagoFieldCheckbox]);
 var ImagoFieldCurrency, imagoFilterCurrency;
 
 ImagoFieldCurrency = (function() {
-  function ImagoFieldCurrency($filter) {
+  function ImagoFieldCurrency() {
     return {
       replace: true,
       require: 'ngModel',
@@ -63,7 +63,7 @@ ImagoFieldCurrency = (function() {
 })();
 
 imagoFilterCurrency = (function() {
-  function imagoFilterCurrency($filter) {
+  function imagoFilterCurrency() {
     return {
       require: 'ngModel',
       link: function(scope, elem, attrs, ctrl) {
@@ -94,7 +94,7 @@ imagoFilterCurrency = (function() {
 
 })();
 
-angular.module('imago').directive('imagoFieldCurrency', ['$filter', ImagoFieldCurrency]).directive('imagoFilterCurrency', ['$filter', imagoFilterCurrency]);
+angular.module('imago').directive('imagoFieldCurrency', [ImagoFieldCurrency]).directive('imagoFilterCurrency', [imagoFilterCurrency]);
 
 var ImagoFieldDate;
 

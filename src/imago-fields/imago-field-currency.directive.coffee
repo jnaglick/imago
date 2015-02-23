@@ -1,6 +1,6 @@
 class ImagoFieldCurrency extends Directive
 
-  constructor: ($filter) ->
+  constructor: ->
 
     return {
 
@@ -29,7 +29,7 @@ class ImagoFieldCurrency extends Directive
 
 class imagoFilterCurrency extends Directive
 
-  constructor: ($filter) ->
+  constructor: ->
 
     return {
 
