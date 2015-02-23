@@ -37,6 +37,9 @@ class imagoModel extends Service
       batch: (list) =>
         @$http.put "#{@imagoSettings.host}/api/assets/update", {assets: list}
 
+      download: (ids, res) ->
+        @$http.post "#{@imagoSettings.host}/api/assets/download", {assets: ids, resolution: res}
+
   data: []
 
   currentCollection: undefined
