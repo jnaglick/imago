@@ -109,12 +109,14 @@ imagoModel = (function() {
           });
         };
       })(this),
-      download: function(ids, res) {
-        return this.$http.post("" + this.imagoSettings.host + "/api/assets/download", {
-          assets: ids,
-          resolution: res
-        });
-      }
+      download: (function(_this) {
+        return function(ids, res) {
+          return _this.$http.post("" + _this.imagoSettings.host + "/api/assets/download", {
+            assets: ids,
+            resolution: res
+          });
+        };
+      })(this)
     };
   }
 
