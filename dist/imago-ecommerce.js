@@ -184,4 +184,45 @@ imagoCart = (function() {
 
 angular.module('imago').service('imagoCart', ['$q', '$window', '$http', 'imagoUtils', 'imagoModel', 'imagoSettings', imagoCart]);
 
+var VariantsStorage;
+
+VariantsStorage = (function() {
+  VariantsStorage.prototype.data = [];
+
+  function VariantsStorage($http, $q, imagoModel, imagoSettings) {
+    this.$http = $http;
+    this.$q = $q;
+    this.imagoModel = imagoModel;
+    this.imagoSettings = imagoSettings;
+  }
+
+  VariantsStorage.prototype.search = function(id) {
+    return this.$http.get("" + this.imagoSettings.host + "/api/variants/" + id);
+  };
+
+  VariantsStorage.prototype.get = function(parent) {
+    var asset, data, defer;
+    defer = this.$q.defer();
+    asset = this.imagoModel.find({
+      _id: parent
+    });
+    data = _.filter(this.data, {
+      parent: parent
+    });
+    if ((asset != null ? asset.variants.length : void 0) === data.length) {
+      defer.resolve(data);
+    } else {
+      this.search(parent).then(function(response) {
+        return defer.resolve(response.data);
+      });
+    }
+    return defer.promise;
+  };
+
+  return VariantsStorage;
+
+})();
+
+angular.module('imago').service('variantsStorage', ['$http', '$q', 'imagoModel', 'imagoSettings', VariantsStorage]);
+
 angular.module("imago").run(["$templateCache", function($templateCache) {$templateCache.put("/imago/imago-cart.html","<div class=\"cart\"><div class=\"items\"><div ng-repeat=\"item in cart.utils.cart.items\" class=\"item\"><b>{{ item._id }}</b><div ng-model=\"item.qty\"></div><button ng-click=\"cart.utils.remove(item)\">remove</button></div></div><button type=\"submit\" ng-click=\"cart.utils.checkout()\" ng-disabled=\"!cart.utils.cart.items.length\" class=\"checkout\">checkout</button></div>");}]);
