@@ -1,12 +1,25 @@
 .cart
-  .items
-    .item(ng-repeat="item in cart.utils.cart.items")
-      b {{ item._id }}
-      div(ng-model="item.qty")
-      button(ng-click="cart.utils.remove(item)") remove
+  .icon(ng-click="toggle = !toggle")
+    .counter {{ cart.utils.cart.items.length }}
 
-  button.checkout(
-    type="submit"
-    ng-click="cart.utils.checkout()"
-    ng-disabled="!cart.utils.cart.items.length"
-    ) checkout
+  .box(ng-class="{'show' : toggle}")
+    .item(ng-repeat="item in cart.utils.cart.items")
+
+      //- add serving_url form vairant
+      img(src="//lh6.ggpht.com/MOUg_ucq5khToO9o6WT-Lrprp2O4y-QyzEt8l53Th4L6HOLbLAP1YpJCnliAdB2HOCRLwvmwAkPutwQy4nan0Q=s100-c")
+      button.remove(ng-click="cart.utils.remove(item)")
+
+
+      span.title Kisses for Kismed
+      span.qty qty: 1
+      span.color color: ping
+
+    .itemnumber(ng-if="cart.utils.cart.items.length") 5 items
+    .noitems(ng-if="cart.utils.cart.items.length === 0") no items in cart
+
+    button.checkout(
+      ng-if="cart.utils.cart.items.length"
+      type="submit"
+      ng-click="cart.utils.checkout()"
+      ng-disabled="!cart.utils.cart.items.length"
+      ) checkout
