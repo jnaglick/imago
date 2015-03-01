@@ -65,7 +65,7 @@ imagoSlider = (function() {
               }
             })();
             scope.currentIndex = index;
-            return $rootScope.$emit("" + scope.conf.namespace + ":changed", index);
+            return $rootScope.$emit(scope.conf.namespace + ":changed", index);
           };
         })(this);
         scope.$watch(attrs.autoplay, (function(_this) {
@@ -93,7 +93,7 @@ imagoSlider = (function() {
             }
           });
         }
-        watcher = $rootScope.$on("" + scope.conf.namespace + ":change", function(event, index) {
+        watcher = $rootScope.$on(scope.conf.namespace + ":change", function(event, index) {
           return scope.setCurrent(index);
         });
         return scope.$on('$destroy', function() {

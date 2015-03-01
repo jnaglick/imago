@@ -20,7 +20,7 @@ lodash.factory('_', function() {
 });
 
 var imagoModel,
-  __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
+  bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 
 imagoModel = (function() {
   function imagoModel($rootScope, $http, $location, $q, imagoUtils, imagoWorker, imagoSettings) {
@@ -31,53 +31,53 @@ imagoModel = (function() {
     this.imagoUtils = imagoUtils;
     this.imagoWorker = imagoWorker;
     this.imagoSettings = imagoSettings;
-    this.prepareCreation = __bind(this.prepareCreation, this);
-    this.isDuplicated = __bind(this.isDuplicated, this);
-    this.batchChange = __bind(this.batchChange, this);
-    this.reorder = __bind(this.reorder, this);
-    this.reindexAll = __bind(this.reindexAll, this);
-    this.reSort = __bind(this.reSort, this);
-    this.paste = __bind(this.paste, this);
-    this.move = __bind(this.move, this);
-    this.copy = __bind(this.copy, this);
-    this.trash = __bind(this.trash, this);
-    this["delete"] = __bind(this["delete"], this);
-    this.update = __bind(this.update, this);
-    this.add = __bind(this.add, this);
-    this.updateCount = __bind(this.updateCount, this);
-    this.filterAssets = __bind(this.filterAssets, this);
-    this.findIdx = __bind(this.findIdx, this);
-    this.find = __bind(this.find, this);
-    this.findByAttr = __bind(this.findByAttr, this);
-    this.findParent = __bind(this.findParent, this);
-    this.findChildren = __bind(this.findChildren, this);
-    this.create = __bind(this.create, this);
-    this.getData = __bind(this.getData, this);
-    this.getLocalData = __bind(this.getLocalData, this);
+    this.prepareCreation = bind(this.prepareCreation, this);
+    this.isDuplicated = bind(this.isDuplicated, this);
+    this.batchChange = bind(this.batchChange, this);
+    this.reorder = bind(this.reorder, this);
+    this.reindexAll = bind(this.reindexAll, this);
+    this.reSort = bind(this.reSort, this);
+    this.paste = bind(this.paste, this);
+    this.move = bind(this.move, this);
+    this.copy = bind(this.copy, this);
+    this.trash = bind(this.trash, this);
+    this["delete"] = bind(this["delete"], this);
+    this.update = bind(this.update, this);
+    this.add = bind(this.add, this);
+    this.updateCount = bind(this.updateCount, this);
+    this.filterAssets = bind(this.filterAssets, this);
+    this.findIdx = bind(this.findIdx, this);
+    this.find = bind(this.find, this);
+    this.findByAttr = bind(this.findByAttr, this);
+    this.findParent = bind(this.findParent, this);
+    this.findChildren = bind(this.findChildren, this);
+    this.create = bind(this.create, this);
+    this.getData = bind(this.getData, this);
+    this.getLocalData = bind(this.getLocalData, this);
     this.assets = {
       get: (function(_this) {
         return function(id) {
-          return _this.$http.get("" + _this.imagoSettings.host + "/api/assets/" + id);
+          return _this.$http.get(_this.imagoSettings.host + "/api/assets/" + id);
         };
       })(this),
       create: (function(_this) {
         return function(assets) {
-          return _this.$http.post("" + _this.imagoSettings.host + "/api/assets", assets);
+          return _this.$http.post(_this.imagoSettings.host + "/api/assets", assets);
         };
       })(this),
       update: (function(_this) {
         return function(item) {
-          return _this.$http.put("" + _this.imagoSettings.host + "/api/assets/" + item._id, item);
+          return _this.$http.put(_this.imagoSettings.host + "/api/assets/" + item._id, item);
         };
       })(this),
       "delete": (function(_this) {
         return function(id) {
-          return _this.$http["delete"]("" + _this.imagoSettings.host + "/api/assets/" + id);
+          return _this.$http["delete"](_this.imagoSettings.host + "/api/assets/" + id);
         };
       })(this),
       trash: (function(_this) {
         return function(assets) {
-          return _this.$http.post("" + _this.imagoSettings.host + "/api/assets/trash", assets);
+          return _this.$http.post(_this.imagoSettings.host + "/api/assets/trash", assets);
         };
       })(this),
       move: (function(_this) {
@@ -88,7 +88,7 @@ imagoModel = (function() {
             dest: dest,
             items: items
           };
-          return _this.$http.post("" + _this.imagoSettings.host + "/api/assets/move", data);
+          return _this.$http.post(_this.imagoSettings.host + "/api/assets/move", data);
         };
       })(this),
       copy: (function(_this) {
@@ -99,19 +99,19 @@ imagoModel = (function() {
             dest: dest,
             items: items
           };
-          return _this.$http.post("" + _this.imagoSettings.host + "/api/assets/copy", data);
+          return _this.$http.post(_this.imagoSettings.host + "/api/assets/copy", data);
         };
       })(this),
       batch: (function(_this) {
         return function(list) {
-          return _this.$http.put("" + _this.imagoSettings.host + "/api/assets/update", {
+          return _this.$http.put(_this.imagoSettings.host + "/api/assets/update", {
             assets: list
           });
         };
       })(this),
       download: (function(_this) {
         return function(ids, res) {
-          return _this.$http.post("" + _this.imagoSettings.host + "/api/assets/download", {
+          return _this.$http.post(_this.imagoSettings.host + "/api/assets/download", {
             assets: ids,
             resolution: res
           });
@@ -127,7 +127,7 @@ imagoModel = (function() {
   imagoModel.prototype.search = function(query) {
     var params;
     params = _.map(query, this.formatQuery);
-    return this.$http.post("" + this.imagoSettings.host + "/api/search", angular.toJson(params));
+    return this.$http.post(this.imagoSettings.host + "/api/search", angular.toJson(params));
   };
 
   imagoModel.prototype.getLocalData = function(query, options) {
@@ -211,18 +211,18 @@ imagoModel = (function() {
     resolve = (function(_this) {
       return function() {
         fetches.push(_this.search(rejected).then(function(response) {
-          var res, _i, _len, _ref, _results;
+          var j, len, ref, res, results;
           console.log('rejected query', rejected);
           if (!response.data) {
             return;
           }
-          _ref = response.data;
-          _results = [];
-          for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-            res = _ref[_i];
-            _results.push(data.push(_this.create(res)));
+          ref = response.data;
+          results = [];
+          for (j = 0, len = ref.length; j < len; j++) {
+            res = ref[j];
+            results.push(data.push(_this.create(res)));
           }
-          return _results;
+          return results;
         }));
         return _this.$q.all(fetches).then(function(resolve) {
           return defer.resolve(data);
@@ -260,11 +260,11 @@ imagoModel = (function() {
   };
 
   imagoModel.prototype.formatQuery = function(query) {
-    var elem, key, querydict, value, _i, _j, _len, _len1, _ref;
+    var elem, j, k, key, len, len1, querydict, ref, value;
     querydict = {};
     if (_.isArray(query)) {
-      for (_i = 0, _len = query.length; _i < _len; _i++) {
-        elem = query[_i];
+      for (j = 0, len = query.length; j < len; j++) {
+        elem = query[j];
         for (key in elem) {
           value = elem[key];
           querydict[key] || (querydict[key] = []);
@@ -279,9 +279,9 @@ imagoModel = (function() {
     } else if (_.isString(query)) {
       querydict['path'] = [query];
     }
-    _ref = ['page', 'pagesize'];
-    for (_j = 0, _len1 = _ref.length; _j < _len1; _j++) {
-      key = _ref[_j];
+    ref = ['page', 'pagesize'];
+    for (k = 0, len1 = ref.length; k < len1; k++) {
+      key = ref[k];
       if (querydict.hasOwnProperty(key)) {
         querydict[key] = querydict[key][0];
       }
@@ -290,12 +290,12 @@ imagoModel = (function() {
   };
 
   imagoModel.prototype.create = function(data) {
-    var asset, collection, _i, _len, _ref;
+    var asset, collection, j, len, ref;
     collection = data;
     if (data.assets) {
-      _ref = data.assets;
-      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        asset = _ref[_i];
+      ref = data.assets;
+      for (j = 0, len = ref.length; j < len; j++) {
+        asset = ref[j];
         if (this.imagoUtils.isBaseString(asset.serving_url)) {
           asset.base64 = true;
         } else {
@@ -353,17 +353,17 @@ imagoModel = (function() {
   };
 
   imagoModel.prototype.filterAssets = function(assets, query) {
-    var key, params, value, _i, _len;
+    var j, key, len, params, value;
     query = _.omit(query, 'path');
     if (_.keys(query).length > 0) {
       for (key in query) {
         value = query[key];
-        for (_i = 0, _len = value.length; _i < _len; _i++) {
-          params = value[_i];
+        for (j = 0, len = value.length; j < len; j++) {
+          params = value[j];
           if (key !== 'path') {
             assets = _.filter(assets, function(asset) {
-              var _ref;
-              if ((_ref = asset.fields) != null ? _ref.hasOwnProperty(key) : void 0) {
+              var ref;
+              if ((ref = asset.fields) != null ? ref.hasOwnProperty(key) : void 0) {
                 if (asset.fields[key]['value'] === params) {
                   return asset;
                 }
@@ -386,7 +386,7 @@ imagoModel = (function() {
   };
 
   imagoModel.prototype.add = function(assets, options) {
-    var asset, defer, _i, _len;
+    var asset, defer, j, len;
     if (options == null) {
       options = {};
     }
@@ -400,11 +400,11 @@ imagoModel = (function() {
       defer = this.$q.defer();
       this.assets.create(assets).then((function(_this) {
         return function(result) {
-          var asset, _i, _len, _ref;
+          var asset, j, len, ref;
           if (options.push) {
-            _ref = result.data.data;
-            for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-              asset = _ref[_i];
+            ref = result.data.data;
+            for (j = 0, len = ref.length; j < len; j++) {
+              asset = ref[j];
               if (_this.imagoUtils.isBaseString(asset.serving_url)) {
                 asset.base64 = true;
               } else {
@@ -422,8 +422,8 @@ imagoModel = (function() {
       return defer.promise;
     } else {
       if (options.push) {
-        for (_i = 0, _len = assets.length; _i < _len; _i++) {
-          asset = assets[_i];
+        for (j = 0, len = assets.length; j < len; j++) {
+          asset = assets[j];
           if (this.imagoUtils.isBaseString(asset.serving_url)) {
             asset.base64 = true;
           } else {
@@ -439,7 +439,7 @@ imagoModel = (function() {
   };
 
   imagoModel.prototype.update = function(data, options) {
-    var asset, attribute, copy, idx, query, _i, _len;
+    var asset, attribute, copy, idx, j, len, query;
     if (options == null) {
       options = {};
     }
@@ -470,8 +470,8 @@ imagoModel = (function() {
         this.assets.update(copy);
       }
     } else if (_.isArray(copy)) {
-      for (_i = 0, _len = copy.length; _i < _len; _i++) {
-        asset = copy[_i];
+      for (j = 0, len = copy.length; j < len; j++) {
+        asset = copy[j];
         query = {};
         query[attribute] = asset[attribute];
         if (asset.assets) {
@@ -497,7 +497,7 @@ imagoModel = (function() {
   };
 
   imagoModel.prototype["delete"] = function(assets, options) {
-    var asset, defer, _i, _len;
+    var asset, defer, j, len;
     if (options == null) {
       options = {};
     }
@@ -508,8 +508,8 @@ imagoModel = (function() {
     if (_.isUndefined(options.stream)) {
       options.stream = true;
     }
-    for (_i = 0, _len = assets.length; _i < _len; _i++) {
-      asset = assets[_i];
+    for (j = 0, len = assets.length; j < len; j++) {
+      asset = assets[j];
       this.data = _.reject(this.data, {
         '_id': asset._id
       });
@@ -525,10 +525,10 @@ imagoModel = (function() {
   };
 
   imagoModel.prototype.trash = function(assets) {
-    var asset, newAsset, request, _i, _len;
+    var asset, j, len, newAsset, request;
     request = [];
-    for (_i = 0, _len = assets.length; _i < _len; _i++) {
-      asset = assets[_i];
+    for (j = 0, len = assets.length; j < len; j++) {
+      asset = assets[j];
       newAsset = {
         '_id': asset._id
       };
@@ -541,10 +541,10 @@ imagoModel = (function() {
   imagoModel.prototype.copy = function(assets, sourceId, parentId) {
     return this.paste(assets).then((function(_this) {
       return function(pasted) {
-        var asset, newAsset, request, _i, _len;
+        var asset, j, len, newAsset, request;
         request = [];
-        for (_i = 0, _len = pasted.length; _i < _len; _i++) {
-          asset = pasted[_i];
+        for (j = 0, len = pasted.length; j < len; j++) {
+          asset = pasted[j];
           newAsset = {
             '_id': asset._id,
             'order': asset.order,
@@ -569,10 +569,10 @@ imagoModel = (function() {
   imagoModel.prototype.move = function(assets, sourceId, parentId) {
     return this.paste(assets).then((function(_this) {
       return function(pasted) {
-        var asset, formatted, request, _i, _len;
+        var asset, formatted, j, len, request;
         request = [];
-        for (_i = 0, _len = pasted.length; _i < _len; _i++) {
-          asset = pasted[_i];
+        for (j = 0, len = pasted.length; j < len; j++) {
+          asset = pasted[j];
           formatted = {
             '_id': asset._id,
             'order': asset.order,
@@ -594,7 +594,7 @@ imagoModel = (function() {
   };
 
   imagoModel.prototype.paste = function(assets, options) {
-    var asset, assetsChildren, checkAsset, defer, queue, _i, _len;
+    var asset, assetsChildren, checkAsset, defer, j, len, queue;
     if (options == null) {
       options = {};
     }
@@ -616,7 +616,7 @@ imagoModel = (function() {
           exists = true;
           original_name = asset.name;
           while (exists) {
-            asset.name = "" + original_name + "_" + i;
+            asset.name = original_name + "_" + i;
             i++;
             exists = (_.filter(assetsChildren, {
               name: asset.name
@@ -628,8 +628,8 @@ imagoModel = (function() {
       };
     })(this);
     queue = [];
-    for (_i = 0, _len = assets.length; _i < _len; _i++) {
-      asset = assets[_i];
+    for (j = 0, len = assets.length; j < len; j++) {
+      asset = assets[j];
       queue.push(checkAsset(asset));
     }
     this.$q.all(queue).then((function(_this) {
@@ -657,10 +657,10 @@ imagoModel = (function() {
   };
 
   imagoModel.prototype.reindexAll = function(list) {
-    var asset, count, key, newList, ordered, _i, _len;
+    var asset, count, j, key, len, newList, ordered;
     newList = [];
     count = list.length;
-    for (key = _i = 0, _len = list.length; _i < _len; key = ++_i) {
+    for (key = j = 0, len = list.length; j < len; key = ++j) {
       asset = list[key];
       asset.order = (count - key) * this.imagoSettings.index;
       ordered = {
@@ -710,8 +710,8 @@ imagoModel = (function() {
   };
 
   imagoModel.prototype.batchChange = function(assets) {
-    var asset, copy, idx, key, original, toedit, value, _i, _len;
-    for (idx = _i = 0, _len = assets.length; _i < _len; idx = ++_i) {
+    var asset, copy, idx, j, key, len, original, toedit, value;
+    for (idx = j = 0, len = assets.length; j < len; idx = ++j) {
       asset = assets[idx];
       original = this.find({
         '_id': asset._id
@@ -775,7 +775,7 @@ imagoModel = (function() {
         exists = true;
         original_name = name;
         while (exists) {
-          name = "" + original_name + "_" + i;
+          name = original_name + "_" + i;
           i++;
           findName = _.find(assets, (function(_this) {
             return function(chr) {
@@ -1350,24 +1350,24 @@ imagoUtils = (function() {
         };
       })(),
       cookie: function(name, value) {
-        var cookie, _i, _len, _ref;
+        var cookie, k, len, ref;
         if (!value) {
-          _ref = document.cookie.split(';');
-          for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-            cookie = _ref[_i];
+          ref = document.cookie.split(';');
+          for (k = 0, len = ref.length; k < len; k++) {
+            cookie = ref[k];
             if (cookie.indexOf(name) === 1) {
               return cookie.split('=')[1];
             }
           }
           return false;
         }
-        return document.cookie = "" + name + "=" + value + "; path=/";
+        return document.cookie = name + "=" + value + "; path=/";
       },
       sha: function() {
-        var i, possible, text, _i;
+        var i, k, possible, text;
         text = '';
         possible = 'abcdefghijklmnopqrstuvwxyz0123456789';
-        for (i = _i = 0; _i <= 56; i = ++_i) {
+        for (i = k = 0; k <= 56; i = ++k) {
           text += possible.charAt(Math.floor(Math.random() * possible.length));
         }
         return text;
@@ -1383,11 +1383,11 @@ imagoUtils = (function() {
         return console.log('urlify');
       },
       queryfy: function(url) {
-        var facet, filter, key, query, value, _i, _len, _ref;
+        var facet, filter, k, key, len, query, ref, value;
         query = [];
-        _ref = url.split('+');
-        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-          filter = _ref[_i];
+        ref = url.split('+');
+        for (k = 0, len = ref.length; k < len; k++) {
+          filter = ref[k];
           filter || (filter = 'collection:/');
           facet = filter.split(':');
           key = facet[0].toLowerCase();
@@ -1520,13 +1520,13 @@ imagoUtils = (function() {
           floats = '0' + floats;
         }
         ints = value.slice(0, value.length - decimal) || '0';
-        return "" + ints + "." + floats;
+        return ints + "." + floats;
       },
       toPrice: function(value, currency) {
         var price, symbol;
         price = this.toFloat(value).replace(/(\d)(?=(\d{3})+\.)/g, '$1,');
         symbol = this.getCurrencySymbol(currency);
-        return "" + symbol + " " + price;
+        return symbol + " " + price;
       },
       isEmail: function(value) {
         var pattern;
@@ -1565,8 +1565,8 @@ imagoUtils = (function() {
         }
       },
       inUsa: function(value) {
-        var _ref;
-        return (_ref = value != null ? value.toLowerCase() : void 0) === 'usa' || _ref === 'united states' || _ref === 'united states of america';
+        var ref;
+        return (ref = value != null ? value.toLowerCase() : void 0) === 'usa' || ref === 'united states' || ref === 'united states of america';
       },
       replaceNewLines: function(msg) {
         return msg.replace(/(\r\n\r\n|\r\n|\n|\r)/gm, "<br>");
@@ -1622,13 +1622,13 @@ imagoUtils = (function() {
 angular.module('imago').factory('imagoUtils', [imagoUtils]);
 
 var imagoWorker,
-  __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
+  bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 
 imagoWorker = (function() {
   function imagoWorker($q) {
     this.$q = $q;
-    this.work = __bind(this.work, this);
-    this.create = __bind(this.create, this);
+    this.work = bind(this.work, this);
+    this.create = bind(this.create, this);
   }
 
   imagoWorker.prototype.create = function(path) {
