@@ -25,10 +25,12 @@ imagoCart = (function() {
 angular.module('imago').directive('imagoCart', ['imagoCart', imagoCart]);
 
 var imagoCart,
-  bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
-  indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
+  __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+  __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
 
 imagoCart = (function() {
+  imagoCart.prototype.show = false;
+
   function imagoCart($q, $window, $http, imagoUtils, imagoModel, imagoSettings) {
     var local;
     this.$q = $q;
@@ -37,13 +39,13 @@ imagoCart = (function() {
     this.imagoUtils = imagoUtils;
     this.imagoModel = imagoModel;
     this.imagoSettings = imagoSettings;
-    this.remove = bind(this.remove, this);
-    this.update = bind(this.update, this);
-    this.add = bind(this.add, this);
-    this.create = bind(this.create, this);
-    this.checkCart = bind(this.checkCart, this);
-    this.checkStatus = bind(this.checkStatus, this);
-    this.checkCurrency = bind(this.checkCurrency, this);
+    this.remove = __bind(this.remove, this);
+    this.update = __bind(this.update, this);
+    this.add = __bind(this.add, this);
+    this.create = __bind(this.create, this);
+    this.checkCart = __bind(this.checkCart, this);
+    this.checkStatus = __bind(this.checkStatus, this);
+    this.checkCurrency = __bind(this.checkCurrency, this);
     this.cart = {
       items: []
     };
@@ -67,7 +69,7 @@ imagoCart = (function() {
         return _this.telize = response.data;
       };
     })(this)));
-    promises.push(this.$http.get(this.imagoSettings.host + "/api/settings").then((function(_this) {
+    promises.push(this.$http.get("" + this.imagoSettings.host + "/api/settings").then((function(_this) {
       return function(response) {
         var res;
         res = _.find(response.data, {
@@ -80,7 +82,7 @@ imagoCart = (function() {
       return function() {
         var currency;
         currency = _this.imagoUtils.CURRENCY_MAPPING[_this.telize.country];
-        if (indexOf.call(_this.currencies, currency) >= 0) {
+        if (__indexOf.call(_this.currencies, currency) >= 0) {
           _this.currency = currency;
         } else if (_this.currencies.length) {
           _this.currency = _this.currencies[0];
@@ -95,7 +97,7 @@ imagoCart = (function() {
   };
 
   imagoCart.prototype.checkStatus = function(id) {
-    return this.$http.get(this.imagoSettings.host + "/api/carts?cartid=" + id).then((function(_this) {
+    return this.$http.get("" + this.imagoSettings.host + "/api/carts?cartid=" + id).then((function(_this) {
       return function(response) {
         console.log('check status', response);
         return _.assign(_this.cart, response.data);
@@ -121,7 +123,7 @@ imagoCart = (function() {
   };
 
   imagoCart.prototype.create = function(cart) {
-    return this.$http.post(this.imagoSettings.host + "/api/carts", cart);
+    return this.$http.post("" + this.imagoSettings.host + "/api/carts", cart);
   };
 
   imagoCart.prototype.add = function(item) {
@@ -146,6 +148,7 @@ imagoCart = (function() {
     } else {
       this.cart.items.push(copy);
     }
+    this.show = true;
     return this.checkCart().then((function(_this) {
       return function(response) {
         if (response === 'update') {
@@ -159,7 +162,7 @@ imagoCart = (function() {
     if (!this.cart._id) {
       return;
     }
-    return this.$http.put(this.imagoSettings.host + "/api/carts/" + this.cart._id, this.cart);
+    return this.$http.put("" + this.imagoSettings.host + "/api/carts/" + this.cart._id, this.cart);
   };
 
   imagoCart.prototype.remove = function(item) {
@@ -197,7 +200,7 @@ VariantsStorage = (function() {
   }
 
   VariantsStorage.prototype.search = function(id) {
-    return this.$http.get(this.imagoSettings.host + "/api/variants/" + id);
+    return this.$http.get("" + this.imagoSettings.host + "/api/variants/" + id);
   };
 
   VariantsStorage.prototype.get = function(parent) {
@@ -225,4 +228,4 @@ VariantsStorage = (function() {
 
 angular.module('imago').service('variantsStorage', ['$http', '$q', 'imagoModel', 'imagoSettings', VariantsStorage]);
 
-angular.module("imago").run(["$templateCache", function($templateCache) {$templateCache.put("/imago/imago-cart.html","<div class=\"cart\"><div ng-click=\"toggle = !toggle\" class=\"icon\"><div class=\"counter\">{{ cart.utils.cart.items.length }}</div></div><div ng-class=\"{\'show\' : toggle}\" class=\"box\"><div ng-repeat=\"item in cart.utils.cart.items\" class=\"item\"><img src=\"//lh6.ggpht.com/MOUg_ucq5khToO9o6WT-Lrprp2O4y-QyzEt8l53Th4L6HOLbLAP1YpJCnliAdB2HOCRLwvmwAkPutwQy4nan0Q=s100-c\"/><button ng-click=\"cart.utils.remove(item)\" class=\"remove\"></button><span class=\"title\">Kisses for Kismed</span><span class=\"qty\">qty: 1</span><span class=\"color\">color: ping</span></div><div ng-if=\"cart.utils.cart.items.length\" class=\"itemnumber\">5 items</div><div ng-if=\"cart.utils.cart.items.length === 0\" class=\"noitems\">no items in cart</div><button ng-if=\"cart.utils.cart.items.length\" type=\"submit\" ng-click=\"cart.utils.checkout()\" ng-disabled=\"!cart.utils.cart.items.length\" class=\"checkout\">checkout</button></div></div>");}]);
+angular.module("imago").run(["$templateCache", function($templateCache) {$templateCache.put("/imago/imago-cart.html","<div class=\"cart\"><div ng-click=\"cart.utils.show = !cart.utils.show\" class=\"icon\"><div ng-bind=\"cart.utils.cart.items.length\" class=\"counter\"></div></div><div ng-class=\"{\'show\' : cart.utils.show}\" class=\"box\"><div ng-repeat=\"item in cart.utils.cart.items\" class=\"item\"><img ng-if=\"item.serving_url\" ng-src=\"{{item.serving_url}}=s100-c\"/><button ng-click=\"cart.utils.remove(item)\" class=\"remove\"></button><span class=\"title\">Kisses for Kismed</span><span class=\"qty\">qty: {{item.qty}}</span><span class=\"color\">color: ping</span></div><div ng-show=\"cart.utils.cart.items.length\" class=\"itemnumber\">{{cart.utils.cart.items.length}} items</div><div ng-show=\"cart.utils.cart.items.length === 0\" class=\"noitems\">no items in cart</div><button ng-show=\"cart.utils.cart.items.length\" type=\"submit\" ng-click=\"cart.utils.checkout()\" class=\"checkout\">checkout</button></div></div>");}]);

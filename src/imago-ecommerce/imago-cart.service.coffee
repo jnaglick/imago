@@ -1,5 +1,7 @@
 class imagoCart extends Service
 
+  show: false
+
   constructor: (@$q, @$window, @$http, @imagoUtils, @imagoModel, @imagoSettings) ->
     @cart =
       items: []
@@ -57,6 +59,8 @@ class imagoCart extends Service
       filter.qty += copy.qty
     else
       @cart.items.push copy
+
+    @show = true
 
     @checkCart().then (response) =>
       @update() if response is 'update'

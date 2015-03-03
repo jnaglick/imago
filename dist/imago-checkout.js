@@ -1,6 +1,6 @@
 var Calculation,
-  bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
-  indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
+  __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+  __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
 
 Calculation = (function() {
   Calculation.prototype.cart = void 0;
@@ -24,22 +24,22 @@ Calculation = (function() {
     this.$auth = $auth;
     this.imagoUtils = imagoUtils;
     this.imagoSettings = imagoSettings;
-    this.submit = bind(this.submit, this);
-    this.calculate = bind(this.calculate, this);
-    this.calculateTotal = bind(this.calculateTotal, this);
-    this.getZipTax = bind(this.getZipTax, this);
-    this.getTaxRate = bind(this.getTaxRate, this);
-    this.calculateShipping = bind(this.calculateShipping, this);
-    this.changeShipping = bind(this.changeShipping, this);
-    this.findShippingRate = bind(this.findShippingRate, this);
-    this.getShippingRate = bind(this.getShippingRate, this);
-    this.setShippingRates = bind(this.setShippingRates, this);
-    this.setCurrency = bind(this.setCurrency, this);
-    this.applyCoupon = bind(this.applyCoupon, this);
-    this.checkCoupon = bind(this.checkCoupon, this);
-    this.changeAddress = bind(this.changeAddress, this);
-    this.deleteItem = bind(this.deleteItem, this);
-    this.updateCart = bind(this.updateCart, this);
+    this.submit = __bind(this.submit, this);
+    this.calculate = __bind(this.calculate, this);
+    this.calculateTotal = __bind(this.calculateTotal, this);
+    this.getZipTax = __bind(this.getZipTax, this);
+    this.getTaxRate = __bind(this.getTaxRate, this);
+    this.calculateShipping = __bind(this.calculateShipping, this);
+    this.changeShipping = __bind(this.changeShipping, this);
+    this.findShippingRate = __bind(this.findShippingRate, this);
+    this.getShippingRate = __bind(this.getShippingRate, this);
+    this.setShippingRates = __bind(this.setShippingRates, this);
+    this.setCurrency = __bind(this.setCurrency, this);
+    this.applyCoupon = __bind(this.applyCoupon, this);
+    this.checkCoupon = __bind(this.checkCoupon, this);
+    this.changeAddress = __bind(this.changeAddress, this);
+    this.deleteItem = __bind(this.deleteItem, this);
+    this.updateCart = __bind(this.updateCart, this);
     this.countries = this.imagoUtils.COUNTRIES;
   }
 
@@ -58,16 +58,16 @@ Calculation = (function() {
   };
 
   Calculation.prototype.changeAddress = function(section, type) {
-    var ref, ref1, ref2, ref3;
-    if (((ref = this.process.form['shipping_address']) != null ? ref.country : void 0) && type === 'country') {
+    var _ref, _ref1, _ref2, _ref3;
+    if (((_ref = this.process.form['shipping_address']) != null ? _ref.country : void 0) && type === 'country') {
       this.setCurrency(null, this.process.form['shipping_address'].country);
     } else if (type === 'country') {
       this.setCurrency(null, this.process.form[section].country);
     }
     this[section] || (this[section] = {});
-    if ((ref1 = this.process.form[section].country) === 'United States of America' || ref1 === 'United States' || ref1 === 'USA' || ref1 === 'Canada' || ref1 === 'Australia') {
+    if ((_ref1 = this.process.form[section].country) === 'United States of America' || _ref1 === 'United States' || _ref1 === 'USA' || _ref1 === 'Canada' || _ref1 === 'Australia') {
       this[section].disablestates = false;
-      if ((ref2 = this.process.form[section].country) === 'United States of America' || ref2 === 'United States') {
+      if ((_ref2 = this.process.form[section].country) === 'United States of America' || _ref2 === 'United States') {
         this[section].states = this.imagoUtils.STATES['USA'];
       } else {
         this[section].states = this.imagoUtils.STATES[this.process.form[section].country.toUpperCase()];
@@ -77,7 +77,7 @@ Calculation = (function() {
       this[section].states = [];
     }
     this.process.form[section].country_code = this.imagoUtils.CODES[this.process.form[section].country];
-    if ((ref3 = this.process.form['shipping_address']) != null ? ref3.country : void 0) {
+    if ((_ref3 = this.process.form['shipping_address']) != null ? _ref3.country : void 0) {
       this.country = this.process.form['shipping_address'].country;
       this.state = this.process.form['shipping_address'].state;
       this.zip = this.process.form['shipping_address'].zip;
@@ -129,7 +129,7 @@ Calculation = (function() {
     if (country) {
       currency = this.imagoUtils.inUsa(country) ? 'USD' : this.imagoUtils.CURRENCY_MAPPING[country];
     }
-    return this.currency = indexOf.call(this.currencies, currency) >= 0 ? currency : this.currencies[0];
+    return this.currency = __indexOf.call(this.currencies, currency) >= 0 ? currency : this.currencies[0];
   };
 
   Calculation.prototype.setShippingRates = function(rates) {
@@ -157,42 +157,42 @@ Calculation = (function() {
   };
 
   Calculation.prototype.findShippingRate = function() {
-    var rates, rates_by_country, ref;
+    var rates, rates_by_country, _ref;
     if (!this.country) {
       return;
     }
-    if ((ref = this.country) === 'United States of America' || ref === 'United States') {
+    if ((_ref = this.country) === 'United States of America' || _ref === 'United States') {
       this.country = 'USA';
     }
     rates_by_country = _.filter(this.shippingmethods, (function(_this) {
       return function(item) {
-        var c, ref1, ref2;
-        return item.active && (ref1 = (ref2 = _this.country) != null ? ref2.toUpperCase() : void 0, indexOf.call((function() {
-          var i, len, ref3, results;
-          ref3 = item.countries;
-          results = [];
-          for (i = 0, len = ref3.length; i < len; i++) {
-            c = ref3[i];
-            results.push(c.toUpperCase());
+        var c, _ref1, _ref2;
+        return item.active && (_ref1 = (_ref2 = _this.country) != null ? _ref2.toUpperCase() : void 0, __indexOf.call((function() {
+          var _i, _len, _ref3, _results;
+          _ref3 = item.countries;
+          _results = [];
+          for (_i = 0, _len = _ref3.length; _i < _len; _i++) {
+            c = _ref3[_i];
+            _results.push(c.toUpperCase());
           }
-          return results;
-        })(), ref1) >= 0);
+          return _results;
+        })(), _ref1) >= 0);
       };
     })(this));
     if (this.state) {
       rates = _.filter(rates_by_country, (function(_this) {
         return function(item) {
-          var ref1, s;
-          return ref1 = _this.state.toUpperCase(), indexOf.call((function() {
-            var i, len, ref2, results;
-            ref2 = item.states;
-            results = [];
-            for (i = 0, len = ref2.length; i < len; i++) {
-              s = ref2[i];
-              results.push(s.toUpperCase());
+          var s, _ref1;
+          return _ref1 = _this.state.toUpperCase(), __indexOf.call((function() {
+            var _i, _len, _ref2, _results;
+            _ref2 = item.states;
+            _results = [];
+            for (_i = 0, _len = _ref2.length; _i < _len; _i++) {
+              s = _ref2[_i];
+              _results.push(s.toUpperCase());
             }
-            return results;
-          })(), ref1) >= 0;
+            return _results;
+          })(), _ref1) >= 0;
         };
       })(this));
       if (rates != null ? rates.length : void 0) {
@@ -234,19 +234,19 @@ Calculation = (function() {
   };
 
   Calculation.prototype.calcShipping = function(rate, deferred) {
-    var count, i, item, j, len, len1, range, ref, ref1, ref2, ref3, with_shippingcost;
+    var count, item, range, with_shippingcost, _i, _j, _len, _len1, _ref, _ref1, _ref2, _ref3;
     count = 0;
     with_shippingcost = [];
-    ref = this.cart.items;
-    for (i = 0, len = ref.length; i < len; i++) {
-      item = ref[i];
-      if (!((ref1 = item.shipping_cost) != null ? ref1[this.currency] : void 0)) {
+    _ref = this.cart.items;
+    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+      item = _ref[_i];
+      if (!((_ref1 = item.shipping_cost) != null ? _ref1[this.currency] : void 0)) {
         if (rate.type === 'weight') {
           count += item.weight * item.qty;
         } else {
           count += item.qty;
         }
-      } else if ((ref2 = item.shipping_cost) != null ? ref2[this.currency] : void 0) {
+      } else if ((_ref2 = item.shipping_cost) != null ? _ref2[this.currency] : void 0) {
         with_shippingcost.push(item);
       }
     }
@@ -264,9 +264,9 @@ Calculation = (function() {
     } else {
       this.costs.shipping = (range.price[this.currency] || 0) * count;
     }
-    for (j = 0, len1 = with_shippingcost.length; j < len1; j++) {
-      item = with_shippingcost[j];
-      this.costs.shipping += (((ref3 = item.shipping_cost) != null ? ref3[this.currency] : void 0) || 0) * item.qty;
+    for (_j = 0, _len1 = with_shippingcost.length; _j < _len1; _j++) {
+      item = with_shippingcost[_j];
+      this.costs.shipping += (((_ref3 = item.shipping_cost) != null ? _ref3[this.currency] : void 0) || 0) * item.qty;
     }
     return deferred.resolve();
   };
@@ -276,7 +276,7 @@ Calculation = (function() {
     deferred = this.$q.defer();
     this.getTaxRate().then((function(_this) {
       return function() {
-        var i, item, j, len, len1, onepercent, ref, ref1, results;
+        var item, onepercent, _i, _j, _len, _len1, _ref, _ref1, _results;
         _this.costs.tax = 0;
         if (_this.taxincluded) {
           deferred.resolve();
@@ -285,22 +285,22 @@ Calculation = (function() {
         if (_this.imagoUtils.includesTax(_this.currency)) {
           _this.costs.includedTax = 0;
           if (_this.costs.taxRate) {
-            ref = _this.cart.items;
-            results = [];
-            for (i = 0, len = ref.length; i < len; i++) {
-              item = ref[i];
+            _ref = _this.cart.items;
+            _results = [];
+            for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+              item = _ref[_i];
               onepercent = item.fields.price.value[_this.currency] / (100 + _this.costs.taxRate) * item.qty;
               _this.costs.includedTax += Math.round(onepercent * _this.costs.taxRate);
-              results.push(deferred.resolve());
+              _results.push(deferred.resolve());
             }
-            return results;
+            return _results;
           } else {
             return deferred.resolve();
           }
         } else {
-          ref1 = _this.cart.items;
-          for (j = 0, len1 = ref1.length; j < len1; j++) {
-            item = ref1[j];
+          _ref1 = _this.cart.items;
+          for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
+            item = _ref1[_j];
             _this.costs.tax += Math.round(item.fields.price.value[_this.currency] * item.qty * _this.costs.taxRate);
           }
           return deferred.resolve();
@@ -330,39 +330,39 @@ Calculation = (function() {
   };
 
   Calculation.prototype.findTaxRate = function() {
-    var rate, rates, rates_by_country, ref;
-    if ((ref = this.country) === 'United States of America' || ref === 'United States') {
+    var rate, rates, rates_by_country, _ref;
+    if ((_ref = this.country) === 'United States of America' || _ref === 'United States') {
       this.country = 'USA';
     }
     rates_by_country = _.filter(this.taxes, (function(_this) {
       return function(item) {
-        var c, ref1, ref2;
-        return item.active && (ref1 = (ref2 = _this.country) != null ? ref2.toUpperCase() : void 0, indexOf.call((function() {
-          var i, len, ref3, results;
-          ref3 = item.countries;
-          results = [];
-          for (i = 0, len = ref3.length; i < len; i++) {
-            c = ref3[i];
-            results.push(c.toUpperCase());
+        var c, _ref1, _ref2;
+        return item.active && (_ref1 = (_ref2 = _this.country) != null ? _ref2.toUpperCase() : void 0, __indexOf.call((function() {
+          var _i, _len, _ref3, _results;
+          _ref3 = item.countries;
+          _results = [];
+          for (_i = 0, _len = _ref3.length; _i < _len; _i++) {
+            c = _ref3[_i];
+            _results.push(c.toUpperCase());
           }
-          return results;
-        })(), ref1) >= 0);
+          return _results;
+        })(), _ref1) >= 0);
       };
     })(this));
     if (this.state) {
       rate = _.find(rates_by_country, (function(_this) {
         return function(item) {
-          var ref1, s;
-          return ref1 = _this.state.toUpperCase(), indexOf.call((function() {
-            var i, len, ref2, results;
-            ref2 = item.states;
-            results = [];
-            for (i = 0, len = ref2.length; i < len; i++) {
-              s = ref2[i];
-              results.push(s.toUpperCase());
+          var s, _ref1;
+          return _ref1 = _this.state.toUpperCase(), __indexOf.call((function() {
+            var _i, _len, _ref2, _results;
+            _ref2 = item.states;
+            _results = [];
+            for (_i = 0, _len = _ref2.length; _i < _len; _i++) {
+              s = _ref2[_i];
+              _results.push(s.toUpperCase());
             }
-            return results;
-          })(), ref1) >= 0;
+            return _results;
+          })(), _ref1) >= 0;
         };
       })(this));
       if (rate) {
@@ -382,12 +382,12 @@ Calculation = (function() {
   };
 
   Calculation.prototype.getZipTax = function() {
-    var deferred, ref;
+    var deferred, _ref;
     deferred = this.$q.defer();
-    if (!(this.zip || (((ref = this.zip) != null ? ref.length : void 0) > 4))) {
+    if (!(this.zip || (((_ref = this.zip) != null ? _ref.length : void 0) > 4))) {
       deferred.resolve();
     } else {
-      this.$http.get((this.imagoSettings.host + "/api/ziptax?zipcode=") + this.zip).then((function(_this) {
+      this.$http.get(("" + this.imagoSettings.host + "/api/ziptax?zipcode=") + this.zip).then((function(_this) {
         return function(response) {
           _this.costs.taxRate = response.data.taxUse;
           return deferred.resolve();
@@ -412,7 +412,7 @@ Calculation = (function() {
   };
 
   Calculation.prototype.calculate = function() {
-    var i, item, len, ref;
+    var item, _i, _len, _ref;
     this.costs = {
       subtotal: 0,
       shipping: 0,
@@ -420,9 +420,9 @@ Calculation = (function() {
       includedTax: 0,
       total: 0
     };
-    ref = this.cart.items;
-    for (i = 0, len = ref.length; i < len; i++) {
-      item = ref[i];
+    _ref = this.cart.items;
+    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+      item = _ref[_i];
       this.costs.subtotal += item.qty * item.fields.price.value[this.currency];
     }
     this.costs.total = this.costs.subtotal;
@@ -452,13 +452,13 @@ Calculation = (function() {
     }
     return this.$http.post(this.imagoSettings.host + '/api/checkout', this.process.form).then((function(_this) {
       return function(response) {
-        var i, len, order, ref;
+        var order, _i, _len, _ref;
         console.log('response checkout', response);
         _this.$auth.setToken(response.data.token);
         if (response.data.code === 200) {
-          ref = response.data.result;
-          for (i = 0, len = ref.length; i < len; i++) {
-            order = ref[i];
+          _ref = response.data.result;
+          for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+            order = _ref[_i];
             _this.$state.go('order', {
               number: order.number
             });
