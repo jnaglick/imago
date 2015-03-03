@@ -56,12 +56,12 @@ class imagoSlider extends Directive
           scope.currentIndex = index
           $rootScope.$emit "#{scope.conf.namespace}:changed", index
 
-
-        scope.$watch attrs.autoplay, (value) =>
-          if parseInt(value) > 0
-            scope.conf.interval = $interval scope.goNext, parseInt(value)
-          else
-            $interval.cancel(scope.conf.interval) if scope.conf.interval
+        if !_.isUndefined attrs.autoplay
+          scope.$watch attrs.autoplay, (value) =>
+            if parseInt(value) > 0
+              scope.conf.interval = $interval scope.goNext, parseInt(value)
+            else
+              $interval.cancel(scope.conf.interval) if scope.conf.interval
 
         if scope.conf.enablekeys
 

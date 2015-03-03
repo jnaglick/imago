@@ -68,17 +68,19 @@ imagoSlider = (function() {
             return $rootScope.$emit("" + scope.conf.namespace + ":changed", index);
           };
         })(this);
-        scope.$watch(attrs.autoplay, (function(_this) {
-          return function(value) {
-            if (parseInt(value) > 0) {
-              return scope.conf.interval = $interval(scope.goNext, parseInt(value));
-            } else {
-              if (scope.conf.interval) {
-                return $interval.cancel(scope.conf.interval);
+        if (!_.isUndefined(attrs.autoplay)) {
+          scope.$watch(attrs.autoplay, (function(_this) {
+            return function(value) {
+              if (parseInt(value) > 0) {
+                return scope.conf.interval = $interval(scope.goNext, parseInt(value));
+              } else {
+                if (scope.conf.interval) {
+                  return $interval.cancel(scope.conf.interval);
+                }
               }
-            }
-          };
-        })(this));
+            };
+          })(this));
+        }
         if (scope.conf.enablekeys) {
           $document.on('keydown', function(e) {
             switch (e.keyCode) {
