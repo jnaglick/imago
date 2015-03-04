@@ -423,7 +423,9 @@ Calculation = (function() {
     _ref = this.cart.items;
     for (_i = 0, _len = _ref.length; _i < _len; _i++) {
       item = _ref[_i];
-      this.costs.subtotal += item.qty * item.fields.price.value[this.currency];
+      if (item.fields.price.value[this.currency] && item.qty) {
+        this.costs.subtotal += item.qty * item.fields.price.value[this.currency];
+      }
     }
     this.costs.total = this.costs.subtotal;
     if (this.coupon) {

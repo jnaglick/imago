@@ -250,7 +250,8 @@ class Calculation extends Service
       total       : 0
 
     for item in @cart.items
-      @costs.subtotal += item.qty * item.fields.price.value[@currency]
+      if item.fields.price.value[@currency] and item.qty
+        @costs.subtotal += item.qty * item.fields.price.value[@currency]
     @costs.total = @costs.subtotal
 
     @applyCoupon(@coupon, @costs) if @coupon
