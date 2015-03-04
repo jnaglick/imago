@@ -48,6 +48,7 @@ class imagoCart extends Service
     return @$http.post("#{@imagoSettings.host}/api/carts", cart)
 
   add: (item) =>
+    return console.log 'item required' unless item
     return console.log 'quantity required' unless item.qty
     unless item.serving_url
       parent = @imagoModel.find {'_id' : item.parent}

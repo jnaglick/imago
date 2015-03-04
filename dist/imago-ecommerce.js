@@ -128,6 +128,9 @@ imagoCart = (function() {
 
   imagoCart.prototype.add = function(item) {
     var copy, filter, parent;
+    if (!item) {
+      return console.log('item required');
+    }
     if (!item.qty) {
       return console.log('quantity required');
     }
