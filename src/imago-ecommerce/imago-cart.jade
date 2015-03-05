@@ -2,13 +2,12 @@
   .icon(ng-click="cart.utils.show = !cart.utils.show")
     .counter(ng-bind="cart.utils.cart.items.length")
 
-  .box(ng-class="{'show' : cart.utils.show}")
+  .box(ng-show="cart.utils.show")
     .item(ng-repeat="item in cart.utils.cart.items")
 
       //- add serving_url form vairant
       img(ng-if="item.serving_url" ng-src="{{item.serving_url}}=s100-c")
       button.remove(ng-click="cart.utils.remove(item)")
-
 
       span.title Kisses for Kismed
       span.qty qty: {{item.qty}}

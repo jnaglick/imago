@@ -33,6 +33,9 @@ class ImagoFieldNumber extends Directive
           scope.update(value)
 
         scope.update = (value) ->
+          if _.isNaN value
+            value = 1
+          value = parseFloat value
           ngModelController.$setViewValue(value)
           ngModelController.$render()
 
