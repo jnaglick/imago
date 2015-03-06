@@ -2,17 +2,27 @@ table
   tbody
     tr
       td subtotal
-      td {{ currency | currencySymbol }} {{ costs.subtotal | price }}
+      td
+        span.currency(ng-bind-html='currency | currencySymbol')
+        | {{ costs.subtotal | price }}
 
     tr
       td shipping
-      td {{ currency | currencySymbol }} {{ costs.shipping | price }}
+      td
+        span.currency(ng-bind-html='currency | currencySymbol')
+        | {{ costs.shipping | price }}
     tr(ng-show="costs.includedTax")
       td included tax
-      td {{ currency | currencySymbol }} {{ costs.includedTax | price }}
+      td
+        span.currency(ng-bind-html='currency | currencySymbol')
+        | {{ costs.includedTax | price }}
     tr(ng-show="!costs.includedTax")
       td tax
-      td {{ currency | currencySymbol }} {{ costs.tax | price }}
+      td
+        span.currency(ng-bind-html='currency | currencySymbol')
+        | {{ costs.tax | price }}
     tr.total
       td total
-      td {{ currency | currencySymbol }} {{ costs.total | price }}
+      td
+        span.currency(ng-bind-html='currency | currencySymbol')
+        | {{ costs.total | price }}
