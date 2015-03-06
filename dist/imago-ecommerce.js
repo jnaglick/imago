@@ -147,10 +147,13 @@ imagoCart = (function() {
     if (!item.qty) {
       return console.log('quantity required');
     }
+    parent = this.imagoModel.find({
+      '_id': item.parent
+    });
+    if (parent) {
+      item.name = parent.name;
+    }
     if (!item.serving_url) {
-      parent = this.imagoModel.find({
-        '_id': item.parent
-      });
       if (parent) {
         item.serving_url = parent.serving_url;
       }
