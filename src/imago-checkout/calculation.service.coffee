@@ -182,8 +182,8 @@ class Calculation extends Service
         if @costs.taxRate
           for item in @cart.items
             onepercent = item.fields.price.value[@currency]/(100+@costs.taxRate) * item.qty
-            @costs.includedTax += Math.round(onepercent * @costs.taxRate)
-            deferred.resolve()
+            @costs.includedTax += Math.round(onepercent * @costs.taxRate)*100
+          deferred.resolve()
         else
           deferred.resolve()
       else
