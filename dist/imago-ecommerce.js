@@ -139,13 +139,20 @@ imagoCart = (function() {
     return this.$http.post("" + this.imagoSettings.host + "/api/carts", cart);
   };
 
-  imagoCart.prototype.add = function(item) {
-    var copy, filter, parent;
+  imagoCart.prototype.add = function(item, options) {
+    var copy, filter, option, parent, _i, _len;
     if (!item) {
       return console.log('item required');
     }
     if (!item.qty) {
       return console.log('quantity required');
+    }
+    item.options = {};
+    if (options != null ? options.length : void 0) {
+      for (_i = 0, _len = options.length; _i < _len; _i++) {
+        option = options[_i];
+        item.options[option] = item.fields[option];
+      }
     }
     parent = this.imagoModel.find({
       '_id': item.parent
@@ -163,6 +170,9 @@ imagoCart = (function() {
       _id: copy._id
     });
     if (filter) {
+      if (!filter.name) {
+        filter.name = copy.name;
+      }
       filter.qty += copy.qty;
     } else {
       this.cart.items.push(copy);

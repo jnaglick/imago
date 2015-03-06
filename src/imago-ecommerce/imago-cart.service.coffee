@@ -62,9 +62,16 @@ class imagoCart extends Service
   create: (cart) =>
     return @$http.post("#{@imagoSettings.host}/api/carts", cart)
 
-  add: (item) =>
+  add: (item, options) =>
     return console.log 'item required' unless item
     return console.log 'quantity required' unless item.qty
+
+    item.options = {}
+
+    if options?.length
+      for option in options
+        item.options[option] = item.fields[option]
+
     parent = @imagoModel.find {'_id' : item.parent}
     item.name = parent.name if parent
     unless item.serving_url
@@ -73,6 +80,7 @@ class imagoCart extends Service
     filter = _.find @cart.items, { _id: copy._id }
 
     if filter
+      filter.name = copy.name unless filter.name
       filter.qty += copy.qty
     else
       @cart.items.push copy
