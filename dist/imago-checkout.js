@@ -301,7 +301,9 @@ Calculation = (function() {
           _ref1 = _this.cart.items;
           for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
             item = _ref1[_j];
-            _this.costs.tax += Math.round(item.fields.price.value[_this.currency] * item.qty * _this.costs.taxRate);
+            if (item.fields.price.value[_this.currency]) {
+              _this.costs.tax += Math.round(item.fields.price.value[_this.currency] * item.qty * _this.costs.taxRate);
+            }
           }
           return deferred.resolve();
         }

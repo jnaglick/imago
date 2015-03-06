@@ -188,7 +188,8 @@ class Calculation extends Service
           deferred.resolve()
       else
         for item in @cart.items
-          @costs.tax += Math.round(item.fields.price.value[@currency] * item.qty * @costs.taxRate)
+          if item.fields.price.value[@currency]
+            @costs.tax += Math.round(item.fields.price.value[@currency] * item.qty * @costs.taxRate)
         deferred.resolve()
     return deferred.promise
 
