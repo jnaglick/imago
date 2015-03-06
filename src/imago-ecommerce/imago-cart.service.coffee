@@ -6,10 +6,18 @@ class imagoCart extends Service
     @cart =
       items: []
     local = localStorage.getItem('imagoCart')
-    @checkStatus(local) if local
-    @checkCurrency()
+
+    promises = []
+    promises.push(@checkStatus(local)) if local
+    promises.push(@checkCurrency())
+
+    @$q.all(promises).then =>
+      if @cart.currency isnt @currency
+        @cart.currency = angular.copy @currency
+        @update()
 
   checkCurrency: =>
+    defer = @$q.defer()
     promises = []
     promises.push @$http.get("//www.telize.com/geoip", {headers: {NexClient: undefined, NexTenant: undefined}}).then (response) =>
       @telize = response.data
@@ -26,12 +34,19 @@ class imagoCart extends Service
       else
         console.log 'you need to enable at least one currency in the settings'
 
-      @cart.currency = @currency if @currency
+      # @cart.currency = @currency if @currency
+
+      defer.resolve()
+
+    defer.promise
 
   checkStatus: (id) =>
+    defer = @$q.defer()
     @$http.get("#{@imagoSettings.host}/api/carts?cartid=#{id}").then (response) =>
-      console.log 'check status', response
+      console.log 'check cart', response.data
       _.assign @cart, response.data
+      defer.resolve()
+    defer.promise
 
   checkCart: =>
     defer = @$q.defer()
