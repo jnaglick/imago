@@ -32,7 +32,7 @@ imagoCart = (function() {
   imagoCart.prototype.show = false;
 
   function imagoCart($q, $window, $http, imagoUtils, imagoModel, imagoSettings) {
-    var local;
+    var local, promises;
     this.$q = $q;
     this.$window = $window;
     this.$http = $http;
@@ -50,14 +50,24 @@ imagoCart = (function() {
       items: []
     };
     local = localStorage.getItem('imagoCart');
+    promises = [];
     if (local) {
-      this.checkStatus(local);
+      promises.push(this.checkStatus(local));
     }
-    this.checkCurrency();
+    promises.push(this.checkCurrency());
+    this.$q.all(promises).then((function(_this) {
+      return function() {
+        if (_this.cart.currency !== _this.currency) {
+          _this.cart.currency = angular.copy(_this.currency);
+          return _this.update();
+        }
+      };
+    })(this));
   }
 
   imagoCart.prototype.checkCurrency = function() {
-    var promises;
+    var defer, promises;
+    defer = this.$q.defer();
     promises = [];
     promises.push(this.$http.get("//www.telize.com/geoip", {
       headers: {
@@ -78,7 +88,7 @@ imagoCart = (function() {
         return _this.currencies = res.value;
       };
     })(this)));
-    return this.$q.all(promises).then((function(_this) {
+    this.$q.all(promises).then((function(_this) {
       return function() {
         var currency;
         currency = _this.imagoUtils.CURRENCY_MAPPING[_this.telize.country];
@@ -89,20 +99,23 @@ imagoCart = (function() {
         } else {
           console.log('you need to enable at least one currency in the settings');
         }
-        if (_this.currency) {
-          return _this.cart.currency = _this.currency;
-        }
+        return defer.resolve();
       };
     })(this));
+    return defer.promise;
   };
 
   imagoCart.prototype.checkStatus = function(id) {
-    return this.$http.get("" + this.imagoSettings.host + "/api/carts?cartid=" + id).then((function(_this) {
+    var defer;
+    defer = this.$q.defer();
+    this.$http.get("" + this.imagoSettings.host + "/api/carts?cartid=" + id).then((function(_this) {
       return function(response) {
-        console.log('check status', response);
-        return _.assign(_this.cart, response.data);
+        console.log('check cart', response.data);
+        _.assign(_this.cart, response.data);
+        return defer.resolve();
       };
     })(this));
+    return defer.promise;
   };
 
   imagoCart.prototype.checkCart = function() {

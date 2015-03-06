@@ -887,14 +887,12 @@ imagoUtils = (function() {
         '189': 'onMinus'
       },
       SYMBOLS: {
-        'EUR': '€',
-        'USD': '$',
-        'SEK': 'SEK',
-        'YEN': '¥',
-        'GBP': '£',
-        'GENERIC': '¤',
-        'CHF': 'CHF',
-        'NOK': 'NOK'
+        EUR: '&euro;',
+        USD: '$',
+        SEK: 'SEK',
+        YEN: '&yen;',
+        GBP: '&pound;',
+        GENERIC: '&curren;'
       },
       CURRENCY_MAPPING: {
         "United Arab Emirates": "AED",
