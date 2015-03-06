@@ -276,7 +276,7 @@ Calculation = (function() {
     deferred = this.$q.defer();
     this.getTaxRate().then((function(_this) {
       return function() {
-        var item, onepercent, _i, _j, _len, _len1, _ref, _ref1, _results;
+        var item, onepercent, _i, _j, _len, _len1, _ref, _ref1;
         _this.costs.tax = 0;
         if (_this.taxincluded) {
           deferred.resolve();
@@ -286,14 +286,12 @@ Calculation = (function() {
           _this.costs.includedTax = 0;
           if (_this.costs.taxRate) {
             _ref = _this.cart.items;
-            _results = [];
             for (_i = 0, _len = _ref.length; _i < _len; _i++) {
               item = _ref[_i];
               onepercent = item.fields.price.value[_this.currency] / (100 + _this.costs.taxRate) * item.qty;
-              _this.costs.includedTax += Math.round(onepercent * _this.costs.taxRate);
-              _results.push(deferred.resolve());
+              _this.costs.includedTax += Math.round(onepercent * _this.costs.taxRate) * 100;
             }
-            return _results;
+            return deferred.resolve();
           } else {
             return deferred.resolve();
           }
