@@ -269,11 +269,12 @@ class Calculation extends Service
     @process.form.billing_address.name = angular.copy @process.form.card.name
     @process.form.costs.shipping_options = angular.copy(@shipping_options)
     @process.form.costs.coupon = angular.copy(@coupon)
+    @process.form.cartId = angular.copy @cart._id
 
     if not @differentshipping
       @process.form['shipping_address'] = angular.copy @process.form['billing_address']
     @$http.post(@imagoSettings.host + '/api/checkout', @process.form).then (response) =>
-      console.log 'response checkout', response
+      # console.log 'response checkout', response
       @$auth.setToken(response.data.token)
       if response.data.code is 200
         for order in response.data.result
