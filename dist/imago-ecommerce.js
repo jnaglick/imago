@@ -41,7 +41,6 @@ imagoCart = (function() {
     this.imagoSettings = imagoSettings;
     this.remove = __bind(this.remove, this);
     this.update = __bind(this.update, this);
-    this.add = __bind(this.add, this);
     this.create = __bind(this.create, this);
     this.checkCart = __bind(this.checkCart, this);
     this.checkStatus = __bind(this.checkStatus, this);
@@ -147,21 +146,27 @@ imagoCart = (function() {
     if (!item.qty) {
       return console.log('quantity required');
     }
-    item.options = {};
-    if (options != null ? options.length : void 0) {
+    if (_.isArray(options) && (options != null ? options.length : void 0)) {
+      item.options = {};
       for (_i = 0, _len = options.length; _i < _len; _i++) {
         option = options[_i];
         item.options[option] = item.fields[option];
       }
+    } else if (_.isPlainObject(options)) {
+      item.options = options;
     }
     parent = this.imagoModel.find({
       '_id': item.parent
     });
-    if (parent) {
-      item.name = parent.name;
+    if (item.options.name) {
+      item.name = item.options.name;
+      delete item.options.name;
     }
-    if (!item.serving_url) {
-      if (parent) {
+    if (parent) {
+      if (!item.name) {
+        item.name = parent.name;
+      }
+      if (!item.serving_url) {
         item.serving_url = parent.serving_url;
       }
     }
