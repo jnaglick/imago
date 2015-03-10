@@ -7,6 +7,7 @@ class Calculation extends Service
   taxes           : undefined
   currencies      : undefined
   taxincluded     : undefined
+  error           : {}
 
   constructor: (@$q, @$state, @$http, @$auth, @imagoUtils, @imagoSettings) ->
     @countries = @imagoUtils.COUNTRIES
@@ -28,7 +29,7 @@ class Calculation extends Service
     @[section] or= {}
     if @process.form[section].country in ['United States of America', 'United States', 'USA', 'Canada', 'Australia']
       @[section].disablestates = false
-      if @process.form[section].country in ['United States of America', 'United States']
+      if @process.form[section].country in ['United States of America', 'United States', 'USA']
         @[section].states = @imagoUtils.STATES['USA']
       else
         @[section].states = @imagoUtils.STATES[@process.form[section].country.toUpperCase()]
@@ -104,9 +105,8 @@ class Calculation extends Service
   findShippingRate: =>
     return unless @country
 
-    if @country in ['United States of America', 'United States']
-      @country = 'USA'
-
+    if @country in ['United States of America', 'USA']
+      @country = 'United States'
 
     # get all rates for this country
     rates_by_country = _.filter @shippingmethods, (item) =>
@@ -134,9 +134,13 @@ class Calculation extends Service
     @costs.shipping = 0
 
     @getShippingRate().then (rates) =>
-      return deferred.resolve() unless rates?.length
+      unless rates?.length
+        @error.noshippingrule = true if @country
+        return deferred.resolve()
+      @error.noshippingrule = false
       @calcShipping(rates[0], deferred)
-      return deferred.promise
+
+    deferred.promise
 
   calcShipping: (rate, deferred) ->
     count = 0
@@ -209,8 +213,8 @@ class Calculation extends Service
     return deferred.promise
 
   findTaxRate: ->
-    if @country in ['United States of America', 'United States']
-      @country = 'USA'
+    if @country in ['United States of America', 'USA']
+      @country = 'United States'
 
     rates_by_country = _.filter(@taxes, (item) => item.active and \
                                 @country?.toUpperCase() in (c.toUpperCase() for c in item.countries))
