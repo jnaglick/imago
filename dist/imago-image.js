@@ -115,7 +115,7 @@ imagoImage = (function() {
           if (imagoUtils.isBaseString(source.serving_url)) {
             opts.servingUrl = source.serving_url;
           } else {
-            opts.servingUrl = source.serving_url + "=s" + (servingSize * opts.scale);
+            opts.servingUrl = "" + source.serving_url + "=s" + (servingSize * opts.scale);
           }
           return render();
         };

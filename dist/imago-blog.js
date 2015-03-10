@@ -32,15 +32,15 @@ imagoPager = (function() {
             localData: false
           }).then((function(_this) {
             return function(response) {
-              var collection, i, len, results;
-              results = [];
-              for (i = 0, len = response.length; i < len; i++) {
-                collection = response[i];
+              var collection, _i, _len, _results;
+              _results = [];
+              for (_i = 0, _len = response.length; _i < _len; _i++) {
+                collection = response[_i];
                 $scope.posts = collection.assets;
                 $scope.totalPages = collection.count / pageSize;
                 break;
               }
-              return results;
+              return _results;
             };
           })(this));
         };

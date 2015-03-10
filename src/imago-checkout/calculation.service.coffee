@@ -140,7 +140,7 @@ class Calculation extends Service
       @error.noshippingrule = false
       @calcShipping(rates[0], deferred)
 
-    deferred.promise
+    return deferred.promise
 
   calcShipping: (rate, deferred) ->
     count = 0

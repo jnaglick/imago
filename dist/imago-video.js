@@ -128,7 +128,7 @@ imagoVideo = (function() {
         }
         self.watch = scope.$watch(attrs['imagoVideo'], (function(_this) {
           return function(data) {
-            var ref;
+            var _ref;
             if (!data) {
               return;
             }
@@ -136,7 +136,7 @@ imagoVideo = (function() {
               self.watch();
             }
             self.source = data;
-            if (!((ref = self.source) != null ? ref.serving_url : void 0)) {
+            if (!((_ref = self.source) != null ? _ref.serving_url : void 0)) {
               element.remove();
               return;
             }
@@ -168,7 +168,7 @@ imagoVideo = (function() {
             height = element[0].clientHeight;
           }
           dpr = opts.hires ? Math.ceil(window.devicePixelRatio) || 1 : 1;
-          serving_url = data.serving_url + "=s" + (Math.ceil(Math.min(Math.max(width, height) * dpr)) || 1600);
+          serving_url = "" + data.serving_url + "=s" + (Math.ceil(Math.min(Math.max(width, height) * dpr)) || 1600);
           style = {
             size: opts.size,
             sizemode: opts.sizemode,
@@ -229,12 +229,12 @@ imagoVideo = (function() {
             }
           } else {
             if (opts.assetRatio < wrapperRatio) {
-              style.width = (Math.round(height * opts.assetRatio)) + "px";
-              style.height = height + "px";
+              style.width = "" + (Math.round(height * opts.assetRatio)) + "px";
+              style.height = "" + height + "px";
               style.backgroundSize = 'auto 100%';
             } else {
-              style.width = width + "px";
-              style.height = (Math.round(width / opts.assetRatio)) + "px";
+              style.width = "" + width + "px";
+              style.height = "" + (Math.round(width / opts.assetRatio)) + "px";
               style.backgroundSize = '100% auto';
             }
           }
@@ -290,15 +290,15 @@ imagoVideo = (function() {
           };
         })(this);
         loadFormats = function(data) {
-          var codec, format, formats, i, j, len, ref;
+          var codec, format, formats, i, _i, _len, _ref;
           formats = [];
           codec = detectCodec();
           data.fields.formats.sort(function(a, b) {
             return b.height - a.height;
           });
-          ref = data.fields.formats;
-          for (i = j = 0, len = ref.length; j < len; i = ++j) {
-            format = ref[i];
+          _ref = data.fields.formats;
+          for (i = _i = 0, _len = _ref.length; _i < _len; i = ++_i) {
+            format = _ref[i];
             if (codec !== format.codec) {
               continue;
             }
