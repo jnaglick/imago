@@ -277,6 +277,10 @@ class Calculation extends Service
 
     if not @differentshipping
       @process.form['shipping_address'] = angular.copy @process.form['billing_address']
+
+    @process.form.billing_address['phone']  = angular.copy @process.form.phone
+    @process.form.shipping_address['phone'] = angular.copy @process.form.phone
+
     @$http.post(@imagoSettings.host + '/api/checkout', @process.form).then (response) =>
       # console.log 'response checkout', response
       @$auth.setToken(response.data.token)

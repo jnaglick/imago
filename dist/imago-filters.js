@@ -38,20 +38,20 @@ Price = (function() {
 angular.module('imago').filter('price', [Price]);
 
 var tagFilter,
-  __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
+  indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
 
 tagFilter = (function() {
   function tagFilter(imagoUtils) {
     return function(input, tag) {
-      var asset, filtered, _i, _len;
+      var asset, filtered, i, len;
       filtered = [];
       if (!input) {
         return;
       }
-      for (_i = 0, _len = input.length; _i < _len; _i++) {
-        asset = input[_i];
+      for (i = 0, len = input.length; i < len; i++) {
+        asset = input[i];
         if (tag) {
-          if (__indexOf.call(imagoUtils.getMeta(asset, 'tags'), tag) >= 0) {
+          if (indexOf.call(imagoUtils.getMeta(asset, 'tags'), tag) >= 0) {
             filtered.push(asset);
           }
         } else {
