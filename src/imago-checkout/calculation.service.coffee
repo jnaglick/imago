@@ -50,6 +50,7 @@ class Calculation extends Service
     @calculate()
 
   checkCoupon: (code) =>
+
     unless code
       @couponState = ''
       @calculate()
@@ -60,13 +61,14 @@ class Calculation extends Service
         @coupon = response.data[0]
         @couponState = 'valid'
         @calculate()
-
       else
         @couponState = 'invalid'
 
   applyCoupon: (coupon, costs) =>
+
     return unless coupon
     meta = coupon.meta
+    @couponState = 'valid'
 
     if meta.type is 'flat'
       value = Math.min(costs.subtotal, meta.value[@currency])
@@ -75,7 +77,13 @@ class Calculation extends Service
       percentvalue = Number((costs.subtotal * meta.value / 10000).toFixed(0))
       costs.subtotal = costs.subtotal - percentvalue
     else if meta.type is 'free shipping'
-      costs.shipping = 0
+      codes = (code.toUpperCase() for code in meta.code)
+      if meta.code and (@shipping_options.code.toUpperCase() in codes)
+        costs.shipping = 0
+      else if not meta.code
+        costs.shipping = 0
+      else
+        @couponState = 'invalid'
 
   setCurrency: (currency, country) =>
     if country
@@ -85,15 +93,16 @@ class Calculation extends Service
 
   setShippingRates: (rates) =>
     if rates?.length
-      if _.isPlainObject rates
-        @shippingRates = [rates]
-      else if _.isArray rates
-        @shippingRates = rates
+      rates = if _.isPlainObject(rates) then [rates] else rates
+      rates = rates.sort (a, b) =>
+        a.ranges[0].price[@currency] - b.ranges[0].price[@currency]
+      @shippingRates = rates
     else
       @shippingRates = []
 
     if @shippingRates.length
       @shipping_options = @shippingRates[0]
+      @calculate()
 
   getShippingRate: =>
     deferred = @$q.defer()
@@ -126,10 +135,12 @@ class Calculation extends Service
 
   changeShipping: =>
     @calcShipping(@shipping_options, @$q.defer())
-    @calculateTotal()
+    @calculate()
 
   calculateShipping: =>
     deferred = @$q.defer()
+
+    return @calcShipping(@shipping_options, deferred) if @shipping_options
 
     @costs.shipping = 0
 
@@ -142,7 +153,7 @@ class Calculation extends Service
 
     return deferred.promise
 
-  calcShipping: (rate, deferred) ->
+  calcShipping: (rate, deferred) =>
     count = 0
     with_shippingcost = []
     for item in @cart.items
@@ -259,9 +270,8 @@ class Calculation extends Service
         @costs.subtotal += item.qty * item.fields.price.value[@currency]
     @costs.total = @costs.subtotal
 
-    @applyCoupon(@coupon, @costs) if @coupon
-
     @$q.all([@calculateTax(), @calculateShipping()]).then =>
+      @applyCoupon(@coupon, @costs) if @coupon
       @calculateTotal()
 
   submit: =>

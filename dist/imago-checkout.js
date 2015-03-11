@@ -31,6 +31,7 @@ Calculation = (function() {
     this.calculateTotal = bind(this.calculateTotal, this);
     this.getZipTax = bind(this.getZipTax, this);
     this.getTaxRate = bind(this.getTaxRate, this);
+    this.calcShipping = bind(this.calcShipping, this);
     this.calculateShipping = bind(this.calculateShipping, this);
     this.changeShipping = bind(this.changeShipping, this);
     this.findShippingRate = bind(this.findShippingRate, this);
@@ -111,11 +112,12 @@ Calculation = (function() {
   };
 
   Calculation.prototype.applyCoupon = function(coupon, costs) {
-    var meta, percentvalue, value;
+    var code, codes, meta, percentvalue, ref, value;
     if (!coupon) {
       return;
     }
     meta = coupon.meta;
+    this.couponState = 'valid';
     if (meta.type === 'flat') {
       value = Math.min(costs.subtotal, meta.value[this.currency]);
       return costs.subtotal = costs.subtotal - value;
@@ -123,7 +125,23 @@ Calculation = (function() {
       percentvalue = Number((costs.subtotal * meta.value / 10000).toFixed(0));
       return costs.subtotal = costs.subtotal - percentvalue;
     } else if (meta.type === 'free shipping') {
-      return costs.shipping = 0;
+      codes = (function() {
+        var i, len, ref, results;
+        ref = meta.code;
+        results = [];
+        for (i = 0, len = ref.length; i < len; i++) {
+          code = ref[i];
+          results.push(code.toUpperCase());
+        }
+        return results;
+      })();
+      if (meta.code && (ref = this.shipping_options.code.toUpperCase(), indexOf.call(codes, ref) >= 0)) {
+        return costs.shipping = 0;
+      } else if (!meta.code) {
+        return costs.shipping = 0;
+      } else {
+        return this.couponState = 'invalid';
+      }
     }
   };
 
@@ -136,16 +154,19 @@ Calculation = (function() {
 
   Calculation.prototype.setShippingRates = function(rates) {
     if (rates != null ? rates.length : void 0) {
-      if (_.isPlainObject(rates)) {
-        this.shippingRates = [rates];
-      } else if (_.isArray(rates)) {
-        this.shippingRates = rates;
-      }
+      rates = _.isPlainObject(rates) ? [rates] : rates;
+      rates = rates.sort((function(_this) {
+        return function(a, b) {
+          return a.ranges[0].price[_this.currency] - b.ranges[0].price[_this.currency];
+        };
+      })(this));
+      this.shippingRates = rates;
     } else {
       this.shippingRates = [];
     }
     if (this.shippingRates.length) {
-      return this.shipping_options = this.shippingRates[0];
+      this.shipping_options = this.shippingRates[0];
+      return this.calculate();
     }
   };
 
@@ -217,12 +238,15 @@ Calculation = (function() {
 
   Calculation.prototype.changeShipping = function() {
     this.calcShipping(this.shipping_options, this.$q.defer());
-    return this.calculateTotal();
+    return this.calculate();
   };
 
   Calculation.prototype.calculateShipping = function() {
     var deferred;
     deferred = this.$q.defer();
+    if (this.shipping_options) {
+      return this.calcShipping(this.shipping_options, deferred);
+    }
     this.costs.shipping = 0;
     this.getShippingRate().then((function(_this) {
       return function(rates) {
@@ -434,11 +458,11 @@ Calculation = (function() {
       }
     }
     this.costs.total = this.costs.subtotal;
-    if (this.coupon) {
-      this.applyCoupon(this.coupon, this.costs);
-    }
     return this.$q.all([this.calculateTax(), this.calculateShipping()]).then((function(_this) {
       return function() {
+        if (_this.coupon) {
+          _this.applyCoupon(_this.coupon, _this.costs);
+        }
         return _this.calculateTotal();
       };
     })(this));
