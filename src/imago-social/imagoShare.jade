@@ -1,7 +1,24 @@
 .share
-  a(href="http://www.facebook.com/share.php?u={{location}}" target="_blank" ng-if="facebook || all").fa.fa-facebook
-  a(href="http://twitter.com/home?status={{location}}" target="_blank" ng-if="twitter || all").fa.fa-twitter
-  a(href="https://plus.google.com/share?url={{location}}" ng-if="google || all").fa.fa-google
-  a(href="https://www.linkedin.com/shareArticle?mini=true&url={{location}}&title={{asset | meta:'title'}}&summary=&source={{asset.serving_url}}" target="_blank" ng-if="linkedin || all").fa.fa-linkedin
-  a(href="http://www.tumblr.com/share/photo?source={{location}}&caption={{asset | meta:'title'}}" target="_blank" ng-if="tumblr|| all").fa.fa-tumblr
-  a(href="http://www.pinterest.com/pin/create/abutton/?url={{location}}/&media={{asset.serving_url}}&description={{asset | meta:'title'}}" target="_blank" title="Pin It" ng-if="pintrest || all").fa.fa-pinterest
+  a.fa.fa-facebook(
+    ng-href="http://www.facebook.com/share.php?u={{imagoshare.location}}"
+    target="_blank"
+    ng-if="imagoshare.facebook || imagoshare.all")
+  a.fa.fa-twitter(
+    ng-href="http://twitter.com/home?status={{imagoshare.location}}"
+    target="_blank"
+    ng-if="imagoshare.twitter || imagoshare.all")
+  a.fa.fa-google(
+    ng-href="https://plus.google.com/share?url={{imagoshare.location}}"
+    ng-if="imagoshare.google || imagoshare.all")
+  a.fa.fa-linkedin(
+    ng-href="https://www.linkedin.com/shareArticle?mini=true&url={{imagoshare.location}}&title={{asset | meta:'title'}}&summary=&source={{asset.serving_url}}"
+    target="_blank"
+    ng-if="imagoshare.linkedin || imagoshare.all")
+  a.fa.fa-tumblr(
+    ng-href="http://www.tumblr.com/share/photo?source={{imagoshare.location}}&caption={{asset | meta:'title'}}"
+    target="_blank"
+    ng-if="imagoshare.tumblr|| imagoshare.all")
+  a.fa.fa-pinterest(
+    ng-href="http://www.pinterest.com/pin/create/abutton/?url={{imagoshare.location}}/&media={{asset.serving_url}}&description={{asset | meta:'title'}}"
+    target="_blank" title="Pin It"
+    ng-if="imagoshare.pinterest || imagoshare.all")

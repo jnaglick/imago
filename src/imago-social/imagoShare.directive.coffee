@@ -1,17 +1,24 @@
 class imagoShare extends Directive
 
-  constructor: () ->
+  constructor: ($location) ->
 
     return {
+
       scope:
         asset: "="
       templateUrl: '/imago/imagoShare.html'
-      controller: ($scope, $element, $attrs, $location) ->
-        $scope.location = $location.absUrl()
-        watcher = $scope.$watch 'asset', (value) =>
-          return unless value
-          for key of $attrs.$attr
-            unless key is 'asset'
-              $scope[key] = true
-          watcher()
+      controllerAs: 'imagoshare'
+      controller: ($scope, $element, $attrs) ->
+        @location = $location.absUrl()
+
+        return console.log 'You need to specify one service at least.' unless $attrs.imagoShare
+
+        options = $scope.$eval $attrs.imagoShare
+
+        if _.isArray options
+          for item in options
+            @[item] = true
+        else if $attrs.imagoShare is 'all'
+          @all = true
+
     }
