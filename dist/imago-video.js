@@ -4,57 +4,57 @@ imagoControls = (function() {
   function imagoControls() {
     return {
       replace: true,
-      scope: true,
       require: '^imagoVideo',
+      controllerAs: 'imagocontrols',
       templateUrl: '/imago/controlsVideo.html',
       controller: function($scope) {
         var videoPlayer;
-        videoPlayer = angular.element($scope.player);
+        videoPlayer = angular.element($scope.imagovideo.player);
         $scope.currentTime = 0;
         videoPlayer.bind('loadeddata', function(e) {
           $scope.duration = parseInt(e.target.duration);
-          return $scope.$apply();
+          return $scope.$digest();
         });
         videoPlayer.bind('timeupdate', function(e) {
           $scope.currentTime = e.target.currentTime;
-          return $scope.$apply();
+          return $scope.$digest();
         });
         return videoPlayer.bind('seeking', function(e) {
           $scope.currentTime = e.target.currentTime;
-          return $scope.$apply();
+          return $scope.$digest();
         });
       },
       link: function(scope, element, attrs) {
         scope.seek = function(value) {
-          return scope.player.currentTime = value;
+          return scope.imagovideo.player.currentTime = value;
         };
         scope.onVolumeChange = (function(_this) {
           return function(e) {
-            return scope.player.volume = parseFloat(e / 100);
+            return scope.imagovideo.player.volume = parseFloat(e / 100);
           };
         })(this);
         scope.volumeDown = (function(_this) {
           return function() {
-            scope.player.volume = 0;
+            scope.imagovideo.player.volume = 0;
             return scope.volumeInput = 0;
           };
         })(this);
         scope.volumeUp = (function(_this) {
           return function() {
-            scope.player.volume = 1;
+            scope.imagovideo.player.volume = 1;
             return scope.volumeInput = 100;
           };
         })(this);
         scope.fullScreen = (function(_this) {
           return function() {
-            if (scope.player.requestFullscreen) {
-              return scope.player.requestFullscreen();
-            } else if (scope.player.webkitRequestFullscreen) {
-              return scope.player.webkitRequestFullscreen();
-            } else if (scope.player.mozRequestFullScreen) {
-              return scope.player.mozRequestFullScreen();
-            } else if (scope.player.msRequestFullscreen) {
-              return scope.player.msRequestFullscreen();
+            if (scope.imagovideo.player.requestFullscreen) {
+              return scope.imagovideo.player.requestFullscreen();
+            } else if (scope.imagovideo.player.webkitRequestFullscreen) {
+              return scope.imagovideo.player.webkitRequestFullscreen();
+            } else if (scope.imagovideo.player.mozRequestFullScreen) {
+              return scope.imagovideo.player.mozRequestFullScreen();
+            } else if (scope.imagovideo.player.msRequestFullscreen) {
+              return scope.imagovideo.player.msRequestFullscreen();
             }
           };
         })(this);
@@ -82,20 +82,37 @@ imagoVideo = (function() {
       replace: true,
       scope: true,
       templateUrl: '/imago/imagoVideo.html',
+      controllerAs: 'imagovideo',
       controller: function($scope, $element, $attrs, $transclude) {
-        $scope.player = $element.find('video')[0];
+        this.player = $element.find('video')[0];
         $scope.loading = true;
-        angular.element($scope.player).bind('ended', function(e) {
-          $scope.player.currentTime = 0;
-          return $scope.isPlaying = false;
-        });
-        angular.element($scope.player).bind('loadeddata', function() {
-          $scope.hasPlayed = true;
-          return angular.element($scope.player).unbind('loadeddata');
-        });
-        return angular.element($scope.player).bind('play', function() {
-          return $scope.isPlaying = true;
-        });
+        angular.element(this.player).bind('ended', (function(_this) {
+          return function(e) {
+            _this.player.currentTime = 0;
+            return _this.isPlaying = false;
+          };
+        })(this));
+        angular.element(this.player).bind('loadeddata', (function(_this) {
+          return function() {
+            $scope.hasPlayed = true;
+            return angular.element(_this.player).unbind('loadeddata');
+          };
+        })(this));
+        angular.element(this.player).bind('play', (function(_this) {
+          return function() {
+            return _this.isPlaying = true;
+          };
+        })(this));
+        return this.togglePlay = (function(_this) {
+          return function() {
+            if (_this.player.paused) {
+              return _this.player.play();
+            } else {
+              _this.isPlaying = false;
+              return _this.player.pause();
+            }
+          };
+        })(this);
       },
       link: function(scope, element, attrs) {
         var detectCodec, key, loadFormats, onResize, opts, preload, render, self, setPlayerAttrs, styleVideo, styleWrapper, value;
@@ -183,12 +200,12 @@ imagoVideo = (function() {
         };
         setPlayerAttrs = function() {
           if (opts.autoplay === true) {
-            scope.player.setAttribute("autoplay", true);
+            scope.imagovideo.player.setAttribute("autoplay", true);
           }
-          scope.player.setAttribute("preload", opts.preload);
-          scope.player.setAttribute("x-webkit-airplay", "allow");
-          scope.player.setAttribute("webkitAllowFullscreen", true);
-          return scope.player.setAttribute("loop", opts.loop);
+          scope.imagovideo.player.setAttribute("preload", opts.preload);
+          scope.imagovideo.player.setAttribute("x-webkit-airplay", "allow");
+          scope.imagovideo.player.setAttribute("webkitAllowFullscreen", true);
+          return scope.imagovideo.player.setAttribute("loop", opts.loop);
         };
         render = (function(_this) {
           return function(width, height, servingUrl) {
@@ -313,7 +330,7 @@ imagoVideo = (function() {
         };
         detectCodec = function() {
           var codecs;
-          if (!scope.player.canPlayType) {
+          if (!scope.imagovideo.player.canPlayType) {
             return;
           }
           codecs = {
@@ -325,21 +342,11 @@ imagoVideo = (function() {
           };
           for (key in codecs) {
             value = codecs[key];
-            if (scope.player.canPlayType(value)) {
+            if (scope.imagovideo.player.canPlayType(value)) {
               return key;
             }
           }
         };
-        scope.togglePlay = (function(_this) {
-          return function() {
-            if (scope.player.paused) {
-              return scope.player.play();
-            } else {
-              scope.isPlaying = false;
-              return scope.player.pause();
-            }
-          };
-        })(this);
         scope.toggleSize = function() {
           if (opts.size === 'hd') {
             opts.size = 'sd';
@@ -350,8 +357,8 @@ imagoVideo = (function() {
           }
           scope.videoFormats.reverse();
           return $timeout(function() {
-            scope.player.load();
-            return scope.player.play();
+            scope.imagovideo.player.load();
+            return scope.imagovideo.player.play();
           });
         };
         onResize = function() {
@@ -411,5 +418,5 @@ Time = (function() {
 
 angular.module('imago').filter('time', [Time]);
 
-angular.module("imago").run(["$templateCache", function($templateCache) {$templateCache.put("/imago/controlsVideo.html","<div stop-propagation=\"stop-propagation\" ng-switch=\"isPlaying\" class=\"controls\"><a hm-tap=\"togglePlay\" ng-switch-when=\"false\" class=\"video-play fa fa-play\"></a><a hm-tap=\"togglePlay\" ng-switch-when=\"true\" class=\"video-pause fa fa-pause\"></a><span class=\"video-time\">{{currentTime | time}}</span><span class=\"video-seekbar\"><input type=\"range\" ng-model=\"currentTime\" min=\"0\" max=\"{{duration}}\" ng-change=\"seek(currentTime)\" class=\"seek\"/></span><a hm-tap=\"toggleSize\" class=\"size\">{{wrapperStyle.size}}</a><span class=\"volume\"><span hm-tap=\"volumeUp\" class=\"fa fa-volume-up icon-volume-up\"></span><input type=\"range\" ng-model=\"volumeInput\" ng-change=\"onVolumeChange(volumeInput)\"/><span hm-tap=\"volumeDown\" class=\"fa fa-volume-down icon-volume-down\"></span></span><a hm-tap=\"fullScreen\" class=\"video-fullscreen fa fa-expand\"></a><a class=\"video-screen fa fa-compress\"></a></div>");
-$templateCache.put("/imago/imagoVideo.html","<div ng-class=\"{loading: loading}\" in-view=\"visible = $inview\" visible=\"visible\" responsive-events=\"responsive-events\" class=\"imagovideo {{wrapperStyle.backgroundPosition}} {{wrapperStyle.size}} {{wrapperStyle.sizemode}}\"><div ng-style=\"wrapperStyle\" ng-class=\"{playing: isPlaying}\" class=\"imagowrapper\"><a ng-hide=\"loading\" hm-tap=\"togglePlay()\" ng-class=\"{playing: isPlaying}\" stop-propagation=\"stop-propagation\" class=\"playbig fa fa-play\"></a><video ng-style=\"videoStyle\"><source ng-repeat=\"format in videoFormats\" src=\"{{format.src}}\" data-size=\"{{format.size}}\" data-codec=\"{{format.codec}}\" type=\"{{format.type}}\"/></video><div imago-controls=\"imago-controls\" ng-style=\"controlStyle\" ng-if=\"controls\" ng-show=\"hasPlayed\"></div></div></div>");}]);
+angular.module("imago").run(["$templateCache", function($templateCache) {$templateCache.put("/imago/controlsVideo.html","<div stop-propagation=\"stop-propagation\" class=\"controls\"><a hm-tap=\"imagovideo.togglePlay\" ng-class=\"{\'fa-pause\': imagovideo.isPlaying, \'fa-play\': !imagovideo.isPlaying}\" class=\"video-play fa fa-play\"></a><span class=\"video-time\">{{currentTime | time}}</span><span class=\"video-seekbar\"><input type=\"range\" ng-model=\"currentTime\" min=\"0\" max=\"{{duration}}\" ng-change=\"seek(currentTime)\" class=\"seek\"/></span><a hm-tap=\"toggleSize\" class=\"size\">{{wrapperStyle.size}}</a><span class=\"volume\"><span hm-tap=\"volumeUp\" class=\"fa fa-volume-up icon-volume-up\"></span><input type=\"range\" ng-model=\"volumeInput\" ng-change=\"onVolumeChange(volumeInput)\"/><span hm-tap=\"volumeDown\" class=\"fa fa-volume-down icon-volume-down\"></span></span><a ng-click=\"fullScreen()\" class=\"video-fullscreen fa fa-expand\"></a><a class=\"video-screen fa fa-compress\"></a></div>");
+$templateCache.put("/imago/imagoVideo.html","<div ng-class=\"{loading: loading}\" in-view=\"visible = $inview\" visible=\"visible\" responsive-events=\"responsive-events\" class=\"imagovideo {{wrapperStyle.backgroundPosition}} {{wrapperStyle.size}} {{wrapperStyle.sizemode}}\"><div ng-style=\"wrapperStyle\" ng-class=\"{playing: imagovideo.isPlaying}\" class=\"imagowrapper\"><a ng-hide=\"loading\" hm-tap=\"imagovideo.togglePlay\" ng-class=\"{playing: imagovideo.isPlaying}\" stop-propagation=\"stop-propagation\" class=\"playbig fa fa-play\"></a><video ng-style=\"videoStyle\"><source ng-repeat=\"format in videoFormats\" src=\"{{format.src}}\" data-size=\"{{format.size}}\" data-codec=\"{{format.codec}}\" type=\"{{format.type}}\"/></video><div imago-controls=\"imago-controls\" ng-style=\"controlStyle\" ng-show=\"controls &amp;&amp; hasPlayed\"></div></div></div>");}]);

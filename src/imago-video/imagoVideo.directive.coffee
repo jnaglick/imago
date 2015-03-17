@@ -5,21 +5,29 @@ class imagoVideo extends Directive
       replace: true
       scope: true
       templateUrl: '/imago/imagoVideo.html'
+      controllerAs: 'imagovideo'
       controller: ($scope, $element, $attrs, $transclude) ->
 
-        $scope.player  = $element.find('video')[0]
+        @player  = $element.find('video')[0]
         $scope.loading = true
 
-        angular.element($scope.player).bind 'ended', (e) ->
-          $scope.player.currentTime = 0
-          $scope.isPlaying = false
+        angular.element(@player).bind 'ended', (e) =>
+          @player.currentTime = 0
+          @isPlaying = false
 
-        angular.element($scope.player).bind 'loadeddata', () ->
+        angular.element(@player).bind 'loadeddata', =>
           $scope.hasPlayed = true
-          angular.element($scope.player).unbind 'loadeddata'
+          angular.element(@player).unbind 'loadeddata'
 
-        angular.element($scope.player).bind 'play', () ->
-          $scope.isPlaying = true
+        angular.element(@player).bind 'play', =>
+          @isPlaying = true
+
+        @togglePlay = =>
+          if @player.paused
+            @player.play()
+          else
+            @isPlaying = false
+            @player.pause()
 
       link: (scope, element, attrs) ->
         self = {visible: false}
@@ -99,11 +107,11 @@ class imagoVideo extends Directive
           render(width, height, serving_url)
 
         setPlayerAttrs = ->
-          scope.player.setAttribute("autoplay", true) if opts.autoplay is true
-          scope.player.setAttribute("preload", opts.preload)
-          scope.player.setAttribute("x-webkit-airplay", "allow")
-          scope.player.setAttribute("webkitAllowFullscreen", true)
-          scope.player.setAttribute("loop", opts.loop)
+          scope.imagovideo.player.setAttribute("autoplay", true) if opts.autoplay is true
+          scope.imagovideo.player.setAttribute("preload", opts.preload)
+          scope.imagovideo.player.setAttribute("x-webkit-airplay", "allow")
+          scope.imagovideo.player.setAttribute("webkitAllowFullscreen", true)
+          scope.imagovideo.player.setAttribute("loop", opts.loop)
 
         render = (width, height, servingUrl) =>
           if  opts.lazy and not self.visible
@@ -203,7 +211,7 @@ class imagoVideo extends Directive
           formats
 
         detectCodec = ->
-          return unless scope.player.canPlayType
+          return unless scope.imagovideo.player.canPlayType
           codecs =
             mp4:  'video/mp4; codecs="mp4v.20.8"'
             mp4:  'video/mp4; codecs="avc1.42E01E"'
@@ -212,15 +220,8 @@ class imagoVideo extends Directive
             ogg:  'video/ogg; codecs="theora"'
 
           for key, value of codecs
-            if scope.player.canPlayType value
+            if scope.imagovideo.player.canPlayType value
               return key
-
-        scope.togglePlay = =>
-          if scope.player.paused
-            scope.player.play()
-          else
-            scope.isPlaying = false
-            scope.player.pause()
 
         scope.toggleSize = ->
 
@@ -235,8 +236,8 @@ class imagoVideo extends Directive
           scope.videoFormats.reverse()
 
           $timeout ->
-            scope.player.load()
-            scope.player.play()
+            scope.imagovideo.player.load()
+            scope.imagovideo.player.play()
 
         onResize = () ->
           width  = element[0].clientWidth  or opts.width

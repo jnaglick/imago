@@ -1,53 +1,53 @@
 class imagoControls extends Directive
 
-  constructor: () ->
+  constructor: ->
     return {
       replace: true
-      scope: true
       require: '^imagoVideo'
+      controllerAs: 'imagocontrols'
       templateUrl: '/imago/controlsVideo.html'
       controller: ($scope) ->
 
-        videoPlayer = angular.element($scope.player)
+        videoPlayer = angular.element($scope.imagovideo.player)
         $scope.currentTime = 0
 
         videoPlayer.bind 'loadeddata', (e) ->
           $scope.duration = parseInt e.target.duration
-          $scope.$apply()
+          $scope.$digest()
 
         videoPlayer.bind 'timeupdate', (e) ->
           $scope.currentTime = e.target.currentTime
-          $scope.$apply()
+          $scope.$digest()
 
         videoPlayer.bind 'seeking', (e) ->
           $scope.currentTime = e.target.currentTime
-          $scope.$apply()
+          $scope.$digest()
 
       link: (scope, element, attrs) ->
 
         scope.seek = (value) ->
-          scope.player.currentTime = value
+          scope.imagovideo.player.currentTime = value
 
         scope.onVolumeChange = (e) =>
-          scope.player.volume = parseFloat(e / 100)
+          scope.imagovideo.player.volume = parseFloat(e / 100)
 
-        scope.volumeDown = () =>
-          scope.player.volume = 0
+        scope.volumeDown = =>
+          scope.imagovideo.player.volume = 0
           scope.volumeInput = 0
 
-        scope.volumeUp = () =>
-          scope.player.volume = 1
+        scope.volumeUp = =>
+          scope.imagovideo.player.volume = 1
           scope.volumeInput = 100
 
         scope.fullScreen = =>
-          if scope.player.requestFullscreen
-            scope.player.requestFullscreen();
-          else if scope.player.webkitRequestFullscreen
-            scope.player.webkitRequestFullscreen();
-          else if scope.player.mozRequestFullScreen
-            scope.player.mozRequestFullScreen();
-          else if scope.player.msRequestFullscreen
-            scope.player.msRequestFullscreen();
+          if scope.imagovideo.player.requestFullscreen
+            scope.imagovideo.player.requestFullscreen();
+          else if scope.imagovideo.player.webkitRequestFullscreen
+            scope.imagovideo.player.webkitRequestFullscreen();
+          else if scope.imagovideo.player.mozRequestFullScreen
+            scope.imagovideo.player.mozRequestFullScreen();
+          else if scope.imagovideo.player.msRequestFullscreen
+            scope.imagovideo.player.msRequestFullscreen();
 
         element.bind 'mouseup', (e) ->
           e.stopPropagation()
