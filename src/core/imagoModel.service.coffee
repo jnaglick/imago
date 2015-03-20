@@ -1,577 +1,436 @@
-class imagoModel extends Service
+class Assets extends Controller
 
-  constructor: (@$rootScope, @$http, @$location, @$q, @imagoUtils, @imagoWorker, @imagoSettings) ->
+  constructor: (@$rootScope, @$scope, @$timeout, @$state, hotkeys, @imagoModel, @imagoSettings, @facetsStorage, @selection, @ngProgressLite) ->
+    @ngProgressLite.start()
 
-    @assets =
-      get: (id) =>
-        @$http.get "#{@imagoSettings.host}/api/assets/#{id}"
-
-      create: (assets) =>
-        @$http.post "#{@imagoSettings.host}/api/assets", assets
-
-      update: (item) =>
-        @$http.put "#{@imagoSettings.host}/api/assets/#{item._id}", item
-
-      delete: (id) =>
-        @$http.delete "#{@imagoSettings.host}/api/assets/#{id}"
-
-      trash: (assets) =>
-        @$http.post "#{@imagoSettings.host}/api/assets/trash", assets
-
-      move: (items, src, dest) =>
-        data =
-          src   : src
-          dest  : dest
-          items : items
-
-        @$http.post "#{@imagoSettings.host}/api/assets/move", data
-
-      copy: (items, src, dest) =>
-        data =
-          src   : src
-          dest  : dest
-          items : items
-
-        @$http.post "#{@imagoSettings.host}/api/assets/copy", data
-
-      batch: (list) =>
-        @$http.put "#{@imagoSettings.host}/api/assets/update", {assets: list}
-
-      download: (ids, res) =>
-        @$http.post "#{@imagoSettings.host}/api/assets/download", {assets: ids, resolution: res}
-
-  data: []
-
-  currentCollection: undefined
-
-  search: (query) ->
-    # console.log 'search...', query
-    params = _.map query, @formatQuery
-    # console.log 'params', params
-    return @$http.post("#{@imagoSettings.host}/api/search", angular.toJson(params))
-
-  getLocalData: (query, options = {}) =>
-    defer = @$q.defer()
-
-    for key, value of options
-      if key is 'localData' and value is false
-        # console.log 'localdata false', query
-        defer.reject query
-
-    for key, value of query
-
-      if key is 'fts'
-        # console.log 'fts'
-        defer.reject query
-
-      else if key is 'collection'
-        query = @imagoUtils.renameKey('collection', 'path', query)
-        path = value
-
-      else if key is 'kind'
-        query = @imagoUtils.renameKey('kind', 'metakind', query)
-
-      else if key is 'path'
-        path = value
-
-    if path
-
-      if _.isString path
-        asset = @find('path' : path)
-
-      else if _.isArray path
-        asset = @find('path' : path[0])
-
-      if asset
-
-        asset.assets = @findChildren(asset)
-
-        if asset.count or asset.assets.length
-
-          if asset.assets.length isnt asset.count
-            # console.log "count not same as assets.length - go to server", asset.count, asset.assets.length
-            defer.reject query
-
-          else
-            # console.log 'passed assets resolve'
-            asset.assets = @filterAssets(asset.assets, query)
-            defer.resolve asset
-
-        else
-          # console.log 'asset found asset has no children'
-          defer.resolve asset
-
-      else
-        # console.log 'couldnt find asset'
-        defer.reject query
-
+    if @$state.params.path
+      split = @$state.params.path.split '+'
+      @trash = true if @$state.params.path.indexOf('collection:/trash') isnt -1
     else
-      # console.log 'no path'
-      defer.reject query
+      split = collection: ['/']
 
-    defer.promise
+    @serverRequest(split, @$state)
+    @addFacets(split)
+    @startWatcher()
+    @saveMarkup()
 
-  getData: (query, options = {}) =>
-    defer = @$q.defer()
-    query = angular.copy query
+    @$scope.$on '$destroy', => @cleanUp()
 
-    query = @$location.path() unless query
-    if _.isString query
-      query =
-        [path: query]
+    @$scope.deselectAll = (ev) =>
+      return if ev.shiftKey or ev.metaKey
+      @selection.selected = []
 
-    query = @imagoUtils.toArray query
+    @$scope.destroyPreview = (ev) =>
+      ev.stopPropagation()
+      @$scope.previewKind  = ''
+      @$scope.previewAsset = false
+      @$rootScope.scroll   = false
 
-    promises = []
-    fetches = []
-    data = []
-    rejected = []
+    @shortcuts =
 
-    resolve = =>
-      fetches.push @search(rejected).then (response) =>
-        console.log 'rejected query', rejected
-        return unless response.data
-        for res in response.data
-          data.push @create res
+      delete: =>
+        return unless @selection.selected and _.isArray @selection.selected
 
-      @$q.all(fetches).then (resolve) =>
-        defer.resolve data
-
-    _.forEach query, (value) =>
-      promises.push @getLocalData(value, options).then (result) =>
-
-        if result.assets
-          worker =
-            assets :  result.assets
-            order  :  result.sortorder
-            path   :  @imagoSettings.sort_worker
-
-          fetches.push @imagoWorker.work(worker).then (response) =>
-              result.assets = response.assets
-              data.push result
-              data = _.flatten data
-
+        if @trash
+          @numberTrash = angular.copy @selection.selected.length
+          @promptTrash = true
         else
-          data.push result
-          data = _.flatten data
+          @imagoModel.updateCount(@collection, -@selection.selected.length)
+          @imagoModel.trash(@selection.selected)
 
-      , (reject) =>
-        rejected.push reject
+        @refreshInView()
 
-    @$q.all(promises).then (response) ->
-      resolve()
+      copy: =>
+        @selection.copy(@collection._id)
 
-    defer.promise
+      cut: =>
+        @selection.move(@collection._id)
 
-  formatQuery: (query) ->
-    querydict = {}
-    if _.isArray query
-      for elem in query
-        for key of elem
-          value = elem[key]
-          querydict[key] or= []
-          querydict[key].push(value)
-    else if _.isPlainObject query
-      for key of query
-        value = query[key]
-        querydict[key] = if angular.isArray(value) then value else [value]
+      paste: =>
+        @selection.paste(@collection)
 
-    else if _.isString query
-      querydict['path'] = [query]
+      selectAll: =>
+        @selection.addAll(@assets)
 
-    for key in ['page', 'pagesize']
-      if querydict.hasOwnProperty(key)
-        querydict[key] = querydict[key][0]
-    querydict
+      moveUp: =>
+        return if not @selection.selected.length or angular.equals(@selection.selected[0], @assets[0]) or @selection.selected.length is @assets.length
 
-  create: (data) =>
-    collection = data
-    if data.assets
-      for asset in data.assets
-        if @imagoUtils.isBaseString(asset.serving_url)
-          asset.base64 = true
-        else
-          asset.base64 = false
+        order = @assets[0].order + @imagoSettings.index
 
-        @data.push(asset) unless @find('_id': asset._id)
+        if @selection.selected.length > 1
+          @selection.selected = _.sortBy @selection.selected, 'order'
 
-    unless @find('_id' : collection._id)
-      collection = _.omit collection, 'assets' if collection.kind is 'Collection'
-      @data.push collection
+        copy = angular.copy @selection.selected
 
-    return data
-
-  findChildren: (asset) =>
-    _.filter @data, {parent: asset._id}
-
-  findParent: (asset) =>
-    _.find @data, {'_id': asset.parent}
-
-  findByAttr: (options = {}) =>
-    _.filter @data, options
-
-  find: (options = {}) =>
-    _.find @data, options
-
-  findIdx: (options = {}) =>
-    _.findIndex @data, options
-
-  filterAssets: (assets, query) =>
-    # delete query.path if query.path
-    query = _.omit query, 'path'
-    if _.keys(query).length > 0
-      for key, value of query
-        for params in value
-          if key isnt 'path'
-            assets = _.filter assets, (asset) ->
-              if asset.fields?.hasOwnProperty key
-                return asset if asset.fields[key]['value'] is params
-
-              else if asset[key] is params
-                return asset
-
-    return assets
-
-  updateCount: (parent, number) =>
-    parent.count = parent.count + number
-    @update parent, {stream: false}
-
-  add: (assets, options = {}) =>
-    options.stream = true if _.isUndefined options.stream
-    options.push = true if _.isUndefined options.push
-
-    if options.save
-      defer = @$q.defer()
-
-      @assets.create(assets).then (result) =>
-
-        if options.push
-
-          for asset in result.data.data
-            if @imagoUtils.isBaseString(asset.serving_url)
-              asset.base64 = true
-            else
-              asset.base64 = false
-
-            @data.push(asset)
-
-        defer.resolve result.data.data
-        @$rootScope.$emit('assets:add', result.data.data) if options.stream
-
-      defer.promise
-
-    else
-      if options.push
-        for asset in assets
-          if @imagoUtils.isBaseString(asset.serving_url)
-            asset.base64 = true
-          else
-            asset.base64 = false
-          @data.push(asset)
-
-      @$rootScope.$emit('assets:add', assets) if options.stream
-
-  update: (data, options = {}) =>
-    options.stream = true if _.isUndefined options.stream
-    attribute = (if options.attribute then options.attribute else '_id')
-
-    copy = angular.copy data
-
-    if _.isPlainObject(copy)
-      query = {}
-      query[attribute] = copy[attribute]
-      return unless copy[attribute]
-      delete copy.assets if copy.assets
-      idx = @findIdx(query)
-      if idx isnt -1
-        @data[idx] = _.assign(@data[idx], copy)
-
-      else
-        @data.push copy
-
-      if options.save
-        delete copy.serving_url if copy.status is 'processing'
-        @assets.update(copy)
-
-    else if _.isArray(copy)
-      for asset in copy
-        query = {}
-        query[attribute] = asset[attribute]
-        delete asset.assets if asset.assets
-        idx = @findIdx(query)
-        if idx isnt -1
-          _.assign(@data[idx], asset)
-
-        else
-          @data.push asset
-
-        delete asset.serving_url if asset.status is 'processing'
-
-      @assets.batch(copy) if options.save
-
-    @$rootScope.$emit('assets:update', copy) if options.stream
-
-  delete: (assets, options = {}) =>
-    return unless assets
-    defer = @$q.defer()
-    options.stream = true if _.isUndefined options.stream
-
-    for asset in assets
-      @data = _.reject(@data, {'_id': asset._id })
-      @assets.delete(asset._id) if options.save
-
-    defer.resolve(assets)
-
-    @$rootScope.$emit('assets:delete', assets) if options.stream
-    defer.promise
-
-  trash: (assets) =>
-    request = []
-    for asset in assets
-      newAsset =
-        '_id' : asset._id
-
-      request.push newAsset
-
-    @assets.trash(request)
-    @delete(assets)
-
-  copy: (assets, sourceId, parentId) =>
-
-    @paste(assets).then (pasted) =>
-
-      request = []
-
-      for asset in pasted
-        newAsset =
-          '_id'   : asset._id
-          'order' : asset.order
-          'name'  : asset.name
-
-        request.push(newAsset)
-
-      @assets.copy(request, sourceId, parentId)
-        .then (result) =>
-          if @currentCollection.sortorder is '-order'
-            @update(result.data)
-
-          else
-            @update(result.data, {stream: false})
-            @reSort(@currentCollection)
-
-  move: (assets, sourceId, parentId) =>
-    @paste(assets).then (pasted) =>
-
-      request = []
-
-      for asset in pasted
-        formatted =
-          '_id'    : asset._id
-          'order' : asset.order
-          'name'  : asset.name
-
-        request.push formatted
-
-      if @currentCollection.sortorder is '-order'
-        @update(pasted)
-
-      else
-        @update(pasted, {stream: false})
-        @reSort(@currentCollection)
-
-      @assets.move(request, sourceId, parentId)
-
-  paste: (assets, options={}) =>
-    options.checkdups = true if _.isUndefined options.checkdups
-
-    defer = @$q.defer()
-
-    assetsChildren = @findChildren(@currentCollection)
-
-    checkAsset = (asset) =>
-      deferAsset = @$q.defer()
-
-      if not options.checkdups or _.filter(assetsChildren, {name: asset.name}).length is 0
-        deferAsset.resolve asset
-
-      else
-        i = 1
-        exists = true
-        original_name = asset.name
-        while exists
-          asset.name = "#{original_name}_#{i}"
-          i++
-          exists = (if _.filter(assetsChildren, {name: asset.name}).length > 0 then true else false)
-
-        deferAsset.resolve asset
-
-      deferAsset.promise
-
-    queue = []
-
-    for asset in assets
-      queue.push checkAsset(asset)
-
-    @$q.all(queue).then (result) =>
-      defer.resolve(result)
-
-    defer.promise
-
-  reSort: (collection) =>
-    return if not collection.assets or collection.sortorder is '-order'
-
-    orderedList = @reindexAll(collection.assets)
-    @update orderedList, {stream: false, save: true}
-
-    collection.sortorder = '-order'
-    @update collection, {save : true}
-
-  reindexAll:  (list) =>
-    newList = []
-
-    count = list.length
-
-    for asset, key in list
-      asset.order = (count-key) * @imagoSettings.index
-      ordered =
-        '_id'   : asset._id
-        'order' : asset.order
-
-      newList.push ordered
-
-    return newList
-
-  reorder:  (dropped, list, selection, options = {}) =>
-    options.process = true if _.isUndefined options.process
-
-    if options.reverse
-      count = dropped - selection.length
-      idxOne = list[count]
-      idxTwo = if list[dropped+1] then list[dropped+1] else {order: 0}
-      selection = selection.reverse()
-
-    else if options.process is false
-      idxOne = list[dropped-1]
-      idxTwo = if list[dropped] then list[dropped] else {order: 0}
-
-    else
-      count = dropped + selection.length
-      idxOne = if list[dropped-1] then list[dropped-1]
-      idxTwo = list[count]
-
-    if not idxOne
-      minusOrder = @imagoSettings.index
-
-    else
-      minusOrder = (idxOne.order-idxTwo.order) / (selection.length+1)
-
-    data =
-      minus  : parseInt(minusOrder)
-      order  : parseInt(idxTwo.order + minusOrder)
-
-    return data
-
-  batchChange: (assets) =>
-    for asset, idx in assets
-      original = @find('_id' : asset._id)
-
-      return unless original
-
-      copy =
-        fields : original.fields
-        parent : original.parent
-
-      toedit = angular.copy asset
-
-      for key, value of toedit
-        if key is 'fields'
-
-          for key of toedit.fields
-            copy['fields'] or= {}
-            copy['fields'][key] = toedit.fields[key]
-
-        else
-          copy[key] = toedit[key]
-
-      assets[idx] = copy
-
-    @update assets, {save: true}
-
-  isDuplicated: (asset, assets, options={}) =>
-    options.rename = false if _.isUndefined options.rename
-
-    defer = @$q.defer()
-    defer.reject(asset.name) unless asset.name
-
-    name = @imagoUtils.normalize(asset.name)
-    result = undefined
-
-    assetsChildren = _.filter assets, (chr) =>
-      return false if not chr.name
-      normalizeName = angular.copy(@imagoUtils.normalize(chr.name))
-      return normalizeName is name
-
-    if assetsChildren.length
-
-      if assetsChildren.length is 1 and assetsChildren[0]._id is asset._id
-        defer.resolve false
-
-      if options.rename
-        i = 1
-        exists = true
-        original_name = name
-        while exists
-          name = "#{original_name}_#{i}"
-          i++
-          findName = _.find assets, (chr) =>
-            normalizeName = angular.copy @imagoUtils.normalize(chr.name)
-            return normalizeName is name
-          exists = (if findName then true else false)
-
-        defer.resolve name
-
-      else
-        defer.resolve true
-
-    else
-      defer.resolve false
-
-    defer.promise
-
-  prepareCreation: (asset, parent, order, rename = false) =>
-    defer = @$q.defer()
-    defer.reject(asset.name) unless asset.name
-
-    @isDuplicated(asset, parent.assets, {rename: rename}).then (isDuplicated) =>
-
-      if isDuplicated and _.isBoolean isDuplicated
-        defer.resolve('duplicated')
-
-      else
-        if _.isString isDuplicated
-          asset.name = isDuplicated
-
-        if order
+        for asset, key in copy
+          idx = _.findIndex @assets, {'_id': asset._id}
           asset.order = order
+          @assets.splice idx, 1
+          @assets.unshift asset
+          order = order + ((key+1)*@imagoSettings.index)
+
+        if @collection.sortorder is '-order'
+          @imagoModel.update copy, {save: true, stream: false}
+          @refreshInView()
+        else
+          @imagoModel.reSort(@collection)
+
+      moveDown: =>
+        return if not @selection.selected.length or @selection.selected.length is @assets.length
+        if @selection.selected.length > 1
+          @selection.selected = _.sortBy @selection.selected, 'order'
+
+        copy = angular.copy @selection.selected
+        copy = copy.reverse()
+
+        minusOrder = @assets[@assets.length-1].order / (@selection.selected.length+1)
+        order = @assets[@assets.length-1].order - minusOrder
+        order = parseInt order
+
+        for asset, key in copy
+          idx = _.findIndex @assets, {'_id': asset._id}
+          asset.order = order
+          @assets.splice idx, 1
+          @assets.push asset
+          order = parseInt(order - minusOrder)
+
+        if @collection.sortorder is '-order'
+          @imagoModel.update copy, {save: true, stream: false}
+          @refreshInView()
+        else
+          @imagoModel.reSort(@collection)
+
+      create: =>
+        @showFormAsset = true if not @trash and @collectionBase
+
+      escape: =>
+        @showFormAsset = false
+        @$scope.previewAsset = null
+        @$rootScope.scroll = false
+
+      download: =>
+        ids = []
+        for asset in @selection.selected
+          ids.push asset._id
+
+        @toDownload =
+          assets : ids
+
+        @promptResolution = true
+
+      preview: (ev) =>
+        ev.preventDefault() if ev
+        unless @$scope.previewAsset
+          @$scope.previewAsset = []
+
+          if @selection.selected.length is 1 and @selection.selected[0].serving_url
+            for asset in @assets
+              @$scope.previewAsset.push(asset) if asset.serving_url
+
+            idx = _.findIndex @$scope.previewAsset, {'_id': @selection.selected[0]._id}
+            @$timeout => @$rootScope.$emit('slider:change', idx)
+
+          else if @selection.selected.length > 1
+            for data in @selection.selected
+              @$scope.previewAsset.push(data) if data.serving_url
+            @$timeout => @$rootScope.$emit('slider:change', 0)
+
+          unless @$scope.previewAsset.length
+            @$scope.previewAsset = null
+          else
+            @$rootScope.scroll = true
 
         else
-          if parent.sortorder is '-order'
-            assets = parent.assets
-            asset.order = (if assets.length then assets[0].order + @imagoSettings.index else @imagoSettings.index)
+          @$scope.previewAsset = null
+          @$rootScope.scroll = false
 
+    hotkeys.bindTo(@$scope)
+      .add
+        combo: 'mod+backspace',
+        callback: =>
+          @shortcuts.delete()
+
+      .add
+        combo: 'mod+c',
+        callback: =>
+          @shortcuts.copy()
+
+      .add
+        combo: 'mod+x',
+        callback: =>
+          @shortcuts.cut()
+
+      .add
+        combo: 'mod+v',
+        callback: =>
+          @shortcuts.paste()
+
+      .add
+        combo: 'mod+a',
+        callback: (ev) =>
+          ev.preventDefault()
+          @shortcuts.selectAll()
+
+      .add
+        combo: 'option+mod+v',
+        callback: =>
+          @selection.action = 'move'
+          @shortcuts.paste()
+
+      .add
+        combo: 'option+mod+up',
+        callback: =>
+          @shortcuts.moveUp()
+
+      .add
+        combo: 'option+mod+down',
+        callback: =>
+          @shortcuts.moveDown()
+
+      .add
+        combo: 'n',
+        callback: =>
+          @shortcuts.create()
+
+      .add
+        combo: 'esc',
+        callback: =>
+          @shortcuts.escape()
+
+      .add
+        combo: 'space',
+        callback: (ev) =>
+          @shortcuts.preview(ev)
+
+
+  serverRequest: (split, state) =>
+    if state.params.path
+      @search = {}
+
+      for element in split
+        splitElement = element.split(':')
+
+        @search[splitElement[0]] or= []
+        @search[splitElement[0]].push splitElement[1]
+
+    else
+      @search = split
+
+    @imagoModel.getData(@search).then (response) =>
+
+      for search in response
+        @collection = angular.copy search
+        @imagoModel.currentCollection = @collection
+
+        @assets = angular.copy search.assets
+        @imagoModel.currentCollection.assets = @assets
+        @collection.assets = @assets
+
+        if search._id
+          @collectionBase = true
+          @$scope.footer.changeSort search.sortorder, {save: false, worker: false}
+        else if search.assets.length
+          @$scope.noOpacity = true
+          @collectionBase = false
+          @$scope.footer.changeSort null, {save: false, worker: false}
+        else
+          @collectionBase = false
+
+        @checkCount()
+        @ngProgressLite.done()
+
+        break
+
+  addFacets: (split) ->
+    if @facetsStorage.items.length
+      @facetsStorage.items = []
+
+    for result in split
+      division = result.split(':')
+      @facetsStorage.add(key: division[0])
+      @facetsStorage.add(value: division[1])
+
+  downloadAssets: ->
+    @promptResolution = false
+    @imagoModel.assets.download(@toDownload.assets, @toDownload.resolution)
+
+  cancelTrash: ->
+    @promptTrash = false
+
+  confirmTrash: ->
+    @imagoModel.delete @selection.selected, {save: true}
+    @promptTrash = false
+    @refreshInView()
+
+  startWatcher: =>
+    @watcher = {}
+
+    @watcher.reorder = @$rootScope.$on 'sort:changed', (ev, changes) =>
+      @imagoModel.currentCollection.assets = changes
+      @assets = changes
+
+      @refreshInView()
+
+    @watcher.add = @$rootScope.$on 'assets:add', (ev, changes) =>
+      for asset in changes
+        if @collection?._id is asset.parent
+          @refreshAssets()
+          break
+
+    @watcher.update = @$rootScope.$on 'assets:update', (ev, changes) =>
+      @checkAssetsInView(changes)
+
+    @watcher.delete = @$rootScope.$on 'assets:delete', (ev, changes) =>
+      for asset in changes
+        idx = _.findIndex @assets, {'_id' : asset._id}
+
+        if idx isnt -1
+          @assets.splice(idx, 1)
+
+      @checkCount()
+
+    @$scope.$on 'fullscreen', (ev, changes) =>
+      @fullscreen = changes.fullscreen
+      # @$rootScope.scroll   = changes.fullscreen
+      @$rootScope.navigation  = changes.fullscreen
+
+      @$scope.sourceMarkup = changes.source if changes.source
+      @$scope.valueMarkup  = changes.input if changes.input
+
+      @oldSourceField = @sourceField
+      @oldSyntaxField = @syntaxField
+
+      @sourceField = changes.source._id
+      @syntaxField = changes.source.fields[changes.input.name].syntax
+
+      if @sourceField is @oldSourceField and @syntaxField isnt @oldSyntaxField
+        result =
+          '_id'     : @sourceField
+          'syntax'  : @syntaxField
+
+        @$scope.$broadcast 'syntaxChange', result
+
+  cleanUp: =>
+    for key of @watcher
+      @watcher[key]()
+
+  reorder: (options) =>
+    # return console.log 'options', options.store.store
+
+    selected = angular.copy @selection.selected
+
+    selected = _.sortBy selected, 'order'
+    selected.reverse() if options.dropIndex > options.initialIndex
+
+    # TODO: Find a better way to avoid looping twice
+
+    for asset in selected
+      idx = _.findIndex options.collection, {'_id': asset._id}
+      obj = options.collection.splice(idx, 1)[0]
+      options.collection.splice(options.dropIndex, 0, obj)
+
+    if @collection.sortorder is '-order'
+      reverse = options.initialIndex < options.dropIndex
+      orderedList = @imagoModel.reorder(options.dropIndex, options.store.store.reorder.collection, selected, {reverse: reverse})
+
+      if orderedList.repair
+        @imagoModel.assets.repair(@collection._id)
+      else
+        order = orderedList.order
+        minusOrder = orderedList.minus
+
+        for asset in selected
+          asset.order = order
+          idx = _.findIndex options.collection, {'_id': asset._id}
+          options.collection[idx].order = asset.order
+          order = order + minusOrder
+
+        @imagoModel.update selected, {stream: false, save: true}
+
+    else
+      @imagoModel.reSort(@collection)
+
+  saveMarkup: =>
+    return unless @$scope.sourceMarkup
+    @imagoModel.update @$scope.sourceMarkup, {stream: false, save: true}
+
+  checkAssetsInView: (changes) =>
+    update = {}
+
+    # console.log 'changes', changes, @collection
+
+    if _.isArray changes
+
+      for asset, key in changes
+        if @collection?._id is asset._id
+          if asset.sortorder and not angular.equals(asset.sortorder, @collection.sortorder)
+            @$scope.footer.changeSort asset.sortorder, {save: false}
+          else if not asset.kind
+            @$state.go('home')
+
+        else if @collection?._id is asset.parent
+          idx = _.findIndex(@assets, {'_id' : asset._id})
+
+          if (not asset.order and idx isnt -1) or (asset.order and angular.equals(@assets[idx]?.order, asset.order))
+            _.assign @assets[idx], asset
+            update.quick = true
           else
-            if parent.assets.length
-              orderedList = @reindexAll(parent.assets)
-              @update orderedList, {save: true}
-              asset.order = orderedList[0].order + @imagoSettings.index
+            update.status = true
+            break
 
-            else
-              asset.order = @imagoSettings.index
+        else if not @collection?._id and _.find @assets, {'_id' : asset._id}
+          idx = _.findIndex(@assets, {'_id' : asset._id})
+          _.assign @assets[idx], asset
+          update.quick = true
 
-            parent.sortorder = '-order'
-            @update parent, {save: true}
+        else if _.findIndex(@assets, {'_id' : asset._id}) >= 0 and @collection._id and asset.parent isnt @collection._id
+          idx = _.findIndex(@assets, {'_id' : asset._id})
+          @assets.splice idx, 1
+          update.quick = true
 
-        asset.parent = parent._id
-        defer.resolve asset
+    else if _.isPlainObject changes
 
-    defer.promise
+      if @collection and changes.parent is @collection._id
+        idx = _.findIndex(@assets, {'_id' : changes._id})
+        _.assign @assets[idx], changes
+        update.quick = true
+      else if @collection and changes._id is @collection._id
+        update.status = true
+        @$scope.footer.changeSort changes.sortorder, {save: false, worker: false}
+
+    if update.status
+      @refreshAssets()
+    else if update.quick
+      @checkCount()
+
+  refreshAssets: =>
+    console.log 'refreshing children of current collection'
+    @imagoModel.getData(@search).then (response) =>
+
+      for search in response
+        @collection = angular.copy(search)
+        @imagoModel.currentCollection = @collection
+        @assets = angular.copy(search.assets)
+        @imagoModel.currentCollection.assets = @assets
+        @collection.assets = @assets
+        break
+
+      @checkCount()
+      @refreshInView()
+
+  refreshInView: ->
+    if document.createEvent
+      event = new Event('checkInView')
+      window.dispatchEvent(event)
+    else
+      #IE
+      event = document.createEventObject()
+      event.eventType = 'checkInView'
+      event.eventName = 'checkInView'
+      window.fireEvent('on' + event.eventType, event)
+
+  checkCount: =>
+    if @assets?.length
+      @$scope.noresult = false
+    else
+      @$scope.noresult = true
