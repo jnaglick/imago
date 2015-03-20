@@ -2,6 +2,7 @@
     ng-class="[conf.animation, action]"
     hm-swipeleft="goNext"
     hm-swiperight="goPrev"
+    hm-options='{"preventDefault": false}'
     )
     .prev(ng-show="conf.enablearrows"
         hm-tap="goPrev"
