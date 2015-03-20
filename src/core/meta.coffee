@@ -1,8 +1,8 @@
 class Meta extends Filter
 
   constructor: () ->
-    return (input,value) ->
-      return unless input and value and input.fields[value]
+    return (input, value) ->
+      return unless input and value and input.fields?[value]
 
       if input.fields[value].kind is 'file'
         return input.fields[value].download_url
