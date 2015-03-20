@@ -26,19 +26,19 @@ imagoShare = (function() {
       templateUrl: '/imago/imagoShare.html',
       controllerAs: 'imagoshare',
       controller: function($scope, $element, $attrs) {
-        var i, item, len, options, results;
+        var item, options, _i, _len, _results;
         this.location = $location.absUrl();
         if (!$attrs.imagoShare) {
           return console.log('You need to specify one service at least.');
         }
         options = $scope.$eval($attrs.imagoShare);
         if (_.isArray(options)) {
-          results = [];
-          for (i = 0, len = options.length; i < len; i++) {
-            item = options[i];
-            results.push(this[item] = true);
+          _results = [];
+          for (_i = 0, _len = options.length; _i < _len; _i++) {
+            item = options[_i];
+            _results.push(this[item] = true);
           }
-          return results;
+          return _results;
         } else if ($attrs.imagoShare === 'all') {
           return this.all = true;
         }

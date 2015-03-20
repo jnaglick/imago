@@ -25,8 +25,8 @@ imagoCart = (function() {
 angular.module('imago').directive('imagoCart', ['imagoCart', imagoCart]);
 
 var imagoCart,
-  bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
-  indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
+  __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+  __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
 
 imagoCart = (function() {
   imagoCart.prototype.show = false;
@@ -39,12 +39,12 @@ imagoCart = (function() {
     this.imagoUtils = imagoUtils;
     this.imagoModel = imagoModel;
     this.imagoSettings = imagoSettings;
-    this.remove = bind(this.remove, this);
-    this.update = bind(this.update, this);
-    this.create = bind(this.create, this);
-    this.checkCart = bind(this.checkCart, this);
-    this.checkStatus = bind(this.checkStatus, this);
-    this.checkCurrency = bind(this.checkCurrency, this);
+    this.remove = __bind(this.remove, this);
+    this.update = __bind(this.update, this);
+    this.create = __bind(this.create, this);
+    this.checkCart = __bind(this.checkCart, this);
+    this.checkStatus = __bind(this.checkStatus, this);
+    this.checkCurrency = __bind(this.checkCurrency, this);
     this.cart = {
       items: []
     };
@@ -78,7 +78,7 @@ imagoCart = (function() {
         return _this.telize = response.data;
       };
     })(this)));
-    promises.push(this.$http.get(this.imagoSettings.host + "/api/settings").then((function(_this) {
+    promises.push(this.$http.get("" + this.imagoSettings.host + "/api/settings").then((function(_this) {
       return function(response) {
         var res;
         res = _.find(response.data, {
@@ -91,7 +91,7 @@ imagoCart = (function() {
       return function() {
         var currency;
         currency = _this.imagoUtils.CURRENCY_MAPPING[_this.telize.country];
-        if (indexOf.call(_this.currencies, currency) >= 0) {
+        if (__indexOf.call(_this.currencies, currency) >= 0) {
           _this.currency = currency;
         } else if (_this.currencies.length) {
           _this.currency = _this.currencies[0];
@@ -107,7 +107,7 @@ imagoCart = (function() {
   imagoCart.prototype.checkStatus = function(id) {
     var defer;
     defer = this.$q.defer();
-    this.$http.get(this.imagoSettings.host + "/api/carts?cartid=" + id).then((function(_this) {
+    this.$http.get("" + this.imagoSettings.host + "/api/carts?cartid=" + id).then((function(_this) {
       return function(response) {
         console.log('check cart', response.data);
         _.assign(_this.cart, response.data);
@@ -135,11 +135,11 @@ imagoCart = (function() {
   };
 
   imagoCart.prototype.create = function(cart) {
-    return this.$http.post(this.imagoSettings.host + "/api/carts", cart);
+    return this.$http.post("" + this.imagoSettings.host + "/api/carts", cart);
   };
 
   imagoCart.prototype.add = function(item, options) {
-    var copy, filter, i, len, option, parent;
+    var copy, filter, option, parent, _i, _len;
     if (!item) {
       return console.log('item required');
     }
@@ -148,8 +148,8 @@ imagoCart = (function() {
     }
     if (_.isArray(options) && (options != null ? options.length : void 0)) {
       item.options = {};
-      for (i = 0, len = options.length; i < len; i++) {
-        option = options[i];
+      for (_i = 0, _len = options.length; _i < _len; _i++) {
+        option = options[_i];
         item.options[option] = item.fields[option];
       }
     } else if (_.isPlainObject(options)) {
@@ -196,7 +196,7 @@ imagoCart = (function() {
     if (!this.cart._id) {
       return;
     }
-    return this.$http.put(this.imagoSettings.host + "/api/carts/" + this.cart._id, this.cart);
+    return this.$http.put("" + this.imagoSettings.host + "/api/carts/" + this.cart._id, this.cart);
   };
 
   imagoCart.prototype.remove = function(item) {
@@ -234,7 +234,7 @@ VariantsStorage = (function() {
   }
 
   VariantsStorage.prototype.search = function(id) {
-    return this.$http.get(this.imagoSettings.host + "/api/variants/" + id);
+    return this.$http.get("" + this.imagoSettings.host + "/api/variants/" + id);
   };
 
   VariantsStorage.prototype.get = function(parent) {

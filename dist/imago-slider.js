@@ -65,7 +65,7 @@ imagoSlider = (function() {
               }
             })();
             scope.currentIndex = index;
-            return $rootScope.$emit(scope.conf.namespace + ":changed", index);
+            return $rootScope.$emit("" + scope.conf.namespace + ":changed", index);
           };
         })(this);
         if (!_.isUndefined(attrs.autoplay)) {
@@ -95,7 +95,7 @@ imagoSlider = (function() {
             }
           });
         }
-        watcher = $rootScope.$on(scope.conf.namespace + ":change", function(event, index) {
+        watcher = $rootScope.$on("" + scope.conf.namespace + ":change", function(event, index) {
           return scope.setCurrent(index);
         });
         return scope.$on('$destroy', function() {
@@ -114,4 +114,4 @@ imagoSlider = (function() {
 
 angular.module('imago').directive('imagoSlider', ['$rootScope', '$q', '$document', 'imagoModel', '$interval', imagoSlider]);
 
-angular.module("imago").run(["$templateCache", function($templateCache) {$templateCache.put("/imago/imagoSlider.html","<div ng-class=\"[conf.animation, action]\" hm-swipeleft=\"goNext\" hm-swiperight=\"goPrev\" class=\"imagoslider\"><div ng-show=\"conf.enablearrows\" hm-tap=\"goPrev\" stop-propagation=\"stop-propagation\" class=\"prev\"></div><div ng-show=\"conf.enablearrows\" hm-tap=\"goNext\" stop-propagation=\"stop-propagation\" class=\"next\"></div></div>");}]);
+angular.module("imago").run(["$templateCache", function($templateCache) {$templateCache.put("/imago/imagoSlider.html","<div ng-class=\"[conf.animation, action]\" hm-swipeleft=\"goNext\" hm-swiperight=\"goPrev\" hm-recognizer-options=\"{&quot;directions&quot;: &quot;DIRECTION_HORIZONTAL&quot;}\" class=\"imagoslider\"><div ng-show=\"conf.enablearrows\" hm-tap=\"goPrev\" class=\"prev\"></div><div ng-show=\"conf.enablearrows\" hm-tap=\"goNext\" class=\"next\"></div></div>");}]);

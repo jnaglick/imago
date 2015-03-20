@@ -2,13 +2,13 @@
     ng-class="[conf.animation, action]"
     hm-swipeleft="goNext"
     hm-swiperight="goPrev"
-    hm-manager-options='{preventDefault": false}'
+    hm-recognizer-options='{"directions": "DIRECTION_HORIZONTAL"}'
     )
     .prev(
       ng-show="conf.enablearrows"
       hm-tap="goPrev"
-      hm-manager-options='{"preventDefault": false}')
+      )
     .next(
       ng-show="conf.enablearrows"
       hm-tap="goNext"
-      hm-manager-options='{"preventDefault": false}')
+      )
