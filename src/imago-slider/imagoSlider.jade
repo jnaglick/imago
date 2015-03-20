@@ -2,11 +2,13 @@
     ng-class="[conf.animation, action]"
     hm-swipeleft="goNext"
     hm-swiperight="goPrev"
-    hm-options='{"preventDefault": false}'
+    hm-manager-options='{preventDefault": false}'
     )
-    .prev(ng-show="conf.enablearrows"
-        hm-tap="goPrev"
-        stop-propagation)
-    .next(ng-show="conf.enablearrows"
-        hm-tap="goNext"
-        stop-propagation)
+    .prev(
+      ng-show="conf.enablearrows"
+      hm-tap="goPrev"
+      hm-manager-options='{"preventDefault": false}')
+    .next(
+      ng-show="conf.enablearrows"
+      hm-tap="goNext"
+      hm-manager-options='{"preventDefault": false}')
