@@ -1,5 +1,5 @@
 var imagoSubmit,
-  __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
+  indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
 
 imagoSubmit = (function() {
   function imagoSubmit($http, imagoUtils, imagoSettings) {
@@ -16,8 +16,8 @@ imagoSubmit = (function() {
         message = '';
         for (key in form) {
           value = form[key];
-          if (__indexOf.call(defaultFields, key) < 0) {
-            message += "" + (imagoUtils.titleCase(key)) + ": " + value + "<br><br>";
+          if (indexOf.call(defaultFields, key) < 0) {
+            message += (imagoUtils.titleCase(key)) + ": " + value + "<br><br>";
           }
           obj[key] = value || '';
         }
