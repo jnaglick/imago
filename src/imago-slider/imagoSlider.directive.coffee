@@ -16,7 +16,6 @@ class imagoSlider extends Directive
           namespace:    'slider'
           autoplay:     0
 
-
       link: (scope, element, attrs, ctrl, transclude) ->
         slider = element.children()
 
@@ -30,22 +29,25 @@ class imagoSlider extends Directive
 
         scope.currentIndex = scope.conf.current
 
-        scope.goPrev = ($event) ->
-          $interval.cancel(scope.conf.interval) if scope.conf.interval and typeof $event is 'object'
+        scope.clearInterval = ->
+          return unless scope.conf.interval
+          $interval.cancel(scope.conf.interval)
+
+        scope.goPrev = (ev) ->
+          scope.clearInterval() if _.isPlainObject ev
           scope.setCurrent(if (scope.currentIndex > 0) then scope.currentIndex - 1 else parseInt(attrs.length) - 1)
 
-        scope.goNext = ($event) ->
-          $interval.cancel(scope.conf.interval) if scope.conf.interval and typeof $event is 'object'
+        scope.goNext = (ev) ->
+          scope.clearInterval() if _.isPlainObject ev
           scope.setCurrent(if (scope.currentIndex < parseInt(attrs.length) - 1) then scope.currentIndex + 1 else 0)
 
-        scope.getLast = () ->
+        scope.getLast = ->
           parseInt(attrs.length) - 1
 
-        scope.getCurrent = () ->
+        scope.getCurrent = ->
           return scope.currentIndex
 
         scope.setCurrent = (index) =>
-
           scope.action = switch
             when index is 0 and scope.currentIndex is (parseInt(attrs.length) - 1) then 'next'
             when index is (parseInt(attrs.length) - 1) and scope.currentIndex is 0 then 'prev'
@@ -61,7 +63,7 @@ class imagoSlider extends Directive
             if parseInt(value) > 0
               scope.conf.interval = $interval scope.goNext, parseInt(value)
             else
-              $interval.cancel(scope.conf.interval) if scope.conf.interval
+              scope.clearInterval()
 
         if scope.conf.enablekeys
 
@@ -79,9 +81,10 @@ class imagoSlider extends Directive
 
 
         watcher = $rootScope.$on "#{scope.conf.namespace}:change", (event, index) ->
+          scope.clearInterval()
           scope.setCurrent(index)
 
         scope.$on '$destroy', ->
-          $interval.cancel(scope.conf.interval) if scope.conf.interval
+          scope.clearInterval()
           watcher()
   }

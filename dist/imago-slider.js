@@ -30,15 +30,21 @@ imagoSlider = (function() {
           return scope.conf[key] = value;
         });
         scope.currentIndex = scope.conf.current;
-        scope.goPrev = function($event) {
-          if (scope.conf.interval && typeof $event === 'object') {
-            $interval.cancel(scope.conf.interval);
+        scope.clearInterval = function() {
+          if (!scope.conf.interval) {
+            return;
+          }
+          return $interval.cancel(scope.conf.interval);
+        };
+        scope.goPrev = function(ev) {
+          if (_.isPlainObject(ev)) {
+            scope.clearInterval();
           }
           return scope.setCurrent(scope.currentIndex > 0 ? scope.currentIndex - 1 : parseInt(attrs.length) - 1);
         };
-        scope.goNext = function($event) {
-          if (scope.conf.interval && typeof $event === 'object') {
-            $interval.cancel(scope.conf.interval);
+        scope.goNext = function(ev) {
+          if (_.isPlainObject(ev)) {
+            scope.clearInterval();
           }
           return scope.setCurrent(scope.currentIndex < parseInt(attrs.length) - 1 ? scope.currentIndex + 1 : 0);
         };
@@ -74,9 +80,7 @@ imagoSlider = (function() {
               if (parseInt(value) > 0) {
                 return scope.conf.interval = $interval(scope.goNext, parseInt(value));
               } else {
-                if (scope.conf.interval) {
-                  return $interval.cancel(scope.conf.interval);
-                }
+                return scope.clearInterval();
               }
             };
           })(this));
@@ -96,12 +100,11 @@ imagoSlider = (function() {
           });
         }
         watcher = $rootScope.$on(scope.conf.namespace + ":change", function(event, index) {
+          scope.clearInterval();
           return scope.setCurrent(index);
         });
         return scope.$on('$destroy', function() {
-          if (scope.conf.interval) {
-            $interval.cancel(scope.conf.interval);
-          }
+          scope.clearInterval();
           return watcher();
         });
       }
