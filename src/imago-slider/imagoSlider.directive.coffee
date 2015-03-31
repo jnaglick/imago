@@ -102,7 +102,7 @@ class imagoSlider extends Directive
             when index < scope.currentIndex then 'prev'
             else ''
 
-          console.log 'scope.action', scope.action
+          # console.log 'scope.action', scope.action
           scope.currentIndex = index
           $rootScope.$emit "#{scope.conf.namespace}:changed", index
 

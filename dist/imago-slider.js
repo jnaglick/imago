@@ -97,7 +97,6 @@ imagoSlider = (function() {
                   return '';
               }
             })();
-            console.log('scope.action', scope.action);
             scope.currentIndex = index;
             return $rootScope.$emit(scope.conf.namespace + ":changed", index);
           };
