@@ -1,6 +1,6 @@
 class imagoSlider extends Directive
 
-  constructor: ($rootScope, $q, $document, imagoModel, $interval) ->
+  constructor: ($rootScope, $q, $document, imagoModel, $interval, $location) ->
     return {
       transclude: true
       scope: true
@@ -15,6 +15,8 @@ class imagoSlider extends Directive
           current:      0
           namespace:    'slider'
           autoplay:     0
+          next:         null
+          prev:         null
 
       link: (scope, element, attrs, ctrl, transclude) ->
         slider = element.children()
@@ -23,11 +25,16 @@ class imagoSlider extends Directive
           slider.append(clone)
 
         angular.forEach attrs, (value, key) ->
-          if value is 'true' or value is 'false'
+          if value in ['true', 'false']
             value = JSON.parse value
           scope.conf[key] = value
 
-        scope.currentIndex = scope.conf.current
+        scope.conf.siblings = !!(scope.conf.next and scope.conf.prev)
+
+        if $location.path().indexOf('last')
+          scope.currentIndex = scope.conf.current
+        else
+          scope.currentIndex = scope.getLast()
 
         scope.clearInterval = ->
           return unless scope.conf.interval
@@ -35,11 +42,49 @@ class imagoSlider extends Directive
 
         scope.goPrev = (ev) ->
           scope.clearInterval() if _.isPlainObject ev
-          scope.setCurrent(if (scope.currentIndex > 0) then scope.currentIndex - 1 else parseInt(attrs.length) - 1)
+
+          # no loop
+          if not scope.conf.loop
+            scope.setCurrent(
+              if (scope.currentIndex > 0) then scope.currentIndex - 1 else scope.currentIndex
+            )
+
+          # loop through current collection
+          else if scope.conf.loop and not scope.conf.siblings
+            scope.setCurrent(
+              if (scope.currentIndex > 0) then scope.currentIndex - 1 else parseInt(attrs.length) - 1
+            )
+
+          # loop through sibling collections
+          else if scope.conf.loop and scope.conf.siblings
+            if (scope.currentIndex > 0)
+              scope.setCurrent(scope.currentIndex - 1)
+            else
+              $location.path scope.conf.prev
 
         scope.goNext = (ev) ->
           scope.clearInterval() if _.isPlainObject ev
-          scope.setCurrent(if (scope.currentIndex < parseInt(attrs.length) - 1) then scope.currentIndex + 1 else 0)
+
+          # no loop
+          if not scope.conf.loop
+            scope.setCurrent(
+              if (scope.currentIndex < parseInt(attrs.length) - 1) then scope.currentIndex + 1 else scope.currentIndex
+            )
+
+          # loop through current collection
+          else if scope.conf.loop and not scope.conf.siblings
+            scope.setCurrent(
+              if (scope.currentIndex < parseInt(attrs.length) - 1) then scope.currentIndex + 1 else 0
+            )
+
+          # loop through sibling collections
+          else if scope.conf.loop and scope.conf.siblings
+            if (scope.currentIndex < parseInt(attrs.length) - 1)
+              scope.setCurrent(scope.currentIndex + 1)
+            else
+              $location.path scope.conf.next
+
+
 
         scope.getLast = ->
           parseInt(attrs.length) - 1
@@ -49,12 +94,15 @@ class imagoSlider extends Directive
 
         scope.setCurrent = (index) =>
           scope.action = switch
-            when index is 0 and scope.currentIndex is (parseInt(attrs.length) - 1) then 'next'
-            when index is (parseInt(attrs.length) - 1) and scope.currentIndex is 0 then 'prev'
+            # make last to first infinit if loop over one collection
+            when index is 0 and scope.currentIndex is (parseInt(attrs.length) - 1) and not scope.conf.siblings then 'next'
+            when index is (parseInt(attrs.length) - 1) and scope.currentIndex is 0 and not scope.conf.siblings then 'prev'
+
             when index > scope.currentIndex then 'next'
             when index < scope.currentIndex then 'prev'
             else ''
 
+          console.log 'scope.action', scope.action
           scope.currentIndex = index
           $rootScope.$emit "#{scope.conf.namespace}:changed", index
 
