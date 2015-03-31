@@ -10,7 +10,8 @@
     "dependencies": {
         "angular-mocks": "*",
         "angular-inview": "git@github.com:sebastiannm/angular-inview.git",
-        "lodash": "*"
+        "lodash": "*",
+        "is_js": "*"
     },
     "ignore": [
         "**/.*",

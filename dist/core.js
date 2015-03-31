@@ -1692,6 +1692,62 @@ Meta = (function() {
 
 angular.module('imago').filter('meta', [Meta]);
 
+var NotSupported;
+
+NotSupported = (function() {
+  function NotSupported($window) {
+    return {
+      templateUrl: '/app/not-supported/not-supported.html',
+      controllerAs: 'supported',
+      bindToController: true,
+      controller: function($scope, $element, $attrs) {
+        var browser, i, len, options, results;
+        options = $scope.$eval($attrs.notSupported);
+        if (!_.isArray(options)) {
+          options = ['ie6', 'ie7', 'ie8'];
+        }
+        results = [];
+        for (i = 0, len = options.length; i < len; i++) {
+          browser = options[i];
+          browser = browser.toLowerCase();
+          if (browser.search('ie' !== -1)) {
+            if (window.is.ie(browser)) {
+              this.invalid = true;
+            }
+          } else if (browser.search('chrome')) {
+            if (window.is.chrome()) {
+              this.invalid = true;
+            }
+          } else if (browser.search('firefox')) {
+            if (window.is.firefox()) {
+              this.invalid = true;
+            }
+          } else if (browser.search('opera')) {
+            if (window.is.opera()) {
+              this.invalid = true;
+            }
+          } else if (browser.search('safari')) {
+            if (window.is.safari()) {
+              this.invalid = true;
+            }
+          }
+          if (this.invalid) {
+            break;
+          } else {
+            results.push(void 0);
+          }
+        }
+        return results;
+      }
+    };
+  }
+
+  return NotSupported;
+
+})();
+
+angular.module('imago').directive('notSupported', ['$window', NotSupported]);
+
 var imagoPage;
 
 imagoPage = (function() {
@@ -1709,3 +1765,5 @@ imagoPage = (function() {
 })();
 
 angular.module('imago').controller('imagoPage', ['$scope', '$state', 'imagoModel', imagoPage]);
+
+angular.module("imago").run(["$templateCache", function($templateCache) {$templateCache.put("/imago/not-supported.html","<div ng-show=\"supported.invalid\" class=\"not-supported\"><p>your browser is not supported</p></div>");}]);
