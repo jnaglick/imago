@@ -1697,7 +1697,7 @@ var NotSupported;
 NotSupported = (function() {
   function NotSupported($window) {
     return {
-      templateUrl: '/app/not-supported/not-supported.html',
+      templateUrl: '/imago/not-supported.html',
       controllerAs: 'supported',
       bindToController: true,
       controller: function($scope, $element, $attrs) {

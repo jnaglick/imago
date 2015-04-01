@@ -4,7 +4,7 @@ class NotSupported extends Directive
 
     return {
 
-      templateUrl: '/app/not-supported/not-supported.html'
+      templateUrl: '/imago/not-supported.html'
       controllerAs: 'supported'
       bindToController: true
       controller: ($scope, $element, $attrs) ->
