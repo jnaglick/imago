@@ -228,13 +228,17 @@ class imagoModel extends Service
           if key isnt 'path'
             assets = _.filter assets, (asset) ->
               if asset.fields?.hasOwnProperty key
-                if _.isArray asset.fields[key]['value']
-                  return asset if params in asset.fields[key]['value']
-                else
-                  return asset if asset.fields[key]['value'] is params
+                return asset if _.includes(asset.fields[key]['value'], params)
+                # if _.isArray asset.fields[key]['value']
+                #   return asset if params in asset.fields[key]['value']
+                # else
+                #   return asset if asset.fields[key]['value'] is params
 
-              else if asset[key] is params
+              else if _.includes asset[key], params
                 return asset
+
+              # else if asset[key] is params
+              #   return asset
 
     return assets
 

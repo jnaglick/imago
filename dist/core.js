@@ -20,8 +20,7 @@ lodash.factory('_', function() {
 });
 
 var imagoModel,
-  bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
-  indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
+  bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 
 imagoModel = (function() {
   function imagoModel($rootScope, $http, $location, $q, imagoUtils, imagoWorker, imagoSettings) {
@@ -372,16 +371,10 @@ imagoModel = (function() {
             assets = _.filter(assets, function(asset) {
               var ref;
               if ((ref = asset.fields) != null ? ref.hasOwnProperty(key) : void 0) {
-                if (_.isArray(asset.fields[key]['value'])) {
-                  if (indexOf.call(asset.fields[key]['value'], params) >= 0) {
-                    return asset;
-                  }
-                } else {
-                  if (asset.fields[key]['value'] === params) {
-                    return asset;
-                  }
+                if (_.includes(asset.fields[key]['value'], params)) {
+                  return asset;
                 }
-              } else if (asset[key] === params) {
+              } else if (_.includes(asset[key], params)) {
                 return asset;
               }
             });
