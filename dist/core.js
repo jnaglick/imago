@@ -20,7 +20,8 @@ lodash.factory('_', function() {
 });
 
 var imagoModel,
-  bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
+  bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+  indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
 
 imagoModel = (function() {
   function imagoModel($rootScope, $http, $location, $q, imagoUtils, imagoWorker, imagoSettings) {
@@ -362,7 +363,7 @@ imagoModel = (function() {
   imagoModel.prototype.filterAssets = function(assets, query) {
     var j, key, len, params, value;
     query = _.omit(query, 'path');
-    if (_.keys(query).length > 0) {
+    if (_.keys(query).length) {
       for (key in query) {
         value = query[key];
         for (j = 0, len = value.length; j < len; j++) {
@@ -371,8 +372,14 @@ imagoModel = (function() {
             assets = _.filter(assets, function(asset) {
               var ref;
               if ((ref = asset.fields) != null ? ref.hasOwnProperty(key) : void 0) {
-                if (asset.fields[key]['value'] === params) {
-                  return asset;
+                if (_.isArray(asset.fields[key]['value'])) {
+                  if (indexOf.call(asset.fields[key]['value'], params) >= 0) {
+                    return asset;
+                  }
+                } else {
+                  if (asset.fields[key]['value'] === params) {
+                    return asset;
+                  }
                 }
               } else if (asset[key] === params) {
                 return asset;

@@ -222,13 +222,16 @@ class imagoModel extends Service
   filterAssets: (assets, query) =>
     # delete query.path if query.path
     query = _.omit query, 'path'
-    if _.keys(query).length > 0
+    if _.keys(query).length
       for key, value of query
         for params in value
           if key isnt 'path'
             assets = _.filter assets, (asset) ->
               if asset.fields?.hasOwnProperty key
-                return asset if asset.fields[key]['value'] is params
+                if _.isArray asset.fields[key]['value']
+                  return asset if params in asset.fields[key]['value']
+                else
+                  return asset if asset.fields[key]['value'] is params
 
               else if asset[key] is params
                 return asset
