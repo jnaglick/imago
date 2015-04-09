@@ -1701,7 +1701,7 @@ NotSupported = (function() {
       controllerAs: 'supported',
       bindToController: true,
       controller: function($scope, $element, $attrs) {
-        var browser, i, len, options, results;
+        var browser, i, len, options, results, version;
         options = $scope.$eval($attrs.notSupported);
         if (!_.isArray(options)) {
           options = ['ie6', 'ie7', 'ie8'];
@@ -1711,7 +1711,8 @@ NotSupported = (function() {
           browser = options[i];
           browser = browser.toLowerCase();
           if (_.includes(browser, 'ie')) {
-            if (window.is.ie(browser)) {
+            version = parseInt(browser);
+            if (window.is.ie(version)) {
               this.invalid = true;
             }
           } else if (_.includes(browser, 'chrome')) {
