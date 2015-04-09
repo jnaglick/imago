@@ -10,13 +10,14 @@ class NotSupported extends Directive
       controller: ($scope, $element, $attrs) ->
 
         options = $scope.$eval $attrs.notSupported
+
         unless _.isArray(options)
           options = ['ie6', 'ie7', 'ie8']
 
         for browser in options
           browser = browser.toLowerCase()
           if _.includes browser, 'ie'
-            version = parseInt browser
+            version = browser.match /\d+/g
             @invalid = true if window.is.ie(version)
           else if _.includes browser, 'chrome'
             @invalid = true if window.is.chrome()
