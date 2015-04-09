@@ -53,17 +53,16 @@ class imagoImage extends Directive
             if source.fields.sizemode.value isnt 'default' and not attrs['sizemode']
               opts.sizemode = source.fields.sizemode.value
 
-
           if opts.responsive
             if opts.sizemode is 'crop'
               scope.$on 'resizelimit', () ->
                 calcMediaSize()
-                scope.$digest()
+                scope.$evalAsync()
 
           initialize()
 
 
-        initialize = () ->
+        initialize = ->
 
           if angular.isString(source.resolution)
             r = source.resolution.split('x')
@@ -136,9 +135,8 @@ class imagoImage extends Directive
           render()
 
 
-        render = () ->
-
-          if  opts.lazy and not self.visible
+        render = ->
+          if opts.lazy and not self.visible
             self.visibleFunc = scope.$watch attrs['visible'], (value) =>
               return unless value
               self.visible = true
@@ -153,18 +151,16 @@ class imagoImage extends Directive
                   backgroundImage:    "url(#{opts.servingUrl})"
                   backgroundSize:     calcMediaSize()
                   backgroundPosition: opts.align
-
               else
                 scope.servingUrl = opts.servingUrl
 
               scope.status     = 'loaded'
-              scope.$digest()
+              scope.$evalAsync()
             # console.log 'scope.imageStyle', scope.imageStyle
 
             img[0].src = opts.servingUrl
 
-        calcMediaSize = () ->
-
+        calcMediaSize = ->
           # $log.log 'calcMediaSize', opts.sizemode
           width  = element[0].clientWidth
           height = element[0].clientHeight
@@ -188,7 +184,7 @@ class imagoImage extends Directive
           #     scope.imageStyle['width']  = '100%'
           #     scope.imageStyle['height'] = 'auto'
 
-        setImageStyle = () ->
+        setImageStyle = ->
           if opts.sizemode is 'crop'
             styles =
               backgroundImage:    "url(#{opts.servingUrl})"

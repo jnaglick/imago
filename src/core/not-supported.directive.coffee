@@ -15,15 +15,15 @@ class NotSupported extends Directive
 
         for browser in options
           browser = browser.toLowerCase()
-          if browser.search 'ie' isnt -1
+          if _.includes browser, 'ie'
             @invalid = true if window.is.ie(browser)
-          else if browser.search 'chrome'
+          else if _.includes browser, 'chrome'
             @invalid = true if window.is.chrome()
-          else if browser.search 'firefox'
+          else if _.includes browser, 'firefox'
             @invalid = true if window.is.firefox()
-          else if browser.search 'opera'
+          else if _.includes browser, 'opera'
             @invalid = true if window.is.opera()
-          else if browser.search 'safari'
+          else if _.includes browser, 'safari'
             @invalid = true if window.is.safari()
 
           break if @invalid

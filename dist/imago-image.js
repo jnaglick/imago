@@ -58,7 +58,7 @@ imagoImage = (function() {
               if (opts.sizemode === 'crop') {
                 scope.$on('resizelimit', function() {
                   calcMediaSize();
-                  return scope.$digest();
+                  return scope.$evalAsync();
                 });
               }
             }
@@ -145,7 +145,7 @@ imagoImage = (function() {
                 scope.servingUrl = opts.servingUrl;
               }
               scope.status = 'loaded';
-              return scope.$digest();
+              return scope.$evalAsync();
             });
             return img[0].src = opts.servingUrl;
           }

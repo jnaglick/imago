@@ -1710,23 +1710,23 @@ NotSupported = (function() {
         for (i = 0, len = options.length; i < len; i++) {
           browser = options[i];
           browser = browser.toLowerCase();
-          if (browser.search('ie' !== -1)) {
+          if (_.includes(browser, 'ie')) {
             if (window.is.ie(browser)) {
               this.invalid = true;
             }
-          } else if (browser.search('chrome')) {
+          } else if (_.includes(browser, 'chrome')) {
             if (window.is.chrome()) {
               this.invalid = true;
             }
-          } else if (browser.search('firefox')) {
+          } else if (_.includes(browser, 'firefox')) {
             if (window.is.firefox()) {
               this.invalid = true;
             }
-          } else if (browser.search('opera')) {
+          } else if (_.includes(browser, 'opera')) {
             if (window.is.opera()) {
               this.invalid = true;
             }
-          } else if (browser.search('safari')) {
+          } else if (_.includes(browser, 'safari')) {
             if (window.is.safari()) {
               this.invalid = true;
             }
