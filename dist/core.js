@@ -1702,9 +1702,12 @@ NotSupported = (function() {
       bindToController: true,
       controller: function($scope, $element, $attrs) {
         var browser, i, len, options, results, version;
+        if (bowser.msie && bowser.version <= 8) {
+          return this.invalid;
+        }
         options = $scope.$eval($attrs.notSupported);
         if (!_.isArray(options)) {
-          options = ['ie6', 'ie7', 'ie8'];
+          return;
         }
         results = [];
         for (i = 0, len = options.length; i < len; i++) {
@@ -1712,23 +1715,23 @@ NotSupported = (function() {
           browser = browser.toLowerCase();
           if (_.includes(browser, 'ie')) {
             version = browser.match(/\d+/g);
-            if (window.is.ie(version)) {
+            if (bowser.msie && bowser.version === version) {
               this.invalid = true;
             }
           } else if (_.includes(browser, 'chrome')) {
-            if (window.is.chrome()) {
+            if (bowser.chrome) {
               this.invalid = true;
             }
           } else if (_.includes(browser, 'firefox')) {
-            if (window.is.firefox()) {
+            if (bowser.firefox) {
               this.invalid = true;
             }
           } else if (_.includes(browser, 'opera')) {
-            if (window.is.opera()) {
+            if (bowser.opera) {
               this.invalid = true;
             }
           } else if (_.includes(browser, 'safari')) {
-            if (window.is.safari()) {
+            if (bowser.safari) {
               this.invalid = true;
             }
           }

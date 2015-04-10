@@ -1,23 +1,23 @@
 {
-    "name": "imago",
-    "version": "1.0.62",
-    "homepage": "https://github.com/Nex9/imago",
-    "authors": [
-        "Nex9"
-    ],
-    "license": "MIT",
-    "private": false,
-    "dependencies": {
-        "angular-mocks": "*",
-        "angular-inview": "git@github.com:sebastiannm/angular-inview.git",
-        "lodash": "*",
-        "is_js": "*"
-    },
-    "ignore": [
-        "**/.*",
-        "node_modules",
-        "bower_components",
-        "test",
-        "tests"
-    ]
+  "name": "imago",
+  "version": "1.0.62",
+  "homepage": "https://github.com/Nex9/imago",
+  "authors": [
+    "Nex9"
+  ],
+  "license": "MIT",
+  "private": false,
+  "dependencies": {
+    "angular-mocks": "*",
+    "angular-inview": "git@github.com:sebastiannm/angular-inview.git",
+    "lodash": "*",
+    "bowser": "*"
+  },
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
 }
