@@ -19,7 +19,7 @@ class NotSupported extends Directive
           browser = browser.toLowerCase()
           if _.includes browser, 'ie'
             version = browser.match /\d+/g
-            @invalid = true if bowser.msie && bowser.version is version
+            @invalid = true if bowser.msie and version and _.includes bowser.version, version
           else if _.includes browser, 'chrome'
             @invalid = true if bowser.chrome
           else if _.includes browser, 'firefox'

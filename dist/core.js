@@ -1715,7 +1715,7 @@ NotSupported = (function() {
           browser = browser.toLowerCase();
           if (_.includes(browser, 'ie')) {
             version = browser.match(/\d+/g);
-            if (bowser.msie && bowser.version === version) {
+            if (bowser.msie && version && _.includes(bowser.version, version)) {
               this.invalid = true;
             }
           } else if (_.includes(browser, 'chrome')) {
