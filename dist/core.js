@@ -1711,7 +1711,7 @@ NotSupported = (function() {
           browser = options[i];
           browser = browser.toLowerCase();
           if (_.includes(browser, 'ie')) {
-            version = parseInt(browser);
+            version = browser.match(/\d+/g);
             if (window.is.ie(version)) {
               this.invalid = true;
             }
