@@ -144,4 +144,4 @@ imagoSlider = (function() {
 
 angular.module('imago').directive('imagoSlider', ['$rootScope', '$q', '$document', 'imagoModel', '$interval', '$location', imagoSlider]);
 
-angular.module("imago").run(["$templateCache", function($templateCache) {$templateCache.put("/imago/imagoSlider.html","<div ng-class=\"[conf.animation, action]\" hm-swipeleft=\"goNext\" hm-swiperight=\"goPrev\" hm-recognizer-options=\"{&quot;directions&quot;: &quot;DIRECTION_HORIZONTAL&quot;}\" class=\"imagoslider\"><div ng-show=\"conf.enablearrows\" hm-tap=\"goPrev\" class=\"prev\"></div><div ng-show=\"conf.enablearrows\" hm-tap=\"goNext\" class=\"next\"></div></div>");}]);
+angular.module("imago").run(["$templateCache", function($templateCache) {$templateCache.put("/imago/imagoSlider.html","<div ng-class=\"[conf.animation, action]\" ng-swipe-left=\"goNext()\" ng-swipe-right=\"goPrev()\" class=\"imagoslider\"><div ng-show=\"conf.enablearrows\" ng-click=\"goPrev()\" class=\"prev\"></div><div ng-show=\"conf.enablearrows\" ng-click=\"goNext()\" class=\"next\"></div></div>");}]);

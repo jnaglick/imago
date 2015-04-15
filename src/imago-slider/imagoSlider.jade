@@ -1,14 +1,13 @@
 .imagoslider(
     ng-class="[conf.animation, action]"
-    hm-swipeleft="goNext"
-    hm-swiperight="goPrev"
-    hm-recognizer-options='{"directions": "DIRECTION_HORIZONTAL"}'
+    ng-swipe-left="goNext()"
+    ng-swipe-right="goPrev()"
     )
     .prev(
       ng-show="conf.enablearrows"
-      hm-tap="goPrev"
+      ng-click="goPrev()"
       )
     .next(
       ng-show="conf.enablearrows"
-      hm-tap="goNext"
+      ng-click="goNext()"
       )
