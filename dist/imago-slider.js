@@ -44,7 +44,7 @@ imagoSlider = (function() {
           return $interval.cancel(scope.conf.interval);
         };
         scope.goPrev = function(ev) {
-          if (_.isPlainObject(ev)) {
+          if (typeof ev === 'object') {
             scope.clearInterval();
           }
           if (!scope.conf.loop) {
@@ -60,7 +60,7 @@ imagoSlider = (function() {
           }
         };
         scope.goNext = function(ev) {
-          if (_.isPlainObject(ev)) {
+          if (typeof ev === 'object') {
             scope.clearInterval();
           }
           if (!scope.conf.loop) {

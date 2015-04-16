@@ -41,7 +41,7 @@ class imagoSlider extends Directive
           $interval.cancel(scope.conf.interval)
 
         scope.goPrev = (ev) ->
-          scope.clearInterval() if _.isPlainObject ev
+          scope.clearInterval() if typeof ev is 'object'
 
           # no loop
           if not scope.conf.loop
@@ -63,7 +63,7 @@ class imagoSlider extends Directive
               $location.path scope.conf.prev
 
         scope.goNext = (ev) ->
-          scope.clearInterval() if _.isPlainObject ev
+          scope.clearInterval() if typeof ev is 'object'
 
           # no loop
           if not scope.conf.loop
