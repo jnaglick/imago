@@ -818,6 +818,7 @@ class imagoUtils extends Factory
         str.charAt(0).toUpperCase() + str.slice(1)
 
       normalize: (s) ->
+        return unless typeof s is 'string'
         mapping =
           'ä': 'ae'
           'ö': 'oe'

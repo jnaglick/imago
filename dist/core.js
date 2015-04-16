@@ -1421,6 +1421,9 @@ imagoUtils = (function() {
       },
       normalize: function(s) {
         var mapping, r, str;
+        if (typeof s !== 'string') {
+          return;
+        }
         mapping = {
           'ä': 'ae',
           'ö': 'oe',
