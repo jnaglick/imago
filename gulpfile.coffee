@@ -20,7 +20,7 @@ fs              = require 'fs'
 merge           = require 'merge-stream'
 rename          = require 'gulp-rename'
 del             = require 'del'
-vinylPaths      = require('vinyl-paths')
+vinylPaths      = require 'vinyl-paths'
 order           = require 'gulp-order'
 gulpif          = require 'gulp-if'
 path            = require 'path'
@@ -28,6 +28,7 @@ tap             = require 'gulp-tap'
 notification    = require 'node-notifier'
 exec            = require('child_process').exec
 
+sketch          = require 'gulp-sketch'
 
 # Defaults
 
@@ -88,6 +89,14 @@ compileFolder = (folder) ->
     .pipe(uglify())
     .pipe(rename(folder + ".min.js"))
     .pipe gulp.dest(dest)
+
+gulp.task 'sketch', ->
+  gulp.src paths.sketch
+    .pipe sketch(
+      export: 'artboards'
+      saveForWeb: true
+      trimmed: false)
+    .pipe gulp.dest "#{dest}/i"
 
 gulp.task "join", ->
   folders = getFolders(src)
