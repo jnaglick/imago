@@ -9,7 +9,7 @@ class NotSupported extends Directive
       bindToController: true
       controller: ($scope, $element, $attrs) ->
 
-        return @invalid if bowser.msie and bowser.version <= 8
+        return @invalid if (bowser.msie and bowser.version <= 8) or (bowser.firefox and bowser.version <= 32)
 
         options = $scope.$eval $attrs.notSupported
 
@@ -17,17 +17,38 @@ class NotSupported extends Directive
 
         for browser in options
           browser = browser.toLowerCase()
+          version = browser.match /\d+/g
+          version = parseInt(version)
           if _.includes browser, 'ie'
-            version = browser.match /\d+/g
-            @invalid = true if bowser.msie and version and _.includes bowser.version, version
+            continue unless bowser.msie
+            if not _.isNaN(version) and bowser.version <= version
+              @invalid = true
+            else if _.isNaN version
+              @invalid = true
           else if _.includes browser, 'chrome'
-            @invalid = true if bowser.chrome
+            continue unless bowser.chrome
+            if not _.isNaN(version) and bowser.version <= version
+              @invalid = true
+            else if _.isNaN version
+              @invalid = true
           else if _.includes browser, 'firefox'
-            @invalid = true if bowser.firefox
+            continue unless bowser.firefox
+            if not _.isNaN(version) and bowser.version <= version
+              @invalid = true
+            else if _.isNaN version
+              @invalid = true
           else if _.includes browser, 'opera'
-            @invalid = true if bowser.opera
+            continue unless bowser.opera
+            if not _.isNaN(version) and bowser.version <= version
+              @invalid = true
+            else if _.isNaN version
+              @invalid = true
           else if _.includes browser, 'safari'
-            @invalid = true if bowser.safari
+            continue unless bowser.safari
+            if not _.isNaN(version) and bowser.version <= version
+              @invalid = true
+            else if _.isNaN version
+              @invalid = true
 
           break if @invalid
 
