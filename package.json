@@ -22,6 +22,7 @@
     "gulp-order": "^1.1.1",
     "gulp-plumber": "*",
     "gulp-rename": "^1.2.0",
+    "gulp-sketch": "*",
     "gulp-tap": "^0.1.3",
     "gulp-uglify": "*",
     "gulp-util": "*",
