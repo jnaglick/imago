@@ -15,9 +15,10 @@ class NotSupported extends Directive
 
         return unless _.isArray(options)
 
+        browserVersion = parseInt(bowser.version)
+
         for browser in options
           browser = browser.toLowerCase()
-          browserVersion = parseInt(bowser.version)
           version = browser.match(/\d+/g)
           version = parseInt(version)
           if _.includes browser, 'ie'

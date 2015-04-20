@@ -1712,11 +1712,11 @@ NotSupported = (function() {
         if (!_.isArray(options)) {
           return;
         }
+        browserVersion = parseInt(bowser.version);
         results = [];
         for (i = 0, len = options.length; i < len; i++) {
           browser = options[i];
           browser = browser.toLowerCase();
-          browserVersion = parseInt(bowser.version);
           version = browser.match(/\d+/g);
           version = parseInt(version);
           if (_.includes(browser, 'ie')) {
