@@ -1704,7 +1704,7 @@ NotSupported = (function() {
       controllerAs: 'supported',
       bindToController: true,
       controller: function($scope, $element, $attrs) {
-        var browser, i, len, options, results, version;
+        var browser, browserVersion, i, len, options, results, version;
         if ((bowser.msie && bowser.version <= 8) || (bowser.firefox && bowser.version <= 32)) {
           return this.invalid;
         }
@@ -1716,13 +1716,14 @@ NotSupported = (function() {
         for (i = 0, len = options.length; i < len; i++) {
           browser = options[i];
           browser = browser.toLowerCase();
+          browserVersion = parseInt(bowser.version);
           version = browser.match(/\d+/g);
           version = parseInt(version);
           if (_.includes(browser, 'ie')) {
             if (!bowser.msie) {
               continue;
             }
-            if (!_.isNaN(version) && bowser.version <= version) {
+            if (!_.isNaN(version) && browserVersion <= version) {
               this.invalid = true;
             } else if (_.isNaN(version)) {
               this.invalid = true;
@@ -1731,7 +1732,7 @@ NotSupported = (function() {
             if (!bowser.chrome) {
               continue;
             }
-            if (!_.isNaN(version) && bowser.version <= version) {
+            if (!_.isNaN(version) && browserVersion <= version) {
               this.invalid = true;
             } else if (_.isNaN(version)) {
               this.invalid = true;
@@ -1740,7 +1741,7 @@ NotSupported = (function() {
             if (!bowser.firefox) {
               continue;
             }
-            if (!_.isNaN(version) && bowser.version <= version) {
+            if (!_.isNaN(version) && browserVersion <= version) {
               this.invalid = true;
             } else if (_.isNaN(version)) {
               this.invalid = true;
@@ -1749,7 +1750,7 @@ NotSupported = (function() {
             if (!bowser.opera) {
               continue;
             }
-            if (!_.isNaN(version) && bowser.version <= version) {
+            if (!_.isNaN(version) && browserVersion <= version) {
               this.invalid = true;
             } else if (_.isNaN(version)) {
               this.invalid = true;
@@ -1758,7 +1759,7 @@ NotSupported = (function() {
             if (!bowser.safari) {
               continue;
             }
-            if (!_.isNaN(version) && bowser.version <= version) {
+            if (!_.isNaN(version) && browserVersion <= version) {
               this.invalid = true;
             } else if (_.isNaN(version)) {
               this.invalid = true;

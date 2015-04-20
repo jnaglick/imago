@@ -17,35 +17,36 @@ class NotSupported extends Directive
 
         for browser in options
           browser = browser.toLowerCase()
-          version = browser.match /\d+/g
+          browserVersion = parseInt(bowser.version)
+          version = browser.match(/\d+/g)
           version = parseInt(version)
           if _.includes browser, 'ie'
             continue unless bowser.msie
-            if not _.isNaN(version) and bowser.version <= version
+            if not _.isNaN(version) and browserVersion <= version
               @invalid = true
             else if _.isNaN version
               @invalid = true
           else if _.includes browser, 'chrome'
             continue unless bowser.chrome
-            if not _.isNaN(version) and bowser.version <= version
+            if not _.isNaN(version) and browserVersion <= version
               @invalid = true
             else if _.isNaN version
               @invalid = true
           else if _.includes browser, 'firefox'
             continue unless bowser.firefox
-            if not _.isNaN(version) and bowser.version <= version
+            if not _.isNaN(version) and browserVersion <= version
               @invalid = true
             else if _.isNaN version
               @invalid = true
           else if _.includes browser, 'opera'
             continue unless bowser.opera
-            if not _.isNaN(version) and bowser.version <= version
+            if not _.isNaN(version) and browserVersion <= version
               @invalid = true
             else if _.isNaN version
               @invalid = true
           else if _.includes browser, 'safari'
             continue unless bowser.safari
-            if not _.isNaN(version) and bowser.version <= version
+            if not _.isNaN(version) and browserVersion <= version
               @invalid = true
             else if _.isNaN version
               @invalid = true
