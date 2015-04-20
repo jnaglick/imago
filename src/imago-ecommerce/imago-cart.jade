@@ -1,15 +1,15 @@
 .cart
   .icon(ng-click="cart.utils.show = !cart.utils.show")
-    .counter(ng-bind="cart.utils.cart.items.length")
+    .counter(ng-bind="cart.utils.itemsLength")
 
   .box(ng-show="cart.utils.show")
     div(ng-transclude)
 
     .itemnumber(
-      ng-show="cart.utils.cart.items.length"
-      ) {{cart.utils.cart.items.length}} items
+      ng-show="cart.utils.itemsLength"
+      ) {{cart.utils.itemsLength}} items
     .noitems(
-      ng-show="cart.utils.cart.items.length === 0"
+      ng-show="cart.utils.itemsLength === 0"
       ) no items in cart
 
     button.checkout(

@@ -15,6 +15,7 @@ class imagoCart extends Service
       if @cart.currency isnt @currency
         @cart.currency = angular.copy @currency
         @update()
+      @updateLenght()
 
   checkCurrency: =>
     defer = @$q.defer()
@@ -90,6 +91,7 @@ class imagoCart extends Service
       @cart.items.push copy
 
     @show = true
+    @updateLenght()
 
     @checkCart().then (response) =>
       @update() if response is 'update'
@@ -99,9 +101,19 @@ class imagoCart extends Service
     @$http.put("#{@imagoSettings.host}/api/carts/#{@cart._id}", @cart)
 
   remove: (item) =>
+    console.log 'removed', item
     idx = _.findIndex @cart.items, { _id: item._id }
     @cart.items.splice idx, 1
+    @updateLenght()
     @update()
+
+  updateLenght: ->
+    @itemsLength = 0
+
+    return @itemsLength = 0 unless @cart.items.length
+
+    for item in @cart.items
+      @itemsLength += item.qty
 
   checkout: ->
     return unless tenant
