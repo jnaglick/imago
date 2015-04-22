@@ -15,7 +15,7 @@ imagoPager = (function() {
       templateUrl: '/imago/imagoPager.html',
       controller: function($scope, $element, $attrs) {
         this.fetchPosts = function() {
-          var pageNo, pageSize, query;
+          var idx, pageNo, pageSize, query;
           this.count += 1;
           $scope.posts = [];
           pageSize = parseInt($scope.pageSize);
@@ -27,6 +27,10 @@ imagoPager = (function() {
           };
           if ($scope.tags) {
             query['tags'] = $scope.tags;
+          }
+          if ((query != null ? query.path : void 0) && _.includes(query.path, '/page/')) {
+            idx = query.path.indexOf('/page/');
+            query.path = query.path.slice(0, idx);
           }
           return imagoModel.getData([query], {
             localData: false

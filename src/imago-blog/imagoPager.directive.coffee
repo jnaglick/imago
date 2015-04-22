@@ -28,6 +28,10 @@ class imagoPager extends Directive
           query['tags'] = $scope.tags if $scope.tags
 
           # console.log 'query', query
+          if query?.path and _.includes query.path, '/page/'
+            idx = query.path.indexOf '/page/'
+            query.path = query.path.slice 0, idx
+
           imagoModel.getData([query], {localData: false}).then (response) =>
             # console.log 'response', response
             for collection in response
