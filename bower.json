@@ -5,7 +5,7 @@
   "authors": [
     "Nex9"
   ],
-  "main": "/dist/core.js",
+  "main": "./dist/core.js",
   "license": "MIT",
   "private": false,
   "dependencies": {
