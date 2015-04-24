@@ -10,6 +10,7 @@ class imagoPager extends Directive
         pageSize: '@'
         tags: '='
         currentPage: '='
+        shuffle: '@'
       }
       templateUrl: '/imago/imagoPager.html'
       controller: ($scope, $element, $attrs) ->
@@ -36,7 +37,12 @@ class imagoPager extends Directive
             # console.log 'response', response
             for collection in response
               # console.log 'collection', collection
-              $scope.posts = collection.assets
+
+              if $scope.shuffle
+                $scope.posts = _.shuffle collection.assets
+              else
+                $scope.posts = collection.assets
+
               $scope.totalPages = collection.count / pageSize
               break
 
