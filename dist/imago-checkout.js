@@ -244,9 +244,10 @@ Calculation = (function() {
   Calculation.prototype.calculateShipping = function() {
     var deferred;
     deferred = this.$q.defer();
-    if (this.shipping_options) {
-      return this.calcShipping(this.shipping_options, deferred);
+    if (this.calculateShippingRunning) {
+      return;
     }
+    this.calculateShippingRunning = true;
     this.costs.shipping = 0;
     this.getShippingRate().then((function(_this) {
       return function(rates) {
@@ -257,6 +258,7 @@ Calculation = (function() {
           return deferred.resolve();
         }
         _this.error.noshippingrule = false;
+        _this.calculateShippingRunning = false;
         return _this.calcShipping(rates[0], deferred);
       };
     })(this));

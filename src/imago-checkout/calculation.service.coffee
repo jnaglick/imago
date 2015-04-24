@@ -50,7 +50,6 @@ class Calculation extends Service
     @calculate()
 
   checkCoupon: (code) =>
-
     unless code
       @couponState = ''
       @calculate()
@@ -140,7 +139,11 @@ class Calculation extends Service
   calculateShipping: =>
     deferred = @$q.defer()
 
-    return @calcShipping(@shipping_options, deferred) if @shipping_options
+    return if @calculateShippingRunning
+
+    @calculateShippingRunning = true
+
+    # return @calcShipping(@shipping_options, deferred) if @shipping_options
 
     @costs.shipping = 0
 
@@ -149,6 +152,7 @@ class Calculation extends Service
         @error.noshippingrule = true if @country
         return deferred.resolve()
       @error.noshippingrule = false
+      @calculateShippingRunning = false
       @calcShipping(rates[0], deferred)
 
     return deferred.promise
