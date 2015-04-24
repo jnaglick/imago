@@ -10,7 +10,8 @@ imagoPager = (function() {
         path: '@',
         pageSize: '@',
         tags: '=',
-        currentPage: '='
+        currentPage: '=',
+        shuffle: '@'
       },
       templateUrl: '/imago/imagoPager.html',
       controller: function($scope, $element, $attrs) {
@@ -40,7 +41,11 @@ imagoPager = (function() {
               results = [];
               for (i = 0, len = response.length; i < len; i++) {
                 collection = response[i];
-                $scope.posts = collection.assets;
+                if ($scope.shuffle) {
+                  $scope.posts = _.shuffle(collection.assets);
+                } else {
+                  $scope.posts = collection.assets;
+                }
                 $scope.totalPages = collection.count / pageSize;
                 break;
               }
