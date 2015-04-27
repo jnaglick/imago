@@ -1,28 +1,28 @@
 table
   tbody
     tr
-      td subtotal
+      th Subtotal
       td
         span.currency(ng-bind-html='currency | currencySymbol')
         | {{ costs.subtotal | price }}
 
     tr
-      td shipping
+      th Shipping
       td
         span.currency(ng-bind-html='currency | currencySymbol')
         | {{ costs.shipping | price }}
     tr(ng-show="costs.includedTax")
-      td included tax
+      th Included Tax
       td
         span.currency(ng-bind-html='currency | currencySymbol')
         | {{ costs.includedTax | price }}
     tr(ng-show="!costs.includedTax")
-      td tax
+      th Tax
       td
         span.currency(ng-bind-html='currency | currencySymbol')
         | {{ costs.tax | price }}
     tr.total
-      td total
+      th Total
       td
         span.currency(ng-bind-html='currency | currencySymbol')
         | {{ costs.total | price }}
