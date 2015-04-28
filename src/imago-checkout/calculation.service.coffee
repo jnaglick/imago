@@ -295,12 +295,4 @@ class Calculation extends Service
     @process.form.billing_address['phone']  = angular.copy @process.form.phone
     @process.form.shipping_address['phone'] = angular.copy @process.form.phone
 
-    @$http.post(@imagoSettings.host + '/api/checkout', @process.form).then (response) =>
-      # console.log 'response checkout', response
-      @$auth.setToken(response.data.token)
-      if response.data.code is 200
-        for order in response.data.result
-          @$state.go('order', {number: order.number})
-          break
-
-      @processing = false
+    return @$http.post(@imagoSettings.host + '/api/checkout', @process.form)
