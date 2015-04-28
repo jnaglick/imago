@@ -117,4 +117,4 @@ class imagoCart extends Service
 
   checkout: ->
     return unless tenant
-    @$window.location.href = "https://#{tenant}.2.imagoapp.com/account/checkout/#{@cart._id}"
+    @$window.location.href = "https://#{tenant}.imago.io/account/checkout/#{@cart._id}"

@@ -320,7 +320,7 @@ imagoVideo = (function() {
               continue;
             }
             formats.push({
-              "src": "//api.2.imagoapp.com/api/play_redirect?uuid=" + data.uuid + "&codec=" + format.codec + "&quality=hd&max_size=" + format.size,
+              "src": "//api.imago.io/api/play_redirect?uuid=" + data.uuid + "&codec=" + format.codec + "&quality=hd&max_size=" + format.size,
               "size": format.size,
               "codec": format.codec,
               "type": "video/" + codec

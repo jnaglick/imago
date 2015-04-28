@@ -231,7 +231,7 @@ imagoCart = (function() {
     if (!tenant) {
       return;
     }
-    return this.$window.location.href = "https://" + tenant + ".2.imagoapp.com/account/checkout/" + this.cart._id;
+    return this.$window.location.href = "https://" + tenant + ".imago.io/account/checkout/" + this.cart._id;
   };
 
   return imagoCart;
