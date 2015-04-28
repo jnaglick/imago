@@ -487,23 +487,7 @@ Calculation = (function() {
     }
     this.process.form.billing_address['phone'] = angular.copy(this.process.form.phone);
     this.process.form.shipping_address['phone'] = angular.copy(this.process.form.phone);
-    return this.$http.post(this.imagoSettings.host + '/api/checkout', this.process.form).then((function(_this) {
-      return function(response) {
-        var i, len, order, ref;
-        _this.$auth.setToken(response.data.token);
-        if (response.data.code === 200) {
-          ref = response.data.result;
-          for (i = 0, len = ref.length; i < len; i++) {
-            order = ref[i];
-            _this.$state.go('order', {
-              number: order.number
-            });
-            break;
-          }
-        }
-        return _this.processing = false;
-      };
-    })(this));
+    return this.$http.post(this.imagoSettings.host + '/api/checkout', this.process.form);
   };
 
   return Calculation;
