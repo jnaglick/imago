@@ -148,11 +148,11 @@ class Calculation extends Service
     @costs.shipping = 0
 
     @getShippingRate().then (rates) =>
+      @calculateShippingRunning = false
       unless rates?.length
         @error.noshippingrule = true if @country
         return deferred.resolve()
       @error.noshippingrule = false
-      @calculateShippingRunning = false
       @calcShipping(rates[0], deferred)
 
     return deferred.promise

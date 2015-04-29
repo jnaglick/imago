@@ -251,6 +251,7 @@ Calculation = (function() {
     this.costs.shipping = 0;
     this.getShippingRate().then((function(_this) {
       return function(rates) {
+        _this.calculateShippingRunning = false;
         if (!(rates != null ? rates.length : void 0)) {
           if (_this.country) {
             _this.error.noshippingrule = true;
@@ -258,7 +259,6 @@ Calculation = (function() {
           return deferred.resolve();
         }
         _this.error.noshippingrule = false;
-        _this.calculateShippingRunning = false;
         return _this.calcShipping(rates[0], deferred);
       };
     })(this));
