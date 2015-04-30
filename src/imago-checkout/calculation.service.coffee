@@ -38,7 +38,7 @@ class Calculation extends Service
       @[section].states = []
     @process.form[section].country_code = @imagoUtils.CODES[@process.form[section].country]
 
-    if @process.form['shipping_address']?.country
+    if @process.form['shipping_address']?.country and @differentshipping
       @country = @process.form['shipping_address'].country
       @state   = @process.form['shipping_address'].state
       @zip     = @process.form['shipping_address'].zip
@@ -64,7 +64,6 @@ class Calculation extends Service
         @couponState = 'invalid'
 
   applyCoupon: (coupon, costs) =>
-
     return unless coupon
     meta = coupon.meta
     @couponState = 'valid'
@@ -192,12 +191,14 @@ class Calculation extends Service
 
     @getTaxRate().then =>
       @costs.tax = 0
+
       if @taxincluded
         deferred.resolve()
         return
       # console.log 'currency', @currency, 'includestax', @imagoUtils.includesTax(@currency)
       if @imagoUtils.includesTax(@currency)
         @costs.includedTax = 0
+        # console.log '@costs.taxRate', @costs.taxRate
         if @costs.taxRate
           for item in @cart.items
             onepercent = item.fields.price.value[@currency]/(100+@costs.taxRate) * item.qty
@@ -220,7 +221,6 @@ class Calculation extends Service
     deferred.resolve() if not @country
 
     tRate = @findTaxRate()
-    # console.log 'tRate', tRate
     return @getZipTax() if tRate.autotax and @imagoUtils.inUsa(@country)
     @costs.taxRate = tRate.rate / 100
 
@@ -233,6 +233,7 @@ class Calculation extends Service
 
     rates_by_country = _.filter(@taxes, (item) => item.active and \
                                 @country?.toUpperCase() in (c.toUpperCase() for c in item.countries))
+
     if @state
       rate = _.find rates_by_country, (item) =>
           @state.toUpperCase() in (s.toUpperCase() for s in item.states)

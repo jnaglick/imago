@@ -8,9 +8,10 @@ table
 
     tr
       th Shipping
-      td
+      td(ng-show="costs.shipping")
         span.currency(ng-bind-html='currency | currencySymbol')
         | {{ costs.shipping | price }}
+      td(ng-hide="costs.shipping") free
     tr(ng-show="costs.includedTax")
       th Included Tax
       td

@@ -14,7 +14,10 @@ ImagoFieldCheckbox = (function() {
         return scope.update = function(value) {
           value = !value;
           ngModelController.$setViewValue(value);
-          return ngModelController.$render();
+          ngModelController.$render();
+          if (attrs.required) {
+            return ngModelController.$setValidity('required', value);
+          }
         };
       }
     };

@@ -17,5 +17,6 @@ class ImagoFieldCheckbox extends Directive
           value = !value
           ngModelController.$setViewValue(value)
           ngModelController.$render()
+          ngModelController.$setValidity('required', value) if attrs.required
 
     }
