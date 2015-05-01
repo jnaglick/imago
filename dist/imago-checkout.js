@@ -174,7 +174,6 @@ Calculation = (function() {
     var deferred, rates;
     deferred = this.$q.defer();
     rates = this.findShippingRate();
-    this.setShippingRates(rates);
     deferred.resolve(rates);
     return deferred.promise;
   };
@@ -253,13 +252,20 @@ Calculation = (function() {
       return function(rates) {
         _this.calculateShippingRunning = false;
         if (!(rates != null ? rates.length : void 0)) {
+          _this.shipping_options = void 0;
+          _this.shippingRates = [];
           if (_this.country) {
             _this.error.noshippingrule = true;
           }
           return deferred.resolve();
         }
         _this.error.noshippingrule = false;
-        return _this.calcShipping(rates[0], deferred);
+        if (_this.shipping_options) {
+          return _this.calcShipping(_this.shipping_options, deferred);
+        } else {
+          _this.setShippingRates(rates);
+          return _this.calcShipping(rates[0], deferred);
+        }
       };
     })(this));
     return deferred.promise;

@@ -105,7 +105,7 @@ class Calculation extends Service
   getShippingRate: =>
     deferred = @$q.defer()
     rates = @findShippingRate()
-    @setShippingRates(rates)
+    # @setShippingRates(rates)
     deferred.resolve(rates)
     return deferred.promise
 
@@ -139,7 +139,6 @@ class Calculation extends Service
     deferred = @$q.defer()
 
     return if @calculateShippingRunning
-
     @calculateShippingRunning = true
 
     # return @calcShipping(@shipping_options, deferred) if @shipping_options
@@ -149,10 +148,16 @@ class Calculation extends Service
     @getShippingRate().then (rates) =>
       @calculateShippingRunning = false
       unless rates?.length
+        @shipping_options = undefined
+        @shippingRates = []
         @error.noshippingrule = true if @country
         return deferred.resolve()
       @error.noshippingrule = false
-      @calcShipping(rates[0], deferred)
+      if @shipping_options
+        return @calcShipping(@shipping_options, deferred)
+      else
+        @setShippingRates(rates)
+        @calcShipping(rates[0], deferred)
 
     return deferred.promise
 
