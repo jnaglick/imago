@@ -310,10 +310,6 @@ Calculation = (function() {
       return function() {
         var i, item, j, len, len1, onepercent, ref, ref1;
         _this.costs.tax = 0;
-        if (_this.taxincluded) {
-          deferred.resolve();
-          return;
-        }
         if (_this.imagoUtils.includesTax(_this.currency)) {
           _this.costs.includedTax = 0;
           if (_this.costs.taxRate) {
@@ -346,9 +342,6 @@ Calculation = (function() {
     var deferred, tRate;
     deferred = this.$q.defer();
     this.costs.taxRate = 0;
-    if (this.taxincluded) {
-      deferred.resolve();
-    }
     if (!this.country) {
       deferred.resolve();
     }
@@ -437,7 +430,7 @@ Calculation = (function() {
     if (this.costs.shipping) {
       this.costs.total += this.costs.shipping;
     }
-    if (this.costs.tax && !this.taxincluded) {
+    if (this.costs.tax) {
       this.costs.total += this.costs.tax;
     }
     return this.costs.total;

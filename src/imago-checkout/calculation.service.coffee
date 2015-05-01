@@ -192,9 +192,9 @@ class Calculation extends Service
     @getTaxRate().then =>
       @costs.tax = 0
 
-      if @taxincluded
-        deferred.resolve()
-        return
+      # if @taxincluded
+      #   deferred.resolve()
+      #   return
       # console.log 'currency', @currency, 'includestax', @imagoUtils.includesTax(@currency)
       if @imagoUtils.includesTax(@currency)
         @costs.includedTax = 0
@@ -217,7 +217,7 @@ class Calculation extends Service
     deferred = @$q.defer()
 
     @costs.taxRate = 0
-    deferred.resolve() if @taxincluded
+    # deferred.resolve() if @taxincluded
     deferred.resolve() if not @country
 
     tRate = @findTaxRate()
@@ -259,7 +259,8 @@ class Calculation extends Service
     @costs.total = 0
     @costs.total += @costs.subtotal if @costs.subtotal
     @costs.total += @costs.shipping if @costs.shipping
-    @costs.total += @costs.tax if @costs.tax and !@taxincluded
+    # @costs.total += @costs.tax if @costs.tax and !@taxincluded
+    @costs.total += @costs.tax if @costs.tax
     @costs.total
 
   calculate: =>
