@@ -339,7 +339,8 @@ class imagoModel extends Service
     request = []
     for asset in assets
       newAsset =
-        '_id' : asset._id
+        '_id'   : asset._id
+        'name'  : asset.name
 
       request.push newAsset
 

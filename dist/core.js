@@ -537,7 +537,8 @@ imagoModel = (function() {
     for (j = 0, len = assets.length; j < len; j++) {
       asset = assets[j];
       newAsset = {
-        '_id': asset._id
+        '_id': asset._id,
+        'name': asset.name
       };
       request.push(newAsset);
     }
