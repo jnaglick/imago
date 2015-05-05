@@ -101,6 +101,10 @@ imagoCart = (function() {
         }
         return defer.resolve();
       };
+    })(this), (function(_this) {
+      return function() {
+        return defer.resolve();
+      };
     })(this));
     return defer.promise;
   };

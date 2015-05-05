@@ -303,3 +303,11 @@ class Calculation extends Service
     @process.form.shipping_address['phone'] = angular.copy @process.form.phone
 
     return @$http.post(@imagoSettings.host + '/api/checkout', @process.form)
+
+  saveState: ->
+    form = angular.copy @cart
+    form.data = angular.copy @process.form
+    form.data.costs = angular.copy @costs
+    form.data.paymentType = angular.copy @paymentType
+
+    return @$http.put(@imagoSettings.host + '/api/carts/' + @cart._id, form)

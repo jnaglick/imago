@@ -23,7 +23,7 @@ class imagoCart extends Service
     promises.push @$http.get("//www.telize.com/geoip", {headers: {NexClient: undefined, NexTenant: undefined}}).then (response) =>
       @telize = response.data
     promises.push @$http.get("#{@imagoSettings.host}/api/settings").then (response) =>
-      res = _.find(response.data, { name: 'currencies'})
+      res = _.find(response.data, {name: 'currencies'})
       @currencies = res.value
 
     @$q.all(promises).then =>
@@ -37,6 +37,8 @@ class imagoCart extends Service
 
       # @cart.currency = @currency if @currency
 
+      defer.resolve()
+    , =>
       defer.resolve()
 
     defer.promise

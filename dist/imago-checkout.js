@@ -489,6 +489,15 @@ Calculation = (function() {
     return this.$http.post(this.imagoSettings.host + '/api/checkout', this.process.form);
   };
 
+  Calculation.prototype.saveState = function() {
+    var form;
+    form = angular.copy(this.cart);
+    form.data = angular.copy(this.process.form);
+    form.data.costs = angular.copy(this.costs);
+    form.data.paymentType = angular.copy(this.paymentType);
+    return this.$http.put(this.imagoSettings.host + '/api/carts/' + this.cart._id, form);
+  };
+
   return Calculation;
 
 })();
