@@ -51,7 +51,8 @@ class Calculation extends Service
 
   checkCoupon: (code) =>
     unless code
-      @couponState = ''
+      @coupon = null
+      @couponState = null
       @calculate()
       return
 
@@ -59,9 +60,10 @@ class Calculation extends Service
       if response.data.length is 1
         @coupon = response.data[0]
         @couponState = 'valid'
-        @calculate()
       else
+        @coupon = null
         @couponState = 'invalid'
+      @calculate()
 
   applyCoupon: (coupon, costs) =>
     return unless coupon
@@ -75,10 +77,10 @@ class Calculation extends Service
       percentvalue = Number((costs.subtotal * meta.value / 10000).toFixed(0))
       costs.subtotal = costs.subtotal - percentvalue
     else if meta.type is 'free shipping'
-      codes = (code.toUpperCase() for code in meta.code)
-      if meta.code and (@shipping_options.code.toUpperCase() in codes)
+      codes = (code.toUpperCase() for code in meta.value) if meta.value?.length
+      if meta.value?.length and (@shipping_options.code.toUpperCase() in codes)
         costs.shipping = 0
-      else if not meta.code
+      else if not meta.value?.length
         costs.shipping = 0
       else
         @couponState = 'invalid'

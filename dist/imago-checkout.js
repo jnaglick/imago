@@ -94,7 +94,8 @@ Calculation = (function() {
 
   Calculation.prototype.checkCoupon = function(code) {
     if (!code) {
-      this.couponState = '';
+      this.coupon = null;
+      this.couponState = null;
       this.calculate();
       return;
     }
@@ -103,16 +104,17 @@ Calculation = (function() {
         if (response.data.length === 1) {
           _this.coupon = response.data[0];
           _this.couponState = 'valid';
-          return _this.calculate();
         } else {
-          return _this.couponState = 'invalid';
+          _this.coupon = null;
+          _this.couponState = 'invalid';
         }
+        return _this.calculate();
       };
     })(this));
   };
 
   Calculation.prototype.applyCoupon = function(coupon, costs) {
-    var code, codes, meta, percentvalue, ref, value;
+    var code, codes, meta, percentvalue, ref, ref1, ref2, ref3, value;
     if (!coupon) {
       return;
     }
@@ -125,19 +127,21 @@ Calculation = (function() {
       percentvalue = Number((costs.subtotal * meta.value / 10000).toFixed(0));
       return costs.subtotal = costs.subtotal - percentvalue;
     } else if (meta.type === 'free shipping') {
-      codes = (function() {
-        var i, len, ref, results;
-        ref = meta.code;
-        results = [];
-        for (i = 0, len = ref.length; i < len; i++) {
-          code = ref[i];
-          results.push(code.toUpperCase());
-        }
-        return results;
-      })();
-      if (meta.code && (ref = this.shipping_options.code.toUpperCase(), indexOf.call(codes, ref) >= 0)) {
+      if ((ref = meta.value) != null ? ref.length : void 0) {
+        codes = (function() {
+          var i, len, ref1, results;
+          ref1 = meta.value;
+          results = [];
+          for (i = 0, len = ref1.length; i < len; i++) {
+            code = ref1[i];
+            results.push(code.toUpperCase());
+          }
+          return results;
+        })();
+      }
+      if (((ref1 = meta.value) != null ? ref1.length : void 0) && (ref2 = this.shipping_options.code.toUpperCase(), indexOf.call(codes, ref2) >= 0)) {
         return costs.shipping = 0;
-      } else if (!meta.code) {
+      } else if (!((ref3 = meta.value) != null ? ref3.length : void 0)) {
         return costs.shipping = 0;
       } else {
         return this.couponState = 'invalid';
