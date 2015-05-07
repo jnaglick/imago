@@ -523,10 +523,16 @@ Costs = (function() {
     return {
       scope: {
         costs: '=',
-        currency: '='
+        currency: '=',
+        hideShippingIfNotCountry: '=?'
       },
       controllerAs: 'costs',
-      templateUrl: '/imago/costs.html'
+      templateUrl: '/imago/costs.html',
+      controller: function($scope, $element, $attrs) {
+        if (!$attrs.hideShippingIfNotCountry) {
+          return $scope.hideShippingIfNotCountry = false;
+        }
+      }
     };
   }
 
@@ -536,4 +542,4 @@ Costs = (function() {
 
 angular.module('imago').directive('costs', [Costs]);
 
-angular.module("imago").run(["$templateCache", function($templateCache) {$templateCache.put("/imago/costs.html","<table><tbody><tr><th>Subtotal</th><td><span ng-bind-html=\"currency | currencySymbol\" class=\"currency\"></span>{{ costs.subtotal | price }}</td></tr><tr><th>Shipping</th><td ng-show=\"costs.shipping\"><span ng-bind-html=\"currency | currencySymbol\" class=\"currency\"></span>{{ costs.shipping | price }}</td><td ng-hide=\"costs.shipping\">free</td></tr><tr ng-show=\"costs.includedTax\"><th>Included Tax</th><td><span ng-bind-html=\"currency | currencySymbol\" class=\"currency\"></span>{{ costs.includedTax | price }}</td></tr><tr ng-show=\"!costs.includedTax\"><th>Tax</th><td><span ng-bind-html=\"currency | currencySymbol\" class=\"currency\"></span>{{ costs.tax | price }}</td></tr><tr class=\"total\"><th>Total</th><td><span ng-bind-html=\"currency | currencySymbol\" class=\"currency\"></span>{{ costs.total | price }}</td></tr></tbody></table>");}]);
+angular.module("imago").run(["$templateCache", function($templateCache) {$templateCache.put("/imago/costs.html","<table><tbody><tr><th>Subtotal</th><td><span ng-bind-html=\"currency | currencySymbol\" class=\"currency\"></span>{{ costs.subtotal | price }}</td></tr><tr ng-hide=\"hideShippingIfNotCountry\"><th>Shipping</th><td ng-show=\"costs.shipping\"><span ng-bind-html=\"currency | currencySymbol\" class=\"currency\"></span>{{ costs.shipping | price }}</td><td ng-hide=\"costs.shipping\">free</td></tr><tr ng-show=\"costs.includedTax\"><th>Included Tax</th><td><span ng-bind-html=\"currency | currencySymbol\" class=\"currency\"></span>{{ costs.includedTax | price }}</td></tr><tr ng-show=\"!costs.includedTax\"><th>Tax</th><td><span ng-bind-html=\"currency | currencySymbol\" class=\"currency\"></span>{{ costs.tax | price }}</td></tr><tr class=\"total\"><th>Total</th><td><span ng-bind-html=\"currency | currencySymbol\" class=\"currency\"></span>{{ costs.total | price }}</td></tr></tbody></table>");}]);

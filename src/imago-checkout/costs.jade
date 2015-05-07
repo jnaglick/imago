@@ -6,7 +6,7 @@ table
         span.currency(ng-bind-html='currency | currencySymbol')
         | {{ costs.subtotal | price }}
 
-    tr
+    tr(ng-hide="hideShippingIfNotCountry")
       th Shipping
       td(ng-show="costs.shipping")
         span.currency(ng-bind-html='currency | currencySymbol')
