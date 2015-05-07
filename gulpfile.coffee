@@ -30,6 +30,8 @@ exec            = require('child_process').exec
 
 sketch          = require 'gulp-sketch'
 
+console.log 'test'
+
 # Defaults
 
 dest        = 'dist'
