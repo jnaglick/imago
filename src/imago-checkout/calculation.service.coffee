@@ -311,5 +311,13 @@ class Calculation extends Service
     form.data = angular.copy @process.form
     form.data.costs = angular.copy @costs
     form.data.paymentType = angular.copy @paymentType
+    form.data.differentshipping = @differentshipping
+    form.data.costs.coupon = (if @coupon then angular.copy(@coupon) else null)
+    form.data.shipping_address or= {}
+    form.data.billing_address['phone']  = angular.copy form.data.phone
+    form.data.shipping_address['phone'] = angular.copy form.data.phone
+
+    if not @differentshipping
+      form.data['shipping_address'] = angular.copy @process.form['billing_address']
 
     return @$http.put(@imagoSettings.host + '/api/carts/' + @cart._id, form)

@@ -494,11 +494,19 @@ Calculation = (function() {
   };
 
   Calculation.prototype.saveState = function() {
-    var form;
+    var base, form;
     form = angular.copy(this.cart);
     form.data = angular.copy(this.process.form);
     form.data.costs = angular.copy(this.costs);
     form.data.paymentType = angular.copy(this.paymentType);
+    form.data.differentshipping = this.differentshipping;
+    form.data.costs.coupon = (this.coupon ? angular.copy(this.coupon) : null);
+    (base = form.data).shipping_address || (base.shipping_address = {});
+    form.data.billing_address['phone'] = angular.copy(form.data.phone);
+    form.data.shipping_address['phone'] = angular.copy(form.data.phone);
+    if (!this.differentshipping) {
+      form.data['shipping_address'] = angular.copy(this.process.form['billing_address']);
+    }
     return this.$http.put(this.imagoSettings.host + '/api/carts/' + this.cart._id, form);
   };
 
