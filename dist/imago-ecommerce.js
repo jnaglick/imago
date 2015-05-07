@@ -44,7 +44,6 @@ imagoCart = (function() {
     this.create = bind(this.create, this);
     this.checkCart = bind(this.checkCart, this);
     this.checkStatus = bind(this.checkStatus, this);
-    this.checkCurrency = bind(this.checkCurrency, this);
     this.cart = {
       items: []
     };
@@ -53,9 +52,36 @@ imagoCart = (function() {
     if (local) {
       promises.push(this.checkStatus(local));
     }
-    promises.push(this.checkCurrency());
+    promises.push(this.telize());
     this.$q.all(promises).then((function(_this) {
       return function() {
+        return _this.checkCurrency();
+      };
+    })(this), (function(_this) {
+      return function(reject) {
+        return _this.checkCurrency();
+      };
+    })(this));
+  }
+
+  imagoCart.prototype.checkCurrency = function() {
+    return this.$http.get(this.imagoSettings.host + "/api/settings").then((function(_this) {
+      return function(response) {
+        var currency, ref, res;
+        res = _.find(response.data, {
+          name: 'currencies'
+        });
+        _this.currencies = res.value;
+        if (_this.telize) {
+          currency = _this.imagoUtils.CURRENCY_MAPPING[_this.telize.country];
+        }
+        if (currency && _this.currencies && indexOf.call(_this.currencies, currency) >= 0) {
+          _this.currency = currency;
+        } else if ((ref = _this.currencies) != null ? ref.length : void 0) {
+          _this.currency = _this.currencies[0];
+        } else {
+          console.log('you need to enable at least one currency in the settings');
+        }
         if (_this.cart.currency !== _this.currency) {
           _this.cart.currency = angular.copy(_this.currency);
           _this.update();
@@ -63,13 +89,10 @@ imagoCart = (function() {
         return _this.updateLenght();
       };
     })(this));
-  }
+  };
 
-  imagoCart.prototype.checkCurrency = function() {
-    var defer, promises;
-    defer = this.$q.defer();
-    promises = [];
-    promises.push(this.$http.get("//www.telize.com/geoip", {
+  imagoCart.prototype.telize = function() {
+    return this.$http.get("//www.telize.com/geoip", {
       headers: {
         NexClient: void 0,
         NexTenant: void 0
@@ -78,35 +101,7 @@ imagoCart = (function() {
       return function(response) {
         return _this.telize = response.data;
       };
-    })(this)));
-    promises.push(this.$http.get(this.imagoSettings.host + "/api/settings").then((function(_this) {
-      return function(response) {
-        var res;
-        res = _.find(response.data, {
-          name: 'currencies'
-        });
-        return _this.currencies = res.value;
-      };
-    })(this)));
-    this.$q.all(promises).then((function(_this) {
-      return function() {
-        var currency;
-        currency = _this.imagoUtils.CURRENCY_MAPPING[_this.telize.country];
-        if (indexOf.call(_this.currencies, currency) >= 0) {
-          _this.currency = currency;
-        } else if (_this.currencies.length) {
-          _this.currency = _this.currencies[0];
-        } else {
-          console.log('you need to enable at least one currency in the settings');
-        }
-        return defer.resolve();
-      };
-    })(this), (function(_this) {
-      return function() {
-        return defer.resolve();
-      };
     })(this));
-    return defer.promise;
   };
 
   imagoCart.prototype.checkStatus = function(id) {

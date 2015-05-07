@@ -9,39 +9,33 @@ class imagoCart extends Service
 
     promises = []
     promises.push(@checkStatus(local)) if local
-    promises.push(@checkCurrency())
+    promises.push(@telize())
 
     @$q.all(promises).then =>
+      @checkCurrency()
+    , (reject) =>
+      @checkCurrency()
+
+  checkCurrency: ->
+    @$http.get("#{@imagoSettings.host}/api/settings").then (response) =>
+      res = _.find(response.data, {name: 'currencies'})
+      @currencies = res.value
+      currency = @imagoUtils.CURRENCY_MAPPING[@telize.country] if @telize
+      if currency and @currencies and currency in @currencies
+        @currency = currency
+      else if @currencies?.length
+        @currency = @currencies[0]
+      else
+        console.log 'you need to enable at least one currency in the settings'
+
       if @cart.currency isnt @currency
         @cart.currency = angular.copy @currency
         @update()
       @updateLenght()
 
-  checkCurrency: =>
-    defer = @$q.defer()
-    promises = []
-    promises.push @$http.get("//www.telize.com/geoip", {headers: {NexClient: undefined, NexTenant: undefined}}).then (response) =>
+  telize: ->
+    return @$http.get("//www.telize.com/geoip", {headers: {NexClient: undefined, NexTenant: undefined}}).then (response) =>
       @telize = response.data
-    promises.push @$http.get("#{@imagoSettings.host}/api/settings").then (response) =>
-      res = _.find(response.data, {name: 'currencies'})
-      @currencies = res.value
-
-    @$q.all(promises).then =>
-      currency = @imagoUtils.CURRENCY_MAPPING[@telize.country]
-      if currency in @currencies
-        @currency = currency
-      else if @currencies.length
-        @currency = @currencies[0]
-      else
-        console.log 'you need to enable at least one currency in the settings'
-
-      # @cart.currency = @currency if @currency
-
-      defer.resolve()
-    , =>
-      defer.resolve()
-
-    defer.promise
 
   checkStatus: (id) =>
     defer = @$q.defer()
