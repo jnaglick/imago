@@ -5,7 +5,9 @@ class imagoCart extends Service
   constructor: (@$q, @$window, @$http, @imagoUtils, @imagoModel, @imagoSettings) ->
     @cart =
       items: []
-    local = localStorage.getItem('imagoCart')
+
+    local = @imagoUtils.cookie('imagoCart')
+    # local = localStorage.getItem('imagoCart')
 
     promises = []
     promises.push(@checkStatus(local)) if local
@@ -52,7 +54,8 @@ class imagoCart extends Service
     else
       @create(@cart).then (response) =>
         _.assign @cart, response.data
-        localStorage.setItem('imagoCart', response.data._id)
+        @imagoUtils.cookie('imagoCart', response.data._id)
+        # localStorage.setItem('imagoCart', response.data._id)
         defer.resolve('created')
     defer.promise
 

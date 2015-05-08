@@ -47,7 +47,7 @@ imagoCart = (function() {
     this.cart = {
       items: []
     };
-    local = localStorage.getItem('imagoCart');
+    local = this.imagoUtils.cookie('imagoCart');
     promises = [];
     if (local) {
       promises.push(this.checkStatus(local));
@@ -126,7 +126,7 @@ imagoCart = (function() {
       this.create(this.cart).then((function(_this) {
         return function(response) {
           _.assign(_this.cart, response.data);
-          localStorage.setItem('imagoCart', response.data._id);
+          _this.imagoUtils.cookie('imagoCart', response.data._id);
           return defer.resolve('created');
         };
       })(this));
