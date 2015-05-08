@@ -195,15 +195,15 @@ class imagoVideo extends Directive
 
           style
 
-        loadFormats = (data) ->
+        loadFormats = (asset) ->
           formats = []
           codec = detectCodec()
-          data.fields.formats.sort( (a, b) -> return b.height - a.height )
-          for format, i in data.fields.formats
+          asset.fields.formats.sort( (a, b) -> return b.height - a.height )
+          host = if data is 'online' then 'api.imago.io' else 'localhost:8000'
+          for format, i in asset.fields.formats
             continue unless codec is format.codec
-            host = if data is 'online' then 'api.imago.io' else 'localhost:8000'
             formats.push(
-                "src" : "//#{host}/api/play_redirect?uuid=#{data.uuid}&codec=#{format.codec}&quality=hd&max_size=#{format.size}"
+                "src" : "//#{host}/api/play_redirect?uuid=#{asset.uuid}&codec=#{format.codec}&quality=hd&max_size=#{format.size}"
                 "size": format.size
                 "codec": format.codec
                 "type": "video/#{codec}"

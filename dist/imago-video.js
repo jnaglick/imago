@@ -306,22 +306,22 @@ imagoVideo = (function() {
             return style;
           };
         })(this);
-        loadFormats = function(data) {
+        loadFormats = function(asset) {
           var codec, format, formats, host, i, j, len, ref;
           formats = [];
           codec = detectCodec();
-          data.fields.formats.sort(function(a, b) {
+          asset.fields.formats.sort(function(a, b) {
             return b.height - a.height;
           });
-          ref = data.fields.formats;
+          host = data === 'online' ? 'api.imago.io' : 'localhost:8000';
+          ref = asset.fields.formats;
           for (i = j = 0, len = ref.length; j < len; i = ++j) {
             format = ref[i];
             if (codec !== format.codec) {
               continue;
             }
-            host = data === 'online' ? 'api.imago.io' : 'localhost:8000';
             formats.push({
-              "src": "//" + host + "/api/play_redirect?uuid=" + data.uuid + "&codec=" + format.codec + "&quality=hd&max_size=" + format.size,
+              "src": "//" + host + "/api/play_redirect?uuid=" + asset.uuid + "&codec=" + format.codec + "&quality=hd&max_size=" + format.size,
               "size": format.size,
               "codec": format.codec,
               "type": "video/" + codec
