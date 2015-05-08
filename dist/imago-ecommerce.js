@@ -52,7 +52,7 @@ imagoCart = (function() {
     if (local) {
       promises.push(this.checkStatus(local));
     }
-    promises.push(this.telize());
+    promises.push(this.geoip());
     this.$q.all(promises).then((function(_this) {
       return function() {
         return _this.checkCurrency();
@@ -64,15 +64,15 @@ imagoCart = (function() {
     })(this));
   }
 
-  imagoCart.prototype.telize = function() {
-    return this.$http.get("//www.telize.com/geoip", {
+  imagoCart.prototype.geoip = function() {
+    return this.$http.get("//api.imago.io/geoip", {
       headers: {
         NexClient: void 0,
         NexTenant: void 0
       }
     }).then((function(_this) {
       return function(response) {
-        return _this.telize = response.datah;
+        return _this.geo = response.datah;
       };
     })(this));
   };
@@ -85,8 +85,8 @@ imagoCart = (function() {
           name: 'currencies'
         });
         _this.currencies = res.value;
-        if (_this.telize) {
-          currency = _this.imagoUtils.CURRENCY_MAPPING[_this.telize.country];
+        if (_this.geo) {
+          currency = _this.imagoUtils.CURRENCY_MAPPING[_this.geo.country];
         }
         if (currency && _this.currencies && indexOf.call(_this.currencies, currency) >= 0) {
           _this.currency = currency;

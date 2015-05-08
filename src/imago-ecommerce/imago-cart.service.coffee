@@ -9,22 +9,22 @@ class imagoCart extends Service
 
     promises = []
     promises.push(@checkStatus(local)) if local
-    promises.push(@telize())
+    promises.push(@geoip())
 
     @$q.all(promises).then =>
       @checkCurrency()
     , (reject) =>
       @checkCurrency()
 
-  telize: ->
-    return @$http.get("//www.telize.com/geoip", {headers: {NexClient: undefined, NexTenant: undefined}}).then (response) =>
-      @telize = response.datah
+  geoip: ->
+    return @$http.get("//api.imago.io/geoip", {headers: {NexClient: undefined, NexTenant: undefined}}).then (response) =>
+      @geo = response.datah
 
   checkCurrency: ->
     @$http.get("#{@imagoSettings.host}/api/settings").then (response) =>
       res = _.find(response.data, {name: 'currencies'})
       @currencies = res.value
-      currency = @imagoUtils.CURRENCY_MAPPING[@telize.country] if @telize
+      currency = @imagoUtils.CURRENCY_MAPPING[@geo.country] if @geo
       if currency and @currencies and currency in @currencies
         @currency = currency
       else if @currencies?.length
