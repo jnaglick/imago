@@ -18,7 +18,7 @@ class imagoCart extends Service
 
   telize: ->
     return @$http.get("//www.telize.com/geoip", {headers: {NexClient: undefined, NexTenant: undefined}}).then (response) =>
-      @telize = response.data
+      @telize = response.datah
 
   checkCurrency: ->
     @$http.get("#{@imagoSettings.host}/api/settings").then (response) =>

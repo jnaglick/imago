@@ -307,7 +307,7 @@ imagoVideo = (function() {
           };
         })(this);
         loadFormats = function(data) {
-          var codec, format, formats, i, j, len, ref;
+          var codec, format, formats, host, i, j, len, ref;
           formats = [];
           codec = detectCodec();
           data.fields.formats.sort(function(a, b) {
@@ -319,8 +319,9 @@ imagoVideo = (function() {
             if (codec !== format.codec) {
               continue;
             }
+            host = online ? 'api.imago.io' : 'localhost:8000';
             formats.push({
-              "src": "//api.imago.io/api/play_redirect?uuid=" + data.uuid + "&codec=" + format.codec + "&quality=hd&max_size=" + format.size,
+              "src": "//" + host + "/api/play_redirect?uuid=" + data.uuid + "&codec=" + format.codec + "&quality=hd&max_size=" + format.size,
               "size": format.size,
               "codec": format.codec,
               "type": "video/" + codec

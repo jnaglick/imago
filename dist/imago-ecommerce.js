@@ -72,7 +72,7 @@ imagoCart = (function() {
       }
     }).then((function(_this) {
       return function(response) {
-        return _this.telize = response.data;
+        return _this.telize = response.datah;
       };
     })(this));
   };
