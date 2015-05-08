@@ -319,7 +319,7 @@ imagoVideo = (function() {
             if (codec !== format.codec) {
               continue;
             }
-            host = online ? 'api.imago.io' : 'localhost:8000';
+            host = data === 'online' ? 'api.imago.io' : 'localhost:8000';
             formats.push({
               "src": "//" + host + "/api/play_redirect?uuid=" + data.uuid + "&codec=" + format.codec + "&quality=hd&max_size=" + format.size,
               "size": format.size,
