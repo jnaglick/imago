@@ -1,6 +1,8 @@
 class Calculation extends Service
 
   cart            : undefined
+  costs           : {}
+  coupon          : undefined
   stripe          : undefined
   currency        : undefined
   shippingmethods : undefined
@@ -22,7 +24,7 @@ class Calculation extends Service
     @updateCart()
 
   changeAddress: (section, type) =>
-    if @process.form['shipping_address']?.country and type is 'country'
+    if @process.form['shipping_address']?.country and @differentshipping and type is 'country'
       @setCurrency(null, @process.form['shipping_address'].country)
     else if type is 'country'
       @setCurrency(null, @process.form[section].country)
@@ -86,10 +88,13 @@ class Calculation extends Service
         @couponState = 'invalid'
 
   setCurrency: (currency, country) =>
+    oldcurrency = angular.copy @currency
     if country
       currency = if @imagoUtils.inUsa(country) then 'USD' else \
                     @imagoUtils.CURRENCY_MAPPING[country]
+
     @currency = if currency in @currencies then currency else @currencies[0]
+    @saveCart() if oldcurrency isnt @currency
 
   setShippingRates: (rates) =>
     if rates?.length
@@ -306,8 +311,9 @@ class Calculation extends Service
 
     return @$http.post(@imagoSettings.host + '/api/checkout', @process.form)
 
-  saveState: ->
+  saveCart: ->
     form = angular.copy @cart
+    form.currency = @currency
     form.data = angular.copy @process.form
     form.data.costs = angular.copy @costs
     form.data.paymentType = angular.copy @paymentType

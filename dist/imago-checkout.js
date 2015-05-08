@@ -5,6 +5,10 @@ var Calculation,
 Calculation = (function() {
   Calculation.prototype.cart = void 0;
 
+  Calculation.prototype.costs = {};
+
+  Calculation.prototype.coupon = void 0;
+
   Calculation.prototype.stripe = void 0;
 
   Calculation.prototype.currency = void 0;
@@ -62,7 +66,7 @@ Calculation = (function() {
 
   Calculation.prototype.changeAddress = function(section, type) {
     var ref, ref1, ref2, ref3;
-    if (((ref = this.process.form['shipping_address']) != null ? ref.country : void 0) && type === 'country') {
+    if (((ref = this.process.form['shipping_address']) != null ? ref.country : void 0) && this.differentshipping && type === 'country') {
       this.setCurrency(null, this.process.form['shipping_address'].country);
     } else if (type === 'country') {
       this.setCurrency(null, this.process.form[section].country);
@@ -150,10 +154,15 @@ Calculation = (function() {
   };
 
   Calculation.prototype.setCurrency = function(currency, country) {
+    var oldcurrency;
+    oldcurrency = angular.copy(this.currency);
     if (country) {
       currency = this.imagoUtils.inUsa(country) ? 'USD' : this.imagoUtils.CURRENCY_MAPPING[country];
     }
-    return this.currency = indexOf.call(this.currencies, currency) >= 0 ? currency : this.currencies[0];
+    this.currency = indexOf.call(this.currencies, currency) >= 0 ? currency : this.currencies[0];
+    if (oldcurrency !== this.currency) {
+      return this.saveCart();
+    }
   };
 
   Calculation.prototype.setShippingRates = function(rates) {
@@ -493,9 +502,10 @@ Calculation = (function() {
     return this.$http.post(this.imagoSettings.host + '/api/checkout', this.process.form);
   };
 
-  Calculation.prototype.saveState = function() {
+  Calculation.prototype.saveCart = function() {
     var base, form;
     form = angular.copy(this.cart);
+    form.currency = this.currency;
     form.data = angular.copy(this.process.form);
     form.data.costs = angular.copy(this.costs);
     form.data.paymentType = angular.copy(this.paymentType);
