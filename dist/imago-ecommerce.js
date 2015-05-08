@@ -64,6 +64,19 @@ imagoCart = (function() {
     })(this));
   }
 
+  imagoCart.prototype.telize = function() {
+    return this.$http.get("//www.telize.com/geoip", {
+      headers: {
+        NexClient: void 0,
+        NexTenant: void 0
+      }
+    }).then((function(_this) {
+      return function(response) {
+        return _this.telize = response.data;
+      };
+    })(this));
+  };
+
   imagoCart.prototype.checkCurrency = function() {
     return this.$http.get(this.imagoSettings.host + "/api/settings").then((function(_this) {
       return function(response) {
@@ -87,19 +100,6 @@ imagoCart = (function() {
           _this.update();
         }
         return _this.updateLenght();
-      };
-    })(this));
-  };
-
-  imagoCart.prototype.telize = function() {
-    return this.$http.get("//www.telize.com/geoip", {
-      headers: {
-        NexClient: void 0,
-        NexTenant: void 0
-      }
-    }).then((function(_this) {
-      return function(response) {
-        return _this.telize = response.data;
       };
     })(this));
   };

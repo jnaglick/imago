@@ -16,6 +16,10 @@ class imagoCart extends Service
     , (reject) =>
       @checkCurrency()
 
+  telize: ->
+    return @$http.get("//www.telize.com/geoip", {headers: {NexClient: undefined, NexTenant: undefined}}).then (response) =>
+      @telize = response.data
+
   checkCurrency: ->
     @$http.get("#{@imagoSettings.host}/api/settings").then (response) =>
       res = _.find(response.data, {name: 'currencies'})
@@ -32,10 +36,6 @@ class imagoCart extends Service
         @cart.currency = angular.copy @currency
         @update()
       @updateLenght()
-
-  telize: ->
-    return @$http.get("//www.telize.com/geoip", {headers: {NexClient: undefined, NexTenant: undefined}}).then (response) =>
-      @telize = response.data
 
   checkStatus: (id) =>
     defer = @$q.defer()
