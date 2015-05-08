@@ -32,7 +32,7 @@ imagoCart = (function() {
   imagoCart.prototype.show = false;
 
   function imagoCart($q, $window, $http, imagoUtils, imagoModel, imagoSettings) {
-    var local, promises;
+    var local;
     this.$q = $q;
     this.$window = $window;
     this.$http = $http;
@@ -48,20 +48,9 @@ imagoCart = (function() {
       items: []
     };
     local = this.imagoUtils.cookie('imagoCart');
-    promises = [];
     if (local) {
-      promises.push(this.checkStatus(local));
+      this.checkStatus(local);
     }
-    promises.push(this.geoip());
-    this.$q.all(promises).then((function(_this) {
-      return function() {
-        return _this.checkCurrency();
-      };
-    })(this), (function(_this) {
-      return function(reject) {
-        return _this.checkCurrency();
-      };
-    })(this));
   }
 
   imagoCart.prototype.geoip = function() {
@@ -72,7 +61,12 @@ imagoCart = (function() {
       }
     }).then((function(_this) {
       return function(response) {
-        return _this.geo = response.datah;
+        _this.geo = response.data;
+        return _this.checkCurrency();
+      };
+    })(this), (function(_this) {
+      return function(error) {
+        return _this.checkCurrency();
       };
     })(this));
   };
@@ -105,16 +99,13 @@ imagoCart = (function() {
   };
 
   imagoCart.prototype.checkStatus = function(id) {
-    var defer;
-    defer = this.$q.defer();
-    this.$http.get(this.imagoSettings.host + "/api/carts?cartid=" + id).then((function(_this) {
+    return this.$http.get(this.imagoSettings.host + "/api/carts?cartid=" + id).then((function(_this) {
       return function(response) {
         console.log('check cart', response.data);
         _.assign(_this.cart, response.data);
-        return defer.resolve();
+        return _this.geoip();
       };
     })(this));
-    return defer.promise;
   };
 
   imagoCart.prototype.checkCart = function() {

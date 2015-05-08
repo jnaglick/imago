@@ -8,19 +8,14 @@ class imagoCart extends Service
 
     local = @imagoUtils.cookie('imagoCart')
     # local = localStorage.getItem('imagoCart')
-
-    promises = []
-    promises.push(@checkStatus(local)) if local
-    promises.push(@geoip())
-
-    @$q.all(promises).then =>
-      @checkCurrency()
-    , (reject) =>
-      @checkCurrency()
+    @checkStatus(local) if local
 
   geoip: ->
-    return @$http.get("//api.imago.io/geoip", {headers: {NexClient: undefined, NexTenant: undefined}}).then (response) =>
-      @geo = response.datah
+    @$http.get("//api.imago.io/geoip", {headers: {NexClient: undefined, NexTenant: undefined}}).then (response) =>
+      @geo = response.data
+      @checkCurrency()
+    , (error) =>
+      @checkCurrency()
 
   checkCurrency: ->
     @$http.get("#{@imagoSettings.host}/api/settings").then (response) =>
@@ -40,12 +35,10 @@ class imagoCart extends Service
       @updateLenght()
 
   checkStatus: (id) =>
-    defer = @$q.defer()
     @$http.get("#{@imagoSettings.host}/api/carts?cartid=#{id}").then (response) =>
       console.log 'check cart', response.data
       _.assign @cart, response.data
-      defer.resolve()
-    defer.promise
+      @geoip()
 
   checkCart: =>
     defer = @$q.defer()
