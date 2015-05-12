@@ -1,12 +1,12 @@
 class tagFilter extends Filter
   constructor: (imagoUtils) ->
     return (input, tag) ->
-      filtered = []
       return unless input
-      for asset in input
-        if tag
-          filtered.push asset if tag in imagoUtils.getMeta(asset, 'tags')
-        else
-          filtered.push asset
-
-      filtered
+      if tag
+        filtered = []
+        for asset in input
+          tags = imagoUtils.getMeta(asset, 'tags')
+          filtered.push asset if tags and tag in tags
+        return filtered
+      else
+        return input

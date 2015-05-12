@@ -43,22 +43,23 @@ var tagFilter,
 tagFilter = (function() {
   function tagFilter(imagoUtils) {
     return function(input, tag) {
-      var asset, filtered, i, len;
-      filtered = [];
+      var asset, filtered, i, len, tags;
       if (!input) {
         return;
       }
-      for (i = 0, len = input.length; i < len; i++) {
-        asset = input[i];
-        if (tag) {
-          if (indexOf.call(imagoUtils.getMeta(asset, 'tags'), tag) >= 0) {
+      if (tag) {
+        filtered = [];
+        for (i = 0, len = input.length; i < len; i++) {
+          asset = input[i];
+          tags = imagoUtils.getMeta(asset, 'tags');
+          if (tags && indexOf.call(tags, tag) >= 0) {
             filtered.push(asset);
           }
-        } else {
-          filtered.push(asset);
         }
+        return filtered;
+      } else {
+        return input;
       }
-      return filtered;
     };
   }
 
