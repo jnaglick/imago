@@ -132,8 +132,13 @@ imagoModel = (function() {
   imagoModel.prototype.currentCollection = void 0;
 
   imagoModel.prototype.search = function(query) {
-    var params;
+    var defer, params;
     params = _.map(query, this.formatQuery);
+    if (!params.length) {
+      defer = this.$q.defer();
+      defer.resolve();
+      return defer.promise;
+    }
     return this.$http.post(this.imagoSettings.host + "/api/search", angular.toJson(params));
   };
 
@@ -220,7 +225,7 @@ imagoModel = (function() {
         fetches.push(_this.search(rejected).then(function(response) {
           var j, len, ref, res, results;
           console.log('rejected query', rejected);
-          if (!response.data) {
+          if (!(response != null ? response.data : void 0)) {
             return;
           }
           ref = response.data;

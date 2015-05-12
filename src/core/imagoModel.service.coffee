@@ -51,6 +51,10 @@ class imagoModel extends Service
     # console.log 'search...', query
     params = _.map query, @formatQuery
     # console.log 'params', params
+    unless params.length
+      defer = @$q.defer()
+      defer.resolve()
+      return defer.promise
     return @$http.post("#{@imagoSettings.host}/api/search", angular.toJson(params))
 
   getLocalData: (query, options = {}) =>
@@ -133,7 +137,7 @@ class imagoModel extends Service
     resolve = =>
       fetches.push @search(rejected).then (response) =>
         console.log 'rejected query', rejected
-        return unless response.data
+        return unless response?.data
         for res in response.data
           data.push @create res
 
