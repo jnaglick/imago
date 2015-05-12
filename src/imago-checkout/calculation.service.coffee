@@ -107,7 +107,7 @@ class Calculation extends Service
 
     if @shippingRates.length
       @shipping_options = @shippingRates[0]
-      @calculate()
+      # @calculate()
 
   getShippingRate: =>
     deferred = @$q.defer()
@@ -187,11 +187,14 @@ class Calculation extends Service
 
     range = _.find rate.ranges, (range) -> count <= range.to_unit and count >= range.from_unit
     range = rate.ranges[rate.ranges.length - 1] or 0 if not range
-    # console.log 'rage is', range, 'rate', rate
-    if rate.type is 'weight'
-      @costs.shipping = range.price[@currency] or 0
-    else
-      @costs.shipping = (range.price[@currency] or 0) * count
+    # console.log 'range is', range, 'rate', rate, 'count', count
+
+    @costs.shipping = range.price[@currency] or 0
+
+    # if rate.type is 'weight'
+    #   @costs.shipping = range.price[@currency] or 0
+    # else
+    #   @costs.shipping = (range.price[@currency] or 0) * count
 
     for item in with_shippingcost
       @costs.shipping += (item.shipping_cost?[@currency] or 0) * item.qty

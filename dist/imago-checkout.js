@@ -178,8 +178,7 @@ Calculation = (function() {
       this.shippingRates = [];
     }
     if (this.shippingRates.length) {
-      this.shipping_options = this.shippingRates[0];
-      return this.calculate();
+      return this.shipping_options = this.shippingRates[0];
     }
   };
 
@@ -310,11 +309,7 @@ Calculation = (function() {
     if (!range) {
       range = rate.ranges[rate.ranges.length - 1] || 0;
     }
-    if (rate.type === 'weight') {
-      this.costs.shipping = range.price[this.currency] || 0;
-    } else {
-      this.costs.shipping = (range.price[this.currency] || 0) * count;
-    }
+    this.costs.shipping = range.price[this.currency] || 0;
     for (j = 0, len1 = with_shippingcost.length; j < len1; j++) {
       item = with_shippingcost[j];
       this.costs.shipping += (((ref3 = item.shipping_cost) != null ? ref3[this.currency] : void 0) || 0) * item.qty;

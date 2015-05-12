@@ -46,6 +46,7 @@ imagoSlider = (function() {
         scope.goPrev = function(ev) {
           if (typeof ev === 'object') {
             scope.clearInterval();
+            ev.stopPropagation();
           }
           if (!scope.conf.loop) {
             return scope.setCurrent(scope.currentIndex > 0 ? scope.currentIndex - 1 : scope.currentIndex);
@@ -62,6 +63,7 @@ imagoSlider = (function() {
         scope.goNext = function(ev) {
           if (typeof ev === 'object') {
             scope.clearInterval();
+            ev.stopPropagation();
           }
           if (!scope.conf.loop) {
             return scope.setCurrent(scope.currentIndex < parseInt(attrs.length) - 1 ? scope.currentIndex + 1 : scope.currentIndex);
