@@ -1,6 +1,7 @@
 class imagoCart extends Service
 
   show: false
+  itemsLength: 0
 
   constructor: (@$q, @$window, @$http, @imagoUtils, @imagoModel, @imagoSettings) ->
     @cart =

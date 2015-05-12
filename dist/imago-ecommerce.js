@@ -31,6 +31,8 @@ var imagoCart,
 imagoCart = (function() {
   imagoCart.prototype.show = false;
 
+  imagoCart.prototype.itemsLength = 0;
+
   function imagoCart($q, $window, $http, imagoUtils, imagoModel, imagoSettings) {
     var local;
     this.$q = $q;
