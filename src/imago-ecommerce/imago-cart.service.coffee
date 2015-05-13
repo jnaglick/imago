@@ -56,7 +56,7 @@ class imagoCart extends Service
   create: (cart) =>
     return @$http.post("#{@imagoSettings.host}/api/carts", cart)
 
-  add: (item, options) ->
+  add: (item, options, fields) ->
     return console.log 'item required' unless item
     return console.log 'quantity required' unless item.qty
 
@@ -67,13 +67,21 @@ class imagoCart extends Service
     else if _.isPlainObject options
       item.options = options
 
-    parent = @imagoModel.find {'_id' : item.parent}
     if item.options.name
       item.name = item.options.name
       delete item.options.name
+
+    parent = @imagoModel.find {'_id' : item.parent}
+
     if parent
       item.name = parent.name unless item.name
       item.serving_url = parent.serving_url unless item.serving_url
+      if _.isArray(fields) and fields.length
+        for field in fields
+          item.fields[field] = parent.fields[field]
+      else if _.isPlainObject fields
+        _.assign item.fields, parent.fields
+
     copy = angular.copy item
     filter = _.find @cart.items, { _id: copy._id }
 
@@ -94,7 +102,6 @@ class imagoCart extends Service
     @$http.put("#{@imagoSettings.host}/api/carts/#{@cart._id}", @cart)
 
   remove: (item) =>
-    console.log 'removed', item
     idx = _.findIndex @cart.items, { _id: item._id }
     @cart.items.splice idx, 1
     @updateLenght()

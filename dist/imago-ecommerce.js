@@ -131,8 +131,8 @@ imagoCart = (function() {
     return this.$http.post(this.imagoSettings.host + "/api/carts", cart);
   };
 
-  imagoCart.prototype.add = function(item, options) {
-    var copy, filter, i, len, option, parent;
+  imagoCart.prototype.add = function(item, options, fields) {
+    var copy, field, filter, i, j, len, len1, option, parent;
     if (!item) {
       return console.log('item required');
     }
@@ -148,19 +148,27 @@ imagoCart = (function() {
     } else if (_.isPlainObject(options)) {
       item.options = options;
     }
-    parent = this.imagoModel.find({
-      '_id': item.parent
-    });
     if (item.options.name) {
       item.name = item.options.name;
       delete item.options.name;
     }
+    parent = this.imagoModel.find({
+      '_id': item.parent
+    });
     if (parent) {
       if (!item.name) {
         item.name = parent.name;
       }
       if (!item.serving_url) {
         item.serving_url = parent.serving_url;
+      }
+      if (_.isArray(fields) && fields.length) {
+        for (j = 0, len1 = fields.length; j < len1; j++) {
+          field = fields[j];
+          item.fields[field] = parent.fields[field];
+        }
+      } else if (_.isPlainObject(fields)) {
+        _.assign(item.fields, parent.fields);
       }
     }
     copy = angular.copy(item);
@@ -195,7 +203,6 @@ imagoCart = (function() {
 
   imagoCart.prototype.remove = function(item) {
     var idx;
-    console.log('removed', item);
     idx = _.findIndex(this.cart.items, {
       _id: item._id
     });
