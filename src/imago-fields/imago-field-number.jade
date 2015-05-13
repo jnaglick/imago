@@ -1,6 +1,6 @@
 .imago-field.number
   div(ng-transclude)
-  input(type='text' ng-model='ngModel' ng-blur="update(ngModel)")
+  input(type='text' ng-model='ngModel' ng-blur="update(ngModel)" ng-disabled="disabled")
   button.decrement(
     type='button'
     ng-disabled='isOverMin()'
