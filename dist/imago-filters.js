@@ -43,7 +43,7 @@ var tagFilter,
 tagFilter = (function() {
   function tagFilter(imagoUtils) {
     return function(input, tag) {
-      var asset, filtered, i, len, tags;
+      var asset, filtered, i, j, len, len1, normtags, ref, t, tags;
       if (!input) {
         return;
       }
@@ -52,7 +52,12 @@ tagFilter = (function() {
         for (i = 0, len = input.length; i < len; i++) {
           asset = input[i];
           tags = imagoUtils.getMeta(asset, 'tags');
-          if (tags && indexOf.call(tags, tag) >= 0) {
+          normtags = [];
+          for (j = 0, len1 = tags.length; j < len1; j++) {
+            t = tags[j];
+            normtags.push(imagoUtils.normalize(t));
+          }
+          if (normtags && (ref = imagoUtils.normalize(tag), indexOf.call(normtags, ref) >= 0)) {
             filtered.push(asset);
           }
         }
