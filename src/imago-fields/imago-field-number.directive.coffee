@@ -10,10 +10,13 @@ class ImagoFieldNumber extends Directive
         min: '='
         max: '='
         ngModel: '='
+        disabled: '=ngDisabled'
       transclude: true
       templateUrl: '/imago/imago-field-number.html'
 
       link: (scope, element, attrs, ngModelController) ->
+
+        scope.disabled = true if attrs.disabled
 
         ngModelController.$render = ->
           checkValidity()
@@ -33,6 +36,7 @@ class ImagoFieldNumber extends Directive
           scope.update(value)
 
         scope.update = (value) ->
+          return if scope.disabled
           if _.isNaN value
             value = 1
           value = parseFloat value

@@ -6,12 +6,19 @@ ImagoFieldCheckbox = (function() {
       replace: true,
       require: 'ngModel',
       scope: {
-        ngModel: '='
+        ngModel: '=',
+        disabled: '=ngDisabled'
       },
       transclude: true,
       templateUrl: '/imago/imago-field-checkbox.html',
       link: function(scope, element, attrs, ngModelController) {
-        return scope.update = function(value) {
+        if (attrs.disabled) {
+          scope.disabled = true;
+        }
+        return scope.update = function(value, disabled) {
+          if (disabled) {
+            return;
+          }
           value = !value;
           ngModelController.$setViewValue(value);
           ngModelController.$render();
@@ -168,12 +175,16 @@ ImagoFieldNumber = (function() {
       scope: {
         min: '=',
         max: '=',
-        ngModel: '='
+        ngModel: '=',
+        disabled: '=ngDisabled'
       },
       transclude: true,
       templateUrl: '/imago/imago-field-number.html',
       link: function(scope, element, attrs, ngModelController) {
         var change, checkValidity;
+        if (attrs.disabled) {
+          scope.disabled = true;
+        }
         ngModelController.$render = function() {
           return checkValidity();
         };
@@ -194,6 +205,9 @@ ImagoFieldNumber = (function() {
           return scope.update(value);
         };
         scope.update = function(value) {
+          if (scope.disabled) {
+            return;
+          }
           if (_.isNaN(value)) {
             value = 1;
           }
@@ -268,9 +282,9 @@ ImagoFieldString = (function() {
 
 angular.module('imago').directive('imagoFieldString', [ImagoFieldString]);
 
-angular.module("imago").run(["$templateCache", function($templateCache) {$templateCache.put("/imago/imago-field-checkbox.html","<div class=\"imago-checkbox\"><label ng-class=\"{active: ngModel}\" ng-click=\"update(ngModel)\" class=\"topcoat-checkbox\"><div class=\"topcoat-checkbox__checkmark\"></div><span ng-transclude=\"ng-transclude\"></span></label></div>");
+angular.module("imago").run(["$templateCache", function($templateCache) {$templateCache.put("/imago/imago-field-checkbox.html","<div class=\"imago-checkbox\"><label ng-class=\"{active: ngModel, disabled: disabled}\" ng-click=\"update(ngModel, disabled)\" class=\"topcoat-checkbox\"><div class=\"topcoat-checkbox__checkmark\"></div><span ng-transclude=\"ng-transclude\"></span></label></div>");
 $templateCache.put("/imago/imago-field-currency.html","<div class=\"imago-field currency\"><div ng-class=\"{focus:onfocus}\" class=\"wrapper\"><div ng-transclude=\"ng-transclude\"></div><select ng-model=\"currency\" ng-options=\"currency for currency in currencies\"></select><input type=\"text\" imago-filter-currency=\"imago-filter-currency\" ng-model=\"ngModel[currency]\" ng-model-options=\"{updateOn: \'blur\'}\" ng-change=\"update(ngModel); onfocus = false\" ng-disabled=\"!currency\" ng-focus=\"onfocus = true\"/></div></div>");
 $templateCache.put("/imago/imago-field-date.html","<div class=\"imago-field date\"><div ng-transclude=\"ng-transclude\"></div><input type=\"text\" date-time=\"date-time\" dismiss=\"true\" ng-model=\"ngModel\" ng-blur=\"update(ngModel)\" view=\"date\" min-view=\"date\" partial=\"true\"/></div>");
 $templateCache.put("/imago/imago-field-email.html","<div class=\"imago-field email\"><div ng-transclude=\"ng-transclude\"></div><input type=\"email\" ng-model=\"ngModel\" ng-blur=\"update(ngModel)\" ng-required=\"required\"/></div>");
-$templateCache.put("/imago/imago-field-number.html","<div class=\"imago-field number\"><div ng-transclude=\"ng-transclude\"></div><input type=\"text\" ng-model=\"ngModel\" ng-blur=\"update(ngModel)\"/><button type=\"button\" ng-disabled=\"isOverMin()\" ng-click=\"decrement()\" class=\"decrement\"></button><button type=\"button\" ng-disabled=\"isOverMax()\" ng-click=\"increment()\" class=\"increment\"></button></div>");
+$templateCache.put("/imago/imago-field-number.html","<div class=\"imago-field number\"><div ng-transclude=\"ng-transclude\"></div><input type=\"text\" ng-model=\"ngModel\" ng-blur=\"update(ngModel)\" ng-disabled=\"disabled\"/><button type=\"button\" ng-disabled=\"isOverMin()\" ng-click=\"decrement()\" class=\"decrement\"></button><button type=\"button\" ng-disabled=\"isOverMax()\" ng-click=\"increment()\" class=\"increment\"></button></div>");
 $templateCache.put("/imago/imago-field-string.html","<div class=\"imago-field string\"><div ng-transclude=\"ng-transclude\"></div><input type=\"text\" ng-model=\"ngModel\" ng-change=\"update(ngModel)\"/></div>");}]);
