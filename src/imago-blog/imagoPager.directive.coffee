@@ -33,10 +33,11 @@ class imagoPager extends Directive
             idx = query.path.indexOf '/page/'
             query.path = query.path.slice 0, idx
 
+
           imagoModel.getData([query], {localData: false}).then (response) =>
             # console.log 'response', response
             for collection in response
-              # console.log 'collection', collection
+              $scope.next = collection.next
 
               if $scope.shuffle
                 $scope.posts = _.shuffle collection.assets
