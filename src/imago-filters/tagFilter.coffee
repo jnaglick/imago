@@ -6,7 +6,10 @@ class tagFilter extends Filter
         filtered = []
         for asset in input
           tags = imagoUtils.getMeta(asset, 'tags')
-          filtered.push asset if tags and tag in tags
+          normtags = []
+          normtags.push imagoUtils.normalize(t) for t in tags
+
+          filtered.push asset if normtags and imagoUtils.normalize(tag) in normtags
         return filtered
       else
         return input
