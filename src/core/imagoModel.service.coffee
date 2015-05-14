@@ -136,7 +136,7 @@ class imagoModel extends Service
 
     resolve = =>
       fetches.push @search(rejected).then (response) =>
-        console.log 'rejected query', rejected
+        console.log('not in the model. fetching...', rejected) unless rejected?.length
         return unless response?.data
         for res in response.data
           data.push @create res
