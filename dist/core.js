@@ -224,7 +224,7 @@ imagoModel = (function() {
       return function() {
         fetches.push(_this.search(rejected).then(function(response) {
           var j, len, ref, res, results;
-          if (!(rejected != null ? rejected.length : void 0)) {
+          if (rejected != null ? rejected.length : void 0) {
             console.log('not in the model. fetching...', rejected);
           }
           if (!(response != null ? response.data : void 0)) {
