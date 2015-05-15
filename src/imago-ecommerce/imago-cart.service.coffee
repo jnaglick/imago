@@ -88,11 +88,15 @@ class imagoCart extends Service
     if filter
       filter.name = copy.name unless filter.name
       filter.qty += copy.qty
+      _.assign filter.options, copy.options
+      _.assign filter.fields, copy.fields
     else
       @cart.items.push copy
 
     @show = true
     @updateLenght()
+
+    # console.log '@cart', @cart
 
     @checkCart().then (response) =>
       @update() if response is 'update'

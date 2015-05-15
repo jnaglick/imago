@@ -180,6 +180,8 @@ imagoCart = (function() {
         filter.name = copy.name;
       }
       filter.qty += copy.qty;
+      _.assign(filter.options, copy.options);
+      _.assign(filter.fields, copy.fields);
     } else {
       this.cart.items.push(copy);
     }
