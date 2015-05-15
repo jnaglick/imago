@@ -39,6 +39,9 @@ class imagoCart extends Service
     @$http.get("#{@imagoSettings.host}/api/carts?cartid=#{id}").then (response) =>
       console.log 'check cart', response.data
       _.assign @cart, response.data
+      for item in @cart.items
+        item.finalsale = item.fields['final-sale']?.value
+      @updateLenght()
       @geoip()
 
   checkCart: =>
@@ -59,6 +62,8 @@ class imagoCart extends Service
   add: (item, options, fields) ->
     return console.log 'item required' unless item
     return console.log 'quantity required' unless item.qty
+
+    item.finalsale = item.fields['final-sale']?.value
 
     if _.isArray(options) and options?.length
       item.options = {}

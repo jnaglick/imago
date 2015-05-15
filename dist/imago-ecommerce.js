@@ -103,8 +103,15 @@ imagoCart = (function() {
   imagoCart.prototype.checkStatus = function(id) {
     return this.$http.get(this.imagoSettings.host + "/api/carts?cartid=" + id).then((function(_this) {
       return function(response) {
+        var i, item, len, ref, ref1;
         console.log('check cart', response.data);
         _.assign(_this.cart, response.data);
+        ref = _this.cart.items;
+        for (i = 0, len = ref.length; i < len; i++) {
+          item = ref[i];
+          item.finalsale = (ref1 = item.fields['final-sale']) != null ? ref1.value : void 0;
+        }
+        _this.updateLenght();
         return _this.geoip();
       };
     })(this));
@@ -132,13 +139,14 @@ imagoCart = (function() {
   };
 
   imagoCart.prototype.add = function(item, options, fields) {
-    var copy, field, filter, i, j, len, len1, option, parent;
+    var copy, field, filter, i, j, len, len1, option, parent, ref;
     if (!item) {
       return console.log('item required');
     }
     if (!item.qty) {
       return console.log('quantity required');
     }
+    item.finalsale = (ref = item.fields['final-sale']) != null ? ref.value : void 0;
     if (_.isArray(options) && (options != null ? options.length : void 0)) {
       item.options = {};
       for (i = 0, len = options.length; i < len; i++) {
