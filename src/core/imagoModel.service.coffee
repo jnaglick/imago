@@ -231,18 +231,22 @@ class imagoModel extends Service
         for params in value
           if key isnt 'path'
             assets = _.filter assets, (asset) ->
+              # console.log 'asset', asset[key], params
               if asset.fields?.hasOwnProperty key
-                return asset if _.includes(asset.fields[key]['value'], params)
-                # if _.isArray asset.fields[key]['value']
-                #   return asset if params in asset.fields[key]['value']
-                # else
-                #   return asset if asset.fields[key]['value'] is params
+                value = asset.fields[key]['value']
 
-              else if _.includes asset[key], params
-                return asset
+                return true if value.match new RegExp params, 'i' if _.isString value
+                return true if ParseFloat value == ParseFloat params if _.isNumber value
+                if _.isArray value
+                  for elem in value
+                    return true if elem.match new RegExp params, 'i'
+                return false
 
-              # else if asset[key] is params
-              #   return asset
+              else if asset[key]
+                value = asset[key]
+                return true if value.match new RegExp params, 'i' if _.isString value
+                return true if ParseFloat value == ParseFloat params if _.isNumber value
+                return false
 
     return assets
 

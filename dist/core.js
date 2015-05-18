@@ -376,13 +376,41 @@ imagoModel = (function() {
           params = value[j];
           if (key !== 'path') {
             assets = _.filter(assets, function(asset) {
-              var ref;
+              var elem, k, len1, ref;
               if ((ref = asset.fields) != null ? ref.hasOwnProperty(key) : void 0) {
-                if (_.includes(asset.fields[key]['value'], params)) {
-                  return asset;
+                value = asset.fields[key]['value'];
+                if (_.isString(value)) {
+                  if (value.match(new RegExp(params, 'i'))) {
+                    return true;
+                  }
                 }
-              } else if (_.includes(asset[key], params)) {
-                return asset;
+                if (_.isNumber(value)) {
+                  if (ParseFloat(value === ParseFloat(params))) {
+                    return true;
+                  }
+                }
+                if (_.isArray(value)) {
+                  for (k = 0, len1 = value.length; k < len1; k++) {
+                    elem = value[k];
+                    if (elem.match(new RegExp(params, 'i'))) {
+                      return true;
+                    }
+                  }
+                }
+                return false;
+              } else if (asset[key]) {
+                value = asset[key];
+                if (_.isString(value)) {
+                  if (value.match(new RegExp(params, 'i'))) {
+                    return true;
+                  }
+                }
+                if (_.isNumber(value)) {
+                  if (ParseFloat(value === ParseFloat(params))) {
+                    return true;
+                  }
+                }
+                return false;
               }
             });
           }
