@@ -6,7 +6,7 @@ imagoImage = (function() {
       replace: true,
       scope: {
         visible: '=',
-        data: '=imagoImage'
+        source: '=imagoImage'
       },
       templateUrl: '/imago/imagoImage.html',
       controller: function($scope, $element, $attrs) {
@@ -33,7 +33,7 @@ imagoImage = (function() {
             opts[key] = value;
           }
         }
-        self.watch = scope.$watch('data', (function(_this) {
+        self.watch = scope.$watch('source', (function(_this) {
           return function(data) {
             var ref;
             if (!data) {
@@ -42,16 +42,16 @@ imagoImage = (function() {
             if (!attrs['watch']) {
               self.watch();
             }
-            if (!((ref = scope.data) != null ? ref.serving_url : void 0)) {
+            if (!((ref = scope.source) != null ? ref.serving_url : void 0)) {
               element.remove();
               return;
             }
-            if (scope.data.fields.hasOwnProperty('crop') && !attrs['align']) {
-              opts.align = scope.data.fields.crop.value;
+            if (scope.source.fields.hasOwnProperty('crop') && !attrs['align']) {
+              opts.align = scope.source.fields.crop.value;
             }
-            if (scope.data.fields.hasOwnProperty('sizemode')) {
-              if (scope.data.fields.sizemode.value !== 'default' && !attrs['sizemode']) {
-                opts.sizemode = scope.data.fields.sizemode.value;
+            if (scope.source.fields.hasOwnProperty('sizemode')) {
+              if (scope.source.fields.sizemode.value !== 'default' && !attrs['sizemode']) {
+                opts.sizemode = scope.source.fields.sizemode.value;
               }
             }
             if (opts.responsive) {
@@ -67,8 +67,8 @@ imagoImage = (function() {
         })(this));
         initialize = function() {
           var dpr, height, r, servingSize, width, wrapperRatio;
-          if (angular.isString(scope.data.resolution)) {
-            r = scope.data.resolution.split('x');
+          if (angular.isString(scope.source.resolution)) {
+            r = scope.source.resolution.split('x');
             opts.resolution = {
               width: r[0],
               height: r[1]
@@ -112,10 +112,10 @@ imagoImage = (function() {
             return;
           }
           opts.servingSize = servingSize;
-          if (imagoUtils.isBaseString(scope.data.serving_url)) {
-            opts.servingUrl = scope.data.serving_url;
+          if (imagoUtils.isBaseString(scope.source.serving_url)) {
+            opts.servingUrl = scope.source.serving_url;
           } else {
-            opts.servingUrl = scope.data.serving_url + "=s" + (servingSize * opts.scale);
+            opts.servingUrl = scope.source.serving_url + "=s" + (servingSize * opts.scale);
           }
           return render();
         };

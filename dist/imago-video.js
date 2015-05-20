@@ -80,7 +80,10 @@ imagoVideo = (function() {
   function imagoVideo($q, $timeout, $window, imagoUtils) {
     return {
       replace: true,
-      scope: true,
+      scope: {
+        visible: '=',
+        source: '=imagoVideo'
+      },
       templateUrl: '/imago/imagoVideo.html',
       controllerAs: 'imagovideo',
       controller: function($scope, $element, $attrs, $transclude) {
@@ -116,9 +119,7 @@ imagoVideo = (function() {
       },
       link: function(scope, element, attrs) {
         var detectCodec, key, loadFormats, onResize, opts, preload, render, self, setPlayerAttrs, styleVideo, styleWrapper, value;
-        self = {
-          visible: false
-        };
+        self = {};
         opts = {
           autobuffer: null,
           autoplay: false,
@@ -143,7 +144,7 @@ imagoVideo = (function() {
             opts[key] = value;
           }
         }
-        self.watch = scope.$watch(attrs['imagoVideo'], (function(_this) {
+        self.watch = scope.$watch('source', (function(_this) {
           return function(data) {
             var ref;
             if (!data) {
@@ -152,24 +153,23 @@ imagoVideo = (function() {
             if (!attrs['watch']) {
               self.watch();
             }
-            self.source = data;
-            if (!((ref = self.source) != null ? ref.serving_url : void 0)) {
+            if (!((ref = scope.source) != null ? ref.serving_url : void 0)) {
               element.remove();
               return;
             }
-            if (self.source.fields.hasOwnProperty('crop') && !attrs['align']) {
-              opts.align = self.source.fields.crop.value;
+            if (scope.source.fields.hasOwnProperty('crop') && !attrs['align']) {
+              opts.align = scope.source.fields.crop.value;
             }
-            if (self.source.fields.hasOwnProperty('sizemode') && !attrs['sizemode']) {
-              opts.sizemode = self.source.fields.sizemode.value;
+            if (scope.source.fields.hasOwnProperty('sizemode') && !attrs['sizemode']) {
+              opts.sizemode = scope.source.fields.sizemode.value;
             }
-            return preload(self.source);
+            return preload();
           };
         })(this));
-        preload = function(data) {
+        preload = function() {
           var dpr, height, r, resolution, serving_url, style, width;
-          if (angular.isString(data.resolution)) {
-            r = data.resolution.split('x');
+          if (angular.isString(scope.source.resolution)) {
+            r = scope.source.resolution.split('x');
             resolution = {
               width: r[0],
               height: r[1]
@@ -185,7 +185,7 @@ imagoVideo = (function() {
             height = element[0].clientHeight;
           }
           dpr = opts.hires ? Math.ceil(window.devicePixelRatio) || 1 : 1;
-          serving_url = data.serving_url + "=s" + (Math.ceil(Math.min(Math.max(width, height) * dpr)) || 1600);
+          serving_url = scope.source.serving_url + "=s" + (Math.ceil(Math.min(Math.max(width, height) * dpr)) || 1600);
           style = {
             size: opts.size,
             sizemode: opts.sizemode,
@@ -195,7 +195,7 @@ imagoVideo = (function() {
           };
           scope.wrapperStyle = style;
           setPlayerAttrs();
-          scope.videoFormats = loadFormats(self.source);
+          scope.videoFormats = loadFormats(scope.source);
           return render(width, height, serving_url);
         };
         setPlayerAttrs = function() {
@@ -210,12 +210,11 @@ imagoVideo = (function() {
         render = (function(_this) {
           return function(width, height, servingUrl) {
             var img;
-            if (opts.lazy && !self.visible) {
-              return self.visibleFunc = scope.$watch(attrs['visible'], function(value) {
+            if (opts.lazy && !scope.visible) {
+              return self.visibleFunc = scope.$watch('visible', function(value) {
                 if (!value) {
                   return;
                 }
-                self.visible = true;
                 self.visibleFunc();
                 return render(width, height, servingUrl);
               });
@@ -371,8 +370,22 @@ imagoVideo = (function() {
           return scope.$apply();
         };
         scope.$on('resize', onResize);
-        return scope.$on('resizestop', function() {
-          return preload(self.source);
+        scope.$on('resizestop', function() {
+          return preload(scope.source);
+        });
+        return scope.$on('$stateChangeSuccess', function() {
+          return $timeout(function() {
+            var evt;
+            if (document.createEvent) {
+              evt = new Event('checkInView');
+              return window.dispatchEvent(evt);
+            } else {
+              evt = document.createEventObject();
+              evt.eventType = 'checkInView';
+              evt.eventName = 'checkInView';
+              return window.fireEvent('on' + evt.eventType, evt);
+            }
+          });
         });
       }
     };
