@@ -255,11 +255,11 @@ class imagoModel extends Service
     @update parent, {stream: false}
 
   add: (assets, options = {}) =>
+    defer = @$q.defer()
     options.stream = true if _.isUndefined options.stream
     options.push = true if _.isUndefined options.push
 
     if options.save
-      defer = @$q.defer()
 
       @assets.create(assets).then (result) =>
 
@@ -276,8 +276,6 @@ class imagoModel extends Service
         defer.resolve result.data.data
         @$rootScope.$emit('assets:add', result.data.data) if options.stream
 
-      defer.promise
-
     else
       if options.push
         for asset in assets
@@ -287,9 +285,14 @@ class imagoModel extends Service
             asset.base64 = false
           @data.push(asset)
 
+        defer.resolve()
+
       @$rootScope.$emit('assets:add', assets) if options.stream
 
+    defer.promise
+
   update: (data, options = {}) =>
+    defer = @$q.defer()
     options.stream = true if _.isUndefined options.stream
     attribute = (if options.attribute then options.attribute else '_id')
 
@@ -309,7 +312,8 @@ class imagoModel extends Service
 
       if options.save
         delete copy.serving_url if copy.status is 'processing'
-        @assets.update(copy)
+        @assets.update(copy).then ->
+          defer.resolve()
 
     else if _.isArray(copy)
       for asset in copy
@@ -325,9 +329,14 @@ class imagoModel extends Service
 
         delete asset.serving_url if asset.status is 'processing'
 
-      @assets.batch(copy) if options.save
+      if options.save
+        @assets.batch(copy).then ->
+          defer.resolve()
+      else
+        defer.resolve()
 
     @$rootScope.$emit('assets:update', copy) if options.stream
+    defer.promise
 
   delete: (assets, options = {}) =>
     return unless assets
@@ -356,7 +365,7 @@ class imagoModel extends Service
     @delete(assets)
 
   copy: (assets, sourceId, parentId) =>
-
+    defer = @$q.defer()
     @paste(assets).then (pasted) =>
 
       request = []
@@ -372,13 +381,18 @@ class imagoModel extends Service
       @assets.copy(request, sourceId, parentId)
         .then (result) =>
           if @currentCollection.sortorder is '-order'
-            @update(result.data)
+            @update(result.data).then ->
+              defer.resolve()
 
           else
             @update(result.data, {stream: false})
-            @reSort(@currentCollection)
+            @reSort(@currentCollection).then ->
+              defer.resolve()
+
+    defer.promise
 
   move: (assets, sourceId, parentId) =>
+    defer = @$q.defer()
     @paste(assets).then (pasted) =>
 
       request = []
@@ -392,13 +406,16 @@ class imagoModel extends Service
         request.push formatted
 
       if @currentCollection.sortorder is '-order'
-        @update(pasted)
+        @update(pasted).then ->
+          defer.resolve()
 
       else
         @update(pasted, {stream: false})
-        @reSort(@currentCollection)
+        @reSort(@currentCollection).then ->
+          defer.resolve()
 
       @assets.move(request, sourceId, parentId)
+    defer.promise
 
   paste: (assets, options={}) =>
     options.checkdups = true if _.isUndefined options.checkdups
@@ -437,13 +454,16 @@ class imagoModel extends Service
     defer.promise
 
   reSort: (collection) =>
+    defer = @$q.defer()
     return if not collection.assets or collection.sortorder is '-order'
 
     orderedList = @reindexAll(collection.assets)
     @update orderedList, {stream: false, save: true}
 
     collection.sortorder = '-order'
-    @update collection, {save : true}
+    @update(collection, {save : true}).then ->
+      defer.resolve()
+    defer.promise
 
   reindexAll:  (list) =>
     newList = []
