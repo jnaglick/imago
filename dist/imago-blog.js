@@ -63,16 +63,16 @@ imagoPager = (function() {
             };
           })(this));
         };
-        $scope.onNext = (function(_this) {
-          return function() {
-            $scope.currentPage = parseInt($scope.currentPage) + 1;
-            return $scope.nextPage()();
-          };
-        })(this);
         $scope.onPrev = (function(_this) {
           return function() {
             $scope.currentPage = parseInt($scope.currentPage) - 1;
             return $scope.prevPage()();
+          };
+        })(this);
+        $scope.onNext = (function(_this) {
+          return function() {
+            $scope.currentPage = parseInt($scope.currentPage) + 1;
+            return $scope.nextPage()();
           };
         })(this);
         return $scope.$watchGroup(['currentPage', 'tags'], this.fetchPosts);

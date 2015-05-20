@@ -13,8 +13,8 @@ class imagoPager extends Directive
     return {
       scope: {
         posts: '='
-        next: '&'
-        prev: '&'
+        nextPage: '&next'
+        prevPage: '&prev'
         path: '@'
         pageSize: '@'
         tags: '='
@@ -56,14 +56,13 @@ class imagoPager extends Directive
               $scope.totalPages = collection.count / pageSize
               break
 
-        $scope.onNext = =>
-          $scope.currentPage = parseInt($scope.currentPage) + 1
-          console.log $scope.next
-          $scope.next()()
-
         $scope.onPrev = =>
           $scope.currentPage = parseInt($scope.currentPage) - 1
-          $scope.prev()()
+          $scope.prevPage()()
+
+        $scope.onNext = =>
+          $scope.currentPage = parseInt($scope.currentPage) + 1
+          $scope.nextPage()()
 
         $scope.$watchGroup ['currentPage', 'tags'], @fetchPosts
     }
