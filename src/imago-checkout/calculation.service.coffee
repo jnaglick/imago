@@ -13,6 +13,8 @@ class Calculation extends Service
 
   constructor: (@$q, @$state, @$http, @$auth, @imagoUtils, @imagoSettings) ->
     @countries = @imagoUtils.COUNTRIES
+    console.log 'xxxx', @, @fulfillmentcenters
+
 
   updateCart: =>
     @$http.put(@imagoSettings.host + '/api/carts/' + @cart._id, @cart)
@@ -278,22 +280,54 @@ class Calculation extends Service
     @costs.total += @costs.tax if @costs.tax
     @costs.total
 
-  calculate: =>
-    @costs =
-      subtotal    : 0
-      shipping    : 0
-      tax         : 0
-      includedTax : 0
-      total       : 0
 
+  checkStock: (cb) ->
+    console.log @country
+    @cartError = {}
+
+    fcenter = _.find @fulfillmentcenters, (ffc) => @country in ffc.countries
+    if !fcenter
+      # get the most generic one
+      fcenter = _.find @fulfillmentcenters, (ffc) -> !ffc.countries.length
+
+    # if we cant find a suitable fulfillmentcenter execute the callback and move on
+    return cb() if not fcenter
+
+    changed = false
     for item in @cart.items
-      if item.fields.price.value[@currency] and item.qty
-        @costs.subtotal += item.qty * item.fields.price.value[@currency]
-    @costs.total = @costs.subtotal
+      stock = item.fields.stock?.value?[fcenter._id] or 100000
+      if parseInt(stock) < item.qty
+        item.qty = stock
+        changed = true
 
-    @$q.all([@calculateTax(), @calculateShipping()]).then =>
-      @applyCoupon(@coupon, @costs) if @coupon
-      @calculateTotal()
+        @cartError[item._id] = {'maxStock': true} if stock != 0
+        @cartError[item._id] = {'noStock': true} if stock is 0
+
+
+    console.log 'changed cart', changed
+    if changed
+      @$http.put(@imagoSettings.host + '/api/carts/' + @cart._id, @cart)
+
+    cb()
+
+
+  calculate: =>
+    @checkStock =>
+      @costs =
+        subtotal    : 0
+        shipping    : 0
+        tax         : 0
+        includedTax : 0
+        total       : 0
+
+      for item in @cart.items
+        if item.fields.price.value[@currency] and item.qty
+          @costs.subtotal += item.qty * item.fields.price.value[@currency]
+      @costs.total = @costs.subtotal
+
+      @$q.all([@calculateTax(), @calculateShipping()]).then =>
+        @applyCoupon(@coupon, @costs) if @coupon
+        @calculateTotal()
 
   submit: =>
     return if @processing

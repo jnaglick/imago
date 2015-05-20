@@ -48,6 +48,7 @@ Calculation = (function() {
     this.deleteItem = bind(this.deleteItem, this);
     this.updateCart = bind(this.updateCart, this);
     this.countries = this.imagoUtils.COUNTRIES;
+    console.log('xxxx', this, this.fulfillmentcenters);
   }
 
   Calculation.prototype.updateCart = function() {
@@ -450,29 +451,76 @@ Calculation = (function() {
     return this.costs.total;
   };
 
-  Calculation.prototype.calculate = function() {
-    var i, item, len, ref;
-    this.costs = {
-      subtotal: 0,
-      shipping: 0,
-      tax: 0,
-      includedTax: 0,
-      total: 0
-    };
+  Calculation.prototype.checkStock = function(cb) {
+    var changed, fcenter, i, item, len, ref, ref1, ref2, stock;
+    console.log(this.country);
+    this.cartError = {};
+    fcenter = _.find(this.fulfillmentcenters, (function(_this) {
+      return function(ffc) {
+        var ref;
+        return ref = _this.country, indexOf.call(ffc.countries, ref) >= 0;
+      };
+    })(this));
+    if (!fcenter) {
+      fcenter = _.find(this.fulfillmentcenters, function(ffc) {
+        return !ffc.countries.length;
+      });
+    }
+    if (!fcenter) {
+      return cb();
+    }
+    changed = false;
     ref = this.cart.items;
     for (i = 0, len = ref.length; i < len; i++) {
       item = ref[i];
-      if (item.fields.price.value[this.currency] && item.qty) {
-        this.costs.subtotal += item.qty * item.fields.price.value[this.currency];
+      stock = ((ref1 = item.fields.stock) != null ? (ref2 = ref1.value) != null ? ref2[fcenter._id] : void 0 : void 0) || 100000;
+      if (parseInt(stock) < item.qty) {
+        item.qty = stock;
+        changed = true;
+        if (stock !== 0) {
+          this.cartError[item._id] = {
+            'maxStock': true
+          };
+        }
+        if (stock === 0) {
+          this.cartError[item._id] = {
+            'noStock': true
+          };
+        }
       }
     }
-    this.costs.total = this.costs.subtotal;
-    return this.$q.all([this.calculateTax(), this.calculateShipping()]).then((function(_this) {
+    console.log('changed cart', changed);
+    if (changed) {
+      this.$http.put(this.imagoSettings.host + '/api/carts/' + this.cart._id, this.cart);
+    }
+    return cb();
+  };
+
+  Calculation.prototype.calculate = function() {
+    return this.checkStock((function(_this) {
       return function() {
-        if (_this.coupon) {
-          _this.applyCoupon(_this.coupon, _this.costs);
+        var i, item, len, ref;
+        _this.costs = {
+          subtotal: 0,
+          shipping: 0,
+          tax: 0,
+          includedTax: 0,
+          total: 0
+        };
+        ref = _this.cart.items;
+        for (i = 0, len = ref.length; i < len; i++) {
+          item = ref[i];
+          if (item.fields.price.value[_this.currency] && item.qty) {
+            _this.costs.subtotal += item.qty * item.fields.price.value[_this.currency];
+          }
         }
-        return _this.calculateTotal();
+        _this.costs.total = _this.costs.subtotal;
+        return _this.$q.all([_this.calculateTax(), _this.calculateShipping()]).then(function() {
+          if (_this.coupon) {
+            _this.applyCoupon(_this.coupon, _this.costs);
+          }
+          return _this.calculateTotal();
+        });
       };
     })(this));
   };
