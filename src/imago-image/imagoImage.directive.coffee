@@ -41,7 +41,6 @@ class imagoImage extends Directive
         self.watch = scope.$watch 'data', (data) =>
           return unless data
           self.watch() unless attrs['watch']
-          scope.data = data
 
           unless scope.data?.serving_url
             element.remove()

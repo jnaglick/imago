@@ -42,7 +42,6 @@ imagoImage = (function() {
             if (!attrs['watch']) {
               self.watch();
             }
-            scope.data = data;
             if (!((ref = scope.data) != null ? ref.serving_url : void 0)) {
               element.remove();
               return;
