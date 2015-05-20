@@ -185,7 +185,7 @@ imagoImage = (function() {
           });
         }
         scope.$on('$stateChangeSuccess', function() {
-          $timeout(function() {
+          return $timeout(function() {
             var evt;
             if (document.createEvent) {
               evt = new Event('checkInView');
@@ -197,11 +197,6 @@ imagoImage = (function() {
               return window.fireEvent('on' + evt.eventType, evt);
             }
           });
-          if (scope.status === 'loading') {
-            return;
-          }
-          scope.status = 'loading';
-          return render();
         });
         return angular.element($window).on('orientationchange', initialize);
       }

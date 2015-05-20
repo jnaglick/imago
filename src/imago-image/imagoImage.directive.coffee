@@ -143,7 +143,6 @@ class imagoImage extends Directive
           else
             img = angular.element('<img>')
             img.on 'load', (e) ->
-
               if opts.sizemode is 'crop'
                 scope.imageStyle =
                   backgroundImage:    "url(#{opts.servingUrl})"
@@ -152,7 +151,7 @@ class imagoImage extends Directive
               else
                 scope.servingUrl = opts.servingUrl
 
-              scope.status     = 'loaded'
+              scope.status = 'loaded'
               scope.$evalAsync()
             # console.log 'scope.imageStyle', scope.imageStyle
 
@@ -218,9 +217,7 @@ class imagoImage extends Directive
               evt.eventType = 'checkInView'
               evt.eventName = 'checkInView'
               window.fireEvent('on' + evt.eventType, evt)
-          return if scope.status is'loading'
-          scope.status = 'loading'
-          render()
+            # render()
 
         angular.element($window).on 'orientationchange', initialize
 
