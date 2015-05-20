@@ -22,7 +22,6 @@ imagoPager = (function() {
         currentPage: '=',
         shuffle: '@'
       },
-      templateUrl: '/imago/imagoPager.html',
       controller: function($scope, $element, $attrs) {
         this.fetchPosts = function() {
           var idx, pageNo, pageSize, query;
@@ -76,6 +75,16 @@ imagoPager = (function() {
           };
         })(this);
         return $scope.$watchGroup(['currentPage', 'tags'], this.fetchPosts);
+      },
+      link: function(scope, element, attrs) {
+        var syntax, template;
+        template = attrs.templateurl ? attrs.templateurl : defaultTemplate;
+        syntax = void 0;
+        return getTemplate(template).success(function(html) {
+          return syntax = html;
+        }).then(function() {
+          return element.append($compile(syntax)(scope));
+        });
       }
     };
   }

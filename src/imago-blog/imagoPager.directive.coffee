@@ -21,7 +21,6 @@ class imagoPager extends Directive
         currentPage: '='
         shuffle: '@'
       }
-      templateUrl: '/imago/imagoPager.html'
       controller: ($scope, $element, $attrs) ->
 
         @fetchPosts = () ->
@@ -65,4 +64,14 @@ class imagoPager extends Directive
           $scope.nextPage()()
 
         $scope.$watchGroup ['currentPage', 'tags'], @fetchPosts
+      link: (scope, element, attrs) ->
+
+        template = if attrs.templateurl then attrs.templateurl else defaultTemplate
+
+        syntax = undefined
+
+        getTemplate(template).success((html) ->
+          syntax = html
+        ).then ->
+          element.append $compile(syntax)(scope)
     }
