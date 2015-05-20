@@ -285,17 +285,17 @@ class Calculation extends Service
     console.log @country
     @cartError = {}
 
-    fcenter = _.find @fulfillmentcenters, (ffc) => @country in ffc.countries
-    if !fcenter
+    @fcenter = _.find @fulfillmentcenters, (ffc) => @country in ffc.countries
+    if !@fcenter
       # get the most generic one
-      fcenter = _.find @fulfillmentcenters, (ffc) -> !ffc.countries.length
+      @fcenter = _.find @fulfillmentcenters, (ffc) -> !ffc.countries.length
 
     # if we cant find a suitable fulfillmentcenter execute the callback and move on
-    return cb() if not fcenter
+    return cb() if !@fcenter
 
     changed = false
     for item in @cart.items
-      stock = item.fields.stock?.value?[fcenter._id] or 100000
+      stock = item.fields.stock?.value?[@fcenter._id] or 100000
       if parseInt(stock) < item.qty
         item.qty = stock
         changed = true
@@ -303,8 +303,6 @@ class Calculation extends Service
         @cartError[item._id] = {'maxStock': true} if stock != 0
         @cartError[item._id] = {'noStock': true} if stock is 0
 
-
-    console.log 'changed cart', changed
     if changed
       @$http.put(@imagoSettings.host + '/api/carts/' + @cart._id, @cart)
 
@@ -345,6 +343,7 @@ class Calculation extends Service
 
     @process.form.billing_address['phone']  = angular.copy @process.form.phone
     @process.form.shipping_address['phone'] = angular.copy @process.form.phone
+    @process.form.fulfillmentcenter = angular.copy @fcenter._id
 
     return @$http.post(@imagoSettings.host + '/api/checkout', @process.form)
 

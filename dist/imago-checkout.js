@@ -452,28 +452,28 @@ Calculation = (function() {
   };
 
   Calculation.prototype.checkStock = function(cb) {
-    var changed, fcenter, i, item, len, ref, ref1, ref2, stock;
+    var changed, i, item, len, ref, ref1, ref2, stock;
     console.log(this.country);
     this.cartError = {};
-    fcenter = _.find(this.fulfillmentcenters, (function(_this) {
+    this.fcenter = _.find(this.fulfillmentcenters, (function(_this) {
       return function(ffc) {
         var ref;
         return ref = _this.country, indexOf.call(ffc.countries, ref) >= 0;
       };
     })(this));
-    if (!fcenter) {
-      fcenter = _.find(this.fulfillmentcenters, function(ffc) {
+    if (!this.fcenter) {
+      this.fcenter = _.find(this.fulfillmentcenters, function(ffc) {
         return !ffc.countries.length;
       });
     }
-    if (!fcenter) {
+    if (!this.fcenter) {
       return cb();
     }
     changed = false;
     ref = this.cart.items;
     for (i = 0, len = ref.length; i < len; i++) {
       item = ref[i];
-      stock = ((ref1 = item.fields.stock) != null ? (ref2 = ref1.value) != null ? ref2[fcenter._id] : void 0 : void 0) || 100000;
+      stock = ((ref1 = item.fields.stock) != null ? (ref2 = ref1.value) != null ? ref2[this.fcenter._id] : void 0 : void 0) || 100000;
       if (parseInt(stock) < item.qty) {
         item.qty = stock;
         changed = true;
@@ -489,7 +489,6 @@ Calculation = (function() {
         }
       }
     }
-    console.log('changed cart', changed);
     if (changed) {
       this.$http.put(this.imagoSettings.host + '/api/carts/' + this.cart._id, this.cart);
     }
@@ -542,6 +541,7 @@ Calculation = (function() {
     }
     this.process.form.billing_address['phone'] = angular.copy(this.process.form.phone);
     this.process.form.shipping_address['phone'] = angular.copy(this.process.form.phone);
+    this.process.form.fulfillmentcenter = angular.copy(this.fcenter._id);
     return this.$http.post(this.imagoSettings.host + '/api/checkout', this.process.form);
   };
 
