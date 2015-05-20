@@ -1,21 +1,21 @@
 var imagoImage;
 
 imagoImage = (function() {
-  function imagoImage($window, $log, imagoUtils) {
+  function imagoImage($window, $timeout, $log, imagoUtils) {
     return {
       replace: true,
-      scope: true,
+      scope: {
+        visible: '=',
+        data: '=imagoImage'
+      },
       templateUrl: '/imago/imagoImage.html',
       controller: function($scope, $element, $attrs) {
         $scope.status = 'loading';
         return $scope.imageStyle = {};
       },
       link: function(scope, element, attrs) {
-        var calcMediaSize, initialize, key, opts, render, self, setImageStyle, source, value;
-        self = {
-          visible: false
-        };
-        source = {};
+        var calcMediaSize, initialize, key, opts, render, self, setImageStyle, value;
+        self = {};
         opts = {
           align: 'center center',
           sizemode: 'fit',
@@ -33,25 +33,25 @@ imagoImage = (function() {
             opts[key] = value;
           }
         }
-        self.watch = scope.$watch(attrs['imagoImage'], (function(_this) {
+        self.watch = scope.$watch('data', (function(_this) {
           return function(data) {
+            var ref;
             if (!data) {
               return;
             }
             if (!attrs['watch']) {
               self.watch();
             }
-            source = data;
-            if (!(source != null ? source.serving_url : void 0)) {
+            if (!((ref = scope.data) != null ? ref.serving_url : void 0)) {
               element.remove();
               return;
             }
-            if (source.fields.hasOwnProperty('crop') && !attrs['align']) {
-              opts.align = source.fields.crop.value;
+            if (scope.data.fields.hasOwnProperty('crop') && !attrs['align']) {
+              opts.align = scope.data.fields.crop.value;
             }
-            if (source.fields.hasOwnProperty('sizemode')) {
-              if (source.fields.sizemode.value !== 'default' && !attrs['sizemode']) {
-                opts.sizemode = source.fields.sizemode.value;
+            if (scope.data.fields.hasOwnProperty('sizemode')) {
+              if (scope.data.fields.sizemode.value !== 'default' && !attrs['sizemode']) {
+                opts.sizemode = scope.data.fields.sizemode.value;
               }
             }
             if (opts.responsive) {
@@ -67,8 +67,8 @@ imagoImage = (function() {
         })(this));
         initialize = function() {
           var dpr, height, r, servingSize, width, wrapperRatio;
-          if (angular.isString(source.resolution)) {
-            r = source.resolution.split('x');
+          if (angular.isString(scope.data.resolution)) {
+            r = scope.data.resolution.split('x');
             opts.resolution = {
               width: r[0],
               height: r[1]
@@ -112,22 +112,21 @@ imagoImage = (function() {
             return;
           }
           opts.servingSize = servingSize;
-          if (imagoUtils.isBaseString(source.serving_url)) {
-            opts.servingUrl = source.serving_url;
+          if (imagoUtils.isBaseString(scope.data.serving_url)) {
+            opts.servingUrl = scope.data.serving_url;
           } else {
-            opts.servingUrl = source.serving_url + "=s" + (servingSize * opts.scale);
+            opts.servingUrl = scope.data.serving_url + "=s" + (servingSize * opts.scale);
           }
           return render();
         };
         render = function() {
           var img;
-          if (opts.lazy && !self.visible) {
-            return self.visibleFunc = scope.$watch(attrs['visible'], (function(_this) {
+          if (opts.lazy && !scope.visible) {
+            return self.visibleFunc = scope.$watch('visible', (function(_this) {
               return function(value) {
                 if (!value) {
                   return;
                 }
-                self.visible = true;
                 self.visibleFunc();
                 return render();
               };
@@ -184,7 +183,21 @@ imagoImage = (function() {
             return initialize();
           });
         }
-        return angular.element($window).on("orientationchange", initialize);
+        scope.$on('$stateChangeSuccess', function() {
+          return $timeout(function() {
+            var evt;
+            if (document.createEvent) {
+              evt = new Event('checkInView');
+              return window.dispatchEvent(evt);
+            } else {
+              evt = document.createEventObject();
+              evt.eventType = 'checkInView';
+              evt.eventName = 'checkInView';
+              return window.fireEvent('on' + evt.eventType, evt);
+            }
+          });
+        });
+        return angular.element($window).on('orientationchange', initialize);
       }
     };
   }
@@ -193,6 +206,6 @@ imagoImage = (function() {
 
 })();
 
-angular.module('imago').directive('imagoImage', ['$window', '$log', 'imagoUtils', imagoImage]);
+angular.module('imago').directive('imagoImage', ['$window', '$timeout', '$log', 'imagoUtils', imagoImage]);
 
 angular.module("imago").run(["$templateCache", function($templateCache) {$templateCache.put("/imago/imagoImage.html","<div in-view=\"visible = $inview\" responsive-events=\"responsive-events\" ng-style=\"elementStyle\" ng-class=\"[status, align]\" visible=\"visible\" ng-switch=\"sizemode\" class=\"imagoimage\"><img ng-src=\"{{servingUrl}}\" ng-style=\"imageStyle\" ng-switch-when=\"fit\" class=\"imagox23\"/><div ng-style=\"imageStyle\" ng-switch-when=\"crop\" class=\"imagox23\"></div><div class=\"loading\"><div class=\"spin\"></div><div class=\"spin2\"></div></div></div>");}]);

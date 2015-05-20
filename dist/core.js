@@ -432,6 +432,7 @@ imagoModel = (function() {
     if (options == null) {
       options = {};
     }
+    defer = this.$q.defer();
     if (_.isUndefined(options.stream)) {
       options.stream = true;
     }
@@ -439,7 +440,6 @@ imagoModel = (function() {
       options.push = true;
     }
     if (options.save) {
-      defer = this.$q.defer();
       this.assets.create(assets).then((function(_this) {
         return function(result) {
           var asset, j, len, ref;
@@ -461,7 +461,6 @@ imagoModel = (function() {
           }
         };
       })(this));
-      return defer.promise;
     } else {
       if (options.push) {
         for (j = 0, len = assets.length; j < len; j++) {
@@ -473,18 +472,21 @@ imagoModel = (function() {
           }
           this.data.push(asset);
         }
+        defer.resolve();
       }
       if (options.stream) {
-        return this.$rootScope.$emit('assets:add', assets);
+        this.$rootScope.$emit('assets:add', assets);
       }
     }
+    return defer.promise;
   };
 
   imagoModel.prototype.update = function(data, options) {
-    var asset, attribute, copy, idx, j, len, query;
+    var asset, attribute, copy, defer, idx, j, len, query;
     if (options == null) {
       options = {};
     }
+    defer = this.$q.defer();
     if (_.isUndefined(options.stream)) {
       options.stream = true;
     }
@@ -509,7 +511,9 @@ imagoModel = (function() {
         if (copy.status === 'processing') {
           delete copy.serving_url;
         }
-        this.assets.update(copy);
+        this.assets.update(copy).then(function() {
+          return defer.resolve();
+        });
       }
     } else if (_.isArray(copy)) {
       for (j = 0, len = copy.length; j < len; j++) {
@@ -530,12 +534,17 @@ imagoModel = (function() {
         }
       }
       if (options.save) {
-        this.assets.batch(copy);
+        this.assets.batch(copy).then(function() {
+          return defer.resolve();
+        });
+      } else {
+        defer.resolve();
       }
     }
     if (options.stream) {
-      return this.$rootScope.$emit('assets:update', copy);
+      this.$rootScope.$emit('assets:update', copy);
     }
+    return defer.promise;
   };
 
   imagoModel.prototype["delete"] = function(assets, options) {
@@ -582,7 +591,9 @@ imagoModel = (function() {
   };
 
   imagoModel.prototype.copy = function(assets, sourceId, parentId) {
-    return this.paste(assets).then((function(_this) {
+    var defer;
+    defer = this.$q.defer();
+    this.paste(assets).then((function(_this) {
       return function(pasted) {
         var asset, j, len, newAsset, request;
         request = [];
@@ -597,20 +608,27 @@ imagoModel = (function() {
         }
         return _this.assets.copy(request, sourceId, parentId).then(function(result) {
           if (_this.currentCollection.sortorder === '-order') {
-            return _this.update(result.data);
+            return _this.update(result.data).then(function() {
+              return defer.resolve();
+            });
           } else {
             _this.update(result.data, {
               stream: false
             });
-            return _this.reSort(_this.currentCollection);
+            return _this.reSort(_this.currentCollection).then(function() {
+              return defer.resolve();
+            });
           }
         });
       };
     })(this));
+    return defer.promise;
   };
 
   imagoModel.prototype.move = function(assets, sourceId, parentId) {
-    return this.paste(assets).then((function(_this) {
+    var defer;
+    defer = this.$q.defer();
+    this.paste(assets).then((function(_this) {
       return function(pasted) {
         var asset, formatted, j, len, request;
         request = [];
@@ -624,16 +642,21 @@ imagoModel = (function() {
           request.push(formatted);
         }
         if (_this.currentCollection.sortorder === '-order') {
-          _this.update(pasted);
+          _this.update(pasted).then(function() {
+            return defer.resolve();
+          });
         } else {
           _this.update(pasted, {
             stream: false
           });
-          _this.reSort(_this.currentCollection);
+          _this.reSort(_this.currentCollection).then(function() {
+            return defer.resolve();
+          });
         }
         return _this.assets.move(request, sourceId, parentId);
       };
     })(this));
+    return defer.promise;
   };
 
   imagoModel.prototype.paste = function(assets, options) {
@@ -684,7 +707,8 @@ imagoModel = (function() {
   };
 
   imagoModel.prototype.reSort = function(collection) {
-    var orderedList;
+    var defer, orderedList;
+    defer = this.$q.defer();
     if (!collection.assets || collection.sortorder === '-order') {
       return;
     }
@@ -694,9 +718,12 @@ imagoModel = (function() {
       save: true
     });
     collection.sortorder = '-order';
-    return this.update(collection, {
+    this.update(collection, {
       save: true
+    }).then(function() {
+      return defer.resolve();
     });
+    return defer.promise;
   };
 
   imagoModel.prototype.reindexAll = function(list) {

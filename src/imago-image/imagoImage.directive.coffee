@@ -1,10 +1,13 @@
 class imagoImage extends Directive
 
-  constructor: ($window, $log, imagoUtils) ->
+  constructor: ($window, $timeout, $log, imagoUtils) ->
 
     return {
       replace: true
-      scope: true
+      scope: {
+        visible: '='
+        data: '=imagoImage'
+      }
       templateUrl: '/imago/imagoImage.html'
       controller: ($scope, $element, $attrs) ->
 
@@ -12,10 +15,7 @@ class imagoImage extends Directive
         $scope.imageStyle = {}
 
       link: (scope, element, attrs) ->
-
-
-        self = {visible: false}
-        source = {}
+        self = {}
 
         opts =
           align     : 'center center'
@@ -38,20 +38,19 @@ class imagoImage extends Directive
 
         # console.log opts['imagoImage']
 
-        self.watch = scope.$watch attrs['imagoImage'], (data) =>
+        self.watch = scope.$watch 'data', (data) =>
           return unless data
           self.watch() unless attrs['watch']
-          source = data
 
-          unless source?.serving_url
+          unless scope.data?.serving_url
             element.remove()
             return
 
-          if source.fields.hasOwnProperty('crop') and not attrs['align']
-              opts.align = source.fields.crop.value
-          if source.fields.hasOwnProperty('sizemode')
-            if source.fields.sizemode.value isnt 'default' and not attrs['sizemode']
-              opts.sizemode = source.fields.sizemode.value
+          if scope.data.fields.hasOwnProperty('crop') and not attrs['align']
+              opts.align = scope.data.fields.crop.value
+          if scope.data.fields.hasOwnProperty('sizemode')
+            if scope.data.fields.sizemode.value isnt 'default' and not attrs['sizemode']
+              opts.sizemode = scope.data.fields.sizemode.value
 
           if opts.responsive
             if opts.sizemode is 'crop'
@@ -63,9 +62,8 @@ class imagoImage extends Directive
 
 
         initialize = ->
-
-          if angular.isString(source.resolution)
-            r = source.resolution.split('x')
+          if angular.isString(scope.data.resolution)
+            r = scope.data.resolution.split('x')
             opts.resolution =
               width:  r[0]
               height: r[1]
@@ -124,28 +122,26 @@ class imagoImage extends Directive
 
           opts.servingSize = servingSize
 
-          if imagoUtils.isBaseString(source.serving_url)
-            opts.servingUrl = source.serving_url
+          if imagoUtils.isBaseString(scope.data.serving_url)
+            opts.servingUrl = scope.data.serving_url
 
           else
-            opts.servingUrl = "#{ source.serving_url }=s#{ servingSize * opts.scale }"
+            opts.servingUrl = "#{ scope.data.serving_url }=s#{ servingSize * opts.scale }"
 
           # $log.log 'servingURl', servingUrl
 
           render()
 
 
-        render = ->
-          if opts.lazy and not self.visible
-            self.visibleFunc = scope.$watch attrs['visible'], (value) =>
+        render =  ->
+          if opts.lazy and not scope.visible
+            self.visibleFunc = scope.$watch 'visible', (value) =>
               return unless value
-              self.visible = true
               self.visibleFunc()
               render()
           else
             img = angular.element('<img>')
             img.on 'load', (e) ->
-
               if opts.sizemode is 'crop'
                 scope.imageStyle =
                   backgroundImage:    "url(#{opts.servingUrl})"
@@ -154,7 +150,7 @@ class imagoImage extends Directive
               else
                 scope.servingUrl = opts.servingUrl
 
-              scope.status     = 'loaded'
+              scope.status = 'loaded'
               scope.$evalAsync()
             # console.log 'scope.imageStyle', scope.imageStyle
 
@@ -204,11 +200,24 @@ class imagoImage extends Directive
           # scope.$on 'resizestart', () ->
           #   scope.resizing = 'resizing'
 
-          scope.$on 'resizestop', () ->
+          scope.$on 'resizestop', ->
             scope.status = 'loading'
             # scope.resizing = ''
             initialize()
 
-        angular.element($window).on "orientationchange", initialize
+        scope.$on '$stateChangeSuccess', ->
+          $timeout ->
+            if document.createEvent
+              evt = new Event('checkInView')
+              window.dispatchEvent(evt)
+            else
+              #IE
+              evt = document.createEventObject()
+              evt.eventType = 'checkInView'
+              evt.eventName = 'checkInView'
+              window.fireEvent('on' + evt.eventType, evt)
+            # render()
+
+        angular.element($window).on 'orientationchange', initialize
 
     }
