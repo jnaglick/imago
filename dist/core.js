@@ -1673,30 +1673,60 @@ var imagoWorker,
   bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 
 imagoWorker = (function() {
-  function imagoWorker($q) {
+  imagoWorker.prototype.store = [];
+
+  function imagoWorker($q, $http) {
     this.$q = $q;
+    this.$http = $http;
     this.work = bind(this.work, this);
     this.create = bind(this.create, this);
   }
 
-  imagoWorker.prototype.create = function(path) {
-    return new Worker(path);
-  };
-
-  imagoWorker.prototype.work = function(data) {
-    var defer, worker;
-    defer = this.$q.defer();
-    if (!(data && data.path)) {
-      defer.reject('nodata');
-    }
-    worker = this.create(data.path);
+  imagoWorker.prototype.create = function(path, data, defer) {
+    var worker;
+    worker = new Worker(path);
     worker.addEventListener('message', (function(_this) {
       return function(e) {
         defer.resolve(e.data);
         return worker.terminate();
       };
     })(this));
-    worker.postMessage(data);
+    return worker.postMessage(data);
+  };
+
+  imagoWorker.prototype.work = function(data) {
+    var defer, find, windowURL;
+    defer = this.$q.defer();
+    if (!(data && data.path)) {
+      defer.reject('nodata or path');
+    }
+    find = _.find(this.store, {
+      'path': data.path
+    });
+    if (bowser.msie) {
+      this.create(data.path, data, defer);
+    } else if (find) {
+      this.create(find.blob, data, defer);
+    } else {
+      windowURL = window.URL || window.webkitURL;
+      this.$http.get(data.path, {
+        cache: true
+      }).then((function(_this) {
+        return function(response) {
+          var blob, blobURL, stringified;
+          stringified = response.data.toString();
+          blob = new Blob([stringified], {
+            type: 'application/javascript'
+          });
+          blobURL = windowURL.createObjectURL(blob);
+          _this.store.push({
+            'path': data.path,
+            'blob': blobURL
+          });
+          return _this.create(blobURL, data, defer);
+        };
+      })(this));
+    }
     return defer.promise;
   };
 
@@ -1704,7 +1734,7 @@ imagoWorker = (function() {
 
 })();
 
-angular.module('imago').service('imagoWorker', ['$q', imagoWorker]);
+angular.module('imago').service('imagoWorker', ['$q', '$http', imagoWorker]);
 
 var Meta;
 
