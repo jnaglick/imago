@@ -48,7 +48,6 @@ Calculation = (function() {
     this.deleteItem = bind(this.deleteItem, this);
     this.updateCart = bind(this.updateCart, this);
     this.countries = this.imagoUtils.COUNTRIES;
-    console.log('xxxx', this, this.fulfillmentcenters);
   }
 
   Calculation.prototype.updateCart = function() {
@@ -331,8 +330,8 @@ Calculation = (function() {
             ref = _this.cart.items;
             for (i = 0, len = ref.length; i < len; i++) {
               item = ref[i];
-              onepercent = item.fields.price.value[_this.currency] / (100 + _this.costs.taxRate) * item.qty;
-              _this.costs.includedTax += Math.round(onepercent * _this.costs.taxRate) * 100;
+              onepercent = item.fields.price.value[_this.currency] / (100 + (_this.costs.taxRate * 100)) * item.qty;
+              _this.costs.includedTax += onepercent * _this.costs.taxRate * 100;
             }
             return deferred.resolve();
           } else {
@@ -453,7 +452,6 @@ Calculation = (function() {
 
   Calculation.prototype.checkStock = function(cb) {
     var changed, i, item, len, ref, ref1, ref2, stock;
-    console.log(this.country);
     this.cartError = {};
     this.fcenter = _.find(this.fulfillmentcenters, (function(_this) {
       return function(ffc) {
@@ -525,6 +523,7 @@ Calculation = (function() {
   };
 
   Calculation.prototype.submit = function() {
+    var ref;
     if (this.processing) {
       return;
     }
@@ -541,7 +540,7 @@ Calculation = (function() {
     }
     this.process.form.billing_address['phone'] = angular.copy(this.process.form.phone);
     this.process.form.shipping_address['phone'] = angular.copy(this.process.form.phone);
-    this.process.form.fulfillmentcenter = angular.copy(this.fcenter._id);
+    this.process.form.fulfillmentcenter = angular.copy((ref = this.fcenter) != null ? ref._id : void 0);
     return this.$http.post(this.imagoSettings.host + '/api/checkout', this.process.form);
   };
 

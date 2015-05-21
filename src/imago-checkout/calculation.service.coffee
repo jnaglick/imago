@@ -13,8 +13,6 @@ class Calculation extends Service
 
   constructor: (@$q, @$state, @$http, @$auth, @imagoUtils, @imagoSettings) ->
     @countries = @imagoUtils.COUNTRIES
-    console.log 'xxxx', @, @fulfillmentcenters
-
 
   updateCart: =>
     @$http.put(@imagoSettings.host + '/api/carts/' + @cart._id, @cart)
@@ -218,8 +216,8 @@ class Calculation extends Service
         # console.log '@costs.taxRate', @costs.taxRate
         if @costs.taxRate
           for item in @cart.items
-            onepercent = item.fields.price.value[@currency]/(100+@costs.taxRate) * item.qty
-            @costs.includedTax += Math.round(onepercent * @costs.taxRate)*100
+            onepercent = item.fields.price.value[@currency]/(100+(@costs.taxRate*100)) * item.qty
+            @costs.includedTax += onepercent*@costs.taxRate*100
           deferred.resolve()
         else
           deferred.resolve()
@@ -282,7 +280,6 @@ class Calculation extends Service
 
 
   checkStock: (cb) ->
-    console.log @country
     @cartError = {}
 
     @fcenter = _.find @fulfillmentcenters, (ffc) => @country in ffc.countries
@@ -343,7 +340,8 @@ class Calculation extends Service
 
     @process.form.billing_address['phone']  = angular.copy @process.form.phone
     @process.form.shipping_address['phone'] = angular.copy @process.form.phone
-    @process.form.fulfillmentcenter = angular.copy @fcenter._id
+
+    @process.form.fulfillmentcenter = angular.copy @fcenter?._id
 
     return @$http.post(@imagoSettings.host + '/api/checkout', @process.form)
 
