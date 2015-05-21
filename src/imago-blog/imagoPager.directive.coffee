@@ -23,7 +23,7 @@ class imagoPager extends Directive
       }
       controller: ($scope, $element, $attrs) ->
 
-        @fetchPosts = () ->
+        @fetchPosts = ->
           @count += 1
           $scope.posts = []
           pageSize = parseInt $scope.pageSize
@@ -64,8 +64,8 @@ class imagoPager extends Directive
           $scope.nextPage()()
 
         $scope.$watchGroup ['currentPage', 'tags'], @fetchPosts
-      link: (scope, element, attrs) ->
 
+      link: (scope, element, attrs) ->
         template = if attrs.templateurl then attrs.templateurl else defaultTemplate
 
         syntax = undefined

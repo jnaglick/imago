@@ -1,6 +1,6 @@
 class Time extends Filter
 
-  constructor: () ->
+  constructor: ->
     return (input) ->
       return unless typeof input is 'number'
 

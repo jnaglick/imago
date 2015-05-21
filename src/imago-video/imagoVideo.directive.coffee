@@ -3,7 +3,10 @@ class imagoVideo extends Directive
   constructor: ($q, $timeout, $window, imagoUtils) ->
     return {
       replace: true
-      scope: true
+      scope: {
+        visible: '='
+        source: '=imagoVideo'
+      }
       templateUrl: '/imago/imagoVideo.html'
       controllerAs: 'imagovideo'
       controller: ($scope, $element, $attrs, $transclude) ->
@@ -30,7 +33,7 @@ class imagoVideo extends Directive
             @player.pause()
 
       link: (scope, element, attrs) ->
-        self = {visible: false}
+        self = {}
 
         opts =
           autobuffer  : null
@@ -54,27 +57,25 @@ class imagoVideo extends Directive
           else
             opts[key] = value
 
-        self.watch = scope.$watch attrs['imagoVideo'], (data) =>
+        self.watch = scope.$watch 'source', (data) =>
           return unless data
           self.watch() unless attrs['watch']
-          self.source = data
 
-          unless self.source?.serving_url
+          unless scope.source?.serving_url
             element.remove()
             return
 
-          if self.source.fields.hasOwnProperty('crop') and not attrs['align']
-            opts.align = self.source.fields.crop.value
+          if scope.source.fields.hasOwnProperty('crop') and not attrs['align']
+            opts.align = scope.source.fields.crop.value
 
-          if self.source.fields.hasOwnProperty('sizemode') and not attrs['sizemode']
-            opts.sizemode = self.source.fields.sizemode.value
+          if scope.source.fields.hasOwnProperty('sizemode') and not attrs['sizemode']
+            opts.sizemode = scope.source.fields.sizemode.value
 
-          preload self.source
+          preload()
 
-        preload = (data) ->
-
-          if angular.isString(data.resolution)
-            r = data.resolution.split('x')
+        preload = ->
+          if angular.isString(scope.source.resolution)
+            r = scope.source.resolution.split('x')
             resolution =
               width:  r[0]
               height: r[1]
@@ -91,7 +92,7 @@ class imagoVideo extends Directive
 
           dpr = if opts.hires then Math.ceil(window.devicePixelRatio) or 1 else 1
 
-          serving_url = "#{data.serving_url}=s#{ Math.ceil(Math.min(Math.max(width, height) * dpr)) or 1600 }"
+          serving_url = "#{scope.source.serving_url}=s#{ Math.ceil(Math.min(Math.max(width, height) * dpr)) or 1600 }"
 
           style =
             size:                 opts.size
@@ -103,7 +104,7 @@ class imagoVideo extends Directive
           scope.wrapperStyle = style
 
           setPlayerAttrs()
-          scope.videoFormats = loadFormats(self.source)
+          scope.videoFormats = loadFormats(scope.source)
           render(width, height, serving_url)
 
         setPlayerAttrs = ->
@@ -114,10 +115,9 @@ class imagoVideo extends Directive
           scope.imagovideo.player.setAttribute("loop", opts.loop)
 
         render = (width, height, servingUrl) =>
-          if  opts.lazy and not self.visible
-            self.visibleFunc = scope.$watch attrs['visible'], (value) =>
+          if  opts.lazy and not scope.visible
+            self.visibleFunc = scope.$watch 'visible', (value) =>
               return unless value
-              self.visible = true
               self.visibleFunc()
               render(width, height, servingUrl)
           else
@@ -252,7 +252,19 @@ class imagoVideo extends Directive
         # we should only do this if the video changes actually size
         scope.$on 'resize', onResize
 
-        scope.$on 'resizestop', () ->
-          preload(self.source)
+        scope.$on 'resizestop', ->
+          preload(scope.source)
+
+        scope.$on '$stateChangeSuccess', ->
+          $timeout ->
+            if document.createEvent
+              evt = new Event('checkInView')
+              window.dispatchEvent(evt)
+            else
+              #IE
+              evt = document.createEventObject()
+              evt.eventType = 'checkInView'
+              evt.eventName = 'checkInView'
+              window.fireEvent('on' + evt.eventType, evt)
 
     }

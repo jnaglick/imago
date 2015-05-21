@@ -1,9 +1,10 @@
 class imagoSubmit extends Service
 
   constructor: ($http, imagoUtils, imagoSettings) ->
+
     return {
 
-      getxsrf: () ->
+      getxsrf: ->
         url = imagoSettings.host + "/getxsrf"
         $http.get(url)
 

@@ -1,6 +1,6 @@
 class Meta extends Filter
 
-  constructor: () ->
+  constructor: ->
     return (input, value) ->
       return unless input and value and input.fields?[value]
 

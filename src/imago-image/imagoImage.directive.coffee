@@ -6,7 +6,7 @@ class imagoImage extends Directive
       replace: true
       scope: {
         visible: '='
-        data: '=imagoImage'
+        source: '=imagoImage'
       }
       templateUrl: '/imago/imagoImage.html'
       controller: ($scope, $element, $attrs) ->
@@ -38,19 +38,19 @@ class imagoImage extends Directive
 
         # console.log opts['imagoImage']
 
-        self.watch = scope.$watch 'data', (data) =>
+        self.watch = scope.$watch 'source', (data) =>
           return unless data
           self.watch() unless attrs['watch']
 
-          unless scope.data?.serving_url
+          unless scope.source?.serving_url
             element.remove()
             return
 
-          if scope.data.fields.hasOwnProperty('crop') and not attrs['align']
-              opts.align = scope.data.fields.crop.value
-          if scope.data.fields.hasOwnProperty('sizemode')
-            if scope.data.fields.sizemode.value isnt 'default' and not attrs['sizemode']
-              opts.sizemode = scope.data.fields.sizemode.value
+          if scope.source.fields.hasOwnProperty('crop') and not attrs['align']
+              opts.align = scope.source.fields.crop.value
+          if scope.source.fields.hasOwnProperty('sizemode')
+            if scope.source.fields.sizemode.value isnt 'default' and not attrs['sizemode']
+              opts.sizemode = scope.source.fields.sizemode.value
 
           if opts.responsive
             if opts.sizemode is 'crop'
@@ -62,8 +62,8 @@ class imagoImage extends Directive
 
 
         initialize = ->
-          if angular.isString(scope.data.resolution)
-            r = scope.data.resolution.split('x')
+          if angular.isString(scope.source.resolution)
+            r = scope.source.resolution.split('x')
             opts.resolution =
               width:  r[0]
               height: r[1]
@@ -122,11 +122,11 @@ class imagoImage extends Directive
 
           opts.servingSize = servingSize
 
-          if imagoUtils.isBaseString(scope.data.serving_url)
-            opts.servingUrl = scope.data.serving_url
+          if imagoUtils.isBaseString(scope.source.serving_url)
+            opts.servingUrl = scope.source.serving_url
 
           else
-            opts.servingUrl = "#{ scope.data.serving_url }=s#{ servingSize * opts.scale }"
+            opts.servingUrl = "#{ scope.source.serving_url }=s#{ servingSize * opts.scale }"
 
           # $log.log 'servingURl', servingUrl
 

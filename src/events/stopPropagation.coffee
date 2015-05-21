@@ -1,5 +1,7 @@
 class StopPropagation extends Directive
-  constructor: () ->
+
+  constructor: ->
+
     return {
       link: (scope, element, attr) ->
         element.bind 'click', (e) ->
