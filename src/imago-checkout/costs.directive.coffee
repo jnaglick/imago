@@ -13,5 +13,4 @@ class Costs extends Directive
       controller: ($scope, $element, $attrs) ->
         $scope.hideShippingIfNotCountry = false unless $attrs.hideShippingIfNotCountry
 
-
     }

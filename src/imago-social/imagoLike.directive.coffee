@@ -1,8 +1,11 @@
 class imagoLike extends Directive
 
-  constructor: () ->
+  constructor: ->
+
     return {
+
       scope: {}
       templateUrl: '/imago/imagoLike.html'
-      controller: () ->
+      controller: ->
+
     }

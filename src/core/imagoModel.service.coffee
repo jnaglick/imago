@@ -260,11 +260,9 @@ class imagoModel extends Service
     options.push = true if _.isUndefined options.push
 
     if options.save
-
       @assets.create(assets).then (result) =>
 
         if options.push
-
           for asset in result.data.data
             if @imagoUtils.isBaseString(asset.serving_url)
               asset.base64 = true
@@ -323,7 +321,6 @@ class imagoModel extends Service
         idx = @findIdx(query)
         if idx isnt -1
           _.assign(@data[idx], asset)
-
         else
           @data.push asset
 
@@ -344,7 +341,7 @@ class imagoModel extends Service
     options.stream = true if _.isUndefined options.stream
 
     for asset in assets
-      @data = _.reject(@data, {'_id': asset._id })
+      _.remove @data, {'_id': asset._id}
       @assets.delete(asset._id) if options.save
 
     defer.resolve(assets)
@@ -383,7 +380,6 @@ class imagoModel extends Service
           if @currentCollection.sortorder is '-order'
             @update(result.data).then ->
               defer.resolve()
-
           else
             @update(result.data, {stream: false})
             @reSort(@currentCollection).then ->
@@ -395,6 +391,14 @@ class imagoModel extends Service
     defer = @$q.defer()
     @paste(assets).then (pasted) =>
 
+      if @currentCollection.sortorder is '-order'
+        @update(pasted).then ->
+          defer.resolve()
+      else
+        @update(pasted, {stream: false})
+        @reSort(@currentCollection).then ->
+          defer.resolve()
+
       request = []
 
       for asset in pasted
@@ -405,23 +409,13 @@ class imagoModel extends Service
 
         request.push formatted
 
-      if @currentCollection.sortorder is '-order'
-        @update(pasted).then ->
-          defer.resolve()
-
-      else
-        @update(pasted, {stream: false})
-        @reSort(@currentCollection).then ->
-          defer.resolve()
-
       @assets.move(request, sourceId, parentId)
+
     defer.promise
 
   paste: (assets, options={}) =>
-    options.checkdups = true if _.isUndefined options.checkdups
-
     defer = @$q.defer()
-
+    options.checkdups = true if _.isUndefined options.checkdups
     assetsChildren = @findChildren(@currentCollection)
 
     checkAsset = (asset) =>
@@ -437,7 +431,7 @@ class imagoModel extends Service
         while exists
           asset.name = "#{original_name}_#{i}"
           i++
-          exists = (if _.filter(assetsChildren, {name: asset.name}).length > 0 then true else false)
+          exists = (if _.filter(assetsChildren, {name: asset.name}).length then true else false)
 
         deferAsset.resolve asset
 

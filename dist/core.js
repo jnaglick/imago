@@ -11,11 +11,7 @@ App = (function() {
 
 angular.module('imago', new App());
 
-var lodash;
-
-lodash = angular.module('lodash', []);
-
-lodash.factory('_', function() {
+angular.module('lodash', []).factory('_', function() {
   return window._();
 });
 
@@ -561,7 +557,7 @@ imagoModel = (function() {
     }
     for (j = 0, len = assets.length; j < len; j++) {
       asset = assets[j];
-      this.data = _.reject(this.data, {
+      _.remove(this.data, {
         '_id': asset._id
       });
       if (options.save) {
@@ -631,16 +627,6 @@ imagoModel = (function() {
     this.paste(assets).then((function(_this) {
       return function(pasted) {
         var asset, formatted, j, len, request;
-        request = [];
-        for (j = 0, len = pasted.length; j < len; j++) {
-          asset = pasted[j];
-          formatted = {
-            '_id': asset._id,
-            'order': asset.order,
-            'name': asset.name
-          };
-          request.push(formatted);
-        }
         if (_this.currentCollection.sortorder === '-order') {
           _this.update(pasted).then(function() {
             return defer.resolve();
@@ -653,6 +639,16 @@ imagoModel = (function() {
             return defer.resolve();
           });
         }
+        request = [];
+        for (j = 0, len = pasted.length; j < len; j++) {
+          asset = pasted[j];
+          formatted = {
+            '_id': asset._id,
+            'order': asset.order,
+            'name': asset.name
+          };
+          request.push(formatted);
+        }
         return _this.assets.move(request, sourceId, parentId);
       };
     })(this));
@@ -664,10 +660,10 @@ imagoModel = (function() {
     if (options == null) {
       options = {};
     }
+    defer = this.$q.defer();
     if (_.isUndefined(options.checkdups)) {
       options.checkdups = true;
     }
-    defer = this.$q.defer();
     assetsChildren = this.findChildren(this.currentCollection);
     checkAsset = (function(_this) {
       return function(asset) {
@@ -686,7 +682,7 @@ imagoModel = (function() {
             i++;
             exists = (_.filter(assetsChildren, {
               name: asset.name
-            }).length > 0 ? true : false);
+            }).length ? true : false);
           }
           deferAsset.resolve(asset);
         }
