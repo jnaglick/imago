@@ -1787,7 +1787,7 @@ angular.module('imago').filter('meta', [Meta]);
 var NotSupported;
 
 NotSupported = (function() {
-  function NotSupported($window) {
+  function NotSupported() {
     return {
       templateUrl: '/imago/not-supported.html',
       controllerAs: 'supported',
@@ -1795,7 +1795,7 @@ NotSupported = (function() {
       controller: function($scope, $element, $attrs) {
         var browser, browserVersion, i, len, options, results, version;
         if ((bowser.msie && bowser.version <= 8) || (bowser.firefox && bowser.version <= 32)) {
-          return this.invalid;
+          return this.invalid = true;
         }
         options = $scope.$eval($attrs.notSupported);
         if (!_.isArray(options)) {
@@ -1869,7 +1869,7 @@ NotSupported = (function() {
 
 })();
 
-angular.module('imago').directive('notSupported', ['$window', NotSupported]);
+angular.module('imago').directive('notSupported', [NotSupported]);
 
 var imagoPage;
 

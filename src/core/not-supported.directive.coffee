@@ -1,6 +1,6 @@
 class NotSupported extends Directive
 
-  constructor: ($window) ->
+  constructor: ->
 
     return {
 
@@ -9,7 +9,7 @@ class NotSupported extends Directive
       bindToController: true
       controller: ($scope, $element, $attrs) ->
 
-        return @invalid if (bowser.msie and bowser.version <= 8) or (bowser.firefox and bowser.version <= 32)
+        return @invalid = true if (bowser.msie and bowser.version <= 8) or (bowser.firefox and bowser.version <= 32)
 
         options = $scope.$eval $attrs.notSupported
 
