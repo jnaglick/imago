@@ -40,7 +40,7 @@ class imagoCart extends Service
       console.log 'check cart', response.data
       _.assign @cart, response.data
       for item in @cart.items
-        item.finalsale = item.fields['final-sale']?.value
+        item.finalsale = item.fields?['final-sale']?.value
       @updateLenght()
       @geoip()
 
@@ -63,7 +63,7 @@ class imagoCart extends Service
     return console.log 'item required' unless item
     return console.log 'quantity required' unless item.qty
 
-    item.finalsale = item.fields['final-sale']?.value
+    item.finalsale = item.fields?['final-sale']?.value
 
     if _.isArray(options) and options?.length
       item.options = {}
@@ -72,7 +72,7 @@ class imagoCart extends Service
     else if _.isPlainObject options
       item.options = options
 
-    if item.options.name
+    if item.options?.name
       item.name = item.options.name
       delete item.options.name
 

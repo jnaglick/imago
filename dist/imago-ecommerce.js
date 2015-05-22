@@ -103,13 +103,13 @@ imagoCart = (function() {
   imagoCart.prototype.checkStatus = function(id) {
     return this.$http.get(this.imagoSettings.host + "/api/carts?cartid=" + id).then((function(_this) {
       return function(response) {
-        var i, item, len, ref, ref1;
+        var i, item, len, ref, ref1, ref2;
         console.log('check cart', response.data);
         _.assign(_this.cart, response.data);
         ref = _this.cart.items;
         for (i = 0, len = ref.length; i < len; i++) {
           item = ref[i];
-          item.finalsale = (ref1 = item.fields['final-sale']) != null ? ref1.value : void 0;
+          item.finalsale = (ref1 = item.fields) != null ? (ref2 = ref1['final-sale']) != null ? ref2.value : void 0 : void 0;
         }
         _this.updateLenght();
         return _this.geoip();
@@ -139,14 +139,14 @@ imagoCart = (function() {
   };
 
   imagoCart.prototype.add = function(item, options, fields) {
-    var copy, field, filter, i, j, len, len1, option, parent, ref;
+    var copy, field, filter, i, j, len, len1, option, parent, ref, ref1, ref2;
     if (!item) {
       return console.log('item required');
     }
     if (!item.qty) {
       return console.log('quantity required');
     }
-    item.finalsale = (ref = item.fields['final-sale']) != null ? ref.value : void 0;
+    item.finalsale = (ref = item.fields) != null ? (ref1 = ref['final-sale']) != null ? ref1.value : void 0 : void 0;
     if (_.isArray(options) && (options != null ? options.length : void 0)) {
       item.options = {};
       for (i = 0, len = options.length; i < len; i++) {
@@ -156,7 +156,7 @@ imagoCart = (function() {
     } else if (_.isPlainObject(options)) {
       item.options = options;
     }
-    if (item.options.name) {
+    if ((ref2 = item.options) != null ? ref2.name : void 0) {
       item.name = item.options.name;
       delete item.options.name;
     }
