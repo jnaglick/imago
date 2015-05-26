@@ -1,7 +1,7 @@
 var imagoPager;
 
 imagoPager = (function() {
-  function imagoPager(imagoModel, $compile, $templateCache, $http) {
+  function imagoPager($http, $compile, $templateCache, imagoModel) {
     var defaultTemplate, getTemplate;
     defaultTemplate = '/imago/imagoPager.html';
     getTemplate = function(url) {
@@ -65,13 +65,13 @@ imagoPager = (function() {
         $scope.onPrev = (function(_this) {
           return function() {
             $scope.currentPage = parseInt($scope.currentPage) - 1;
-            return $scope.prevPage()();
+            return $scope.prevPage();
           };
         })(this);
         $scope.onNext = (function(_this) {
           return function() {
             $scope.currentPage = parseInt($scope.currentPage) + 1;
-            return $scope.nextPage()();
+            return $scope.nextPage();
           };
         })(this);
         return $scope.$watchGroup(['currentPage', 'tags'], this.fetchPosts);
@@ -93,6 +93,6 @@ imagoPager = (function() {
 
 })();
 
-angular.module('imago').directive('imagoPager', ['imagoModel', '$compile', '$templateCache', '$http', imagoPager]);
+angular.module('imago').directive('imagoPager', ['$http', '$compile', '$templateCache', 'imagoModel', imagoPager]);
 
 angular.module("imago").run(["$templateCache", function($templateCache) {$templateCache.put("/imago/imagoPager.html","<div class=\"pager\"><button ng-disabled=\"currentPage &lt;= 1\" ng-click=\"onPrev()\" class=\"prev\">Previous</button><button ng-disabled=\"currentPage &gt;= totalPages || posts.length &lt; pageSize || !next\" ng-click=\"onNext()\" class=\"next\">Next</button></div>");}]);

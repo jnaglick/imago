@@ -1,6 +1,6 @@
 class imagoPager extends Directive
 
-  constructor: (imagoModel, $compile, $templateCache, $http) ->
+  constructor: ($http, $compile, $templateCache, imagoModel) ->
 
     defaultTemplate = '/imago/imagoPager.html'
     getTemplate = (url) ->
@@ -57,11 +57,11 @@ class imagoPager extends Directive
 
         $scope.onPrev = =>
           $scope.currentPage = parseInt($scope.currentPage) - 1
-          $scope.prevPage()()
+          $scope.prevPage()
 
         $scope.onNext = =>
           $scope.currentPage = parseInt($scope.currentPage) + 1
-          $scope.nextPage()()
+          $scope.nextPage()
 
         $scope.$watchGroup ['currentPage', 'tags'], @fetchPosts
 
