@@ -205,7 +205,9 @@ imagoVideo = (function() {
           scope.imagovideo.player.setAttribute("preload", opts.preload);
           scope.imagovideo.player.setAttribute("x-webkit-airplay", "allow");
           scope.imagovideo.player.setAttribute("webkitAllowFullscreen", true);
-          return scope.imagovideo.player.setAttribute("loop", opts.loop);
+          if (opts.loop === true) {
+            return scope.imagovideo.player.setAttribute("loop", opts.loop);
+          }
         };
         render = (function(_this) {
           return function(width, height, servingUrl) {

@@ -112,7 +112,7 @@ class imagoVideo extends Directive
           scope.imagovideo.player.setAttribute("preload", opts.preload)
           scope.imagovideo.player.setAttribute("x-webkit-airplay", "allow")
           scope.imagovideo.player.setAttribute("webkitAllowFullscreen", true)
-          scope.imagovideo.player.setAttribute("loop", opts.loop)
+          scope.imagovideo.player.setAttribute("loop", opts.loop) if opts.loop is true
 
         render = (width, height, servingUrl) =>
           if  opts.lazy and not scope.visible
