@@ -1,7 +1,7 @@
 var imagoImage;
 
 imagoImage = (function() {
-  function imagoImage($window, $timeout, $log, imagoUtils) {
+  function imagoImage($window, $rootScope, $timeout, $log, imagoUtils) {
     return {
       replace: true,
       scope: {
@@ -14,7 +14,7 @@ imagoImage = (function() {
         return $scope.imageStyle = {};
       },
       link: function(scope, element, attrs) {
-        var calcMediaSize, initialize, key, opts, render, self, setImageStyle, value;
+        var calcMediaSize, initialize, key, opts, render, self, setImageStyle, value, watchers;
         self = {};
         opts = {
           align: 'center center',
@@ -177,13 +177,14 @@ imagoImage = (function() {
             scope.servingUrl = opts.servingUrl;
           }
         };
+        watchers = [];
         if (opts.responsive) {
-          scope.$on('resizestop', function() {
+          watchers.push($rootScope.$on('resizestop', function() {
             scope.status = 'loading';
             if (scope.source) {
               return initialize();
             }
-          });
+          }));
         }
         scope.$on('$stateChangeSuccess', function() {
           return $timeout(function() {
@@ -199,7 +200,16 @@ imagoImage = (function() {
             }
           });
         });
-        return angular.element($window).on('orientationchange', initialize);
+        angular.element($window).on('orientationchange', initialize);
+        return scope.$on('$destroy', function() {
+          var i, len, results, watcher;
+          results = [];
+          for (i = 0, len = watchers.length; i < len; i++) {
+            watcher = watchers[i];
+            results.push(watcher());
+          }
+          return results;
+        });
       }
     };
   }
@@ -208,6 +218,6 @@ imagoImage = (function() {
 
 })();
 
-angular.module('imago').directive('imagoImage', ['$window', '$timeout', '$log', 'imagoUtils', imagoImage]);
+angular.module('imago').directive('imagoImage', ['$window', '$rootScope', '$timeout', '$log', 'imagoUtils', imagoImage]);
 
-angular.module("imago").run(["$templateCache", function($templateCache) {$templateCache.put("/imago/imagoImage.html","<div in-view=\"visible = $inview\" responsive-events=\"responsive-events\" ng-style=\"elementStyle\" ng-class=\"[status, align]\" visible=\"visible\" ng-switch=\"sizemode\" class=\"imagoimage\"><img ng-src=\"{{servingUrl}}\" ng-style=\"imageStyle\" ng-switch-when=\"fit\" class=\"imagox23\"/><div ng-style=\"imageStyle\" ng-switch-when=\"crop\" class=\"imagox23\"></div><div class=\"loading\"><div class=\"spin\"></div><div class=\"spin2\"></div></div></div>");}]);
+angular.module("imago").run(["$templateCache", function($templateCache) {$templateCache.put("/imago/imagoImage.html","<div visible=\"visible\" in-view=\"visible = $inview\" in-view-options=\"{debounce: 100}\" ng-style=\"elementStyle\" ng-class=\"[status, align]\" ng-switch=\"sizemode\" class=\"imagoimage\"><img ng-src=\"{{servingUrl}}\" ng-style=\"imageStyle\" ng-switch-when=\"fit\" class=\"imagox23\"/><div ng-style=\"imageStyle\" ng-switch-when=\"crop\" class=\"imagox23\"></div><div class=\"loading\"><div class=\"spin\"></div><div class=\"spin2\"></div></div></div>");}]);

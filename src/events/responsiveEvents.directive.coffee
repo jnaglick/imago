@@ -1,6 +1,6 @@
 class ResponsiveEvents extends Directive
 
-  constructor: ($window) ->
+  constructor: ($window, $rootScope) ->
 
     return {
       restrict: 'A'
@@ -10,42 +10,42 @@ class ResponsiveEvents extends Directive
 
         onResizeStart = (e) =>
           return if @resizeing
-          $scope.$broadcast 'resizestart'
+          $rootScope.$emit 'resizestart'
           @resizeing = true
-          resizeStop = $scope.$on 'resizestop', =>
+          resizeStop = $rootScope.$on 'resizestop', =>
             @resizeing = false
             resizeStop()
 
         onScrollStart = (e) =>
           # console.log 'start scrolling', @
           return if @scrolling
-          $scope.$broadcast 'scrollstart'
+          $rootScope.$emit 'scrollstart'
           @scrolling = true
-          scrollStop = $scope.$on 'scrollstop', =>
+          scrollStop = $rootScope.$on 'scrollstop', =>
             @scrolling = false
             scrollStop()
 
         onMouseWheelStart = (e) =>
           return if @isMouseWheeling
-          $scope.$broadcast 'mousewheelstart'
+          $rootScope.$emit 'mousewheelstart'
           @isMouseWheeling = true
-          mouseStop = $scope.$on 'mousewheelstop', =>
+          mouseStop = $rootScope.$on 'mousewheelstop', =>
             @isMouseWheeling = false
             mouseStop()
 
-        w.on 'resize', -> $scope.$broadcast 'resize'
+        w.on 'resize', -> $rootScope.$emit 'resize'
 
         w.on 'resize', onResizeStart
-        w.on 'resize', _.debounce ( -> $scope.$broadcast 'resizestop' ),  200
-        w.on 'resize', _.throttle ( -> $scope.$broadcast 'resizelimit' ), 150
+        w.on 'resize', _.debounce ( -> $rootScope.$emit 'resizestop' ),  200
+        w.on 'resize', _.throttle ( -> $rootScope.$emit 'resizelimit' ), 150
 
 
         w.on 'scroll', onScrollStart
-        w.on 'scroll', _.debounce ( -> $scope.$broadcast 'scrollstop' ),  200
-        w.on 'scroll', _.throttle ( -> $scope.$broadcast 'scrolllimit' ), 150
+        w.on 'scroll', _.debounce ( -> $rootScope.$emit 'scrollstop' ),  200
+        w.on 'scroll', _.throttle ( -> $rootScope.$emit 'scrolllimit' ), 150
 
         w.on 'mousewheel', onMouseWheelStart
-        w.on 'mousewheel', _.debounce ( -> $scope.$broadcast 'mousewheelstop' ),  200
-        w.on 'mousewheel', _.throttle ( -> $scope.$broadcast 'mousewheellimit' ), 150
+        w.on 'mousewheel', _.debounce ( -> $rootScope.$emit 'mousewheelstop' ),  200
+        w.on 'mousewheel', _.throttle ( -> $rootScope.$emit 'mousewheellimit' ), 150
 
     }

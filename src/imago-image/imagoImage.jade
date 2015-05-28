@@ -1,9 +1,9 @@
 .imagoimage(
+  visible="visible"
   in-view="visible = $inview"
-  responsive-events
+  in-view-options="{debounce: 100}"
   ng-style="elementStyle"
   ng-class="[status, align]"
-  visible="visible"
   ng-switch="sizemode"
   )
   img.imagox23(ng-src="{{servingUrl}}" ng-style="imageStyle" ng-switch-when="fit")

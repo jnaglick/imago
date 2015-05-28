@@ -1,6 +1,6 @@
 class imagoImage extends Directive
 
-  constructor: ($window, $timeout, $log, imagoUtils) ->
+  constructor: ($window, $rootScope, $timeout, $log, imagoUtils) ->
 
     return {
       replace: true
@@ -193,6 +193,7 @@ class imagoImage extends Directive
             # styles = calcMediaSize()
           return
 
+        watchers = []
 
         if opts.responsive
           # console.log 'resize', scope.onResize()
@@ -200,7 +201,7 @@ class imagoImage extends Directive
           # scope.$on 'resizestart', () ->
           #   scope.resizing = 'resizing'
 
-          scope.$on 'resizestop', ->
+          watchers.push $rootScope.$on 'resizestop', ->
             scope.status = 'loading'
             # scope.resizing = ''
             initialize() if scope.source
@@ -219,5 +220,9 @@ class imagoImage extends Directive
             # render()
 
         angular.element($window).on 'orientationchange', initialize
+
+        scope.$on '$destroy', ->
+          for watcher in watchers
+            watcher()
 
     }

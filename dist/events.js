@@ -1,7 +1,7 @@
 var ResponsiveEvents;
 
 ResponsiveEvents = (function() {
-  function ResponsiveEvents($window) {
+  function ResponsiveEvents($window, $rootScope) {
     return {
       restrict: 'A',
       link: function($scope) {
@@ -13,9 +13,9 @@ ResponsiveEvents = (function() {
             if (_this.resizeing) {
               return;
             }
-            $scope.$broadcast('resizestart');
+            $rootScope.$emit('resizestart');
             _this.resizeing = true;
-            return resizeStop = $scope.$on('resizestop', function() {
+            return resizeStop = $rootScope.$on('resizestop', function() {
               _this.resizeing = false;
               return resizeStop();
             });
@@ -27,9 +27,9 @@ ResponsiveEvents = (function() {
             if (_this.scrolling) {
               return;
             }
-            $scope.$broadcast('scrollstart');
+            $rootScope.$emit('scrollstart');
             _this.scrolling = true;
-            return scrollStop = $scope.$on('scrollstop', function() {
+            return scrollStop = $rootScope.$on('scrollstop', function() {
               _this.scrolling = false;
               return scrollStop();
             });
@@ -41,37 +41,37 @@ ResponsiveEvents = (function() {
             if (_this.isMouseWheeling) {
               return;
             }
-            $scope.$broadcast('mousewheelstart');
+            $rootScope.$emit('mousewheelstart');
             _this.isMouseWheeling = true;
-            return mouseStop = $scope.$on('mousewheelstop', function() {
+            return mouseStop = $rootScope.$on('mousewheelstop', function() {
               _this.isMouseWheeling = false;
               return mouseStop();
             });
           };
         })(this);
         w.on('resize', function() {
-          return $scope.$broadcast('resize');
+          return $rootScope.$emit('resize');
         });
         w.on('resize', onResizeStart);
         w.on('resize', _.debounce((function() {
-          return $scope.$broadcast('resizestop');
+          return $rootScope.$emit('resizestop');
         }), 200));
         w.on('resize', _.throttle((function() {
-          return $scope.$broadcast('resizelimit');
+          return $rootScope.$emit('resizelimit');
         }), 150));
         w.on('scroll', onScrollStart);
         w.on('scroll', _.debounce((function() {
-          return $scope.$broadcast('scrollstop');
+          return $rootScope.$emit('scrollstop');
         }), 200));
         w.on('scroll', _.throttle((function() {
-          return $scope.$broadcast('scrolllimit');
+          return $rootScope.$emit('scrolllimit');
         }), 150));
         w.on('mousewheel', onMouseWheelStart);
         w.on('mousewheel', _.debounce((function() {
-          return $scope.$broadcast('mousewheelstop');
+          return $rootScope.$emit('mousewheelstop');
         }), 200));
         return w.on('mousewheel', _.throttle((function() {
-          return $scope.$broadcast('mousewheellimit');
+          return $rootScope.$emit('mousewheellimit');
         }), 150));
       }
     };
@@ -81,7 +81,7 @@ ResponsiveEvents = (function() {
 
 })();
 
-angular.module('imago').directive('responsiveEvents', ['$window', ResponsiveEvents]);
+angular.module('imago').directive('responsiveEvents', ['$window', '$rootScope', ResponsiveEvents]);
 
 var StopPropagation;
 
