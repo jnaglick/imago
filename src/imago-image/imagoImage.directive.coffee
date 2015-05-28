@@ -203,7 +203,7 @@ class imagoImage extends Directive
           scope.$on 'resizestop', ->
             scope.status = 'loading'
             # scope.resizing = ''
-            initialize()
+            initialize() if scope.source
 
         scope.$on '$stateChangeSuccess', ->
           $timeout ->

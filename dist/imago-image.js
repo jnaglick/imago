@@ -180,7 +180,9 @@ imagoImage = (function() {
         if (opts.responsive) {
           scope.$on('resizestop', function() {
             scope.status = 'loading';
-            return initialize();
+            if (scope.source) {
+              return initialize();
+            }
           });
         }
         scope.$on('$stateChangeSuccess', function() {

@@ -32,7 +32,7 @@ class imagoSlider extends Directive
         scope.conf.siblings = !!(scope.conf.next and scope.conf.prev)
 
         if $location.path().indexOf('last')
-          scope.currentIndex = scope.conf.current
+          scope.currentIndex = parseInt(scope.conf.current)
         else
           scope.currentIndex = scope.getLast()
 

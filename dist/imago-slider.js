@@ -33,7 +33,7 @@ imagoSlider = (function() {
         });
         scope.conf.siblings = !!(scope.conf.next && scope.conf.prev);
         if ($location.path().indexOf('last')) {
-          scope.currentIndex = scope.conf.current;
+          scope.currentIndex = parseInt(scope.conf.current);
         } else {
           scope.currentIndex = scope.getLast();
         }
