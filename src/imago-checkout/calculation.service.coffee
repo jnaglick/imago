@@ -325,8 +325,6 @@ class Calculation extends Service
         @calculateTotal()
 
   submit: =>
-    return if @processing
-    @processing = true
     @process.form.items    = angular.copy @cart.items
     @process.form.costs    = angular.copy @costs
     @process.form.currency = angular.copy @currency

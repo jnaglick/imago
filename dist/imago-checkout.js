@@ -524,10 +524,6 @@ Calculation = (function() {
 
   Calculation.prototype.submit = function() {
     var ref;
-    if (this.processing) {
-      return;
-    }
-    this.processing = true;
     this.process.form.items = angular.copy(this.cart.items);
     this.process.form.costs = angular.copy(this.costs);
     this.process.form.currency = angular.copy(this.currency);
