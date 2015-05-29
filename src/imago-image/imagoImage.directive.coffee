@@ -47,7 +47,7 @@ class imagoImage extends Directive
             return
 
           if scope.source.fields.hasOwnProperty('crop') and not attrs['align']
-              opts.align = scope.source.fields.crop.value
+            opts.align = scope.source.fields.crop.value
           if scope.source.fields.hasOwnProperty('sizemode')
             if scope.source.fields.sizemode.value isnt 'default' and not attrs['sizemode']
               opts.sizemode = scope.source.fields.sizemode.value
@@ -79,6 +79,7 @@ class imagoImage extends Directive
           height = element[0].clientHeight
 
           wrapperRatio = width / height if height
+          # console.log 'wrapperRatio', wrapperRatio, width, height
 
           dpr = if opts.hires then Math.ceil($window.devicePixelRatio) or 1 else 1
 
@@ -97,7 +98,7 @@ class imagoImage extends Directive
             # $log.log 'assetratio: ', opts.assetRatio, 'wrapperraito: ' , wrapperRatio
             if not height or opts.autosize is 'height'
               opts.autosize = 'height'
-              # console.log 'opts.autosize inside', opts.autosize
+              # console.log 'opts.autosize inside', opts.autosize, width, height, opts.assetRatio, opts.autosize
               servingSize = Math.round(Math.max(width, width / opts.assetRatio))
 
             else if not width or opts.autosize is 'width'
@@ -109,7 +110,7 @@ class imagoImage extends Directive
               # $log.log 'fit full height', opts.width, opts.height, opts.assetRatio, opts.height * assetRatio
               servingSize = Math.round(Math.max(height, height * opts.assetRatio))
             else
-              # $log.log 'fit full width', opts.width, opts.height, opts.assetRatio, height / assetRatio
+              # $log.log 'fit full width', width, height, opts.assetRatio, wrapperRatio
               servingSize = Math.round(Math.max(width, width / opts.assetRatio))
 
           servingSize = parseInt Math.min(servingSize * dpr, opts.maxsize), 10
@@ -128,7 +129,7 @@ class imagoImage extends Directive
           else
             opts.servingUrl = "#{ scope.source.serving_url }=s#{ servingSize * opts.scale }"
 
-          # $log.log 'servingURl', servingUrl
+          # $log.log 'opts.servingUrl', opts.servingUrl
 
           render()
 
