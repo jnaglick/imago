@@ -451,7 +451,7 @@ Calculation = (function() {
   };
 
   Calculation.prototype.checkStock = function(cb) {
-    var changed, i, item, len, ref, ref1, ref2, stock;
+    var changed, i, item, len, ref, ref1, ref2, ref3, ref4, stock;
     this.cartError = {};
     this.fcenter = _.find(this.fulfillmentcenters, (function(_this) {
       return function(ffc) {
@@ -471,7 +471,7 @@ Calculation = (function() {
     ref = this.cart.items;
     for (i = 0, len = ref.length; i < len; i++) {
       item = ref[i];
-      stock = ((ref1 = item.fields.stock) != null ? (ref2 = ref1.value) != null ? ref2[this.fcenter._id] : void 0 : void 0) || 100000;
+      stock = !_.isUndefined((ref1 = item.fields.stock) != null ? (ref2 = ref1.value) != null ? ref2[this.fcenter._id] : void 0 : void 0) ? (ref3 = item.fields.stock) != null ? (ref4 = ref3.value) != null ? ref4[this.fcenter._id] : void 0 : void 0 : 100000;
       if (parseInt(stock) < item.qty) {
         item.qty = stock;
         changed = true;
@@ -490,13 +490,14 @@ Calculation = (function() {
     if (changed) {
       this.$http.put(this.imagoSettings.host + '/api/carts/' + this.cart._id, this.cart);
     }
+    console.log('@cartError', this.cartError);
     return cb();
   };
 
   Calculation.prototype.calculate = function() {
     return this.checkStock((function(_this) {
       return function() {
-        var i, item, len, ref;
+        var i, item, len, ref, ref1, ref2;
         _this.costs = {
           subtotal: 0,
           shipping: 0,
@@ -507,7 +508,7 @@ Calculation = (function() {
         ref = _this.cart.items;
         for (i = 0, len = ref.length; i < len; i++) {
           item = ref[i];
-          if (item.fields.price.value[_this.currency] && item.qty) {
+          if (((ref1 = item.fields) != null ? (ref2 = ref1.price) != null ? ref2.value[_this.currency] : void 0 : void 0) && item.qty) {
             _this.costs.subtotal += item.qty * item.fields.price.value[_this.currency];
           }
         }

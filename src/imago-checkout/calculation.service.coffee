@@ -292,7 +292,8 @@ class Calculation extends Service
 
     changed = false
     for item in @cart.items
-      stock = item.fields.stock?.value?[@fcenter._id] or 100000
+      # stock = item.fields.stock?.value?[@fcenter._id] or 100000
+      stock = if !_.isUndefined(item.fields.stock?.value?[@fcenter._id]) then item.fields.stock?.value?[@fcenter._id] else 100000
       if parseInt(stock) < item.qty
         item.qty = stock
         changed = true
@@ -302,6 +303,8 @@ class Calculation extends Service
 
     if changed
       @$http.put(@imagoSettings.host + '/api/carts/' + @cart._id, @cart)
+
+    console.log '@cartError', @cartError
 
     cb()
 
@@ -316,7 +319,7 @@ class Calculation extends Service
         total       : 0
 
       for item in @cart.items
-        if item.fields.price.value[@currency] and item.qty
+        if item.fields?.price?.value[@currency] and item.qty
           @costs.subtotal += item.qty * item.fields.price.value[@currency]
       @costs.total = @costs.subtotal
 
