@@ -490,7 +490,6 @@ Calculation = (function() {
     if (changed) {
       this.$http.put(this.imagoSettings.host + '/api/carts/' + this.cart._id, this.cart);
     }
-    console.log('@cartError', this.cartError);
     return cb();
   };
 

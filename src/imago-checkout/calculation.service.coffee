@@ -304,8 +304,6 @@ class Calculation extends Service
     if changed
       @$http.put(@imagoSettings.host + '/api/carts/' + @cart._id, @cart)
 
-    console.log '@cartError', @cartError
-
     cb()
 
 
