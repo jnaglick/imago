@@ -160,8 +160,10 @@ imagoVideo = (function() {
             if (scope.source.fields.hasOwnProperty('crop') && !attrs['align']) {
               opts.align = scope.source.fields.crop.value;
             }
-            if (scope.source.fields.hasOwnProperty('sizemode') && !attrs['sizemode']) {
-              opts.sizemode = scope.source.fields.sizemode.value;
+            if (scope.source.fields.hasOwnProperty('sizemode')) {
+              if (scope.source.fields.sizemode.value !== 'default' && !attrs['sizemode']) {
+                opts.sizemode = scope.source.fields.sizemode.value;
+              }
             }
             return preload();
           };
