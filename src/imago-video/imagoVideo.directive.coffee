@@ -69,7 +69,11 @@ class imagoVideo extends Directive
             opts.align = scope.source.fields.crop.value
 
           if scope.source.fields.hasOwnProperty('sizemode') and not attrs['sizemode']
-            opts.sizemode = scope.source.fields.sizemode.value
+            if scope.source.fields.sizemode.value is 'default'
+              opts.sizemode = 'fit'
+            else
+              opts.sizemode = scope.source.fields.sizemode.value
+
 
           preload()
 

@@ -161,7 +161,11 @@ imagoVideo = (function() {
               opts.align = scope.source.fields.crop.value;
             }
             if (scope.source.fields.hasOwnProperty('sizemode') && !attrs['sizemode']) {
-              opts.sizemode = scope.source.fields.sizemode.value;
+              if (scope.source.fields.sizemode.value === 'default') {
+                opts.sizemode = 'fit';
+              } else {
+                opts.sizemode = scope.source.fields.sizemode.value;
+              }
             }
             return preload();
           };
