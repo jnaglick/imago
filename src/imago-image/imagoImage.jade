@@ -1,6 +1,7 @@
 .imagoimage(
   visible="visible"
   in-view="visible = $inview"
+  in-view-options="{debounce: 100}"
   ng-style="elementStyle"
   ng-class="[status, align]"
   ng-switch="sizemode"
