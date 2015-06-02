@@ -48,6 +48,8 @@ imagoModel = (function() {
     this.findParent = bind(this.findParent, this);
     this.findChildren = bind(this.findChildren, this);
     this.create = bind(this.create, this);
+    this.populateData = bind(this.populateData, this);
+    this.addAsset = bind(this.addAsset, this);
     this.getData = bind(this.getData, this);
     this.getLocalData = bind(this.getLocalData, this);
     this.assets = {
@@ -139,7 +141,7 @@ imagoModel = (function() {
   };
 
   imagoModel.prototype.getLocalData = function(query, options) {
-    var asset, defer, key, path, value;
+    var asset, defer, key, localQuery, path, value;
     if (options == null) {
       options = {};
     }
@@ -164,15 +166,10 @@ imagoModel = (function() {
       }
     }
     if (path) {
-      if (_.isString(path)) {
-        asset = this.find({
-          'path': path
-        });
-      } else if (_.isArray(path)) {
-        asset = this.find({
-          'path': path[0]
-        });
-      }
+      localQuery = {
+        'path': _.isString(path) ? path : _.first(path)
+      };
+      asset = this.find(localQuery);
       if (asset) {
         asset.assets = this.findChildren(asset);
         if (asset.count || asset.assets.length) {
@@ -299,25 +296,37 @@ imagoModel = (function() {
     return querydict;
   };
 
-  imagoModel.prototype.create = function(data) {
-    var asset, collection, j, len, ref;
-    collection = data;
-    if (data.assets) {
-      ref = data.assets;
-      for (j = 0, len = ref.length; j < len; j++) {
-        asset = ref[j];
-        if (this.imagoUtils.isBaseString(asset.serving_url)) {
-          asset.base64 = true;
-        } else {
-          asset.base64 = false;
-        }
-        if (!this.find({
-          '_id': asset._id
-        })) {
-          this.data.push(asset);
-        }
-      }
+  imagoModel.prototype.addAsset = function(asset) {
+    if (this.imagoUtils.isBaseString(asset.serving_url)) {
+      asset.base64 = true;
+    } else {
+      asset.base64 = false;
     }
+    if (!this.find({
+      '_id': asset._id
+    })) {
+      this.data.push(asset);
+    }
+    return this.populateData(asset.assets);
+  };
+
+  imagoModel.prototype.populateData = function(assets) {
+    var asset, j, len, results;
+    if (!_.isArray(assets)) {
+      return;
+    }
+    results = [];
+    for (j = 0, len = assets.length; j < len; j++) {
+      asset = assets[j];
+      results.push(this.addAsset(asset));
+    }
+    return results;
+  };
+
+  imagoModel.prototype.create = function(data) {
+    var collection;
+    collection = data;
+    this.populateData(data.assets);
     if (!this.find({
       '_id': collection._id
     })) {

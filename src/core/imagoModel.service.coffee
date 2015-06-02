@@ -83,11 +83,10 @@ class imagoModel extends Service
 
     if path
 
-      if _.isString path
-        asset = @find('path' : path)
+      localQuery =
+        'path' : if _.isString path then path else _.first(path)
 
-      else if _.isArray path
-        asset = @find('path' : path[0])
+      asset = @find(localQuery)
 
       if asset
 
@@ -100,7 +99,6 @@ class imagoModel extends Service
             defer.reject query
 
           else
-            # console.log 'passed assets resolve'
             asset.assets = @filterAssets(asset.assets, query)
             defer.resolve asset
 
@@ -191,16 +189,23 @@ class imagoModel extends Service
         querydict[key] = querydict[key][0]
     querydict
 
+  addAsset: (asset) =>
+    if @imagoUtils.isBaseString(asset.serving_url)
+      asset.base64 = true
+    else
+      asset.base64 = false
+    @data.push(asset) unless @find('_id': asset._id)
+    @populateData asset.assets
+
+
+  populateData: (assets) => 
+    return if !_.isArray(assets)
+    @addAsset asset for asset in assets
+
+
   create: (data) =>
     collection = data
-    if data.assets
-      for asset in data.assets
-        if @imagoUtils.isBaseString(asset.serving_url)
-          asset.base64 = true
-        else
-          asset.base64 = false
-
-        @data.push(asset) unless @find('_id': asset._id)
+    @populateData data.assets
 
     unless @find('_id' : collection._id)
       collection = _.omit collection, 'assets' if collection.kind is 'Collection'
