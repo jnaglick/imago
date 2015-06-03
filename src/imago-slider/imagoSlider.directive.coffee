@@ -116,26 +116,24 @@ class imagoSlider extends Directive
             else
               scope.clearInterval()
 
+        keyboardBinding = (e) ->
+          switch e.keyCode
+            when 37
+              scope.$apply ->
+                scope.goPrev()
+            when 39
+              scope.$apply ->
+                scope.goNext()
+
         if scope.conf.enablekeys
-
-          $document.on 'keydown', (e) ->
-
-            switch e.keyCode
-              when 37
-                scope.$apply(()->
-                  scope.goPrev()
-                )
-              when 39
-                scope.$apply(()->
-                  scope.goNext()
-                )
-
+          $document.on 'keydown', keyboardBinding
 
         watcher = $rootScope.$on "#{scope.conf.namespace}:change", (event, index) ->
           scope.clearInterval()
           scope.setCurrent(index)
 
         scope.$on '$destroy', ->
+          $document.off "keydown", keyboardBinding
           scope.clearInterval()
           watcher()
   }

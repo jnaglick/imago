@@ -20,7 +20,7 @@ imagoSlider = (function() {
         };
       },
       link: function(scope, element, attrs, ctrl, transclude) {
-        var slider, watcher;
+        var keyboardBinding, slider, watcher;
         slider = element.children();
         transclude(scope, function(clone, scope) {
           return slider.append(clone);
@@ -114,25 +114,27 @@ imagoSlider = (function() {
             };
           })(this));
         }
+        keyboardBinding = function(e) {
+          switch (e.keyCode) {
+            case 37:
+              return scope.$apply(function() {
+                return scope.goPrev();
+              });
+            case 39:
+              return scope.$apply(function() {
+                return scope.goNext();
+              });
+          }
+        };
         if (scope.conf.enablekeys) {
-          $document.on('keydown', function(e) {
-            switch (e.keyCode) {
-              case 37:
-                return scope.$apply(function() {
-                  return scope.goPrev();
-                });
-              case 39:
-                return scope.$apply(function() {
-                  return scope.goNext();
-                });
-            }
-          });
+          $document.on('keydown', keyboardBinding);
         }
         watcher = $rootScope.$on(scope.conf.namespace + ":change", function(event, index) {
           scope.clearInterval();
           return scope.setCurrent(index);
         });
         return scope.$on('$destroy', function() {
+          $document.off("keydown", keyboardBinding);
           scope.clearInterval();
           return watcher();
         });
