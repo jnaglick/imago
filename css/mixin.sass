@@ -28,19 +28,19 @@
 =vbg-gradient($fc : #FFF, $tc : #FFF)
   background: $fc
   background: -webkit-gradient(linear, left top, left bottom, from($fc), to($tc)) no-repeat
-  background: -moz-linear-gradient(top, $fc, $tc) no-repeat
-  background: -ms-linear-gradient(top, $fc, $tc) no-repeat
-  background: -o-linear-gradient(top, $fc, $tc) no-repeat
-  background: linear-gradient(top, $fc, $tc) no-repeat
+  background: -moz-linear-gradient(to bottom, $fc, $tc) no-repeat
+  background: -ms-linear-gradient(to bottom, $fc, $tc) no-repeat
+  background: -o-linear-gradient(to bottom, $fc, $tc) no-repeat
+  background: linear-gradient(to bottom, $fc, $tc) no-repeat
 
 /* Horizontal Background Gradient */
 =hbg-gradient($fc : #FFF, $tc : #FFF)
   background: $fc
   background: -webkit-gradient(linear, left top, right top, from($fc), to($tc)) no-repeat
-  background: -moz-linear-gradient(left, $fc, $tc) no-repeat
-  background: -ms-linear-gradient(left, $fc, $tc) no-repeat
-  background: -o-linear-gradient(left, $fc, $tc) no-repeat
-  background: linear-gradient(left, $fc, $tc) no-repeat
+  background: -moz-linear-gradient(to right, $fc, $tc) no-repeat
+  background: -ms-linear-gradient(to right, $fc, $tc) no-repeat
+  background: -o-linear-gradient(to right, $fc, $tc) no-repeat
+  background: linear-gradient(to right, $fc, $tc) no-repeat
 
 
 =rbg-gradient($fc : #FFF, $tc : #FFF, $start : 0%, $end : 100%, $h : center, $v : center)
