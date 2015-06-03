@@ -243,11 +243,16 @@ class Calculation extends Service
     return deferred.promise
 
   findTaxRate: ->
+    return {'rate': 0} if !@country
+
     if @country in ['United States of America', 'USA']
       @country = 'United States'
 
     rates_by_country = _.filter(@taxes, (item) => item.active and \
                                 @country?.toUpperCase() in (c.toUpperCase() for c in item.countries))
+
+    if !rates_by_country.length
+      rates_by_country = _.filter(@taxes, (item) => item.active and !item.countries.length)
 
     if @state
       rate = _.find rates_by_country, (item) =>
