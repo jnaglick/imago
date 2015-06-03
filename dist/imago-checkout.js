@@ -284,9 +284,11 @@ Calculation = (function() {
             var rateFix, shipping;
             if (_this.shipping_options && _this.shipping_options._id === response.rate._id) {
               _this.costs.shipping = response.shipping;
+              deferred.resolve();
             } else if (!_this.shipping_options) {
               _this.setShippingRates(rates);
               _this.costs.shipping = response.shipping;
+              deferred.resolve();
             }
             rateFix = (response.shipping / 100).toFixed(2);
             shipping = _.find(_this.shippingRates, {

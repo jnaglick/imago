@@ -165,9 +165,11 @@ class Calculation extends Service
         @calcShipping(rate).then (response) =>
           if @shipping_options and @shipping_options._id is response.rate._id
             @costs.shipping = response.shipping
+            deferred.resolve()
           else if not @shipping_options
             @setShippingRates(rates)
             @costs.shipping = response.shipping
+            deferred.resolve()
 
           rateFix = (response.shipping/100).toFixed(2)
           shipping = _.find @shippingRates, {'_id': response.rate._id}
