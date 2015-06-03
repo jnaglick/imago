@@ -6,18 +6,18 @@ table
         span.currency(ng-bind-html='currency | currencySymbol')
         | {{ costs.subtotal | price }}
 
-    tr(ng-hide="hideShippingIfNotCountry")
+    tr(ng-show="!hideIfNotCountry && hideCountryDefined")
       th Shipping
       td(ng-show="costs.shipping")
         span.currency(ng-bind-html='currency | currencySymbol')
         | {{ costs.shipping | price }}
       td(ng-hide="costs.shipping") free
-    tr(ng-show="costs.includedTax")
+    tr(ng-show="costs.includedTax && !hideIfNotCountry && hideCountryDefined")
       th Included Tax
       td
         span.currency(ng-bind-html='currency | currencySymbol')
         | {{ costs.includedTax | price }}
-    tr(ng-show="!costs.includedTax")
+    tr(ng-show="!costs.includedTax && !hideIfNotCountry && hideCountryDefined")
       th Tax
       td
         span.currency(ng-bind-html='currency | currencySymbol')
