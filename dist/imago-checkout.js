@@ -370,6 +370,11 @@ Calculation = (function() {
 
   Calculation.prototype.findTaxRate = function() {
     var rate, rates, rates_by_country, ref;
+    if (!this.country) {
+      return {
+        'rate': 0
+      };
+    }
     if ((ref = this.country) === 'United States of America' || ref === 'USA') {
       this.country = 'United States';
     }
@@ -388,6 +393,13 @@ Calculation = (function() {
         })(), ref1) >= 0);
       };
     })(this));
+    if (!rates_by_country.length) {
+      rates_by_country = _.filter(this.taxes, (function(_this) {
+        return function(item) {
+          return item.active && !item.countries.length;
+        };
+      })(this));
+    }
     if (this.state) {
       rate = _.find(rates_by_country, (function(_this) {
         return function(item) {
