@@ -139,8 +139,9 @@ class Calculation extends Service
       return rates_by_country or _.filter @shippingmethods, (item) -> !item.countries.length
 
   changeShipping: =>
-    @calcShipping(@shipping_options, @$q.defer())
-    @calculate()
+    @calcShipping(@shipping_options).then (response) =>
+      @costs.shipping = response.shipping
+      @calculate()
 
   calculateShipping: =>
     deferred = @$q.defer()
@@ -160,15 +161,22 @@ class Calculation extends Service
         @error.noshippingrule = true if @country
         return deferred.resolve()
       @error.noshippingrule = false
-      if @shipping_options
-        return @calcShipping(@shipping_options, deferred)
-      else
-        @setShippingRates(rates)
-        @calcShipping(rates[0], deferred)
+      for rate in rates
+        @calcShipping(rate).then (response) =>
+          if @shipping_options and @shipping_options._id is response.rate._id
+            @costs.shipping = response.shipping
+          else if not @shipping_options
+            @setShippingRates(rates)
+            @costs.shipping = response.shipping
+
+          rateFix = (response.shipping/100).toFixed(2)
+          shipping = _.find @shippingRates, {'_id': response.rate._id}
+          shipping.nameprice = "#{shipping.name} (#{@currency} #{rateFix})"
 
     return deferred.promise
 
-  calcShipping: (rate, deferred) =>
+  calcShipping: (rate) =>
+    defer = @$q.defer()
     count = 0
     with_shippingcost = []
     for item in @cart.items
@@ -183,22 +191,24 @@ class Calculation extends Service
 
     if count is 0 and rate.type isnt 'weight' and not with_shippingcost.length
       # @costs.shipping = 0
-      return deferred.resolve()
+      defer.resolve({'shipping': 0, 'rate': rate})
 
     range = _.find rate.ranges, (range) -> count <= range.to_unit and count >= range.from_unit
     range = rate.ranges[rate.ranges.length - 1] or 0 if not range
     # console.log 'range is', range, 'rate', rate, 'count', count
 
-    @costs.shipping = range.price[@currency] or 0
+    shipping = range.price[@currency] or 0
 
     # if rate.type is 'weight'
-    #   @costs.shipping = range.price[@currency] or 0
+    #   shipping = range.price[@currency] or 0
     # else
-    #   @costs.shipping = (range.price[@currency] or 0) * count
+    #   shipping = (range.price[@currency] or 0) * count
 
     for item in with_shippingcost
-      @costs.shipping += (item.shipping_cost?[@currency] or 0) * item.qty
-    return deferred.resolve()
+      shipping += (item.shipping_cost?[@currency] or 0) * item.qty
+    defer.resolve({'shipping': shipping, 'rate': rate})
+
+    defer.promise
 
 
   calculateTax: ->

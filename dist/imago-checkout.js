@@ -248,8 +248,12 @@ Calculation = (function() {
   };
 
   Calculation.prototype.changeShipping = function() {
-    this.calcShipping(this.shipping_options, this.$q.defer());
-    return this.calculate();
+    return this.calcShipping(this.shipping_options).then((function(_this) {
+      return function(response) {
+        _this.costs.shipping = response.shipping;
+        return _this.calculate();
+      };
+    })(this));
   };
 
   Calculation.prototype.calculateShipping = function() {
@@ -262,6 +266,7 @@ Calculation = (function() {
     this.costs.shipping = 0;
     this.getShippingRate().then((function(_this) {
       return function(rates) {
+        var i, len, rate, results;
         _this.calculateShippingRunning = false;
         if (!(rates != null ? rates.length : void 0)) {
           _this.shipping_options = void 0;
@@ -272,19 +277,33 @@ Calculation = (function() {
           return deferred.resolve();
         }
         _this.error.noshippingrule = false;
-        if (_this.shipping_options) {
-          return _this.calcShipping(_this.shipping_options, deferred);
-        } else {
-          _this.setShippingRates(rates);
-          return _this.calcShipping(rates[0], deferred);
+        results = [];
+        for (i = 0, len = rates.length; i < len; i++) {
+          rate = rates[i];
+          results.push(_this.calcShipping(rate).then(function(response) {
+            var rateFix, shipping;
+            if (_this.shipping_options && _this.shipping_options._id === response.rate._id) {
+              _this.costs.shipping = response.shipping;
+            } else if (!_this.shipping_options) {
+              _this.setShippingRates(rates);
+              _this.costs.shipping = response.shipping;
+            }
+            rateFix = (response.shipping / 100).toFixed(2);
+            shipping = _.find(_this.shippingRates, {
+              '_id': response.rate._id
+            });
+            return shipping.nameprice = shipping.name + " (" + _this.currency + " " + rateFix + ")";
+          }));
         }
+        return results;
       };
     })(this));
     return deferred.promise;
   };
 
-  Calculation.prototype.calcShipping = function(rate, deferred) {
-    var count, i, item, j, len, len1, range, ref, ref1, ref2, ref3, with_shippingcost;
+  Calculation.prototype.calcShipping = function(rate) {
+    var count, defer, i, item, j, len, len1, range, ref, ref1, ref2, ref3, shipping, with_shippingcost;
+    defer = this.$q.defer();
     count = 0;
     with_shippingcost = [];
     ref = this.cart.items;
@@ -301,7 +320,10 @@ Calculation = (function() {
       }
     }
     if (count === 0 && rate.type !== 'weight' && !with_shippingcost.length) {
-      return deferred.resolve();
+      defer.resolve({
+        'shipping': 0,
+        'rate': rate
+      });
     }
     range = _.find(rate.ranges, function(range) {
       return count <= range.to_unit && count >= range.from_unit;
@@ -309,12 +331,16 @@ Calculation = (function() {
     if (!range) {
       range = rate.ranges[rate.ranges.length - 1] || 0;
     }
-    this.costs.shipping = range.price[this.currency] || 0;
+    shipping = range.price[this.currency] || 0;
     for (j = 0, len1 = with_shippingcost.length; j < len1; j++) {
       item = with_shippingcost[j];
-      this.costs.shipping += (((ref3 = item.shipping_cost) != null ? ref3[this.currency] : void 0) || 0) * item.qty;
+      shipping += (((ref3 = item.shipping_cost) != null ? ref3[this.currency] : void 0) || 0) * item.qty;
     }
-    return deferred.resolve();
+    defer.resolve({
+      'shipping': shipping,
+      'rate': rate
+    });
+    return defer.promise;
   };
 
   Calculation.prototype.calculateTax = function() {
