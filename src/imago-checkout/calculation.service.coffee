@@ -166,7 +166,7 @@ class Calculation extends Service
           if @shipping_options and @shipping_options._id is response.rate._id
             @costs.shipping = response.shipping
             deferred.resolve()
-          else if not @shipping_options
+          else if not @shipping_options or not angular.equals(@shippingRates, rates)
             @setShippingRates(rates)
             @costs.shipping = response.shipping
             deferred.resolve()
@@ -372,6 +372,7 @@ class Calculation extends Service
     form.data.shipping_address or= {}
     form.data.billing_address['phone']  = angular.copy form.data.phone
     form.data.shipping_address['phone'] = angular.copy form.data.phone
+    form.data.fulfillmentcenter = angular.copy @fcenter?._id
 
     if not @differentshipping
       form.data['shipping_address'] = angular.copy @process.form['billing_address']

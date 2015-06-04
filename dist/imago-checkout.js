@@ -285,7 +285,7 @@ Calculation = (function() {
             if (_this.shipping_options && _this.shipping_options._id === response.rate._id) {
               _this.costs.shipping = response.shipping;
               deferred.resolve();
-            } else if (!_this.shipping_options) {
+            } else if (!_this.shipping_options || !angular.equals(_this.shippingRates, rates)) {
               _this.setShippingRates(rates);
               _this.costs.shipping = response.shipping;
               deferred.resolve();
@@ -581,7 +581,7 @@ Calculation = (function() {
   };
 
   Calculation.prototype.saveCart = function() {
-    var base, form;
+    var base, form, ref;
     form = angular.copy(this.cart);
     form.currency = this.currency;
     form.data = angular.copy(this.process.form);
@@ -592,6 +592,7 @@ Calculation = (function() {
     (base = form.data).shipping_address || (base.shipping_address = {});
     form.data.billing_address['phone'] = angular.copy(form.data.phone);
     form.data.shipping_address['phone'] = angular.copy(form.data.phone);
+    form.data.fulfillmentcenter = angular.copy((ref = this.fcenter) != null ? ref._id : void 0);
     if (!this.differentshipping) {
       form.data['shipping_address'] = angular.copy(this.process.form['billing_address']);
     }
