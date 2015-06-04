@@ -618,7 +618,8 @@ Costs = (function() {
       templateUrl: '/imago/costs.html',
       controller: function($scope, $element, $attrs) {
         if (!$attrs.hideIfNotCountry) {
-          return $scope.hideIfNotCountry = false;
+          $scope.hideIfNotCountry = false;
+          return $scope.hideCountryDefined = true;
         } else if (!$scope.hideIfNotCountry) {
           return $scope.$watch('hideIfNotCountry', function(value) {
             return $scope.hideCountryDefined = angular.isDefined(value);

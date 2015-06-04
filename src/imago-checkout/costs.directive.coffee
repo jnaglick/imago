@@ -13,6 +13,7 @@ class Costs extends Directive
       controller: ($scope, $element, $attrs) ->
         if not $attrs.hideIfNotCountry
           $scope.hideIfNotCountry = false
+          $scope.hideCountryDefined = true
         else if not $scope.hideIfNotCountry
           $scope.$watch 'hideIfNotCountry', (value) ->
             $scope.hideCountryDefined = angular.isDefined(value)
