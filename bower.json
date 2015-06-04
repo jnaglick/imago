@@ -10,7 +10,7 @@
   "private": false,
   "dependencies": {
     "angular-mocks": "*",
-    "angular-inview": "git@github.com:sebastiannm/angular-inview.git#master",
+    "angular-inview": "git@github.com:sebastiannm/angular-inview.git",
     "lodash": "~3",
     "bowser": "*"
   },
