@@ -253,17 +253,16 @@ class imagoVideo extends Directive
 
         # we should only do this if the video changes actually size
 
-        watchers = []
+        watchers = {}
 
-        watchers.push $rootScope.$on 'resize', onResize
+        watchers.resize = $rootScope.$on 'resize', onResize
 
-        watchers.push $rootScope.$on 'resizestop', ->
-          console.log 'passed'
+        watchers.resizestop = $rootScope.$on 'resizestop', ->
           preload(scope.source)
 
         scope.$on '$destroy', ->
-          for watcher in watchers
-            watcher()
+          for key of watchers
+            watchers[key]()
 
         scope.$on '$stateChangeSuccess', ->
           $timeout ->

@@ -373,18 +373,16 @@ imagoVideo = (function() {
           scope.videoStyle = styleVideo(width, height);
           return scope.$apply();
         };
-        watchers = [];
-        watchers.push($rootScope.$on('resize', onResize));
-        watchers.push($rootScope.$on('resizestop', function() {
-          console.log('passed');
+        watchers = {};
+        watchers.resize = $rootScope.$on('resize', onResize);
+        watchers.resizestop = $rootScope.$on('resizestop', function() {
           return preload(scope.source);
-        }));
+        });
         scope.$on('$destroy', function() {
-          var j, len, results, watcher;
+          var results;
           results = [];
-          for (j = 0, len = watchers.length; j < len; j++) {
-            watcher = watchers[j];
-            results.push(watcher());
+          for (key in watchers) {
+            results.push(watchers[key]());
           }
           return results;
         });

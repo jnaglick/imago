@@ -177,14 +177,14 @@ imagoImage = (function() {
             scope.servingUrl = opts.servingUrl;
           }
         };
-        watchers = [];
+        watchers = {};
         if (opts.responsive) {
-          watchers.push($rootScope.$on('resizestop', function() {
+          watchers.resizestop = $rootScope.$on('resizestop', function() {
             scope.status = 'loading';
             if (scope.source) {
               return initialize();
             }
-          }));
+          });
         }
         scope.$on('$stateChangeSuccess', function() {
           return $timeout(function() {
@@ -202,11 +202,10 @@ imagoImage = (function() {
         });
         angular.element($window).on('orientationchange', initialize);
         return scope.$on('$destroy', function() {
-          var i, len, results, watcher;
+          var results;
           results = [];
-          for (i = 0, len = watchers.length; i < len; i++) {
-            watcher = watchers[i];
-            results.push(watcher());
+          for (key in watchers) {
+            results.push(watchers[key]());
           }
           return results;
         });

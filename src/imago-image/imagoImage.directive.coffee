@@ -194,7 +194,7 @@ class imagoImage extends Directive
             # styles = calcMediaSize()
           return
 
-        watchers = []
+        watchers = {}
 
         if opts.responsive
           # console.log 'resize', scope.onResize()
@@ -202,7 +202,7 @@ class imagoImage extends Directive
           # scope.$on 'resizestart', () ->
           #   scope.resizing = 'resizing'
 
-          watchers.push $rootScope.$on 'resizestop', ->
+          watchers.resizestop = $rootScope.$on 'resizestop', ->
             scope.status = 'loading'
             # scope.resizing = ''
             initialize() if scope.source
@@ -223,7 +223,7 @@ class imagoImage extends Directive
         angular.element($window).on 'orientationchange', initialize
 
         scope.$on '$destroy', ->
-          for watcher in watchers
-            watcher()
+          for key of watchers
+            watchers[key]()
 
     }
