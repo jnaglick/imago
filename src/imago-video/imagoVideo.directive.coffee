@@ -1,6 +1,6 @@
 class imagoVideo extends Directive
 
-  constructor: ($q, $timeout, $window, imagoUtils) ->
+  constructor: ($q, $timeout, $rootScope, $window, imagoUtils) ->
     return {
       replace: true
       scope: {
@@ -242,7 +242,7 @@ class imagoVideo extends Directive
             scope.imagovideo.player.load()
             scope.imagovideo.player.play()
 
-        onResize = () ->
+        onResize = ->
           width  = element[0].clientWidth  or opts.width
           height = element[0].clientHeight or opts.height
 
@@ -252,10 +252,18 @@ class imagoVideo extends Directive
           scope.$apply()
 
         # we should only do this if the video changes actually size
-        scope.$on 'resize', onResize
 
-        scope.$on 'resizestop', ->
+        watchers = []
+
+        watchers.push $rootScope.$on 'resize', onResize
+
+        watchers.push $rootScope.$on 'resizestop', ->
+          console.log 'passed'
           preload(scope.source)
+
+        scope.$on '$destroy', ->
+          for watcher in watchers
+            watcher()
 
         scope.$on '$stateChangeSuccess', ->
           $timeout ->

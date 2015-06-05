@@ -77,7 +77,7 @@ angular.module('imago').directive('imagoControls', [imagoControls]);
 var imagoVideo;
 
 imagoVideo = (function() {
-  function imagoVideo($q, $timeout, $window, imagoUtils) {
+  function imagoVideo($q, $timeout, $rootScope, $window, imagoUtils) {
     return {
       replace: true,
       scope: {
@@ -118,7 +118,7 @@ imagoVideo = (function() {
         })(this);
       },
       link: function(scope, element, attrs) {
-        var detectCodec, key, loadFormats, onResize, opts, preload, render, self, setPlayerAttrs, styleVideo, styleWrapper, value;
+        var detectCodec, key, loadFormats, onResize, opts, preload, render, self, setPlayerAttrs, styleVideo, styleWrapper, value, watchers;
         self = {};
         opts = {
           autobuffer: null,
@@ -373,9 +373,20 @@ imagoVideo = (function() {
           scope.videoStyle = styleVideo(width, height);
           return scope.$apply();
         };
-        scope.$on('resize', onResize);
-        scope.$on('resizestop', function() {
+        watchers = [];
+        watchers.push($rootScope.$on('resize', onResize));
+        watchers.push($rootScope.$on('resizestop', function() {
+          console.log('passed');
           return preload(scope.source);
+        }));
+        scope.$on('$destroy', function() {
+          var j, len, results, watcher;
+          results = [];
+          for (j = 0, len = watchers.length; j < len; j++) {
+            watcher = watchers[j];
+            results.push(watcher());
+          }
+          return results;
         });
         return scope.$on('$stateChangeSuccess', function() {
           return $timeout(function() {
@@ -399,7 +410,7 @@ imagoVideo = (function() {
 
 })();
 
-angular.module('imago').directive('imagoVideo', ['$q', '$timeout', '$window', 'imagoUtils', imagoVideo]);
+angular.module('imago').directive('imagoVideo', ['$q', '$timeout', '$rootScope', '$window', 'imagoUtils', imagoVideo]);
 
 var Time;
 
