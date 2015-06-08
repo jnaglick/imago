@@ -1,6 +1,10 @@
+class imagoCartController extends Controller
+
+  constructor: (@imagoCart) ->
+
 class imagoCart extends Directive
 
-  constructor: (imagoCart) ->
+  constructor: ->
 
     return {
 
@@ -12,8 +16,6 @@ class imagoCart extends Directive
       transclude: true
       controllerAs: 'cart'
       templateUrl: '/imago/imago-cart.html'
-      controller: ($scope) ->
-
-        @utils  = imagoCart
+      controller: 'imagoCartController'
 
     }

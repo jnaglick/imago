@@ -18,6 +18,8 @@ class imagoSlider extends Directive
           next:         null
           prev:         null
 
+        return
+
       link: (scope, element, attrs, ctrl, transclude) ->
         slider = element.children()
 

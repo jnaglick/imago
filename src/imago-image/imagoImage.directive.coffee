@@ -14,6 +14,8 @@ class imagoImage extends Directive
         $scope.status = 'loading'
         $scope.imageStyle = {}
 
+        return
+
       link: (scope, element, attrs) ->
         self = {}
 

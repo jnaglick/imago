@@ -33,6 +33,8 @@ class imagoVideo extends Directive
             @state = 'paused'
             @player.pause()
 
+        return
+
       link: (scope, element, attrs) ->
         self = {}
 

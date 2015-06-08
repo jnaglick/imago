@@ -1,19 +1,19 @@
 .cart
-  .icon(ng-click="cart.utils.show = !cart.utils.show")
-    .counter(ng-bind="cart.utils.itemsLength")
+  .icon(ng-click="cart.imagoCart.show = !cart.imagoCart.show")
+    .counter(ng-bind="cart.imagoCart.itemsLength")
 
-  .box(ng-show="cart.utils.show")
+  .box(ng-show="cart.imagoCart.show")
     div(ng-transclude)
 
     .itemnumber(
-      ng-show="cart.utils.itemsLength"
-      ) {{cart.utils.itemsLength}} items
+      ng-show="cart.imagoCart.itemsLength"
+      ) {{cart.imagoCart.itemsLength}} items
     .noitems(
-      ng-show="cart.utils.itemsLength === 0"
+      ng-show="cart.imagoCart.itemsLength === 0"
       ) no items in cart
 
     button.checkout(
-      ng-show="cart.utils.cart.items.length"
+      ng-show="cart.imagoCart.cart.items.length"
       type="submit"
-      ng-click="cart.utils.checkout()"
+      ng-click="cart.imagoCart.checkout()"
       ) checkout
