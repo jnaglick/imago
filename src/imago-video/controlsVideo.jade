@@ -1,7 +1,7 @@
 .controls(stop-propagation)
   a.video-play.fa.fa-play(
     ng-click="imagovideo.togglePlay()"
-    ng-class="{'fa-pause': imagovideo.isPlaying, 'fa-play': !imagovideo.isPlaying}"
+    ng-class="{'fa-pause': imagovideo.state === 'playing', 'fa-play': imagovideo.state === 'paused'}"
     )
   span.video-time {{currentTime | time}}
   span.video-seekbar
