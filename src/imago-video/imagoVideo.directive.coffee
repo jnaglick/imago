@@ -272,7 +272,7 @@ class imagoVideoController extends Controller
     angular.element(@player).bind 'play', =>
       @state = 'playing'
 
-  togglePlay = =>
+  togglePlay: ->
     if @player.paused
       @state = 'playing'
       @player.play()

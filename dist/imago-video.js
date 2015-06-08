@@ -389,8 +389,6 @@ imagoVideo = (function() {
 })();
 
 imagoVideoController = (function() {
-  var togglePlay;
-
   function imagoVideoController($scope, $element, $attrs) {
     this.player = $element.find('video')[0];
     $scope.loading = true;
@@ -413,13 +411,13 @@ imagoVideoController = (function() {
     })(this));
   }
 
-  togglePlay = function() {
-    if (imagoVideoController.player.paused) {
-      imagoVideoController.state = 'playing';
-      return imagoVideoController.player.play();
+  imagoVideoController.prototype.togglePlay = function() {
+    if (this.player.paused) {
+      this.state = 'playing';
+      return this.player.play();
     } else {
-      imagoVideoController.state = 'paused';
-      return imagoVideoController.player.pause();
+      this.state = 'paused';
+      return this.player.pause();
     }
   };
 
