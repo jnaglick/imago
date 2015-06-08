@@ -6,6 +6,5 @@ class imagoLike extends Directive
 
       scope: {}
       templateUrl: '/imago/imagoLike.html'
-      controller: ->
 
     }

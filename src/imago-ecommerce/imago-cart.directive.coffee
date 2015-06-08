@@ -1,7 +1,3 @@
-class imagoCartController extends Controller
-
-  constructor: (@imagoCart) ->
-
 class imagoCart extends Directive
 
   constructor: ->
@@ -19,3 +15,7 @@ class imagoCart extends Directive
       controller: 'imagoCartController'
 
     }
+
+class imagoCartController extends Controller
+
+  constructor: (@imagoCart) ->

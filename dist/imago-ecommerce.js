@@ -1,14 +1,5 @@
 var imagoCart, imagoCartController;
 
-imagoCartController = (function() {
-  function imagoCartController(imagoCart1) {
-    this.imagoCart = imagoCart1;
-  }
-
-  return imagoCartController;
-
-})();
-
 imagoCart = (function() {
   function imagoCart() {
     return {
@@ -29,7 +20,16 @@ imagoCart = (function() {
 
 })();
 
-angular.module('imago').controller('imagoCartController', ['imagoCart', imagoCartController]).directive('imagoCart', [imagoCart]);
+imagoCartController = (function() {
+  function imagoCartController(imagoCart1) {
+    this.imagoCart = imagoCart1;
+  }
+
+  return imagoCartController;
+
+})();
+
+angular.module('imago').directive('imagoCart', [imagoCart]).controller('imagoCartController', ['imagoCart', imagoCartController]);
 
 var imagoCart,
   bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },

@@ -1,29 +1,13 @@
-var imagoControls;
+var imagoControls, imagoControlsController;
 
 imagoControls = (function() {
   function imagoControls() {
     return {
       replace: true,
       require: '^imagoVideo',
-      controllerAs: 'imagocontrols',
       templateUrl: '/imago/controlsVideo.html',
-      controller: function($scope) {
-        var videoPlayer;
-        videoPlayer = angular.element($scope.imagovideo.player);
-        $scope.currentTime = 0;
-        videoPlayer.bind('loadeddata', function(e) {
-          $scope.duration = parseInt(e.target.duration);
-          return $scope.$digest();
-        });
-        videoPlayer.bind('timeupdate', function(e) {
-          $scope.currentTime = e.target.currentTime;
-          return $scope.$digest();
-        });
-        return videoPlayer.bind('seeking', function(e) {
-          $scope.currentTime = e.target.currentTime;
-          return $scope.$digest();
-        });
-      },
+      controller: 'imagoControlsController',
+      controllerAs: 'imagocontrols',
       link: function(scope, element, attrs) {
         scope.seek = function(value) {
           return scope.imagovideo.player.currentTime = value;
@@ -72,12 +56,35 @@ imagoControls = (function() {
 
 })();
 
-angular.module('imago').directive('imagoControls', [imagoControls]);
+imagoControlsController = (function() {
+  function imagoControlsController($scope) {
+    var videoPlayer;
+    videoPlayer = angular.element($scope.imagovideo.player);
+    $scope.currentTime = 0;
+    videoPlayer.bind('loadeddata', function(e) {
+      $scope.duration = parseInt(e.target.duration);
+      return $scope.$digest();
+    });
+    videoPlayer.bind('timeupdate', function(e) {
+      $scope.currentTime = e.target.currentTime;
+      return $scope.$digest();
+    });
+    videoPlayer.bind('seeking', function(e) {
+      $scope.currentTime = e.target.currentTime;
+      return $scope.$digest();
+    });
+  }
 
-var imagoVideo;
+  return imagoControlsController;
+
+})();
+
+angular.module('imago').directive('imagoControls', [imagoControls]).controller('imagoControlsController', ['$scope', imagoControlsController]);
+
+var imagoVideo, imagoVideoController;
 
 imagoVideo = (function() {
-  function imagoVideo($q, $timeout, $rootScope, $window, imagoUtils) {
+  function imagoVideo($timeout, $rootScope, imagoUtils) {
     return {
       replace: true,
       scope: {
@@ -86,38 +93,7 @@ imagoVideo = (function() {
       },
       templateUrl: '/imago/imagoVideo.html',
       controllerAs: 'imagovideo',
-      controller: function($scope, $element, $attrs, $transclude) {
-        this.player = $element.find('video')[0];
-        $scope.loading = true;
-        angular.element(this.player).bind('ended', (function(_this) {
-          return function(e) {
-            _this.player.currentTime = 0;
-            return _this.state = 'end';
-          };
-        })(this));
-        angular.element(this.player).bind('loadeddata', (function(_this) {
-          return function() {
-            $scope.hasPlayed = true;
-            return angular.element(_this.player).unbind('loadeddata');
-          };
-        })(this));
-        angular.element(this.player).bind('play', (function(_this) {
-          return function() {
-            return _this.state = 'playing';
-          };
-        })(this));
-        this.togglePlay = (function(_this) {
-          return function() {
-            if (_this.player.paused) {
-              _this.state = 'playing';
-              return _this.player.play();
-            } else {
-              _this.state = 'paused';
-              return _this.player.pause();
-            }
-          };
-        })(this);
-      },
+      controller: 'imagoVideoController',
       link: function(scope, element, attrs) {
         var detectCodec, key, loadFormats, onResize, opts, preload, render, self, setPlayerAttrs, styleVideo, styleWrapper, value, watchers;
         self = {};
@@ -412,7 +388,46 @@ imagoVideo = (function() {
 
 })();
 
-angular.module('imago').directive('imagoVideo', ['$q', '$timeout', '$rootScope', '$window', 'imagoUtils', imagoVideo]);
+imagoVideoController = (function() {
+  var togglePlay;
+
+  function imagoVideoController($scope, $element, $attrs) {
+    this.player = $element.find('video')[0];
+    $scope.loading = true;
+    angular.element(this.player).bind('ended', (function(_this) {
+      return function(e) {
+        _this.player.currentTime = 0;
+        return _this.state = 'end';
+      };
+    })(this));
+    angular.element(this.player).bind('loadeddata', (function(_this) {
+      return function() {
+        $scope.hasPlayed = true;
+        return angular.element(_this.player).unbind('loadeddata');
+      };
+    })(this));
+    angular.element(this.player).bind('play', (function(_this) {
+      return function() {
+        return _this.state = 'playing';
+      };
+    })(this));
+  }
+
+  togglePlay = function() {
+    if (imagoVideoController.player.paused) {
+      imagoVideoController.state = 'playing';
+      return imagoVideoController.player.play();
+    } else {
+      imagoVideoController.state = 'paused';
+      return imagoVideoController.player.pause();
+    }
+  };
+
+  return imagoVideoController;
+
+})();
+
+angular.module('imago').directive('imagoVideo', ['$timeout', '$rootScope', 'imagoUtils', imagoVideo]).controller('imagoVideoController', ['$scope', '$element', '$attrs', imagoVideoController]);
 
 var Time;
 

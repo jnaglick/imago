@@ -1,24 +1,12 @@
-var imagoSlider;
+var imagoSlider, imagoSliderController;
 
 imagoSlider = (function() {
-  function imagoSlider($rootScope, $q, $document, imagoModel, $interval, $location) {
+  function imagoSlider($rootScope, $document, $interval, $location) {
     return {
       transclude: true,
       scope: true,
       templateUrl: '/imago/imagoSlider.html',
-      controller: function($scope) {
-        $scope.conf = {
-          animation: 'fade',
-          enablekeys: true,
-          enablearrows: true,
-          loop: true,
-          current: 0,
-          namespace: 'slider',
-          autoplay: 0,
-          next: null,
-          prev: null
-        };
-      },
+      controller: 'imagoSliderController',
       link: function(scope, element, attrs, ctrl, transclude) {
         var keyboardBinding, slider, watcher;
         slider = element.children();
@@ -146,6 +134,25 @@ imagoSlider = (function() {
 
 })();
 
-angular.module('imago').directive('imagoSlider', ['$rootScope', '$q', '$document', 'imagoModel', '$interval', '$location', imagoSlider]);
+imagoSliderController = (function() {
+  function imagoSliderController($scope) {
+    $scope.conf = {
+      animation: 'fade',
+      enablekeys: true,
+      enablearrows: true,
+      loop: true,
+      current: 0,
+      namespace: 'slider',
+      autoplay: 0,
+      next: null,
+      prev: null
+    };
+  }
+
+  return imagoSliderController;
+
+})();
+
+angular.module('imago').directive('imagoSlider', ['$rootScope', '$document', '$interval', '$location', imagoSlider]).controller('imagoSliderController', ['$scope', imagoSliderController]);
 
 angular.module("imago").run(["$templateCache", function($templateCache) {$templateCache.put("/imago/imagoSlider.html","<div ng-class=\"[conf.animation, action]\" ng-swipe-left=\"goNext($event)\" ng-swipe-right=\"goPrev($event)\" class=\"imagoslider\"><div ng-show=\"conf.enablearrows\" ng-click=\"goPrev($event)\" class=\"prev\"></div><div ng-show=\"conf.enablearrows\" ng-click=\"goNext($event)\" class=\"next\"></div></div>");}]);

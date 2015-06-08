@@ -1,4 +1,4 @@
-var imagoImage;
+var imagoImage, imagoImageController;
 
 imagoImage = (function() {
   function imagoImage($window, $rootScope, $timeout, $log, imagoUtils) {
@@ -9,10 +9,7 @@ imagoImage = (function() {
         source: '=imagoImage'
       },
       templateUrl: '/imago/imagoImage.html',
-      controller: function($scope, $element, $attrs) {
-        $scope.status = 'loading';
-        $scope.imageStyle = {};
-      },
+      controller: 'imagoImageController',
       link: function(scope, element, attrs) {
         var calcMediaSize, initialize, key, opts, render, self, setImageStyle, value, watchers;
         self = {};
@@ -217,6 +214,16 @@ imagoImage = (function() {
 
 })();
 
-angular.module('imago').directive('imagoImage', ['$window', '$rootScope', '$timeout', '$log', 'imagoUtils', imagoImage]);
+imagoImageController = (function() {
+  function imagoImageController($scope) {
+    $scope.status = 'loading';
+    $scope.imageStyle = {};
+  }
+
+  return imagoImageController;
+
+})();
+
+angular.module('imago').directive('imagoImage', ['$window', '$rootScope', '$timeout', '$log', 'imagoUtils', imagoImage]).controller('imagoImageController', ['$scope', imagoImageController]);
 
 angular.module("imago").run(["$templateCache", function($templateCache) {$templateCache.put("/imago/imagoImage.html","<div visible=\"visible\" in-view=\"visible = $inview\" in-view-options=\"{debounce: 100}\" ng-style=\"elementStyle\" ng-class=\"[status, align]\" ng-switch=\"sizemode\" class=\"imagoimage\"><img ng-src=\"{{servingUrl}}\" ng-style=\"imageStyle\" ng-switch-when=\"fit\" class=\"imagox23\"/><div ng-style=\"imageStyle\" ng-switch-when=\"crop\" class=\"imagox23\"></div><div class=\"loading\"><div class=\"spin\"></div><div class=\"spin2\"></div></div></div>");}]);

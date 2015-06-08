@@ -13,7 +13,6 @@ class imagoDownload extends Directive
       scope:
         asset: "="
         fieldname: "="
-      controllerAs: 'imagodownload'
       link: (scope, element, attrs) ->
 
         template = if attrs.templateurl then attrs.templateurl else defaultTemplate

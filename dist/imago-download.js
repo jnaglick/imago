@@ -16,7 +16,6 @@ imagoDownload = (function() {
         asset: "=",
         fieldname: "="
       },
-      controllerAs: 'imagodownload',
       link: function(scope, element, attrs) {
         var syntax, template;
         template = attrs.templateurl ? attrs.templateurl : defaultTemplate;

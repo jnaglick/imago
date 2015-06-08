@@ -1,25 +1,11 @@
 class imagoSlider extends Directive
 
-  constructor: ($rootScope, $q, $document, imagoModel, $interval, $location) ->
+  constructor: ($rootScope, $document, $interval, $location) ->
     return {
       transclude: true
       scope: true
       templateUrl: '/imago/imagoSlider.html'
-      controller: ($scope) ->
-
-        $scope.conf =
-          animation:    'fade'
-          enablekeys:   true
-          enablearrows: true
-          loop:         true
-          current:      0
-          namespace:    'slider'
-          autoplay:     0
-          next:         null
-          prev:         null
-
-        return
-
+      controller: 'imagoSliderController'
       link: (scope, element, attrs, ctrl, transclude) ->
         slider = element.children()
 
@@ -139,3 +125,20 @@ class imagoSlider extends Directive
           scope.clearInterval()
           watcher()
   }
+
+
+class imagoSliderController extends Controller
+
+  constructor: ($scope) ->
+
+    $scope.conf =
+      animation:    'fade'
+      enablekeys:   true
+      enablearrows: true
+      loop:         true
+      current:      0
+      namespace:    'slider'
+      autoplay:     0
+      next:         null
+      prev:         null
+

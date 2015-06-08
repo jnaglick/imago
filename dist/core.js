@@ -1793,7 +1793,7 @@ Meta = (function() {
 
 angular.module('imago').filter('meta', [Meta]);
 
-var NotSupported;
+var NotSupported, NotSupportedController;
 
 NotSupported = (function() {
   function NotSupported() {
@@ -1801,76 +1801,7 @@ NotSupported = (function() {
       templateUrl: '/imago/not-supported.html',
       controllerAs: 'supported',
       bindToController: true,
-      controller: function($scope, $element, $attrs) {
-        var browser, browserVersion, i, len, options, results, version;
-        if ((bowser.msie && bowser.version <= 8) || (bowser.firefox && bowser.version <= 32)) {
-          return this.invalid = true;
-        }
-        options = $scope.$eval($attrs.notSupported);
-        if (!_.isArray(options)) {
-          return;
-        }
-        browserVersion = parseInt(bowser.version);
-        results = [];
-        for (i = 0, len = options.length; i < len; i++) {
-          browser = options[i];
-          browser = browser.toLowerCase();
-          version = browser.match(/\d+/g);
-          version = parseInt(version);
-          if (_.includes(browser, 'ie')) {
-            if (!bowser.msie) {
-              continue;
-            }
-            if (!_.isNaN(version) && browserVersion <= version) {
-              this.invalid = true;
-            } else if (_.isNaN(version)) {
-              this.invalid = true;
-            }
-          } else if (_.includes(browser, 'chrome')) {
-            if (!bowser.chrome) {
-              continue;
-            }
-            if (!_.isNaN(version) && browserVersion <= version) {
-              this.invalid = true;
-            } else if (_.isNaN(version)) {
-              this.invalid = true;
-            }
-          } else if (_.includes(browser, 'firefox')) {
-            if (!bowser.firefox) {
-              continue;
-            }
-            if (!_.isNaN(version) && browserVersion <= version) {
-              this.invalid = true;
-            } else if (_.isNaN(version)) {
-              this.invalid = true;
-            }
-          } else if (_.includes(browser, 'opera')) {
-            if (!bowser.opera) {
-              continue;
-            }
-            if (!_.isNaN(version) && browserVersion <= version) {
-              this.invalid = true;
-            } else if (_.isNaN(version)) {
-              this.invalid = true;
-            }
-          } else if (_.includes(browser, 'safari')) {
-            if (!bowser.safari) {
-              continue;
-            }
-            if (!_.isNaN(version) && browserVersion <= version) {
-              this.invalid = true;
-            } else if (_.isNaN(version)) {
-              this.invalid = true;
-            }
-          }
-          if (this.invalid) {
-            break;
-          } else {
-            results.push(void 0);
-          }
-        }
-        return results;
-      }
+      controller: 'notSupportedController'
     };
   }
 
@@ -1878,7 +1809,79 @@ NotSupported = (function() {
 
 })();
 
-angular.module('imago').directive('notSupported', [NotSupported]);
+NotSupportedController = (function() {
+  function NotSupportedController($scope, $element, $attrs) {
+    var browser, browserVersion, i, len, options, version;
+    if ((bowser.msie && bowser.version <= 8) || (bowser.firefox && bowser.version <= 32)) {
+      return this.invalid = true;
+    }
+    options = $scope.$eval($attrs.notSupported);
+    if (!_.isArray(options)) {
+      return;
+    }
+    browserVersion = parseInt(bowser.version);
+    for (i = 0, len = options.length; i < len; i++) {
+      browser = options[i];
+      browser = browser.toLowerCase();
+      version = browser.match(/\d+/g);
+      version = parseInt(version);
+      if (_.includes(browser, 'ie')) {
+        if (!bowser.msie) {
+          continue;
+        }
+        if (!_.isNaN(version) && browserVersion <= version) {
+          this.invalid = true;
+        } else if (_.isNaN(version)) {
+          this.invalid = true;
+        }
+      } else if (_.includes(browser, 'chrome')) {
+        if (!bowser.chrome) {
+          continue;
+        }
+        if (!_.isNaN(version) && browserVersion <= version) {
+          this.invalid = true;
+        } else if (_.isNaN(version)) {
+          this.invalid = true;
+        }
+      } else if (_.includes(browser, 'firefox')) {
+        if (!bowser.firefox) {
+          continue;
+        }
+        if (!_.isNaN(version) && browserVersion <= version) {
+          this.invalid = true;
+        } else if (_.isNaN(version)) {
+          this.invalid = true;
+        }
+      } else if (_.includes(browser, 'opera')) {
+        if (!bowser.opera) {
+          continue;
+        }
+        if (!_.isNaN(version) && browserVersion <= version) {
+          this.invalid = true;
+        } else if (_.isNaN(version)) {
+          this.invalid = true;
+        }
+      } else if (_.includes(browser, 'safari')) {
+        if (!bowser.safari) {
+          continue;
+        }
+        if (!_.isNaN(version) && browserVersion <= version) {
+          this.invalid = true;
+        } else if (_.isNaN(version)) {
+          this.invalid = true;
+        }
+      }
+      if (this.invalid) {
+        break;
+      }
+    }
+  }
+
+  return NotSupportedController;
+
+})();
+
+angular.module('imago').directive('notSupported', [NotSupported]).controller('notSupportedController', ['$scope', '$element', '$attrs', NotSupportedController]);
 
 var imagoPage;
 

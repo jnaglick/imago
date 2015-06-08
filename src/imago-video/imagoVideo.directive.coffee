@@ -1,6 +1,6 @@
 class imagoVideo extends Directive
 
-  constructor: ($q, $timeout, $rootScope, $window, imagoUtils) ->
+  constructor: ($timeout, $rootScope, imagoUtils) ->
     return {
       replace: true
       scope: {
@@ -9,32 +9,7 @@ class imagoVideo extends Directive
       }
       templateUrl: '/imago/imagoVideo.html'
       controllerAs: 'imagovideo'
-      controller: ($scope, $element, $attrs, $transclude) ->
-
-        @player  = $element.find('video')[0]
-        $scope.loading = true
-
-        angular.element(@player).bind 'ended', (e) =>
-          @player.currentTime = 0
-          @state = 'end'
-
-        angular.element(@player).bind 'loadeddata', =>
-          $scope.hasPlayed = true
-          angular.element(@player).unbind 'loadeddata'
-
-        angular.element(@player).bind 'play', =>
-          @state = 'playing'
-
-        @togglePlay = =>
-          if @player.paused
-            @state = 'playing'
-            @player.play()
-          else
-            @state = 'paused'
-            @player.pause()
-
-        return
-
+      controller: 'imagoVideoController'
       link: (scope, element, attrs) ->
         self = {}
 
@@ -279,3 +254,29 @@ class imagoVideo extends Directive
               window.fireEvent('on' + evt.eventType, evt)
 
     }
+
+class imagoVideoController extends Controller
+
+  constructor: ($scope, $element, $attrs) ->
+    @player  = $element.find('video')[0]
+    $scope.loading = true
+
+    angular.element(@player).bind 'ended', (e) =>
+      @player.currentTime = 0
+      @state = 'end'
+
+    angular.element(@player).bind 'loadeddata', =>
+      $scope.hasPlayed = true
+      angular.element(@player).unbind 'loadeddata'
+
+    angular.element(@player).bind 'play', =>
+      @state = 'playing'
+
+  togglePlay = =>
+    if @player.paused
+      @state = 'playing'
+      @player.play()
+    else
+      @state = 'paused'
+      @player.pause()
+

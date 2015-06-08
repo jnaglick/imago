@@ -9,13 +9,7 @@ class imagoImage extends Directive
         source: '=imagoImage'
       }
       templateUrl: '/imago/imagoImage.html'
-      controller: ($scope, $element, $attrs) ->
-
-        $scope.status = 'loading'
-        $scope.imageStyle = {}
-
-        return
-
+      controller: 'imagoImageController'
       link: (scope, element, attrs) ->
         self = {}
 
@@ -229,3 +223,10 @@ class imagoImage extends Directive
             watchers[key]()
 
     }
+
+class imagoImageController extends Controller
+
+  constructor: ($scope) ->
+    $scope.status = 'loading'
+    $scope.imageStyle = {}
+

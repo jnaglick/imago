@@ -10,7 +10,6 @@ class ImagoFieldString extends Directive
         ngModel: '='
       transclude: true
       templateUrl: '/imago/imago-field-string.html'
-
       link: (scope, element, attrs, ngModelController) ->
 
         scope.update = (value) ->

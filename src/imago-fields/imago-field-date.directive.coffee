@@ -12,7 +12,6 @@ class ImagoFieldDate extends Directive
         ngModel: '='
       transclude: true
       templateUrl: '/imago/imago-field-date.html'
-
       link: (scope, element, attrs, ngModelController) ->
 
         scope.update = (value) ->

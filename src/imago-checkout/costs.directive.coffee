@@ -8,15 +8,19 @@ class Costs extends Directive
         costs: '='
         currency: '='
         hideIfNotCountry: '=?'
-      controllerAs: 'costs'
       templateUrl: '/imago/costs.html'
-      controller: ($scope, $element, $attrs) ->
-        if not $attrs.hideIfNotCountry
-          $scope.hideIfNotCountry = false
-          $scope.hideCountryDefined = true
-        else if not $scope.hideIfNotCountry
-          $scope.$watch 'hideIfNotCountry', (value) ->
-            $scope.hideCountryDefined = angular.isDefined(value)
-
+      controllerAs: 'costs'
+      controller: 'costsController'
 
     }
+
+
+class CostsController extends Controller
+
+  constructor: ($scope, $element, $attrs) ->
+    if not $attrs.hideIfNotCountry
+      $scope.hideIfNotCountry = false
+      $scope.hideCountryDefined = true
+    else if not $scope.hideIfNotCountry
+      $scope.$watch 'hideIfNotCountry', (value) ->
+        $scope.hideCountryDefined = angular.isDefined(value)

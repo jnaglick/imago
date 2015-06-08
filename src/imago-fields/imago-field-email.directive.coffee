@@ -10,7 +10,6 @@ class ImagoFieldEmail extends Directive
         ngModel: '='
       transclude: true
       templateUrl: '/imago/imago-field-email.html'
-
       link: (scope, element, attrs, ngModelController) ->
 
         scope.required = true if attrs.required

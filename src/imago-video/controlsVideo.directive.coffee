@@ -4,25 +4,9 @@ class imagoControls extends Directive
     return {
       replace: true
       require: '^imagoVideo'
-      controllerAs: 'imagocontrols'
       templateUrl: '/imago/controlsVideo.html'
-      controller: ($scope) ->
-
-        videoPlayer = angular.element($scope.imagovideo.player)
-        $scope.currentTime = 0
-
-        videoPlayer.bind 'loadeddata', (e) ->
-          $scope.duration = parseInt e.target.duration
-          $scope.$digest()
-
-        videoPlayer.bind 'timeupdate', (e) ->
-          $scope.currentTime = e.target.currentTime
-          $scope.$digest()
-
-        videoPlayer.bind 'seeking', (e) ->
-          $scope.currentTime = e.target.currentTime
-          $scope.$digest()
-
+      controller: 'imagoControlsController'
+      controllerAs: 'imagocontrols'
       link: (scope, element, attrs) ->
 
         scope.seek = (value) ->
@@ -55,3 +39,22 @@ class imagoControls extends Directive
         element.bind 'mousedown', (e) ->
           e.stopPropagation()
     }
+
+class imagoControlsController extends Controller
+
+  constructor: ($scope) ->
+
+    videoPlayer = angular.element($scope.imagovideo.player)
+    $scope.currentTime = 0
+
+    videoPlayer.bind 'loadeddata', (e) ->
+      $scope.duration = parseInt e.target.duration
+      $scope.$digest()
+
+    videoPlayer.bind 'timeupdate', (e) ->
+      $scope.currentTime = e.target.currentTime
+      $scope.$digest()
+
+    videoPlayer.bind 'seeking', (e) ->
+      $scope.currentTime = e.target.currentTime
+      $scope.$digest()
