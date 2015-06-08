@@ -16,20 +16,21 @@ class imagoVideo extends Directive
 
         angular.element(@player).bind 'ended', (e) =>
           @player.currentTime = 0
-          @isPlaying = false
+          @state = 'end'
 
         angular.element(@player).bind 'loadeddata', =>
           $scope.hasPlayed = true
           angular.element(@player).unbind 'loadeddata'
 
         angular.element(@player).bind 'play', =>
-          @isPlaying = true
+          @state = 'playing'
 
         @togglePlay = =>
           if @player.paused
+            @state = 'playing'
             @player.play()
           else
-            @isPlaying = false
+            @state = 'paused'
             @player.pause()
 
       link: (scope, element, attrs) ->

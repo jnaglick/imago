@@ -92,7 +92,7 @@ imagoVideo = (function() {
         angular.element(this.player).bind('ended', (function(_this) {
           return function(e) {
             _this.player.currentTime = 0;
-            return _this.isPlaying = false;
+            return _this.state = 'end';
           };
         })(this));
         angular.element(this.player).bind('loadeddata', (function(_this) {
@@ -103,15 +103,16 @@ imagoVideo = (function() {
         })(this));
         angular.element(this.player).bind('play', (function(_this) {
           return function() {
-            return _this.isPlaying = true;
+            return _this.state = 'playing';
           };
         })(this));
         return this.togglePlay = (function(_this) {
           return function() {
             if (_this.player.paused) {
+              _this.state = 'playing';
               return _this.player.play();
             } else {
-              _this.isPlaying = false;
+              _this.state = 'paused';
               return _this.player.pause();
             }
           };
@@ -449,4 +450,4 @@ Time = (function() {
 angular.module('imago').filter('time', [Time]);
 
 angular.module("imago").run(["$templateCache", function($templateCache) {$templateCache.put("/imago/controlsVideo.html","<div stop-propagation=\"stop-propagation\" class=\"controls\"><a ng-click=\"imagovideo.togglePlay()\" ng-class=\"{\'fa-pause\': imagovideo.isPlaying, \'fa-play\': !imagovideo.isPlaying}\" class=\"video-play fa fa-play\"></a><span class=\"video-time\">{{currentTime | time}}</span><span class=\"video-seekbar\"><input type=\"range\" ng-model=\"currentTime\" min=\"0\" max=\"{{duration}}\" ng-change=\"seek(currentTime)\" class=\"seek\"/></span><a ng-click=\"toggleSize()\" class=\"size\">{{wrapperStyle.size}}</a><span class=\"volume\"><span ng-click=\"volumeUp()\" class=\"fa fa-volume-up icon-volume-up\"></span><input type=\"range\" ng-model=\"volumeInput\" ng-change=\"onVolumeChange(volumeInput)\"/><span ng-click=\"volumeDown()\" class=\"fa fa-volume-down icon-volume-down\"></span></span><a ng-click=\"fullScreen()\" class=\"video-fullscreen fa fa-expand\"></a><a class=\"video-screen fa fa-compress\"></a></div>");
-$templateCache.put("/imago/imagoVideo.html","<div ng-class=\"{loading: loading}\" in-view=\"visible = $inview\" visible=\"visible\" responsive-events=\"responsive-events\" class=\"imagovideo {{wrapperStyle.backgroundPosition}} {{wrapperStyle.size}} {{wrapperStyle.sizemode}}\"><div ng-style=\"wrapperStyle\" ng-class=\"{playing: imagovideo.isPlaying}\" class=\"imagowrapper\"><a ng-hide=\"loading\" ng-click=\"imagovideo.togglePlay()\" ng-class=\"{playing: imagovideo.isPlaying}\" stop-propagation=\"stop-propagation\" class=\"playbig fa fa-play\"></a><video ng-style=\"videoStyle\"><source ng-repeat=\"format in videoFormats\" src=\"{{format.src}}\" data-size=\"{{format.size}}\" data-codec=\"{{format.codec}}\" type=\"{{format.type}}\"/></video><div imago-controls=\"imago-controls\" ng-style=\"controlStyle\" ng-show=\"controls &amp;&amp; hasPlayed\"></div></div></div>");}]);
+$templateCache.put("/imago/imagoVideo.html","<div ng-class=\"{loading: loading}\" in-view=\"visible = $inview\" visible=\"visible\" responsive-events=\"responsive-events\" class=\"imagovideo {{wrapperStyle.backgroundPosition}} {{wrapperStyle.size}} {{wrapperStyle.sizemode}}\"><div ng-style=\"wrapperStyle\" ng-class=\"imagovideo.state\" class=\"imagowrapper\"><a ng-hide=\"loading\" ng-click=\"imagovideo.togglePlay()\" ng-class=\"{playing: imagovideo.isPlaying}\" stop-propagation=\"stop-propagation\" class=\"playbig fa fa-play\"></a><video ng-style=\"videoStyle\"><source ng-repeat=\"format in videoFormats\" src=\"{{format.src}}\" data-size=\"{{format.size}}\" data-codec=\"{{format.codec}}\" type=\"{{format.type}}\"/></video><div imago-controls=\"imago-controls\" ng-style=\"controlStyle\" ng-show=\"controls &amp;&amp; hasPlayed\"></div></div></div>");}]);

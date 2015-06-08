@@ -87,6 +87,11 @@
 
   video
     display: block
+  .imagowrapper video
+    transition: opacity 0.5s ease
+    opacity: 1
+  .imagowrapper.end video
+    opacity: 0
 
   // video will always extend to 100% width and height
   &.crop
