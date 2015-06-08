@@ -327,7 +327,7 @@ imagoVideo = (function() {
               continue;
             }
             formats.push({
-              "src": "//" + host + "/api/play_redirect?uuid=" + asset.uuid + "&codec=" + format.codec + "&quality=hd&max_size=" + format.size,
+              "src": "//" + host + "/api/play_redirect?uuid=" + scope.source.uuid + "&codec=" + format.codec + "&quality=hd&max_size=" + format.size,
               "size": format.size,
               "codec": format.codec,
               "type": "video/" + codec

@@ -206,7 +206,7 @@ class imagoVideo extends Directive
           for format, i in scope.source.fields.formats
             continue unless codec is format.codec
             formats.push(
-                "src" : "//#{host}/api/play_redirect?uuid=#{asset.uuid}&codec=#{format.codec}&quality=hd&max_size=#{format.size}"
+                "src" : "//#{host}/api/play_redirect?uuid=#{scope.source.uuid}&codec=#{format.codec}&quality=hd&max_size=#{format.size}"
                 "size": format.size
                 "codec": format.codec
                 "type": "video/#{codec}"
@@ -228,11 +228,9 @@ class imagoVideo extends Directive
               return key
 
         scope.toggleSize = ->
-
           if opts.size is 'hd'
             opts.size = 'sd'
             scope.wrapperStyle.size = 'sd'
-
           else
             opts.size = 'hd'
             scope.wrapperStyle.size = 'hd'
