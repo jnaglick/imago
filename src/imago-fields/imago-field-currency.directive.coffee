@@ -9,7 +9,7 @@ class ImagoFieldCurrency extends Directive
       scope:
         currencies: '='
         ngModel: '='
-        save: '&'
+        save: '&ngChange'
       transclude: true
       templateUrl: '/imago/imago-field-currency.html'
 
