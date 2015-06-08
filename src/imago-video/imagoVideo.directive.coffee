@@ -60,6 +60,7 @@ class imagoVideo extends Directive
         self.watch = scope.$watch 'source', (data) =>
           return unless data
           self.watch() unless attrs['watch']
+          return console.log 'no formats found' unless scope.source.fields?.formats?.length
 
           unless scope.source?.serving_url
             element.remove()
@@ -106,7 +107,7 @@ class imagoVideo extends Directive
           scope.wrapperStyle = style
 
           setPlayerAttrs()
-          scope.videoFormats = loadFormats(scope.source)
+          scope.videoFormats = loadFormats()
           render(width, height, serving_url)
 
         setPlayerAttrs = ->
@@ -197,12 +198,12 @@ class imagoVideo extends Directive
 
           style
 
-        loadFormats = (asset) ->
+        loadFormats = ->
           formats = []
           codec = detectCodec()
-          asset.fields.formats.sort( (a, b) -> return b.height - a.height )
+          scope.source.fields.formats.sort( (a, b) -> return b.height - a.height )
           host = if data is 'online' then 'api.imago.io' else 'localhost:8000'
-          for format, i in asset.fields.formats
+          for format, i in scope.source.fields.formats
             continue unless codec is format.codec
             formats.push(
                 "src" : "//#{host}/api/play_redirect?uuid=#{asset.uuid}&codec=#{format.codec}&quality=hd&max_size=#{format.size}"

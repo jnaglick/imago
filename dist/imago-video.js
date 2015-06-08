@@ -146,14 +146,17 @@ imagoVideo = (function() {
         }
         self.watch = scope.$watch('source', (function(_this) {
           return function(data) {
-            var ref;
+            var ref, ref1, ref2;
             if (!data) {
               return;
             }
             if (!attrs['watch']) {
               self.watch();
             }
-            if (!((ref = scope.source) != null ? ref.serving_url : void 0)) {
+            if (!((ref = scope.source.fields) != null ? (ref1 = ref.formats) != null ? ref1.length : void 0 : void 0)) {
+              return console.log('no formats found');
+            }
+            if (!((ref2 = scope.source) != null ? ref2.serving_url : void 0)) {
               element.remove();
               return;
             }
@@ -197,7 +200,7 @@ imagoVideo = (function() {
           };
           scope.wrapperStyle = style;
           setPlayerAttrs();
-          scope.videoFormats = loadFormats(scope.source);
+          scope.videoFormats = loadFormats();
           return render(width, height, serving_url);
         };
         setPlayerAttrs = function() {
@@ -309,15 +312,15 @@ imagoVideo = (function() {
             return style;
           };
         })(this);
-        loadFormats = function(asset) {
+        loadFormats = function() {
           var codec, format, formats, host, i, j, len, ref;
           formats = [];
           codec = detectCodec();
-          asset.fields.formats.sort(function(a, b) {
+          scope.source.fields.formats.sort(function(a, b) {
             return b.height - a.height;
           });
           host = data === 'online' ? 'api.imago.io' : 'localhost:8000';
-          ref = asset.fields.formats;
+          ref = scope.source.fields.formats;
           for (i = j = 0, len = ref.length; j < len; i = ++j) {
             format = ref[i];
             if (codec !== format.codec) {
