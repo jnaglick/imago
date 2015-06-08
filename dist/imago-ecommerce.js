@@ -1,7 +1,16 @@
-var imagoCart;
+var imagoCart, imagoCartController;
+
+imagoCartController = (function() {
+  function imagoCartController(imagoCart1) {
+    this.imagoCart = imagoCart1;
+  }
+
+  return imagoCartController;
+
+})();
 
 imagoCart = (function() {
-  function imagoCart(imagoCart) {
+  function imagoCart() {
     return {
       replace: true,
       scope: {
@@ -12,9 +21,7 @@ imagoCart = (function() {
       transclude: true,
       controllerAs: 'cart',
       templateUrl: '/imago/imago-cart.html',
-      controller: function($scope) {
-        return this.utils = imagoCart;
-      }
+      controller: 'imagoCartController'
     };
   }
 
@@ -22,7 +29,7 @@ imagoCart = (function() {
 
 })();
 
-angular.module('imago').directive('imagoCart', ['imagoCart', imagoCart]);
+angular.module('imago').controller('imagoCartController', ['imagoCart', imagoCartController]).directive('imagoCart', [imagoCart]);
 
 var imagoCart,
   bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
@@ -290,4 +297,4 @@ VariantsStorage = (function() {
 
 angular.module('imago').service('variantsStorage', ['$http', '$q', 'imagoModel', 'imagoSettings', VariantsStorage]);
 
-angular.module("imago").run(["$templateCache", function($templateCache) {$templateCache.put("/imago/imago-cart.html","<div class=\"cart\"><div ng-click=\"cart.utils.show = !cart.utils.show\" class=\"icon\"><div ng-bind=\"cart.utils.itemsLength\" class=\"counter\"></div></div><div ng-show=\"cart.utils.show\" class=\"box\"><div ng-transclude=\"ng-transclude\"></div><div ng-show=\"cart.utils.itemsLength\" class=\"itemnumber\">{{cart.utils.itemsLength}} items</div><div ng-show=\"cart.utils.itemsLength === 0\" class=\"noitems\">no items in cart</div><button ng-show=\"cart.utils.cart.items.length\" type=\"submit\" ng-click=\"cart.utils.checkout()\" class=\"checkout\">checkout</button></div></div>");}]);
+angular.module("imago").run(["$templateCache", function($templateCache) {$templateCache.put("/imago/imago-cart.html","<div class=\"cart\"><div ng-click=\"cart.imagoCart.show = !cart.imagoCart.show\" class=\"icon\"><div ng-bind=\"cart.imagoCart.itemsLength\" class=\"counter\"></div></div><div ng-show=\"cart.imagoCart.show\" class=\"box\"><div ng-transclude=\"ng-transclude\"></div><div ng-show=\"cart.imagoCart.itemsLength\" class=\"itemnumber\">{{cart.imagoCart.itemsLength}} items</div><div ng-show=\"cart.imagoCart.itemsLength === 0\" class=\"noitems\">no items in cart</div><button ng-show=\"cart.imagoCart.cart.items.length\" type=\"submit\" ng-click=\"cart.imagoCart.checkout()\" class=\"checkout\">checkout</button></div></div>");}]);

@@ -106,7 +106,7 @@ imagoVideo = (function() {
             return _this.state = 'playing';
           };
         })(this));
-        return this.togglePlay = (function(_this) {
+        this.togglePlay = (function(_this) {
           return function() {
             if (_this.player.paused) {
               _this.state = 'playing';

@@ -7,7 +7,7 @@ imagoSlider = (function() {
       scope: true,
       templateUrl: '/imago/imagoSlider.html',
       controller: function($scope) {
-        return $scope.conf = {
+        $scope.conf = {
           animation: 'fade',
           enablekeys: true,
           enablearrows: true,

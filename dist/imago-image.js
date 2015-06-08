@@ -11,7 +11,7 @@ imagoImage = (function() {
       templateUrl: '/imago/imagoImage.html',
       controller: function($scope, $element, $attrs) {
         $scope.status = 'loading';
-        return $scope.imageStyle = {};
+        $scope.imageStyle = {};
       },
       link: function(scope, element, attrs) {
         var calcMediaSize, initialize, key, opts, render, self, setImageStyle, value, watchers;
