@@ -6,8 +6,10 @@
     .prev(
       ng-show="conf.enablearrows"
       ng-click="goPrev($event)"
+      analytics-on="click" analytics-event="Previous Slide"
       )
     .next(
       ng-show="conf.enablearrows"
       ng-click="goNext($event)"
+      analytics-on="click" analytics-event="Next Slide"
       )

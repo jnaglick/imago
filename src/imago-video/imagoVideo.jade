@@ -1,7 +1,13 @@
 .imagovideo(class="{{wrapperStyle.backgroundPosition}} {{wrapperStyle.size}} {{wrapperStyle.sizemode}}" ng-class="{loading: loading}" in-view="visible = $inview"
 visible="visible" responsive-events)
   .imagowrapper(ng-style="wrapperStyle" ng-class="imagovideo.state")
-    a.playbig.fa.fa-play(ng-hide="loading" ng-click="imagovideo.togglePlay()" ng-class="{playing: imagovideo.isPlaying}" stop-propagation)
+    a.playbig.fa.fa-play(
+      ng-hide="loading"
+      ng-click="imagovideo.togglePlay()"
+      ng-class="{playing: imagovideo.isPlaying}"
+      stop-propagation
+      analytics-on="click" analytics-event="Video Play Big"
+      )
     video(ng-style="videoStyle")
       source(ng-repeat="format in videoFormats" src="{{format.src}}" data-size="{{format.size}}" data-codec="{{format.codec}}" type="{{format.type}}")
     div(imago-controls ng-style="controlStyle" ng-show="controls && hasPlayed")
