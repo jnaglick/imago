@@ -36,11 +36,11 @@ class imagoFilterCurrency extends Directive
       require: 'ngModel'
       link: (scope, elem, attrs, ctrl) ->
 
-        ctrl.$formatters.unshift (a) ->
-          ctrl.$modelValue = (ctrl.$modelValue / 100).toFixed(2)
-          if isNaN(ctrl.$modelValue)
-            ctrl.$modelValue = null
-          return ctrl.$modelValue
+        ctrl.$formatters.unshift (value) ->
+          value = (value / 100).toFixed(2)
+          if isNaN(value)
+            value = null
+          return value
 
         ctrl.$parsers.unshift (viewValue) ->
           if viewValue

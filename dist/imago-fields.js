@@ -77,12 +77,12 @@ imagoFilterCurrency = (function() {
     return {
       require: 'ngModel',
       link: function(scope, elem, attrs, ctrl) {
-        ctrl.$formatters.unshift(function(a) {
-          ctrl.$modelValue = (ctrl.$modelValue / 100).toFixed(2);
-          if (isNaN(ctrl.$modelValue)) {
-            ctrl.$modelValue = null;
+        ctrl.$formatters.unshift(function(value) {
+          value = (value / 100).toFixed(2);
+          if (isNaN(value)) {
+            value = null;
           }
-          return ctrl.$modelValue;
+          return value;
         });
         return ctrl.$parsers.unshift(function(viewValue) {
           var plainNumber;
