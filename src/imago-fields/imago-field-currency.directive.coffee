@@ -37,17 +37,23 @@ class imagoFilterCurrency extends Directive
       link: (scope, elem, attrs, ctrl) ->
 
         ctrl.$formatters.unshift (value) ->
+          console.log 'value', angular.copy(value)
           value = (value / 100).toFixed(2)
+          console.log 'value 2', angular.copy value
           if isNaN(value)
             value = null
           return value
 
         ctrl.$parsers.unshift (viewValue) ->
+          # console.log 'viewValue', viewValue, (document.activeElement is elem[0])
+          # return viewValue if document.activeElement is elem[0]
           if viewValue
             plainNumber = viewValue.replace(/[^\d|\-+|\.+]/g, "")
             plainNumber = parseFloat(plainNumber * 100)
-            ctrl.$setViewValue((plainNumber / 100).toFixed(2))
-            ctrl.$render()
+            # console.log 'plainNumber', (plainNumber / 100).toFixed(2)
+            # ctrl.$setViewValue((plainNumber / 100).toFixed(2))
+            # ctrl.$render()
+            plainNumber = plainNumber.toFixed(2)
             return plainNumber
           else
             return '0.00'
