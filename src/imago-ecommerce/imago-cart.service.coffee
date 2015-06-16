@@ -8,8 +8,7 @@ class imagoCart extends Service
       items: []
 
     local = @imagoUtils.cookie('imagoCart')
-    # local = localStorage.getItem('imagoCart')
-    @checkStatus(local) if local
+    @checkStatus(local) unless local
 
   geoip: ->
     @$http.get("//api.imago.io/geoip", {headers: {NexClient: undefined, NexTenant: undefined}}).then (response) =>

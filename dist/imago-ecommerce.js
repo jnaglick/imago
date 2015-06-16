@@ -57,7 +57,7 @@ imagoCart = (function() {
       items: []
     };
     local = this.imagoUtils.cookie('imagoCart');
-    if (local) {
+    if (!local) {
       this.checkStatus(local);
     }
   }
