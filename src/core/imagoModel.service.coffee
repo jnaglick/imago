@@ -1,6 +1,6 @@
 class imagoModel extends Service
 
-  constructor: (@$rootScope, @$http, @$location, @$q, @imagoUtils, @imagoWorker, @imagoSettings) ->
+  constructor: (@$rootScope, @$http, @$location, @$document, @$q, @imagoUtils, @imagoWorker, @imagoSettings) ->
 
     @assets =
       get: (id) =>
@@ -140,6 +140,14 @@ class imagoModel extends Service
           data.push @create res
 
       @$q.all(fetches).then (resolve) =>
+
+        if options.title
+          @$document.prop 'title', options.title
+        else if data.length is 1 and data[0].fields?.title?.value
+          @$document.prop 'title', data[0].fields.title.value
+        else if data.length is 1 and data[0].name
+          @$document.prop 'title', data[0].name
+
         defer.resolve data
 
     _.forEach query, (value) =>
@@ -198,7 +206,7 @@ class imagoModel extends Service
     @populateData asset.assets
 
 
-  populateData: (assets) => 
+  populateData: (assets) =>
     return if !_.isArray(assets)
     @addAsset asset for asset in assets
 

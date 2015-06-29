@@ -19,10 +19,11 @@ var imagoModel,
   bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 
 imagoModel = (function() {
-  function imagoModel($rootScope, $http, $location, $q, imagoUtils, imagoWorker, imagoSettings) {
+  function imagoModel($rootScope, $http, $location, $document, $q, imagoUtils, imagoWorker, imagoSettings) {
     this.$rootScope = $rootScope;
     this.$http = $http;
     this.$location = $location;
+    this.$document = $document;
     this.$q = $q;
     this.imagoUtils = imagoUtils;
     this.imagoWorker = imagoWorker;
@@ -232,6 +233,14 @@ imagoModel = (function() {
           return results;
         }));
         return _this.$q.all(fetches).then(function(resolve) {
+          var ref, ref1;
+          if (options.title) {
+            _this.$document.prop('title', options.title);
+          } else if (data.length === 1 && ((ref = data[0].fields) != null ? (ref1 = ref.title) != null ? ref1.value : void 0 : void 0)) {
+            _this.$document.prop('title', data[0].fields.title.value);
+          } else if (data.length === 1 && data[0].name) {
+            _this.$document.prop('title', data[0].name);
+          }
           return defer.resolve(data);
         });
       };
@@ -929,7 +938,7 @@ imagoModel = (function() {
 
 })();
 
-angular.module('imago').service('imagoModel', ['$rootScope', '$http', '$location', '$q', 'imagoUtils', 'imagoWorker', 'imagoSettings', imagoModel]);
+angular.module('imago').service('imagoModel', ['$rootScope', '$http', '$location', '$document', '$q', 'imagoUtils', 'imagoWorker', 'imagoSettings', imagoModel]);
 
 var imagoUtils;
 
