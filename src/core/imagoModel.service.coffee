@@ -516,6 +516,34 @@ class imagoModel extends Service
 
     return data
 
+  batchAddTag: (assets) =>
+    for asset, idx in assets
+      original = @find('_id' : asset._id)
+
+      return unless original
+
+      copy =
+        fields : original.fields
+        parent : original.parent
+
+      toedit = angular.copy asset
+
+      for key, value of toedit
+        if key is 'fields'
+
+          for key of toedit.fields
+            copy['fields'] or= {}
+            copy['fields'][key] or= []
+            if copy['fields'][key].value.indexOf(toedit.fields[key]) is -1
+              copy['fields'][key].value.push(toedit.fields[key])
+
+        else
+          copy[key] = toedit[key]
+
+      assets[idx] = copy
+
+    @update assets, {save: true}
+
   batchChange: (assets) =>
     for asset, idx in assets
       original = @find('_id' : asset._id)

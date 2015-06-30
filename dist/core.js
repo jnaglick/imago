@@ -31,6 +31,7 @@ imagoModel = (function() {
     this.prepareCreation = bind(this.prepareCreation, this);
     this.isDuplicated = bind(this.isDuplicated, this);
     this.batchChange = bind(this.batchChange, this);
+    this.batchAddTag = bind(this.batchAddTag, this);
     this.reorder = bind(this.reorder, this);
     this.reindexAll = bind(this.reindexAll, this);
     this.reSort = bind(this.reSort, this);
@@ -795,6 +796,42 @@ imagoModel = (function() {
       repair: repair
     };
     return data;
+  };
+
+  imagoModel.prototype.batchAddTag = function(assets) {
+    var asset, base, copy, idx, j, key, len, original, toedit, value;
+    for (idx = j = 0, len = assets.length; j < len; idx = ++j) {
+      asset = assets[idx];
+      original = this.find({
+        '_id': asset._id
+      });
+      if (!original) {
+        return;
+      }
+      copy = {
+        fields: original.fields,
+        parent: original.parent
+      };
+      toedit = angular.copy(asset);
+      for (key in toedit) {
+        value = toedit[key];
+        if (key === 'fields') {
+          for (key in toedit.fields) {
+            copy['fields'] || (copy['fields'] = {});
+            (base = copy['fields'])[key] || (base[key] = []);
+            if (copy['fields'][key].value.indexOf(toedit.fields[key]) === -1) {
+              copy['fields'][key].value.push(toedit.fields[key]);
+            }
+          }
+        } else {
+          copy[key] = toedit[key];
+        }
+      }
+      assets[idx] = copy;
+    }
+    return this.update(assets, {
+      save: true
+    });
   };
 
   imagoModel.prototype.batchChange = function(assets) {
