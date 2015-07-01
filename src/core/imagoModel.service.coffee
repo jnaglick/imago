@@ -35,7 +35,15 @@ class imagoModel extends Service
         @$http.post "#{@imagoSettings.host}/api/assets/copy", data
 
       batch: (list) =>
-        @$http.put "#{@imagoSettings.host}/api/assets/update", {assets: list}
+        defer = @$q.defer()
+        promises = []
+        # TODO: Change to 100
+        list = _.chunk(list, 30)
+        for request in list
+          promises.push @$http.put "#{@imagoSettings.host}/api/assets/update", {assets: request}
+        @$q.all(promises).then =>
+          defer.resolve()
+        defer.promise
 
       download: (ids, res) =>
         @$http.post "#{@imagoSettings.host}/api/assets/download", {assets: ids, resolution: res}

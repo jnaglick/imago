@@ -104,9 +104,20 @@ imagoModel = (function() {
       })(this),
       batch: (function(_this) {
         return function(list) {
-          return _this.$http.put(_this.imagoSettings.host + "/api/assets/update", {
-            assets: list
+          var defer, j, len, promises, request;
+          defer = _this.$q.defer();
+          promises = [];
+          list = _.chunk(list, 30);
+          for (j = 0, len = list.length; j < len; j++) {
+            request = list[j];
+            promises.push(_this.$http.put(_this.imagoSettings.host + "/api/assets/update", {
+              assets: request
+            }));
+          }
+          _this.$q.all(promises).then(function() {
+            return defer.resolve();
           });
+          return defer.promise;
         };
       })(this),
       download: (function(_this) {
