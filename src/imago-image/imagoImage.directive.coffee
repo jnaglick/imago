@@ -1,17 +1,21 @@
 class imagoImage extends Directive
 
-  constructor: ($window, $rootScope, $timeout, $log, imagoUtils) ->
+  constructor: ($window, $rootScope, $timeout, $parse, $log, imagoUtils, imagoModel) ->
 
     return {
       replace: true
-      scope: {
-        visible: '='
-        source: '=imagoImage'
-      }
+      # scope: {
+      #   visible: '='
+      #   source: '=imagoImage'
+      # }
+      scope: true
       templateUrl: '/imago/imagoImage.html'
       controller: 'imagoImageController'
       link: (scope, element, attrs) ->
         self = {}
+
+        scope.visible = false
+        scope.source = undefined
 
         opts =
           align     : 'center center'
@@ -32,12 +36,24 @@ class imagoImage extends Directive
           else
             opts[key] = value
 
-        # console.log opts['imagoImage']
+        # console.log 'attrs.imagoImage', attrs.imagoImage, typeof attrs.imagoImage
 
-        self.watch = scope.$watch 'source', (data) =>
-          return unless data
-          self.watch() unless attrs['watch']
+        isId = /[0-9a-fA-F]{24}/
 
+        if attrs.imagoImage.match(isId)
+          self.watch = attrs.$observe 'imagoImage', (value) ->
+            return unless value
+            scope.source = imagoModel.find('_id': value)
+            self.watch() unless attrs['watch']
+            compile()
+        else
+          self.watch = scope.$watch attrs.imagoImage, (data) =>
+            return unless data
+            scope.source = data
+            self.watch() unless attrs['watch']
+            compile()
+
+        compile = ->
           unless scope.source?.serving_url
             element.remove()
             return
@@ -50,7 +66,7 @@ class imagoImage extends Directive
 
           if opts.responsive
             if opts.sizemode is 'crop'
-              scope.$on 'resizelimit', () ->
+              scope.$on 'resizelimit', ->
                 calcMediaSize()
                 scope.$evalAsync()
 
@@ -135,6 +151,7 @@ class imagoImage extends Directive
             self.visibleFunc = scope.$watch 'visible', (value) =>
               return unless value
               self.visibleFunc()
+              scope.visible = true
               render()
           else
             img = angular.element('<img>')

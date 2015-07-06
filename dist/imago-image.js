@@ -1,18 +1,17 @@
 var imagoImage, imagoImageController;
 
 imagoImage = (function() {
-  function imagoImage($window, $rootScope, $timeout, $log, imagoUtils) {
+  function imagoImage($window, $rootScope, $timeout, $parse, $log, imagoUtils, imagoModel) {
     return {
       replace: true,
-      scope: {
-        visible: '=',
-        source: '=imagoImage'
-      },
+      scope: true,
       templateUrl: '/imago/imagoImage.html',
       controller: 'imagoImageController',
       link: function(scope, element, attrs) {
-        var calcMediaSize, initialize, key, opts, render, self, setImageStyle, value, watchers;
+        var calcMediaSize, compile, initialize, isId, key, opts, render, self, setImageStyle, value, watchers;
         self = {};
+        scope.visible = false;
+        scope.source = void 0;
         opts = {
           align: 'center center',
           sizemode: 'fit',
@@ -30,38 +29,58 @@ imagoImage = (function() {
             opts[key] = value;
           }
         }
-        self.watch = scope.$watch('source', (function(_this) {
-          return function(data) {
-            var ref;
-            if (!data) {
+        isId = /[0-9a-fA-F]{24}/;
+        if (attrs.imagoImage.match(isId)) {
+          self.watch = attrs.$observe('imagoImage', function(value) {
+            if (!value) {
               return;
             }
+            scope.source = imagoModel.find({
+              '_id': value
+            });
             if (!attrs['watch']) {
               self.watch();
             }
-            if (!((ref = scope.source) != null ? ref.serving_url : void 0)) {
-              element.remove();
-              return;
-            }
-            if (scope.source.fields.hasOwnProperty('crop') && !attrs['align']) {
-              opts.align = scope.source.fields.crop.value;
-            }
-            if (scope.source.fields.hasOwnProperty('sizemode')) {
-              if (scope.source.fields.sizemode.value !== 'default' && !attrs['sizemode']) {
-                opts.sizemode = scope.source.fields.sizemode.value;
+            return compile();
+          });
+        } else {
+          self.watch = scope.$watch(attrs.imagoImage, (function(_this) {
+            return function(data) {
+              if (!data) {
+                return;
               }
-            }
-            if (opts.responsive) {
-              if (opts.sizemode === 'crop') {
-                scope.$on('resizelimit', function() {
-                  calcMediaSize();
-                  return scope.$evalAsync();
-                });
+              scope.source = data;
+              if (!attrs['watch']) {
+                self.watch();
               }
+              return compile();
+            };
+          })(this));
+        }
+        compile = function() {
+          var ref;
+          if (!((ref = scope.source) != null ? ref.serving_url : void 0)) {
+            element.remove();
+            return;
+          }
+          if (scope.source.fields.hasOwnProperty('crop') && !attrs['align']) {
+            opts.align = scope.source.fields.crop.value;
+          }
+          if (scope.source.fields.hasOwnProperty('sizemode')) {
+            if (scope.source.fields.sizemode.value !== 'default' && !attrs['sizemode']) {
+              opts.sizemode = scope.source.fields.sizemode.value;
             }
-            return initialize();
-          };
-        })(this));
+          }
+          if (opts.responsive) {
+            if (opts.sizemode === 'crop') {
+              scope.$on('resizelimit', function() {
+                calcMediaSize();
+                return scope.$evalAsync();
+              });
+            }
+          }
+          return initialize();
+        };
         initialize = function() {
           var dpr, height, r, servingSize, width, wrapperRatio;
           if (angular.isString(scope.source.resolution)) {
@@ -125,6 +144,7 @@ imagoImage = (function() {
                   return;
                 }
                 self.visibleFunc();
+                scope.visible = true;
                 return render();
               };
             })(this));
@@ -224,6 +244,6 @@ imagoImageController = (function() {
 
 })();
 
-angular.module('imago').directive('imagoImage', ['$window', '$rootScope', '$timeout', '$log', 'imagoUtils', imagoImage]).controller('imagoImageController', ['$scope', imagoImageController]);
+angular.module('imago').directive('imagoImage', ['$window', '$rootScope', '$timeout', '$parse', '$log', 'imagoUtils', 'imagoModel', imagoImage]).controller('imagoImageController', ['$scope', imagoImageController]);
 
 angular.module("imago").run(["$templateCache", function($templateCache) {$templateCache.put("/imago/imagoImage.html","<div visible=\"visible\" in-view=\"visible = $inview\" in-view-options=\"{debounce: 100}\" ng-style=\"elementStyle\" ng-class=\"[status, align]\" ng-switch=\"sizemode\" class=\"imagoimage\"><img ng-src=\"{{servingUrl}}\" ng-style=\"imageStyle\" ng-switch-when=\"fit\" class=\"imagox23\"/><div ng-style=\"imageStyle\" ng-switch-when=\"crop\" class=\"imagox23\"></div><div class=\"loading\"><div class=\"spin\"></div><div class=\"spin2\"></div></div></div>");}]);

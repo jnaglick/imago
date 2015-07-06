@@ -3,17 +3,12 @@ var imagoCompile;
 imagoCompile = (function() {
   function imagoCompile($compile) {
     return function(scope, element, attrs) {
-      var compile, htmlName;
-      compile = function(newHTML) {
-        newHTML = $compile(newHTML)(scope);
-        return element.html("").append(newHTML);
-      };
-      htmlName = attrs.compile;
-      return scope.$watch(htmlName, function(newHTML) {
-        if (!newHTML) {
+      return scope.$watch(attrs.imagoCompile, function(html) {
+        if (!html) {
           return;
         }
-        return compile(newHTML);
+        element.html(html);
+        return $compile(element.contents())(scope);
       });
     };
   }
