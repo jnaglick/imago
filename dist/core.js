@@ -1792,7 +1792,7 @@ imagoWorker = (function() {
     find = _.find(this.store, {
       'path': data.path
     });
-    if (bowser.msie) {
+    if (typeof bowser !== "undefined" && bowser !== null ? bowser.msie : void 0) {
       this.create(data.path, data, defer);
     } else if (find) {
       this.create(find.blob, data, defer);

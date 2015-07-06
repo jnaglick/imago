@@ -19,7 +19,7 @@ class imagoWorker extends Service
     defer.reject('nodata or path') unless data and data.path
 
     find = _.find @store, {'path': data.path}
-    if bowser.msie
+    if bowser?.msie
       @create data.path, data, defer
     else if find
       @create find.blob, data, defer
