@@ -84,19 +84,18 @@ angular.module('imago').directive('imagoControls', [imagoControls]).controller('
 var imagoVideo, imagoVideoController;
 
 imagoVideo = (function() {
-  function imagoVideo($timeout, $rootScope, imagoUtils) {
+  function imagoVideo($timeout, $rootScope, imagoUtils, imagoModel) {
     return {
       replace: true,
-      scope: {
-        visible: '=',
-        source: '=imagoVideo'
-      },
+      scope: true,
       templateUrl: '/imago/imagoVideo.html',
       controllerAs: 'imagovideo',
       controller: 'imagoVideoController',
       link: function(scope, element, attrs) {
-        var detectCodec, key, loadFormats, onResize, opts, preload, render, self, setPlayerAttrs, styleVideo, styleWrapper, value, watchers;
+        var compile, detectCodec, isId, key, loadFormats, onResize, opts, preload, render, self, setPlayerAttrs, styleVideo, styleWrapper, value, watchers;
         self = {};
+        scope.source = void 0;
+        scope.visible = false;
         opts = {
           autobuffer: null,
           autoplay: false,
@@ -121,33 +120,53 @@ imagoVideo = (function() {
             opts[key] = value;
           }
         }
-        self.watch = scope.$watch('source', (function(_this) {
-          return function(data) {
-            var ref, ref1, ref2;
+        isId = /[0-9a-fA-F]{24}/;
+        if (attrs.imagoVideo.match(isId)) {
+          self.watch = attrs.$observe('imagoVideo', function(data) {
             if (!data) {
               return;
             }
+            scope.source = imagoModel.find({
+              '_id': data
+            });
             if (!attrs['watch']) {
               self.watch();
             }
-            if (!((ref = scope.source.fields) != null ? (ref1 = ref.formats) != null ? ref1.length : void 0 : void 0)) {
-              return console.log('no formats found');
-            }
-            if (!((ref2 = scope.source) != null ? ref2.serving_url : void 0)) {
-              element.remove();
-              return;
-            }
-            if (scope.source.fields.hasOwnProperty('crop') && !attrs['align']) {
-              opts.align = scope.source.fields.crop.value;
-            }
-            if (scope.source.fields.hasOwnProperty('sizemode')) {
-              if (scope.source.fields.sizemode.value !== 'default' && !attrs['sizemode']) {
-                opts.sizemode = scope.source.fields.sizemode.value;
+            return compile();
+          });
+        } else {
+          self.watch = scope.$watch(attrs.imagoVideo, (function(_this) {
+            return function(data) {
+              if (!data) {
+                return;
               }
+              scope.source = data;
+              if (!attrs['watch']) {
+                self.watch();
+              }
+              return compile();
+            };
+          })(this));
+        }
+        compile = function() {
+          var ref, ref1, ref2;
+          if (!((ref = scope.source.fields) != null ? (ref1 = ref.formats) != null ? ref1.length : void 0 : void 0)) {
+            return console.log('no formats found');
+          }
+          if (!((ref2 = scope.source) != null ? ref2.serving_url : void 0)) {
+            element.remove();
+            return;
+          }
+          if (scope.source.fields.hasOwnProperty('crop') && !attrs['align']) {
+            opts.align = scope.source.fields.crop.value;
+          }
+          if (scope.source.fields.hasOwnProperty('sizemode')) {
+            if (scope.source.fields.sizemode.value !== 'default' && !attrs['sizemode']) {
+              opts.sizemode = scope.source.fields.sizemode.value;
             }
-            return preload();
-          };
-        })(this));
+          }
+          return preload();
+        };
         preload = function() {
           var dpr, height, r, resolution, serving_url, style, width;
           if (angular.isString(scope.source.resolution)) {
@@ -195,7 +214,8 @@ imagoVideo = (function() {
           return function(width, height, servingUrl) {
             var img;
             if (opts.lazy && !scope.visible) {
-              return self.visibleFunc = scope.$watch('visible', function(value) {
+              return self.visibleFunc = scope.$watch(attrs.visible, function(value) {
+                scope.visible = value;
                 if (!value) {
                   return;
                 }
@@ -425,7 +445,7 @@ imagoVideoController = (function() {
 
 })();
 
-angular.module('imago').directive('imagoVideo', ['$timeout', '$rootScope', 'imagoUtils', imagoVideo]).controller('imagoVideoController', ['$scope', '$element', '$attrs', imagoVideoController]);
+angular.module('imago').directive('imagoVideo', ['$timeout', '$rootScope', 'imagoUtils', 'imagoModel', imagoVideo]).controller('imagoVideoController', ['$scope', '$element', '$attrs', imagoVideoController]);
 
 var Time;
 

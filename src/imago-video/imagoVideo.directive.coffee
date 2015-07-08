@@ -1,17 +1,22 @@
 class imagoVideo extends Directive
 
-  constructor: ($timeout, $rootScope, imagoUtils) ->
+  constructor: ($timeout, $rootScope, imagoUtils, imagoModel) ->
     return {
       replace: true
-      scope: {
-        visible: '='
-        source: '=imagoVideo'
-      }
+      # scope: {
+      #   visible: '='
+      #   source: '=imagoVideo'
+      # }
+      scope: true
       templateUrl: '/imago/imagoVideo.html'
       controllerAs: 'imagovideo'
       controller: 'imagoVideoController'
       link: (scope, element, attrs) ->
         self = {}
+
+        scope.source = undefined
+
+        scope.visible = false
 
         opts =
           autobuffer  : null
@@ -35,9 +40,22 @@ class imagoVideo extends Directive
           else
             opts[key] = value
 
-        self.watch = scope.$watch 'source', (data) =>
-          return unless data
-          self.watch() unless attrs['watch']
+        isId = /[0-9a-fA-F]{24}/
+
+        if attrs.imagoVideo.match(isId)
+          self.watch = attrs.$observe 'imagoVideo', (data) ->
+            return unless data
+            scope.source = imagoModel.find('_id': data)
+            self.watch() unless attrs['watch']
+            compile()
+        else
+          self.watch = scope.$watch attrs.imagoVideo, (data) =>
+            return unless data
+            scope.source = data
+            self.watch() unless attrs['watch']
+            compile()
+
+        compile = ->
           return console.log 'no formats found' unless scope.source.fields?.formats?.length
 
           unless scope.source?.serving_url
@@ -97,7 +115,8 @@ class imagoVideo extends Directive
 
         render = (width, height, servingUrl) =>
           if  opts.lazy and not scope.visible
-            self.visibleFunc = scope.$watch 'visible', (value) =>
+            self.visibleFunc = scope.$watch attrs.visible, (value) =>
+              scope.visible = value
               return unless value
               self.visibleFunc()
               render(width, height, servingUrl)
