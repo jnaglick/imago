@@ -37,8 +37,7 @@ class imagoModel extends Service
       batch: (list) =>
         defer = @$q.defer()
         promises = []
-        # TODO: Change to 100
-        list = _.chunk(list, 30)
+        list = _.chunk(list, 100)
         for request in list
           promises.push @$http.put "#{@imagoSettings.host}/api/assets/update", {assets: request}
         @$q.all(promises).then =>

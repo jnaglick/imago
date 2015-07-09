@@ -107,7 +107,7 @@ imagoModel = (function() {
           var defer, j, len, promises, request;
           defer = _this.$q.defer();
           promises = [];
-          list = _.chunk(list, 30);
+          list = _.chunk(list, 100);
           for (j = 0, len = list.length; j < len; j++) {
             request = list[j];
             promises.push(_this.$http.put(_this.imagoSettings.host + "/api/assets/update", {
