@@ -1,0 +1,75 @@
+@font-face {
+  font-family: "imago-icons";
+  src: url('i/fonts/imago-icons.eot');
+  src: url('i/fonts/imago-icons.eot?#iefix') format('eot'),
+    url('i/fonts/imago-icons.woff2') format('woff2'),
+    url('i/fonts/imago-icons.woff') format('woff'),
+    url('i/fonts/imago-icons.ttf') format('truetype'),
+    url('i/fonts/imago-icons.svg#imago-icons') format('svg');
+  font-weight: normal;
+  font-style: normal;
+}
+
+.s:before {
+  display: inline-block;
+  font-family: "imago-icons";
+  font-style: normal;
+  font-weight: normal;
+  line-height: 1;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.s-lg {
+  font-size: 1.3333333333333333em;
+  line-height: 0.75em;
+  vertical-align: -15%;
+}
+.s-2x { font-size: 2em; }
+.s-3x { font-size: 3em; }
+.s-4x { font-size: 4em; }
+.s-5x { font-size: 5em; }
+.s-6x { font-size: 6em; }
+.s-7x { font-size: 7em; }
+.s-8x { font-size: 8em; }
+.s-9x { font-size: 9em; }
+.s-10x { font-size: 10em; }
+.s-11x { font-size: 11em; }
+.s-12x { font-size: 12em; }
+.s-fw {
+  width: 1.2857142857142858em;
+  text-align: center;
+}
+
+.s-eye:before { content: "\F701" }
+.s-tag:before { content: "\F702" }
+.s-edit:before { content: "\F703" }
+.s-cart:before { content: "\F704" }
+.s-loupe:before { content: "\F706" }
+.s-trash:before { content: "\F707" }
+.s-home:before { content: "\F705" }
+.s-upsize:before { content: "\F708" }
+.s-gear:before { content: "\F709" }
+.s-close-filled:before { content: "\F710" }
+.s-close:before { content: "\F711" }
+.s-plus-filled:before { content: "\F713" }
+.s-plus:before { content: "\F714" }
+.s-caret-down:before { content: "\F715" }
+.s-caret-up:before { content: "\F716" }
+.s-caret-left:before { content: "\F717" }
+.s-caret-right:before { content: "\F718" }
+.s-pictureframe:before { content: "\F719" }
+.s-upload:before { content: "\F720" }
+.s-download:before { content: "\F721" }
+.s-share:before { content: "\F722" }
+.s-add-to-collection:before { content: "\F723" }
+.s-cart2:before { content: "\F725" }
+.s-bookmark:before { content: "\F724" }
+.s-arrow-down:before { content: "\F726" }
+.s-arrow-right:before { content: "\F727" }
+.s-arrow-left:before { content: "\F728" }
+.s-arrow-up:before { content: "\F729" }
+.s-dashboard:before { content: "\F730" }
+.s-downsize:before { content: "\F731" }
+.s-dashboard-white:before { content: "\F733" }
+.s-help:before { content: "\F732" }
