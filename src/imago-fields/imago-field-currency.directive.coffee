@@ -37,9 +37,9 @@ class imagoFilterCurrency extends Directive
       link: (scope, elem, attrs, ctrl) ->
 
         ctrl.$formatters.unshift (value) ->
-          console.log 'value', angular.copy(value)
+          # console.log 'value', angular.copy(value)
           value = (value / 100).toFixed(2)
-          console.log 'value 2', angular.copy value
+          # console.log 'value 2', angular.copy value
           if isNaN(value)
             value = null
           return value

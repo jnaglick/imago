@@ -78,9 +78,7 @@ imagoFilterCurrency = (function() {
       require: 'ngModel',
       link: function(scope, elem, attrs, ctrl) {
         ctrl.$formatters.unshift(function(value) {
-          console.log('value', angular.copy(value));
           value = (value / 100).toFixed(2);
-          console.log('value 2', angular.copy(value));
           if (isNaN(value)) {
             value = null;
           }
