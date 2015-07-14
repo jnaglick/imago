@@ -993,7 +993,7 @@ angular.module('imago').service('imagoModel', ['$rootScope', '$http', '$location
 var imagoPage;
 
 imagoPage = (function() {
-  function imagoPage($scope, $location, imagoModel) {
+  function imagoPage($location, imagoModel) {
     this.path = $location.path() === '/' ? '/home' : $location.path();
     imagoModel.getData({
       path: this.path
@@ -1015,7 +1015,7 @@ imagoPage = (function() {
 
 })();
 
-angular.module('imago').controller('imagoPage', ['$scope', '$location', 'imagoModel', imagoPage]);
+angular.module('imago').controller('imagoPage', ['$location', 'imagoModel', imagoPage]);
 
 var imagoUtils;
 

@@ -1,5 +1,5 @@
 class imagoPage extends Controller
-  constructor: ($scope, $location, imagoModel) ->
+  constructor: ($location, imagoModel) ->
 
     @path = if $location.path() is '/' then '/home' else $location.path()
 
