@@ -10,9 +10,8 @@ imagoCart = (function() {
         ngModel: '='
       },
       transclude: true,
-      controllerAs: 'cart',
       templateUrl: '/imago/imago-cart.html',
-      controller: 'imagoCartController'
+      controller: 'imagoCartController as cart'
     };
   }
 

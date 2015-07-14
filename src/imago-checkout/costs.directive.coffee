@@ -9,8 +9,7 @@ class Costs extends Directive
         currency: '='
         hideIfNotCountry: '=?'
       templateUrl: '/imago/costs.html'
-      controllerAs: 'costs'
-      controller: 'costsController'
+      controller: 'costsController as costs'
 
     }
 

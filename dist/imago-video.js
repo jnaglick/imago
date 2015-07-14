@@ -6,8 +6,7 @@ imagoControls = (function() {
       replace: true,
       require: '^imagoVideo',
       templateUrl: '/imago/controlsVideo.html',
-      controller: 'imagoControlsController',
-      controllerAs: 'imagocontrols',
+      controller: 'imagoControlsController as imagocontrols',
       link: function(scope, element, attrs) {
         scope.seek = function(value) {
           return scope.imagovideo.player.currentTime = value;
@@ -89,8 +88,7 @@ imagoVideo = (function() {
       replace: true,
       scope: true,
       templateUrl: '/imago/imagoVideo.html',
-      controllerAs: 'imagovideo',
-      controller: 'imagoVideoController',
+      controller: 'imagoVideoController as imagovideo',
       link: function(scope, element, attrs) {
         var compile, detectCodec, isId, key, loadFormats, onResize, opts, preload, render, self, setPlayerAttrs, styleVideo, styleWrapper, value, watchers;
         self = {};

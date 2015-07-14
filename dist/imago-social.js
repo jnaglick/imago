@@ -31,8 +31,7 @@ imagoShare = (function() {
       scope: {
         asset: "="
       },
-      controllerAs: 'imagoshare',
-      controller: 'imagoShareController',
+      controller: 'imagoShareController as imagoshare',
       link: function(scope, element, attrs) {
         var syntax, template;
         template = attrs.templateurl ? attrs.templateurl : defaultTemplate;

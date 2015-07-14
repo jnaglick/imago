@@ -15,8 +15,7 @@ class imagoShare extends Directive
 
       scope:
         asset: "="
-      controllerAs: 'imagoshare'
-      controller: 'imagoShareController'
+      controller: 'imagoShareController as imagoshare'
       link: (scope, element, attrs) ->
         template = if attrs.templateurl then attrs.templateurl else defaultTemplate
 

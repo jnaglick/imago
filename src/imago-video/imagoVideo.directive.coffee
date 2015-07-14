@@ -9,8 +9,7 @@ class imagoVideo extends Directive
       # }
       scope: true
       templateUrl: '/imago/imagoVideo.html'
-      controllerAs: 'imagovideo'
-      controller: 'imagoVideoController'
+      controller: 'imagoVideoController as imagovideo'
       link: (scope, element, attrs) ->
         self = {}
 

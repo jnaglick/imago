@@ -1885,9 +1885,8 @@ NotSupported = (function() {
   function NotSupported() {
     return {
       templateUrl: '/imago/not-supported.html',
-      controllerAs: 'supported',
       bindToController: true,
-      controller: 'notSupportedController'
+      controller: 'notSupportedController as supported'
     };
   }
 

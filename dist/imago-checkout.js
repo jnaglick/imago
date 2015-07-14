@@ -616,8 +616,7 @@ Costs = (function() {
         hideIfNotCountry: '=?'
       },
       templateUrl: '/imago/costs.html',
-      controllerAs: 'costs',
-      controller: 'costsController'
+      controller: 'costsController as costs'
     };
   }
 
