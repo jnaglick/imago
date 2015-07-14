@@ -990,6 +990,33 @@ imagoModel = (function() {
 
 angular.module('imago').service('imagoModel', ['$rootScope', '$http', '$location', '$document', '$q', 'imagoUtils', 'imagoWorker', 'imagoSettings', imagoModel]);
 
+var imagoPage;
+
+imagoPage = (function() {
+  function imagoPage($scope, $location, imagoModel) {
+    this.path = $location.path() === '/' ? '/home' : $location.path();
+    imagoModel.getData({
+      path: this.path
+    }).then((function(_this) {
+      return function(response) {
+        var data, i, len, results;
+        results = [];
+        for (i = 0, len = response.length; i < len; i++) {
+          data = response[i];
+          _this.data = data;
+          break;
+        }
+        return results;
+      };
+    })(this));
+  }
+
+  return imagoPage;
+
+})();
+
+angular.module('imago').controller('imagoPage', ['$scope', '$location', 'imagoModel', imagoPage]);
+
 var imagoUtils;
 
 imagoUtils = (function() {
@@ -1941,23 +1968,5 @@ NotSupportedController = (function() {
 })();
 
 angular.module('imago').directive('notSupported', [NotSupported]).controller('notSupportedController', ['$scope', '$element', '$attrs', NotSupportedController]);
-
-var imagoPage;
-
-imagoPage = (function() {
-  function imagoPage($scope, $state, imagoModel) {
-    var path;
-    path = '/';
-    imagoModel.getData(path).then(function(response) {
-      $scope.collection = response[0];
-      return $scope.assets = imagoModel.getChildren(response[0]);
-    });
-  }
-
-  return imagoPage;
-
-})();
-
-angular.module('imago').controller('imagoPage', ['$scope', '$state', 'imagoModel', imagoPage]);
 
 angular.module("imago").run(["$templateCache", function($templateCache) {$templateCache.put("/imago/not-supported.html","<div ng-show=\"supported.invalid\" class=\"imago-not-supported\"><div class=\"inner\"><h1>Time for change!</h1><p>Please download a new version of your favorite browser.</p><ul><li><a href=\"http://support.apple.com/downloads/#safari\" target=\"_blank\"><div class=\"icon icon-safari\"></div><h2>Safari</h2><span>Download</span></a></li><li><a href=\"http://www.google.com/chrome\" target=\"_blank\"><div class=\"icon icon-chrome\"></div><h2>Chrome</h2><span>Download</span></a></li><li><a href=\"http://www.opera.com/download\" target=\"_blank\"><div class=\"icon icon-opera\"></div><h2>Opera</h2><span>Download</span></a></li><li><a href=\"http://www.mozilla.org/firefox\" target=\"_blank\"><div class=\"icon icon-firefox\"></div><h2>Firefox</h2><span>Download</span></a></li><li><a href=\"http://windows.microsoft.com/en-us/internet-explorer/download-ie\" target=\"_blank\"><div class=\"icon icon-ie\"></div><h2>IE</h2><span>Download</span></a></li></ul></div></div>");}]);
