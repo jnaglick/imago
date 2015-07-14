@@ -6,4 +6,4 @@ class imagoPage extends Controller
     imagoModel.getData({path: @path}).then (response) =>
       for data in response
         @data = data
-        break
+        breakg
