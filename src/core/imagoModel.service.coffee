@@ -83,7 +83,10 @@ class imagoModel extends Service
         path = value
 
       else if key is 'kind'
-        query = @imagoUtils.renameKey('kind', 'metakind', query)
+        query = @imagoUtils.renameKey('kind', 'type', query)
+
+      else if key is 'metakind'
+        query = @imagoUtils.renameKey('metakind', 'type', query)
 
       else if key is 'path'
         path = value
@@ -223,7 +226,7 @@ class imagoModel extends Service
     @populateData data.assets
 
     unless @find('_id' : collection._id)
-      collection = _.omit collection, 'assets' if collection.kind is 'Collection'
+      collection = _.omit collection, 'assets' if collection.type is 'collection'
       @data.push collection
 
     return data

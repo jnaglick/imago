@@ -173,7 +173,9 @@ imagoModel = (function() {
         query = this.imagoUtils.renameKey('collection', 'path', query);
         path = value;
       } else if (key === 'kind') {
-        query = this.imagoUtils.renameKey('kind', 'metakind', query);
+        query = this.imagoUtils.renameKey('kind', 'type', query);
+      } else if (key === 'metakind') {
+        query = this.imagoUtils.renameKey('metakind', 'type', query);
       } else if (key === 'path') {
         path = value;
       }
@@ -351,7 +353,7 @@ imagoModel = (function() {
     if (!this.find({
       '_id': collection._id
     })) {
-      if (collection.kind === 'Collection') {
+      if (collection.type === 'collection') {
         collection = _.omit(collection, 'assets');
       }
       this.data.push(collection);
