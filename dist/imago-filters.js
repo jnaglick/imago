@@ -16,6 +16,24 @@ CurrencySymbol = (function() {
 
 angular.module('imago').filter('currencySymbol', ['imagoUtils', CurrencySymbol]);
 
+var Normalize;
+
+Normalize = (function() {
+  function Normalize(imagoUtils) {
+    return function(string) {
+      if (!string) {
+        return false;
+      }
+      return imagoUtils.normalize(string);
+    };
+  }
+
+  return Normalize;
+
+})();
+
+angular.module('imago').filter('normalize', ['imagoUtils', Normalize]);
+
 var Price;
 
 Price = (function() {
