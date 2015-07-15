@@ -216,3 +216,6 @@
   -ms-mask-image: url($url)
   -o-mask-image: url($url)
   mask-image: url($url)
+
+@function em($pixels, $context: $default-font-size)
+  @return ($pixels / $context) * 1em
