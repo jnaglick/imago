@@ -180,7 +180,7 @@ imagoModel = (function() {
         path = value;
       }
     }
-    if (path.slice(-1) === '/') {
+    if ((path != null ? path.slice(-1) : void 0) === '/') {
       path = path.substring(0, path.length - 1);
       query.path = path;
     }

@@ -91,7 +91,7 @@ class imagoModel extends Service
       else if key is 'path'
         path = value
 
-    if path.slice(-1) is '/'
+    if path?.slice(-1) is '/'
       path = path.substring(0, path.length - 1)
       query.path = path
 
