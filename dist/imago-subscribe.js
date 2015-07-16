@@ -1,7 +1,7 @@
 var ImagoSubscribe, ImagoSubscribeController;
 
 ImagoSubscribe = (function() {
-  function ImagoSubscribe($http, $parse, imagoSettings) {
+  function ImagoSubscribe($http, $templateCache, $compile, $parse, imagoSettings) {
     var defaultTemplate, getTemplate;
     defaultTemplate = '/imago/imago-subscribe.html';
     getTemplate = function(url) {
@@ -57,6 +57,6 @@ ImagoSubscribeController = (function() {
 
 })();
 
-angular.module('imago').directive('imagoSubscribe', ['$http', '$parse', 'imagoSettings', ImagoSubscribe]).controller('imagoSubscribeController', ['$http', '$parse', 'imagoSettings', ImagoSubscribeController]);
+angular.module('imago').directive('imagoSubscribe', ['$http', '$templateCache', '$compile', '$parse', 'imagoSettings', ImagoSubscribe]).controller('imagoSubscribeController', ['$http', '$parse', 'imagoSettings', ImagoSubscribeController]);
 
 angular.module("imago").run(["$templateCache", function($templateCache) {$templateCache.put("/imago/imago-subscribe.html","<div class=\"imago-subscribe\"><div ng-transclude=\"ng-transclude\" ng-hide=\"imagosubscribe.submitted &amp;&amp; !imagosubscribe.error\"></div><div ng-show=\"imagosubscribe.submitted &amp;&amp; imagosubscribe.error\" class=\"error\">please try again later</div><div ng-show=\"imagosubscribe.submitted &amp;&amp; !imagosubscribe.error\" class=\"submitted\">subscription created</div></div>");}]);

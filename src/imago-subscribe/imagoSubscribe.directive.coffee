@@ -1,6 +1,6 @@
 class ImagoSubscribe extends Directive
 
-  constructor: ($http, $parse, imagoSettings) ->
+  constructor: ($http, $templateCache, $compile, $parse, imagoSettings) ->
 
     defaultTemplate = '/imago/imago-subscribe.html'
 
