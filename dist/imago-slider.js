@@ -4,16 +4,16 @@ imagoSlider = (function() {
   function imagoSlider($rootScope, $document, $interval, $location) {
     return {
       transclude: true,
-      scope: {
-        assets: '=?imagoSlider'
-      },
+      scope: true,
       templateUrl: '/imago/imagoSlider.html',
       controller: 'imagoSliderController as imagoslider',
-      bindToController: true,
+      bindToController: {
+        assets: '=?imagoSlider'
+      },
       link: function(scope, element, attrs, ctrl, transclude) {
-        var key, keyboardBinding, slider, value, watchers;
+        var key, keyboardBinding, ref, slider, value, watchers;
         slider = element.children();
-        scope.imagoslider.length = attrs.length || scope.imagoslider.assets.length;
+        scope.imagoslider.length = attrs.length || ((ref = scope.imagoslider.assets) != null ? ref.length : void 0);
         transclude(scope, function(clone, scope) {
           return slider.append(clone);
         });
@@ -28,8 +28,13 @@ imagoSlider = (function() {
           scope.imagoslider.conf[key] = value;
         }
         watchers = [];
-        if (!attrs.length) {
+        if (angular.isDefined(attrs.length)) {
+          watchers.push(attrs.$observe('length', function(data) {
+            return scope.imagoslider.length = data;
+          }));
+        } else {
           watchers.push(scope.$watch('assets', function(data) {
+            console.log('data', data);
             if (!data || !_.isArray(data)) {
               return;
             }

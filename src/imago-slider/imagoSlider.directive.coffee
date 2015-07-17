@@ -3,16 +3,16 @@ class imagoSlider extends Directive
   constructor: ($rootScope, $document, $interval, $location) ->
     return {
       transclude: true
-      scope:
-        assets: '=?imagoSlider'
+      scope: true
       templateUrl: '/imago/imagoSlider.html'
       controller: 'imagoSliderController as imagoslider'
-      bindToController: true
+      bindToController:
+        assets: '=?imagoSlider'
 
       link: (scope, element, attrs, ctrl, transclude) ->
         slider = element.children()
 
-        scope.imagoslider.length = attrs.length or scope.imagoslider.assets.length
+        scope.imagoslider.length = attrs.length or scope.imagoslider.assets?.length
 
         transclude scope, (clone, scope) ->
           slider.append(clone)
@@ -25,8 +25,13 @@ class imagoSlider extends Directive
 
         watchers = []
 
-        unless attrs.length
+        if angular.isDefined attrs.length
+          watchers.push attrs.$observe 'length', (data) ->
+            scope.imagoslider.length = data
+
+        else
           watchers.push scope.$watch 'assets', (data) ->
+            console.log 'data', data
             return if not data or not _.isArray data
             scope.imagoslider.length = data.length
 
