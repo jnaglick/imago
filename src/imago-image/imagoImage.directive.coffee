@@ -222,15 +222,10 @@ class imagoImage extends Directive
 
         scope.$on '$stateChangeSuccess', ->
           $timeout ->
-            if document.createEvent
+            if document.createEvent and not bowser?.msie
+              console.log 'document.createEvent', document.createEvent
               evt = new Event('checkInView')
               window.dispatchEvent(evt)
-            else
-              #IE
-              evt = document.createEventObject()
-              evt.eventType = 'checkInView'
-              evt.eventName = 'checkInView'
-              window.fireEvent('on' + evt.eventType, evt)
             # render()
 
         angular.element($window).on 'orientationchange', initialize

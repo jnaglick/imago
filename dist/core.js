@@ -1721,6 +1721,13 @@ imagoUtils = (function() {
         pattern = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
         return !!value.match(pattern);
       },
+      fireEvent: function(name) {
+        var evt;
+        if (document.createEvent && !(typeof bowser !== "undefined" && bowser !== null ? bowser.msie : void 0)) {
+          evt = new Event(name);
+          return window.dispatchEvent(evt);
+        }
+      },
       getAssetKind: function(id) {
         var kind;
         if (id.indexOf('Collection-') === 0) {
