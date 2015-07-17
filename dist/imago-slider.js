@@ -6,45 +6,60 @@ imagoSlider = (function() {
       transclude: true,
       scope: true,
       templateUrl: '/imago/imagoSlider.html',
-      controller: 'imagoSliderController',
+      controller: 'imagoSliderController as imagoslider',
+      bindToController: {
+        assets: '=imagoSlider',
+        length: '@?'
+      },
       link: function(scope, element, attrs, ctrl, transclude) {
-        var keyboardBinding, slider, watcher;
+        var key, keyboardBinding, slider, value, watcher;
         slider = element.children();
         transclude(scope, function(clone, scope) {
           return slider.append(clone);
         });
-        angular.forEach(attrs, function(value, key) {
+        for (key in attrs) {
+          value = attrs[key];
+          if (key.charAt(0) === '$') {
+            continue;
+          }
           if (value === 'true' || value === 'false') {
             value = JSON.parse(value);
           }
-          return scope.conf[key] = value;
+          scope.imagoslider.conf[key] = value;
+        }
+        watcher = scope.$watch('assets', function(data) {
+          if (!data || !_.isArray(data)) {
+            return;
+          }
+          scope.imagoslider.length = data.length;
+          return console.log('data', data);
         });
-        scope.conf.siblings = !!(scope.conf.next && scope.conf.prev);
+        scope.imagoslider.conf.siblings = !!(scope.imagoslider.conf.next && scope.imagoslider.conf.prev);
         if ($location.path().indexOf('last')) {
-          scope.currentIndex = parseInt(scope.conf.current);
+          scope.currentIndex = parseInt(scope.imagoslider.conf.current);
         } else {
           scope.currentIndex = scope.getLast();
         }
         scope.clearInterval = function() {
-          if (!scope.conf.interval) {
+          if (!scope.imagoslider.conf.interval) {
             return;
           }
-          return $interval.cancel(scope.conf.interval);
+          return $interval.cancel(scope.imagoslider.conf.interval);
         };
         scope.goPrev = function(ev) {
           if (typeof ev === 'object') {
             scope.clearInterval();
             ev.stopPropagation();
           }
-          if (!scope.conf.loop) {
+          if (!scope.imagoslider.conf.loop) {
             return scope.setCurrent(scope.currentIndex > 0 ? scope.currentIndex - 1 : scope.currentIndex);
-          } else if (scope.conf.loop && !scope.conf.siblings) {
-            return scope.setCurrent(scope.currentIndex > 0 ? scope.currentIndex - 1 : parseInt(attrs.length) - 1);
-          } else if (scope.conf.loop && scope.conf.siblings) {
+          } else if (scope.imagoslider.conf.loop && !scope.imagoslider.conf.siblings) {
+            return scope.setCurrent(scope.currentIndex > 0 ? scope.currentIndex - 1 : parseInt(scope.imagoslider.length) - 1);
+          } else if (scope.imagoslider.conf.loop && scope.imagoslider.conf.siblings) {
             if (scope.currentIndex > 0) {
               return scope.setCurrent(scope.currentIndex - 1);
             } else {
-              return $location.path(scope.conf.prev);
+              return $location.path(scope.imagoslider.conf.prev);
             }
           }
         };
@@ -53,20 +68,20 @@ imagoSlider = (function() {
             scope.clearInterval();
             ev.stopPropagation();
           }
-          if (!scope.conf.loop) {
-            return scope.setCurrent(scope.currentIndex < parseInt(attrs.length) - 1 ? scope.currentIndex + 1 : scope.currentIndex);
-          } else if (scope.conf.loop && !scope.conf.siblings) {
-            return scope.setCurrent(scope.currentIndex < parseInt(attrs.length) - 1 ? scope.currentIndex + 1 : 0);
-          } else if (scope.conf.loop && scope.conf.siblings) {
-            if (scope.currentIndex < parseInt(attrs.length) - 1) {
+          if (!scope.imagoslider.conf.loop) {
+            return scope.setCurrent(scope.currentIndex < parseInt(scope.imagoslider.length) - 1 ? scope.currentIndex + 1 : scope.currentIndex);
+          } else if (scope.imagoslider.conf.loop && !scope.imagoslider.conf.siblings) {
+            return scope.setCurrent(scope.currentIndex < parseInt(scope.imagoslider.length) - 1 ? scope.currentIndex + 1 : 0);
+          } else if (scope.imagoslider.conf.loop && scope.imagoslider.conf.siblings) {
+            if (scope.currentIndex < parseInt(scope.imagoslider.length) - 1) {
               return scope.setCurrent(scope.currentIndex + 1);
             } else {
-              return $location.path(scope.conf.next);
+              return $location.path(scope.imagoslider.conf.next);
             }
           }
         };
         scope.getLast = function() {
-          return parseInt(attrs.length) - 1;
+          return parseInt(scope.imagoslider.length) - 1;
         };
         scope.getCurrent = function() {
           return scope.currentIndex;
@@ -75,9 +90,9 @@ imagoSlider = (function() {
           return function(index) {
             scope.action = (function() {
               switch (false) {
-                case !(index === 0 && scope.currentIndex === (parseInt(attrs.length) - 1) && !scope.conf.siblings):
+                case !(index === 0 && scope.currentIndex === (parseInt(scope.imagoslider.length) - 1) && !scope.imagoslider.conf.siblings):
                   return 'next';
-                case !(index === (parseInt(attrs.length) - 1) && scope.currentIndex === 0 && !scope.conf.siblings):
+                case !(index === (parseInt(scope.imagoslider.length) - 1) && scope.currentIndex === 0 && !scope.imagoslider.conf.siblings):
                   return 'prev';
                 case !(index > scope.currentIndex):
                   return 'next';
@@ -88,14 +103,14 @@ imagoSlider = (function() {
               }
             })();
             scope.currentIndex = index;
-            return $rootScope.$emit(scope.conf.namespace + ":changed", index);
+            return $rootScope.$emit(scope.imagoslider.conf.namespace + ":changed", index);
           };
         })(this);
         if (!_.isUndefined(attrs.autoplay)) {
           scope.$watch(attrs.autoplay, (function(_this) {
             return function(value) {
               if (parseInt(value) > 0) {
-                return scope.conf.interval = $interval(scope.goNext, parseInt(value));
+                return scope.imagoslider.conf.interval = $interval(scope.goNext, parseInt(value));
               } else {
                 return scope.clearInterval();
               }
@@ -114,10 +129,10 @@ imagoSlider = (function() {
               });
           }
         };
-        if (scope.conf.enablekeys) {
+        if (scope.imagoslider.conf.enablekeys) {
           $document.on('keydown', keyboardBinding);
         }
-        watcher = $rootScope.$on(scope.conf.namespace + ":change", function(event, index) {
+        watcher = $rootScope.$on(scope.imagoslider.conf.namespace + ":change", function(event, index) {
           scope.clearInterval();
           return scope.setCurrent(index);
         });
@@ -135,8 +150,8 @@ imagoSlider = (function() {
 })();
 
 imagoSliderController = (function() {
-  function imagoSliderController($scope) {
-    $scope.conf = {
+  function imagoSliderController() {
+    this.conf = {
       animation: 'fade',
       enablekeys: true,
       enablearrows: true,
@@ -153,6 +168,6 @@ imagoSliderController = (function() {
 
 })();
 
-angular.module('imago').directive('imagoSlider', ['$rootScope', '$document', '$interval', '$location', imagoSlider]).controller('imagoSliderController', ['$scope', imagoSliderController]);
+angular.module('imago').directive('imagoSlider', ['$rootScope', '$document', '$interval', '$location', imagoSlider]).controller('imagoSliderController', [imagoSliderController]);
 
 angular.module("imago").run(["$templateCache", function($templateCache) {$templateCache.put("/imago/imagoSlider.html","<div ng-class=\"[conf.animation, action]\" ng-swipe-left=\"goNext($event)\" ng-swipe-right=\"goPrev($event)\" class=\"imagoslider\"><div ng-show=\"conf.enablearrows\" ng-click=\"goPrev($event)\" analytics-on=\"click\" analytics-event=\"Previous Slide\" class=\"prev\"></div><div ng-show=\"conf.enablearrows\" ng-click=\"goNext($event)\" analytics-on=\"click\" analytics-event=\"Next Slide\" class=\"next\"></div></div>");}]);

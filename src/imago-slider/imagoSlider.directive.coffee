@@ -5,28 +5,37 @@ class imagoSlider extends Directive
       transclude: true
       scope: true
       templateUrl: '/imago/imagoSlider.html'
-      controller: 'imagoSliderController'
+      controller: 'imagoSliderController as imagoslider'
+      bindToController:
+        assets: '=imagoSlider'
+        length: '@?'
       link: (scope, element, attrs, ctrl, transclude) ->
         slider = element.children()
 
         transclude scope, (clone, scope) ->
           slider.append(clone)
 
-        angular.forEach attrs, (value, key) ->
+        for key, value of attrs
+          continue unless key.charAt(0) isnt '$'
           if value in ['true', 'false']
             value = JSON.parse value
-          scope.conf[key] = value
+          scope.imagoslider.conf[key] = value
 
-        scope.conf.siblings = !!(scope.conf.next and scope.conf.prev)
+        watcher = scope.$watch 'assets', (data) ->
+          return if not data or not _.isArray data
+          scope.imagoslider.length = data.length
+          console.log 'data', data
+
+        scope.imagoslider.conf.siblings = !!(scope.imagoslider.conf.next and scope.imagoslider.conf.prev)
 
         if $location.path().indexOf('last')
-          scope.currentIndex = parseInt(scope.conf.current)
+          scope.currentIndex = parseInt(scope.imagoslider.conf.current)
         else
           scope.currentIndex = scope.getLast()
 
         scope.clearInterval = ->
-          return unless scope.conf.interval
-          $interval.cancel(scope.conf.interval)
+          return unless scope.imagoslider.conf.interval
+          $interval.cancel(scope.imagoslider.conf.interval)
 
         scope.goPrev = (ev) ->
           if typeof ev is 'object'
@@ -34,23 +43,23 @@ class imagoSlider extends Directive
             ev.stopPropagation()
 
           # no loop
-          if not scope.conf.loop
+          if not scope.imagoslider.conf.loop
             scope.setCurrent(
               if (scope.currentIndex > 0) then scope.currentIndex - 1 else scope.currentIndex
             )
 
           # loop through current collection
-          else if scope.conf.loop and not scope.conf.siblings
+          else if scope.imagoslider.conf.loop and not scope.imagoslider.conf.siblings
             scope.setCurrent(
-              if (scope.currentIndex > 0) then scope.currentIndex - 1 else parseInt(attrs.length) - 1
+              if (scope.currentIndex > 0) then scope.currentIndex - 1 else parseInt(scope.imagoslider.length) - 1
             )
 
           # loop through sibling collections
-          else if scope.conf.loop and scope.conf.siblings
+          else if scope.imagoslider.conf.loop and scope.imagoslider.conf.siblings
             if (scope.currentIndex > 0)
               scope.setCurrent(scope.currentIndex - 1)
             else
-              $location.path scope.conf.prev
+              $location.path scope.imagoslider.conf.prev
 
         scope.goNext = (ev) ->
           if typeof ev is 'object'
@@ -58,27 +67,27 @@ class imagoSlider extends Directive
             ev.stopPropagation()
 
           # no loop
-          if not scope.conf.loop
+          if not scope.imagoslider.conf.loop
             scope.setCurrent(
-              if (scope.currentIndex < parseInt(attrs.length) - 1) then scope.currentIndex + 1 else scope.currentIndex
+              if (scope.currentIndex < parseInt(scope.imagoslider.length) - 1) then scope.currentIndex + 1 else scope.currentIndex
             )
 
           # loop through current collection
-          else if scope.conf.loop and not scope.conf.siblings
+          else if scope.imagoslider.conf.loop and not scope.imagoslider.conf.siblings
             scope.setCurrent(
-              if (scope.currentIndex < parseInt(attrs.length) - 1) then scope.currentIndex + 1 else 0
+              if (scope.currentIndex < parseInt(scope.imagoslider.length) - 1) then scope.currentIndex + 1 else 0
             )
 
           # loop through sibling collections
-          else if scope.conf.loop and scope.conf.siblings
-            if (scope.currentIndex < parseInt(attrs.length) - 1)
+          else if scope.imagoslider.conf.loop and scope.imagoslider.conf.siblings
+            if (scope.currentIndex < parseInt(scope.imagoslider.length) - 1)
               scope.setCurrent(scope.currentIndex + 1)
             else
-              $location.path scope.conf.next
+              $location.path scope.imagoslider.conf.next
 
 
         scope.getLast = ->
-          parseInt(attrs.length) - 1
+          parseInt(scope.imagoslider.length) - 1
 
         scope.getCurrent = ->
           return scope.currentIndex
@@ -86,8 +95,8 @@ class imagoSlider extends Directive
         scope.setCurrent = (index) =>
           scope.action = switch
             # make last to first infinit if loop over one collection
-            when index is 0 and scope.currentIndex is (parseInt(attrs.length) - 1) and not scope.conf.siblings then 'next'
-            when index is (parseInt(attrs.length) - 1) and scope.currentIndex is 0 and not scope.conf.siblings then 'prev'
+            when index is 0 and scope.currentIndex is (parseInt(scope.imagoslider.length) - 1) and not scope.imagoslider.conf.siblings then 'next'
+            when index is (parseInt(scope.imagoslider.length) - 1) and scope.currentIndex is 0 and not scope.imagoslider.conf.siblings then 'prev'
 
             when index > scope.currentIndex then 'next'
             when index < scope.currentIndex then 'prev'
@@ -95,12 +104,12 @@ class imagoSlider extends Directive
 
           # console.log 'scope.action', scope.action
           scope.currentIndex = index
-          $rootScope.$emit "#{scope.conf.namespace}:changed", index
+          $rootScope.$emit "#{scope.imagoslider.conf.namespace}:changed", index
 
         if !_.isUndefined attrs.autoplay
           scope.$watch attrs.autoplay, (value) =>
             if parseInt(value) > 0
-              scope.conf.interval = $interval scope.goNext, parseInt(value)
+              scope.imagoslider.conf.interval = $interval scope.goNext, parseInt(value)
             else
               scope.clearInterval()
 
@@ -113,10 +122,10 @@ class imagoSlider extends Directive
               scope.$apply ->
                 scope.goNext()
 
-        if scope.conf.enablekeys
+        if scope.imagoslider.conf.enablekeys
           $document.on 'keydown', keyboardBinding
 
-        watcher = $rootScope.$on "#{scope.conf.namespace}:change", (event, index) ->
+        watcher = $rootScope.$on "#{scope.imagoslider.conf.namespace}:change", (event, index) ->
           scope.clearInterval()
           scope.setCurrent(index)
 
@@ -129,9 +138,9 @@ class imagoSlider extends Directive
 
 class imagoSliderController extends Controller
 
-  constructor: ($scope) ->
+  constructor: ->
 
-    $scope.conf =
+    @conf =
       animation:    'fade'
       enablekeys:   true
       enablearrows: true

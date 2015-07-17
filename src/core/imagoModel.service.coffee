@@ -224,6 +224,19 @@ class imagoModel extends Service
     return if !_.isArray(assets)
     @addAsset asset for asset in assets
 
+  getById: (id) ->
+    defer = @$q.defer()
+
+    asset = @find({'_id': id})
+    if asset
+      asset.assets = @findChildren(asset)
+      defer.resolve(asset)
+    else
+      @assets.get(id).then (response) ->
+        console.log 'getById:', response.data
+        defer.resolve(response.data)
+
+    defer.promise
 
   create: (data) =>
     collection = data

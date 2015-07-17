@@ -350,6 +350,24 @@ imagoModel = (function() {
     return results;
   };
 
+  imagoModel.prototype.getById = function(id) {
+    var asset, defer;
+    defer = this.$q.defer();
+    asset = this.find({
+      '_id': id
+    });
+    if (asset) {
+      asset.assets = this.findChildren(asset);
+      defer.resolve(asset);
+    } else {
+      this.assets.get(id).then(function(response) {
+        console.log('getById:', response.data);
+        return defer.resolve(response.data);
+      });
+    }
+    return defer.promise;
+  };
+
   imagoModel.prototype.create = function(data) {
     var collection;
     collection = data;
