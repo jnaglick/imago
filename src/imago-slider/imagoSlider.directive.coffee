@@ -12,6 +12,9 @@ class imagoSlider extends Directive
       link: (scope, element, attrs, ctrl, transclude) ->
         slider = element.children()
 
+        if _.isArray scope.imagoslider.assets
+          scope.imagoslider.length = scope.imagoslider.assets.length
+
         transclude scope, (clone, scope) ->
           slider.append(clone)
 

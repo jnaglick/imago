@@ -14,6 +14,9 @@ imagoSlider = (function() {
       link: function(scope, element, attrs, ctrl, transclude) {
         var key, keyboardBinding, slider, value, watcher;
         slider = element.children();
+        if (_.isArray(scope.imagoslider.assets)) {
+          scope.imagoslider.length = scope.imagoslider.assets.length;
+        }
         transclude(scope, function(clone, scope) {
           return slider.append(clone);
         });
