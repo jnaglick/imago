@@ -1,15 +1,15 @@
 .imagoslider(
-    ng-class="[conf.animation, action]"
+    ng-class="[imagoslider.conf.animation, action]"
     ng-swipe-left="goNext($event)"
     ng-swipe-right="goPrev($event)"
     )
     .prev(
-      ng-show="conf.enablearrows"
+      ng-show="imagoslider.conf.enablearrows"
       ng-click="goPrev($event)"
       analytics-on="click" analytics-event="Previous Slide"
       )
     .next(
-      ng-show="conf.enablearrows"
+      ng-show="imagoslider.conf.enablearrows"
       ng-click="goNext($event)"
       analytics-on="click" analytics-event="Next Slide"
       )

@@ -1,28 +1,13 @@
 class imagoContact extends Directive
 
-  constructor: ($http, $templateCache, $compile, imagoSubmit)->
-
-    defaultTemplate = '/imago/imago-contact.html'
-
-    getTemplate = (url) ->
-      templateLoader = $http.get(url,
-        cache: $templateCache
-      )
-      templateLoader
+  constructor:->
 
     return {
 
       scope: {}
       controller: 'imagoContactController as contact'
-      link: (scope, element, attrs) ->
-        template = if attrs.templateurl then attrs.templateurl else defaultTemplate
-
-        syntax = undefined
-
-        getTemplate(template).success((html) ->
-          syntax = html
-        ).then ->
-          element.append $compile(syntax)(scope)
+      templateUrl: (element, attrs) ->
+        return attrs.templateurl or '/imago/imago-contact.html'
 
     }
 

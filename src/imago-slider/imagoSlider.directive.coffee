@@ -3,17 +3,16 @@ class imagoSlider extends Directive
   constructor: ($rootScope, $document, $interval, $location) ->
     return {
       transclude: true
-      scope: true
+      scope:
+        assets: '=?imagoSlider'
       templateUrl: '/imago/imagoSlider.html'
       controller: 'imagoSliderController as imagoslider'
-      bindToController:
-        assets: '=imagoSlider'
-        length: '@?'
+      bindToController: true
+
       link: (scope, element, attrs, ctrl, transclude) ->
         slider = element.children()
 
-        if _.isArray scope.imagoslider.assets
-          scope.imagoslider.length = scope.imagoslider.assets.length
+        scope.imagoslider.length = attrs.length or scope.imagoslider.assets.length
 
         transclude scope, (clone, scope) ->
           slider.append(clone)
@@ -24,10 +23,12 @@ class imagoSlider extends Directive
             value = JSON.parse value
           scope.imagoslider.conf[key] = value
 
-        watcher = scope.$watch 'assets', (data) ->
-          return if not data or not _.isArray data
-          scope.imagoslider.length = data.length
-          console.log 'data', data
+        watchers = []
+
+        unless attrs.length
+          watchers.push scope.$watch 'assets', (data) ->
+            return if not data or not _.isArray data
+            scope.imagoslider.length = data.length
 
         scope.imagoslider.conf.siblings = !!(scope.imagoslider.conf.next and scope.imagoslider.conf.prev)
 
@@ -64,7 +65,7 @@ class imagoSlider extends Directive
             else
               $location.path scope.imagoslider.conf.prev
 
-        scope.goNext = (ev) ->
+        scope.goNext = (ev) =>
           if typeof ev is 'object'
             scope.clearInterval()
             ev.stopPropagation()
@@ -87,7 +88,6 @@ class imagoSlider extends Directive
               scope.setCurrent(scope.currentIndex + 1)
             else
               $location.path scope.imagoslider.conf.next
-
 
         scope.getLast = ->
           parseInt(scope.imagoslider.length) - 1
@@ -128,14 +128,15 @@ class imagoSlider extends Directive
         if scope.imagoslider.conf.enablekeys
           $document.on 'keydown', keyboardBinding
 
-        watcher = $rootScope.$on "#{scope.imagoslider.conf.namespace}:change", (event, index) ->
+        watchers.push $rootScope.$on "#{scope.imagoslider.conf.namespace}:change", (event, index) ->
           scope.clearInterval()
           scope.setCurrent(index)
 
         scope.$on '$destroy', ->
           $document.off "keydown", keyboardBinding
           scope.clearInterval()
-          watcher()
+          for watch in watchers
+            watch()
   }
 
 
