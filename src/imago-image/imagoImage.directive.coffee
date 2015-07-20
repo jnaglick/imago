@@ -4,10 +4,6 @@ class imagoImage extends Directive
 
     return {
       replace: true
-      # scope: {
-      #   visible: '='
-      #   source: '=imagoImage'
-      # }
       scope: true
       templateUrl: '/imago/imagoImage.html'
       controller: 'imagoImageController'
@@ -222,11 +218,7 @@ class imagoImage extends Directive
 
         scope.$on '$stateChangeSuccess', ->
           $timeout ->
-            if document.createEvent and not bowser?.msie
-              console.log 'document.createEvent', document.createEvent
-              evt = new Event('checkInView')
-              window.dispatchEvent(evt)
-            # render()
+            imagoUtils.fireEvent('checkInView')
 
         angular.element($window).on 'orientationchange', initialize
 

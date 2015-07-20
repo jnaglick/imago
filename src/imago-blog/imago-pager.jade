@@ -1,0 +1,7 @@
+.pager
+  button.prev(
+    ng-disabled="imagopager.currentPage <= 1"
+    ng-click="imagopager.onPrev()") Previous
+  button.next(
+    ng-disabled="(imagopager.currentPage >= imagopager.totalPages && !imagopager.next) || (imagopager.posts.length < imagopager.pageSize && !imagopager.next) || !imagopager.next"
+    ng-click="imagopager.onNext()") Next

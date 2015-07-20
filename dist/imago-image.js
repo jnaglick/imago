@@ -205,12 +205,7 @@ imagoImage = (function() {
         }
         scope.$on('$stateChangeSuccess', function() {
           return $timeout(function() {
-            var evt;
-            if (document.createEvent && !(typeof bowser !== "undefined" && bowser !== null ? bowser.msie : void 0)) {
-              console.log('document.createEvent', document.createEvent);
-              evt = new Event('checkInView');
-              return window.dispatchEvent(evt);
-            }
+            return imagoUtils.fireEvent('checkInView');
           });
         });
         angular.element($window).on('orientationchange', initialize);

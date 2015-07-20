@@ -1,37 +1,23 @@
 var imagoPager, imagoPagerController;
 
 imagoPager = (function() {
-  function imagoPager($http, $compile, $templateCache) {
-    var defaultTemplate, getTemplate;
-    defaultTemplate = '/imago/imagoPager.html';
-    getTemplate = function(url) {
-      var templateLoader;
-      templateLoader = $http.get(url, {
-        cache: $templateCache
-      });
-      return templateLoader;
-    };
+  function imagoPager() {
     return {
       scope: {
+        state: '@',
         posts: '=',
-        nextPage: '&next',
         prevPage: '&prev',
+        nextPage: '&next',
         path: '@',
         pageSize: '@',
         tags: '=',
         currentPage: '=',
-        shuffle: '@'
+        shuffle: '='
       },
-      controller: 'imagoPagerController',
-      link: function(scope, element, attrs) {
-        var syntax, template;
-        template = attrs.templateurl ? attrs.templateurl : defaultTemplate;
-        syntax = void 0;
-        return getTemplate(template).success(function(html) {
-          return syntax = html;
-        }).then(function() {
-          return element.append($compile(syntax)(scope));
-        });
+      controller: 'imagoPagerController as imagopager',
+      bindToController: true,
+      templateUrl: function(element, attrs) {
+        return attrs.templateurl || '/imago/imago-pager.html';
       }
     };
   }
@@ -41,65 +27,100 @@ imagoPager = (function() {
 })();
 
 imagoPagerController = (function() {
-  function imagoPagerController($scope, $element, $attrs, imagoModel) {
-    this.fetchPosts = function() {
-      var idx, pageNo, pageSize, query;
-      this.count += 1;
-      $scope.posts = [];
-      pageSize = parseInt($scope.pageSize);
-      pageNo = parseInt($scope.currentPage);
-      query = {
-        path: $scope.path,
-        page: pageNo,
-        pagesize: pageSize
-      };
-      if ($scope.tags) {
-        query['tags'] = $scope.tags;
-      }
-      if ((query != null ? query.path : void 0) && _.includes(query.path, '/page/')) {
-        idx = query.path.indexOf('/page/');
-        query.path = query.path.slice(0, idx);
-      }
-      return imagoModel.getData([query], {
-        localData: false
-      }).then((function(_this) {
-        return function(response) {
+  function imagoPagerController($scope, $attrs, imagoModel, $state) {
+    this.fetchPosts = (function(_this) {
+      return function() {
+        var idx, query;
+        _this.count += 1;
+        _this.posts = [];
+        _this.pageSize = parseInt(_this.pageSize);
+        _this.currentPage = parseInt(_this.currentPage);
+        if (!_this.state) {
+          _this.state = 'blog';
+        }
+        query = {
+          path: _this.path,
+          page: _this.currentPage,
+          pagesize: _this.pageSize
+        };
+        if (_this.tags) {
+          query['tags'] = _this.tags;
+        }
+        if ((query != null ? query.path : void 0) && _.includes(query.path, '/page/')) {
+          idx = query.path.indexOf('/page/');
+          query.path = query.path.slice(0, idx);
+        }
+        return imagoModel.getData([query], {
+          localData: false
+        }).then(function(response) {
           var collection, i, len, results;
           results = [];
           for (i = 0, len = response.length; i < len; i++) {
             collection = response[i];
-            $scope.next = collection.next;
-            if ($scope.shuffle) {
-              $scope.posts = _.shuffle(collection.assets);
+            _this.next = collection.next;
+            if (_this.shuffle === 'true') {
+              _this.posts = _.shuffle(collection.assets);
             } else {
-              $scope.posts = collection.assets;
+              _this.posts = collection.assets;
             }
-            $scope.totalPages = collection.count / pageSize;
+            _this.totalPages = collection.count / _this.pageSize;
             break;
           }
           return results;
-        };
-      })(this));
+        });
+      };
+    })(this);
+    this.prevState = function() {
+      if ($state.params.tag) {
+        return $state.go(this.state + ".filtered.paged", {
+          'tag': $state.params.tag,
+          'page': this.currentPage
+        });
+      } else {
+        return $state.go(this.state + ".paged", {
+          'page': this.currentPage
+        });
+      }
     };
-    $scope.onPrev = (function(_this) {
+    this.nextState = function() {
+      if ($state.params.tag) {
+        return $state.go(this.state + ".filtered.paged", {
+          'tag': $state.params.tag,
+          'page': this.currentPage
+        });
+      } else {
+        return $state.go(this.state + ".paged", {
+          'page': this.currentPage
+        });
+      }
+    };
+    this.onPrev = (function(_this) {
       return function() {
-        $scope.currentPage = parseInt($scope.currentPage) - 1;
-        return $scope.prevPage();
+        _this.currentPage--;
+        if ($attrs.prev) {
+          return _this.prevPage();
+        } else {
+          return _this.prevState();
+        }
       };
     })(this);
-    $scope.onNext = (function(_this) {
+    this.onNext = (function(_this) {
       return function() {
-        $scope.currentPage = parseInt($scope.currentPage) + 1;
-        return $scope.nextPage();
+        _this.currentPage++;
+        if ($attrs.next) {
+          return _this.nextPage();
+        } else {
+          return _this.nextState();
+        }
       };
     })(this);
-    $scope.$watchGroup(['currentPage', 'tags'], this.fetchPosts);
+    $scope.$watchGroup(['imagopager.currentPage', 'imagopager.tags'], this.fetchPosts);
   }
 
   return imagoPagerController;
 
 })();
 
-angular.module('imago').directive('imagoPager', ['$http', '$compile', '$templateCache', imagoPager]).controller('imagoPagerController', ['$scope', '$element', '$attrs', 'imagoModel', imagoPagerController]);
+angular.module('imago').directive('imagoPager', [imagoPager]).controller('imagoPagerController', ['$scope', '$attrs', 'imagoModel', '$state', imagoPagerController]);
 
-angular.module("imago").run(["$templateCache", function($templateCache) {$templateCache.put("/imago/imagoPager.html","<div class=\"pager\"><button ng-disabled=\"currentPage &lt;= 1\" ng-click=\"onPrev()\" class=\"prev\">Previous</button><button ng-disabled=\"(currentPage &gt;= totalPages &amp;&amp; !next) || (posts.length &lt; pageSize &amp;&amp; !next) || !next\" ng-click=\"onNext()\" class=\"next\">Next</button></div>");}]);
+angular.module("imago").run(["$templateCache", function($templateCache) {$templateCache.put("/imago/imago-pager.html","<div class=\"pager\"><button ng-disabled=\"imagopager.currentPage &lt;= 1\" ng-click=\"imagopager.onPrev()\" class=\"prev\">Previous</button><button ng-disabled=\"(imagopager.currentPage &gt;= imagopager.totalPages &amp;&amp; !imagopager.next) || (imagopager.posts.length &lt; imagopager.pageSize &amp;&amp; !imagopager.next) || !imagopager.next\" ng-click=\"imagopager.onNext()\" class=\"next\">Next</button></div>");}]);
