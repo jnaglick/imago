@@ -88,5 +88,4 @@ class imagoPagerController extends Controller
 
     if @state
       $scope.$on '$stateChangeSuccess', (evt, current, params) =>
-        if @state is current.name
-          @currentPage = 1
+        @currentPage = 1 if @state is current.name
