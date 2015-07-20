@@ -76,7 +76,7 @@ imagoPagerController = (function() {
           'tag': $state.params.tag,
           'page': this.currentPage
         });
-      } else {
+      } else if (this.state) {
         return $state.go(this.state + ".paged", {
           'page': this.currentPage
         });
@@ -88,7 +88,7 @@ imagoPagerController = (function() {
           'tag': $state.params.tag,
           'page': this.currentPage
         });
-      } else {
+      } else if (this.state) {
         return $state.go(this.state + ".paged", {
           'page': this.currentPage
         });
@@ -115,6 +115,15 @@ imagoPagerController = (function() {
       };
     })(this);
     $scope.$watchGroup(['imagopager.currentPage', 'imagopager.tags'], this.fetchPosts);
+    if (this.state) {
+      $scope.$on('$stateChangeSuccess', (function(_this) {
+        return function(evt, current, params) {
+          if (_this.state === current.name) {
+            return _this.currentPage = 1;
+          }
+        };
+      })(this));
+    }
   }
 
   return imagoPagerController;
