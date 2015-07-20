@@ -1925,61 +1925,59 @@ NotSupported = (function() {
 
 NotSupportedController = (function() {
   function NotSupportedController($scope, $element, $attrs) {
-    var browser, browserVersion, i, len, options, version;
-    if ((bowser.msie && bowser.version <= 8) || (bowser.firefox && bowser.version <= 32)) {
-      return this.invalid = true;
-    }
-    options = $scope.$eval($attrs.notSupported);
-    if (!_.isArray(options)) {
-      return;
+    var browser, browserVersion, i, key, len, option, options, settings, version;
+    options = {
+      ie: 9,
+      firefox: 32,
+      chrome: 30,
+      safari: 6,
+      opera: 23
+    };
+    settings = $scope.$eval($attrs.notSupported);
+    if (_.isArray(settings)) {
+      for (i = 0, len = settings.length; i < len; i++) {
+        option = settings[i];
+        version = option.match(/\d+/g);
+        version = parseInt(version);
+        if (!_.isNaN(version)) {
+          continue;
+        }
+        for (key in options) {
+          if (_.includes(option.toLowerCase(), key)) {
+            options[key] = version;
+          }
+        }
+      }
     }
     browserVersion = parseInt(bowser.version);
-    for (i = 0, len = options.length; i < len; i++) {
-      browser = options[i];
-      browser = browser.toLowerCase();
-      version = browser.match(/\d+/g);
-      version = parseInt(version);
-      if (_.includes(browser, 'ie')) {
-        if (!bowser.msie) {
-          continue;
-        }
-        if (!_.isNaN(version) && browserVersion <= version) {
+    for (browser in options) {
+      version = options[browser];
+      if (bowser.msie && browser === 'ie') {
+        if (browserVersion <= version) {
           this.invalid = true;
         } else if (_.isNaN(version)) {
           this.invalid = true;
         }
-      } else if (_.includes(browser, 'chrome')) {
-        if (!bowser.chrome) {
-          continue;
-        }
-        if (!_.isNaN(version) && browserVersion <= version) {
+      } else if (bowser.chrome && browser === 'chrome') {
+        if (browserVersion <= version) {
           this.invalid = true;
         } else if (_.isNaN(version)) {
           this.invalid = true;
         }
-      } else if (_.includes(browser, 'firefox')) {
-        if (!bowser.firefox) {
-          continue;
-        }
-        if (!_.isNaN(version) && browserVersion <= version) {
+      } else if (bowser.firefox && browser === 'firefox') {
+        if (browserVersion <= version) {
           this.invalid = true;
         } else if (_.isNaN(version)) {
           this.invalid = true;
         }
-      } else if (_.includes(browser, 'opera')) {
-        if (!bowser.opera) {
-          continue;
-        }
-        if (!_.isNaN(version) && browserVersion <= version) {
+      } else if (bowser.opera && browser === 'opera') {
+        if (browserVersion <= version) {
           this.invalid = true;
         } else if (_.isNaN(version)) {
           this.invalid = true;
         }
-      } else if (_.includes(browser, 'safari')) {
-        if (!bowser.safari) {
-          continue;
-        }
-        if (!_.isNaN(version) && browserVersion <= version) {
+      } else if (bowser.safari && browser === 'safari') {
+        if (browserVersion <= version) {
           this.invalid = true;
         } else if (_.isNaN(version)) {
           this.invalid = true;

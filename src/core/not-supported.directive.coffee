@@ -14,45 +14,48 @@ class NotSupportedController extends Controller
 
   constructor: ($scope, $element, $attrs) ->
 
-    return @invalid = true if (bowser.msie and bowser.version <= 8) or (bowser.firefox and bowser.version <= 32)
+    options =
+      ie: 9
+      firefox: 32
+      chrome: 30
+      safari: 6
+      opera: 23
 
-    options = $scope.$eval $attrs.notSupported
+    settings = $scope.$eval $attrs.notSupported
 
-    return unless _.isArray(options)
+    if _.isArray(settings)
+      for option in settings
+        version = option.match(/\d+/g)
+        version = parseInt(version)
+        continue unless _.isNaN(version)
+        for key of options
+          options[key] = version if _.includes(option.toLowerCase(), key)
 
     browserVersion = parseInt(bowser.version)
 
-    for browser in options
-      browser = browser.toLowerCase()
-      version = browser.match(/\d+/g)
-      version = parseInt(version)
-      if _.includes browser, 'ie'
-        continue unless bowser.msie
-        if not _.isNaN(version) and browserVersion <= version
+    for browser, version of options
+      if bowser.msie and browser is 'ie'
+        if browserVersion <= version
           @invalid = true
         else if _.isNaN version
           @invalid = true
-      else if _.includes browser, 'chrome'
-        continue unless bowser.chrome
-        if not _.isNaN(version) and browserVersion <= version
+      else if bowser.chrome and browser is 'chrome'
+        if browserVersion <= version
           @invalid = true
         else if _.isNaN version
           @invalid = true
-      else if _.includes browser, 'firefox'
-        continue unless bowser.firefox
-        if not _.isNaN(version) and browserVersion <= version
+      else if bowser.firefox and browser is 'firefox'
+        if browserVersion <= version
           @invalid = true
         else if _.isNaN version
           @invalid = true
-      else if _.includes browser, 'opera'
-        continue unless bowser.opera
-        if not _.isNaN(version) and browserVersion <= version
+      else if bowser.opera and browser is 'opera'
+        if browserVersion <= version
           @invalid = true
         else if _.isNaN version
           @invalid = true
-      else if _.includes browser, 'safari'
-        continue unless bowser.safari
-        if not _.isNaN(version) and browserVersion <= version
+      else if bowser.safari and browser is 'safari'
+        if browserVersion <= version
           @invalid = true
         else if _.isNaN version
           @invalid = true
