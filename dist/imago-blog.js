@@ -46,7 +46,6 @@ imagoPagerController = (function() {
         if (_this.tags) {
           query['tags'] = _this.tags;
         }
-        console.log('query', query);
         if ((query != null ? query.path : void 0) && _.includes(query.path, '/page/')) {
           idx = query.path.indexOf('/page/');
           query.path = query.path.slice(0, idx);

@@ -39,7 +39,7 @@ class imagoPagerController extends Controller
 
       query['tags'] = @tags if @tags
 
-      console.log 'query', query
+      # console.log 'query', query
       if query?.path and _.includes query.path, '/page/'
         idx = query.path.indexOf '/page/'
         query.path = query.path.slice 0, idx
