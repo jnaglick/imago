@@ -76,7 +76,7 @@ imagoPagerController = (function() {
           'tag': $state.params.tag,
           'page': this.currentPage
         });
-      } else if (this.state) {
+      } else {
         return $state.go(this.state + ".paged", {
           'page': this.currentPage
         });
@@ -88,7 +88,7 @@ imagoPagerController = (function() {
           'tag': $state.params.tag,
           'page': this.currentPage
         });
-      } else if (this.state) {
+      } else {
         return $state.go(this.state + ".paged", {
           'page': this.currentPage
         });

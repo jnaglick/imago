@@ -61,13 +61,13 @@ class imagoPagerController extends Controller
     @prevState = ->
       if $state.params.tag
         $state.go "#{@state}.filtered.paged", {'tag': $state.params.tag, 'page': @currentPage}
-      else if @state
+      else
         $state.go "#{@state}.paged", {'page': @currentPage}
 
     @nextState = ->
       if $state.params.tag
         $state.go "#{@state}.filtered.paged", {'tag': $state.params.tag, 'page': @currentPage}
-      else if @state
+      else
         $state.go "#{@state}.paged", {'page': @currentPage}
 
     @onPrev = =>
