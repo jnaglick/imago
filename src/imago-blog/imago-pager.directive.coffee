@@ -28,8 +28,8 @@ class imagoPagerController extends Controller
     @fetchPosts = =>
       @count += 1
       @posts = []
-      @pageSize = parseInt @pageSize
-      @currentPage = parseInt @currentPage
+      @pageSize = parseInt(@pageSize) or 10
+      @currentPage = parseInt(@currentPage) or 1
       @state = 'blog' unless @state
 
       query =
@@ -39,7 +39,7 @@ class imagoPagerController extends Controller
 
       query['tags'] = @tags if @tags
 
-      # console.log 'query', query
+      console.log 'query', query
       if query?.path and _.includes query.path, '/page/'
         idx = query.path.indexOf '/page/'
         query.path = query.path.slice 0, idx
@@ -84,4 +84,3 @@ class imagoPagerController extends Controller
         @nextState()
 
     $scope.$watchGroup ['imagopager.currentPage', 'imagopager.tags'], @fetchPosts
-

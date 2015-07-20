@@ -33,8 +33,8 @@ imagoPagerController = (function() {
         var idx, query;
         _this.count += 1;
         _this.posts = [];
-        _this.pageSize = parseInt(_this.pageSize);
-        _this.currentPage = parseInt(_this.currentPage);
+        _this.pageSize = parseInt(_this.pageSize) || 10;
+        _this.currentPage = parseInt(_this.currentPage) || 1;
         if (!_this.state) {
           _this.state = 'blog';
         }
@@ -46,6 +46,7 @@ imagoPagerController = (function() {
         if (_this.tags) {
           query['tags'] = _this.tags;
         }
+        console.log('query', query);
         if ((query != null ? query.path : void 0) && _.includes(query.path, '/page/')) {
           idx = query.path.indexOf('/page/');
           query.path = query.path.slice(0, idx);
