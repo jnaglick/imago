@@ -76,7 +76,7 @@ imagoPagerController = (function() {
           'tag': $state.params.tag,
           'page': this.currentPage
         });
-      } else {
+      } else if (this.state) {
         return $state.go(this.state + ".paged", {
           'page': this.currentPage
         });
@@ -88,7 +88,7 @@ imagoPagerController = (function() {
           'tag': $state.params.tag,
           'page': this.currentPage
         });
-      } else {
+      } else if (this.state) {
         return $state.go(this.state + ".paged", {
           'page': this.currentPage
         });
@@ -99,7 +99,7 @@ imagoPagerController = (function() {
         _this.currentPage--;
         if ($attrs.prev) {
           return _this.prevPage();
-        } else {
+        } else if (_this.state) {
           return _this.prevState();
         }
       };
@@ -109,7 +109,7 @@ imagoPagerController = (function() {
         _this.currentPage++;
         if ($attrs.next) {
           return _this.nextPage();
-        } else {
+        } else if (_this.state) {
           return _this.nextState();
         }
       };

@@ -60,27 +60,27 @@ class imagoPagerController extends Controller
     @prevState = ->
       if $state.params.tag
         $state.go "#{@state}.filtered.paged", {'tag': $state.params.tag, 'page': @currentPage}
-      else
+      else if @state
         $state.go "#{@state}.paged", {'page': @currentPage}
 
     @nextState = ->
       if $state.params.tag
         $state.go "#{@state}.filtered.paged", {'tag': $state.params.tag, 'page': @currentPage}
-      else
+      else if @state
         $state.go "#{@state}.paged", {'page': @currentPage}
 
     @onPrev = =>
       @currentPage--
       if $attrs.prev
         @prevPage()
-      else
+      else if @state
         @prevState()
 
     @onNext = =>
       @currentPage++
       if $attrs.next
         @nextPage()
-      else
+      else if @state
         @nextState()
 
     $scope.$watchGroup ['imagopager.currentPage', 'imagopager.tags'], @fetchPosts
