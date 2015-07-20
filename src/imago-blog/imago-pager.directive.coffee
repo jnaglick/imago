@@ -29,7 +29,7 @@ class imagoPagerController extends Controller
       @count += 1
       @posts = []
       @pageSize = parseInt(@pageSize) or 10
-      @currentPage = parseInt(@currentPage) or 1
+      @currentPage = parseInt(@currentPage) or $state.params.page or 1
       @state = 'blog' unless @state
 
       query =
@@ -37,7 +37,8 @@ class imagoPagerController extends Controller
         page:     @currentPage
         pagesize: @pageSize
 
-      query['tags'] = @tags if @tags
+      if @tags or $state.params.tag
+        query['tags'] = @tags or $state.params.tag
 
       # console.log 'query', query
       if query?.path and _.includes query.path, '/page/'

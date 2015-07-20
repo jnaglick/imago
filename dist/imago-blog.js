@@ -34,7 +34,7 @@ imagoPagerController = (function() {
         _this.count += 1;
         _this.posts = [];
         _this.pageSize = parseInt(_this.pageSize) || 10;
-        _this.currentPage = parseInt(_this.currentPage) || 1;
+        _this.currentPage = parseInt(_this.currentPage) || $state.params.page || 1;
         if (!_this.state) {
           _this.state = 'blog';
         }
@@ -43,8 +43,8 @@ imagoPagerController = (function() {
           page: _this.currentPage,
           pagesize: _this.pageSize
         };
-        if (_this.tags) {
-          query['tags'] = _this.tags;
+        if (_this.tags || $state.params.tag) {
+          query['tags'] = _this.tags || $state.params.tag;
         }
         if ((query != null ? query.path : void 0) && _.includes(query.path, '/page/')) {
           idx = query.path.indexOf('/page/');
