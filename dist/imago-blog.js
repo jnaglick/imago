@@ -69,7 +69,7 @@ imagoPagerController = (function() {
           for (i = 0, len = response.length; i < len; i++) {
             collection = response[i];
             $scope.next = collection.next;
-            if ($scope.shuffle) {
+            if ($scope.shuffle === 'true') {
               $scope.posts = _.shuffle(collection.assets);
             } else {
               $scope.posts = collection.assets;

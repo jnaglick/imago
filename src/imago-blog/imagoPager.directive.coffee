@@ -61,7 +61,7 @@ class imagoPagerController extends Controller
         for collection in response
           $scope.next = collection.next
 
-          if $scope.shuffle
+          if $scope.shuffle is 'true'
             $scope.posts = _.shuffle collection.assets
           else
             $scope.posts = collection.assets

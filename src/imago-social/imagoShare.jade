@@ -9,6 +9,7 @@
     ng-if="imagoshare.twitter || imagoshare.all")
   a.fa.fa-google(
     ng-href="https://plus.google.com/share?url={{imagoshare.location}}"
+    target="_blank"
     ng-if="imagoshare.google || imagoshare.all")
   a.fa.fa-linkedin(
     ng-href="https://www.linkedin.com/shareArticle?mini=true&url={{imagoshare.location}}&title={{asset | meta:'title'}}&summary=&source={{asset.serving_url}}"
