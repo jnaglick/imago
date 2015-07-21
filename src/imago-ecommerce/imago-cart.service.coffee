@@ -2,6 +2,7 @@ class imagoCart extends Service
 
   show: false
   itemsLength: 0
+  settings: []
 
   constructor: (@$q, @$window, @$http, @imagoUtils, @imagoModel, @imagoSettings) ->
     @cart =
@@ -19,6 +20,7 @@ class imagoCart extends Service
 
   checkCurrency: ->
     @$http.get("#{@imagoSettings.host}/api/settings").then (response) =>
+      @settings = response.data
       res = _.find(response.data, {name: 'currencies'})
       @currencies = res.value
       currency = @imagoUtils.CURRENCY_MAPPING[@geo.country] if @geo

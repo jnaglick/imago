@@ -39,6 +39,8 @@ imagoCart = (function() {
 
   imagoCart.prototype.itemsLength = 0;
 
+  imagoCart.prototype.settings = [];
+
   function imagoCart($q, $window, $http, imagoUtils, imagoModel, imagoSettings) {
     var local;
     this.$q = $q;
@@ -83,6 +85,7 @@ imagoCart = (function() {
     return this.$http.get(this.imagoSettings.host + "/api/settings").then((function(_this) {
       return function(response) {
         var currency, ref, res;
+        _this.settings = response.data;
         res = _.find(response.data, {
           name: 'currencies'
         });
