@@ -1995,4 +1995,41 @@ NotSupportedController = (function() {
 
 angular.module('imago').directive('notSupported', [NotSupported]).controller('notSupportedController', ['$scope', '$element', '$attrs', NotSupportedController]);
 
+var TenantSettings;
+
+TenantSettings = (function() {
+  TenantSettings.prototype.data = {};
+
+  function TenantSettings($http, $rootScope, imagoSettings) {
+    this.$http = $http;
+    this.$rootScope = $rootScope;
+    this.imagoSettings = imagoSettings;
+    this.get();
+  }
+
+  TenantSettings.prototype.get = function() {
+    return this.$http.get(this.imagoSettings.host + "/api/settings").then((function(_this) {
+      return function(response) {
+        return _this.reorder(response.data);
+      };
+    })(this));
+  };
+
+  TenantSettings.prototype.reorder = function(data) {
+    var i, item, len;
+    this.data = {};
+    for (i = 0, len = data.length; i < len; i++) {
+      item = data[i];
+      this.data[item.name] = item.value;
+    }
+    this.$rootScope.tenantSettings = this.data;
+    return this.$rootScope.$emit('settings:loaded', this.data);
+  };
+
+  return TenantSettings;
+
+})();
+
+angular.module('imago').service('tenantSettings', ['$http', '$rootScope', 'imagoSettings', TenantSettings]);
+
 angular.module("imago").run(["$templateCache", function($templateCache) {$templateCache.put("/imago/not-supported.html","<div ng-show=\"supported.invalid\" class=\"imago-not-supported\"><div class=\"inner\"><h1>Time for change!</h1><p>Please download a new version of your favorite browser.</p><ul><li><a href=\"http://support.apple.com/downloads/#safari\" target=\"_blank\"><div class=\"icon icon-safari\"></div><h2>Safari</h2><span>Download</span></a></li><li><a href=\"http://www.google.com/chrome\" target=\"_blank\"><div class=\"icon icon-chrome\"></div><h2>Chrome</h2><span>Download</span></a></li><li><a href=\"http://www.opera.com/download\" target=\"_blank\"><div class=\"icon icon-opera\"></div><h2>Opera</h2><span>Download</span></a></li><li><a href=\"http://www.mozilla.org/firefox\" target=\"_blank\"><div class=\"icon icon-firefox\"></div><h2>Firefox</h2><span>Download</span></a></li><li><a href=\"http://windows.microsoft.com/en-us/internet-explorer/download-ie\" target=\"_blank\"><div class=\"icon icon-ie\"></div><h2>IE</h2><span>Download</span></a></li></ul></div></div>");}]);

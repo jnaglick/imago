@@ -41,9 +41,9 @@ imagoCart = (function() {
 
   imagoCart.prototype.settings = [];
 
-  function imagoCart($q, $window, $http, imagoUtils, imagoModel, imagoSettings) {
-    var local;
+  function imagoCart($q, $rootScope, $window, $http, imagoUtils, imagoModel, imagoSettings) {
     this.$q = $q;
+    this.$rootScope = $rootScope;
     this.$window = $window;
     this.$http = $http;
     this.imagoUtils = imagoUtils;
@@ -57,10 +57,15 @@ imagoCart = (function() {
     this.cart = {
       items: []
     };
-    local = this.imagoUtils.cookie('imagoCart');
-    if (local) {
-      this.checkStatus(local);
-    }
+    this.$rootScope.$on('settings:loaded', (function(_this) {
+      return function(evt, message) {
+        var local;
+        local = _this.imagoUtils.cookie('imagoCart');
+        if (local) {
+          return _this.checkStatus(local);
+        }
+      };
+    })(this));
   }
 
   imagoCart.prototype.geoip = function() {
@@ -82,31 +87,23 @@ imagoCart = (function() {
   };
 
   imagoCart.prototype.checkCurrency = function() {
-    return this.$http.get(this.imagoSettings.host + "/api/settings").then((function(_this) {
-      return function(response) {
-        var currency, ref, res;
-        _this.settings = response.data;
-        res = _.find(response.data, {
-          name: 'currencies'
-        });
-        _this.currencies = res.value;
-        if (_this.geo) {
-          currency = _this.imagoUtils.CURRENCY_MAPPING[_this.geo.country];
-        }
-        if (currency && _this.currencies && indexOf.call(_this.currencies, currency) >= 0) {
-          _this.currency = currency;
-        } else if ((ref = _this.currencies) != null ? ref.length : void 0) {
-          _this.currency = _this.currencies[0];
-        } else {
-          console.log('you need to enable at least one currency in the settings');
-        }
-        if (_this.cart.currency !== _this.currency) {
-          _this.cart.currency = angular.copy(_this.currency);
-          _this.update();
-        }
-        return _this.updateLenght();
-      };
-    })(this));
+    var currency, ref;
+    this.currencies = this.$rootScope.tenantSettings.currencies;
+    if (this.geo) {
+      currency = this.imagoUtils.CURRENCY_MAPPING[this.geo.country];
+    }
+    if (currency && this.currencies && indexOf.call(this.currencies, currency) >= 0) {
+      this.currency = currency;
+    } else if ((ref = this.currencies) != null ? ref.length : void 0) {
+      this.currency = this.currencies[0];
+    } else {
+      console.log('you need to enable at least one currency in the settings');
+    }
+    if (this.cart.currency !== this.currency) {
+      this.cart.currency = angular.copy(this.currency);
+      this.update();
+    }
+    return this.updateLenght();
   };
 
   imagoCart.prototype.checkStatus = function(id) {
@@ -256,7 +253,7 @@ imagoCart = (function() {
 
 })();
 
-angular.module('imago').service('imagoCart', ['$q', '$window', '$http', 'imagoUtils', 'imagoModel', 'imagoSettings', imagoCart]);
+angular.module('imago').service('imagoCart', ['$q', '$rootScope', '$window', '$http', 'imagoUtils', 'imagoModel', 'imagoSettings', imagoCart]);
 
 var VariantsStorage;
 
