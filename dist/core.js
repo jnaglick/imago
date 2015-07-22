@@ -2026,7 +2026,7 @@ TenantSettings = (function() {
     ref = this.data.settings;
     for (j = 0, len1 = ref.length; j < len1; j++) {
       item = ref[j];
-      tmp[item.name] = item.value;
+      tmp[_.camelCase(item.name)] = item.value;
     }
     this.data.settings = tmp;
     this.$rootScope.tenantSettings = this.data;

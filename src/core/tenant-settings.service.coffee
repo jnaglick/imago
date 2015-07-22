@@ -17,7 +17,7 @@ class TenantSettings extends Service
 
     tmp = {}
     for item in @data.settings
-      tmp[item.name] = item.value
+      tmp[_.camelCase item.name] = item.value
     @data.settings = tmp
 
     @$rootScope.tenantSettings = @data
