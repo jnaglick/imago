@@ -34,7 +34,6 @@ imagoSlider = (function() {
           }));
         } else {
           watchers.push(scope.$watch('assets', function(data) {
-            console.log('data', data);
             if (!data || !_.isArray(data)) {
               return;
             }

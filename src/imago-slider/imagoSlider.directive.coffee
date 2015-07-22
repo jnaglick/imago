@@ -31,7 +31,7 @@ class imagoSlider extends Directive
 
         else
           watchers.push scope.$watch 'assets', (data) ->
-            console.log 'data', data
+            # console.log 'data', data
             return if not data or not _.isArray data
             scope.imagoslider.length = data.length
 
