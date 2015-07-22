@@ -2016,12 +2016,19 @@ TenantSettings = (function() {
   };
 
   TenantSettings.prototype.reorder = function(data) {
-    var i, item, len;
+    var i, item, j, len, len1, ref, tmp;
     this.data = {};
     for (i = 0, len = data.length; i < len; i++) {
       item = data[i];
       this.data[item.name] = item.value;
     }
+    tmp = {};
+    ref = this.data.settings;
+    for (j = 0, len1 = ref.length; j < len1; j++) {
+      item = ref[j];
+      tmp[item.name] = item.value;
+    }
+    this.data.settings = tmp;
     this.$rootScope.tenantSettings = this.data;
     return this.$rootScope.$emit('settings:loaded', this.data);
   };
