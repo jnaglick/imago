@@ -1015,11 +1015,18 @@ angular.module('imago').service('imagoModel', ['$rootScope', '$http', '$location
 var imagoPage;
 
 imagoPage = (function() {
-  function imagoPage($location, imagoModel) {
-    this.path = $location.path() === '/' ? '/home' : $location.path();
-    imagoModel.getData({
-      path: this.path
-    }).then((function(_this) {
+  function imagoPage($location, $state, imagoModel) {
+    var ref;
+    if ((ref = $state.current.data) != null ? ref.path : void 0) {
+      this.path = {
+        path: $state.current.data.path
+      };
+    } else if ($location.path() === '/') {
+      this.path = {
+        path: '/home'
+      };
+    }
+    imagoModel.getData(this.path).then((function(_this) {
       return function(response) {
         var data, i, len, results;
         results = [];
@@ -1037,7 +1044,7 @@ imagoPage = (function() {
 
 })();
 
-angular.module('imago').controller('imagoPage', ['$location', 'imagoModel', imagoPage]);
+angular.module('imago').controller('imagoPage', ['$location', '$state', 'imagoModel', imagoPage]);
 
 var imagoUtils;
 
