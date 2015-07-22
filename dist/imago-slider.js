@@ -33,7 +33,7 @@ imagoSlider = (function() {
             return scope.imagoslider.length = data;
           }));
         } else {
-          watchers.push(scope.$watch('assets', function(data) {
+          watchers.push(scope.$watch('imagoslider.assets', function(data) {
             if (!data || !_.isArray(data)) {
               return;
             }
@@ -76,16 +76,20 @@ imagoSlider = (function() {
               ev.stopPropagation();
             }
             if (!scope.imagoslider.conf.loop) {
-              return scope.setCurrent(scope.currentIndex < parseInt(scope.imagoslider.length) - 1 ? scope.currentIndex + 1 : scope.currentIndex);
+              console.log('passed 1');
+              scope.setCurrent(scope.currentIndex < parseInt(scope.imagoslider.length) - 1 ? scope.currentIndex + 1 : scope.currentIndex);
             } else if (scope.imagoslider.conf.loop && !scope.imagoslider.conf.siblings) {
-              return scope.setCurrent(scope.currentIndex < parseInt(scope.imagoslider.length) - 1 ? scope.currentIndex + 1 : 0);
+              console.log('passed 2');
+              scope.setCurrent(scope.currentIndex < parseInt(scope.imagoslider.length) - 1 ? scope.currentIndex + 1 : 0);
             } else if (scope.imagoslider.conf.loop && scope.imagoslider.conf.siblings) {
+              console.log('passed 3');
               if (scope.currentIndex < parseInt(scope.imagoslider.length) - 1) {
-                return scope.setCurrent(scope.currentIndex + 1);
+                scope.setCurrent(scope.currentIndex + 1);
               } else {
-                return $location.path(scope.imagoslider.conf.next);
+                $location.path(scope.imagoslider.conf.next);
               }
             }
+            return console.log('scope.currentIndex', scope.currentIndex);
           };
         })(this);
         scope.getLast = function() {

@@ -30,7 +30,7 @@ class imagoSlider extends Directive
             scope.imagoslider.length = data
 
         else
-          watchers.push scope.$watch 'assets', (data) ->
+          watchers.push scope.$watch 'imagoslider.assets', (data) ->
             # console.log 'data', data
             return if not data or not _.isArray data
             scope.imagoslider.length = data.length
@@ -77,22 +77,27 @@ class imagoSlider extends Directive
 
           # no loop
           if not scope.imagoslider.conf.loop
+            console.log 'passed 1'
             scope.setCurrent(
               if (scope.currentIndex < parseInt(scope.imagoslider.length) - 1) then scope.currentIndex + 1 else scope.currentIndex
             )
 
           # loop through current collection
           else if scope.imagoslider.conf.loop and not scope.imagoslider.conf.siblings
+            console.log 'passed 2'
             scope.setCurrent(
               if (scope.currentIndex < parseInt(scope.imagoslider.length) - 1) then scope.currentIndex + 1 else 0
             )
 
           # loop through sibling collections
           else if scope.imagoslider.conf.loop and scope.imagoslider.conf.siblings
+            console.log 'passed 3'
             if (scope.currentIndex < parseInt(scope.imagoslider.length) - 1)
               scope.setCurrent(scope.currentIndex + 1)
             else
               $location.path scope.imagoslider.conf.next
+
+          console.log 'scope.currentIndex', scope.currentIndex
 
         scope.getLast = ->
           parseInt(scope.imagoslider.length) - 1
