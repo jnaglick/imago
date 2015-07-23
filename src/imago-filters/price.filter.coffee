@@ -1,10 +1,10 @@
 class Price extends Filter
 
   constructor: ->
-    return (price) ->
+    return (price, decimal = 2) ->
       if _.isUndefined price
-        return '0.00'
+        return String(0.toFixed(decimal))
       else
         price = parseFloat price
-        price = (price/100).toFixed(2)
+        price = (price/100).toFixed(decimal)
         return price
