@@ -5,22 +5,27 @@ class imagoCart extends Service
   settings: []
 
   constructor: (@$q, @$rootScope, @$window, @$http, @imagoUtils, @imagoModel, @imagoSettings) ->
+
     @cart =
       items: []
 
     @$rootScope.$on 'settings:loaded', (evt, message) =>
+      @currencies = @$rootScope.tenantSettings.currencies
       local = @imagoUtils.cookie('imagoCart')
-      @checkStatus(local) if local
+      if local
+        @checkStatus(local)
+      else
+        @currency = @currencies[0] if @currencies.length is 1
+        @geoip()
 
   geoip: ->
-    @$http.get("//api.imago.io/geoip", {headers: {NexClient: undefined, NexTenant: undefined}}).then (response) =>
+    @$http.get('//api.imago.io/geoip').then (response) =>
       @geo = response.data
       @checkCurrency()
     , (error) =>
       @checkCurrency()
 
   checkCurrency: ->
-    @currencies = @$rootScope.tenantSettings.currencies
     currency = @imagoUtils.CURRENCY_MAPPING[@geo.country] if @geo
     if currency and @currencies and currency in @currencies
       @currency = currency
@@ -29,6 +34,7 @@ class imagoCart extends Service
     else
       console.log 'you need to enable at least one currency in the settings'
 
+    return unless @cart
     if @cart.currency isnt @currency
       @cart.currency = angular.copy @currency
       @update()

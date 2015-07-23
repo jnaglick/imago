@@ -60,21 +60,22 @@ imagoCart = (function() {
     this.$rootScope.$on('settings:loaded', (function(_this) {
       return function(evt, message) {
         var local;
+        _this.currencies = _this.$rootScope.tenantSettings.currencies;
         local = _this.imagoUtils.cookie('imagoCart');
         if (local) {
           return _this.checkStatus(local);
+        } else {
+          if (_this.currencies.length === 1) {
+            _this.currency = _this.currencies[0];
+          }
+          return _this.geoip();
         }
       };
     })(this));
   }
 
   imagoCart.prototype.geoip = function() {
-    return this.$http.get("//api.imago.io/geoip", {
-      headers: {
-        NexClient: void 0,
-        NexTenant: void 0
-      }
-    }).then((function(_this) {
+    return this.$http.get('//api.imago.io/geoip').then((function(_this) {
       return function(response) {
         _this.geo = response.data;
         return _this.checkCurrency();
@@ -88,7 +89,6 @@ imagoCart = (function() {
 
   imagoCart.prototype.checkCurrency = function() {
     var currency, ref;
-    this.currencies = this.$rootScope.tenantSettings.currencies;
     if (this.geo) {
       currency = this.imagoUtils.CURRENCY_MAPPING[this.geo.country];
     }
@@ -98,6 +98,9 @@ imagoCart = (function() {
       this.currency = this.currencies[0];
     } else {
       console.log('you need to enable at least one currency in the settings');
+    }
+    if (!this.cart) {
+      return;
     }
     if (this.cart.currency !== this.currency) {
       this.cart.currency = angular.copy(this.currency);
