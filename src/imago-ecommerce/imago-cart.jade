@@ -10,7 +10,9 @@
       ) {{cart.imagoCart.itemsLength}} items
     .noitems(
       ng-show="cart.imagoCart.itemsLength === 0"
-      ) no items in cart
+      ) cart empty
+
+    .subtotal subtotal: {{cart.imagoCart.subtotal | price}}
 
     button.checkout(
       ng-show="cart.imagoCart.cart.items.length"

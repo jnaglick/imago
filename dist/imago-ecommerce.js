@@ -103,7 +103,7 @@ imagoCart = (function() {
       this.cart.currency = angular.copy(this.currency);
       this.update();
     }
-    return this.updateLenght();
+    return this.calculate();
   };
 
   imagoCart.prototype.checkStatus = function(id) {
@@ -117,7 +117,7 @@ imagoCart = (function() {
           item = ref[i];
           item.finalsale = (ref1 = item.fields) != null ? (ref2 = ref1['final-sale']) != null ? ref2.value : void 0 : void 0;
         }
-        _this.updateLenght();
+        _this.calculate();
         return _this.geoip();
       };
     })(this));
@@ -200,7 +200,7 @@ imagoCart = (function() {
       this.cart.items.push(copy);
     }
     this.show = true;
-    this.updateLenght();
+    this.calculate();
     return this.checkCart().then((function(_this) {
       return function(response) {
         if (response === 'update') {
@@ -218,26 +218,31 @@ imagoCart = (function() {
   };
 
   imagoCart.prototype.remove = function(item) {
-    var idx;
-    idx = _.findIndex(this.cart.items, {
-      _id: item._id
+    _.remove(this.cart.items, {
+      '_id': item._id
     });
-    this.cart.items.splice(idx, 1);
-    this.updateLenght();
+    this.calculate();
     return this.update();
   };
 
-  imagoCart.prototype.updateLenght = function() {
+  imagoCart.prototype.calculate = function() {
     var i, item, len, ref, results;
     this.itemsLength = 0;
+    this.subtotal = 0;
     if (!this.cart.items.length) {
-      return this.itemsLength = 0;
+      this.subtotal = 0;
+      this.itemsLength = 0;
+      return;
     }
     ref = this.cart.items;
     results = [];
     for (i = 0, len = ref.length; i < len; i++) {
       item = ref[i];
-      results.push(this.itemsLength += item.qty);
+      this.itemsLength += item.qty;
+      if (!(item.qty && item.fields.price.value[this.currency])) {
+        continue;
+      }
+      results.push(this.subtotal += item.qty * item.fields.price.value[this.currency]);
     }
     return results;
   };
@@ -296,4 +301,4 @@ VariantsStorage = (function() {
 
 angular.module('imago').service('variantsStorage', ['$http', '$q', 'imagoModel', 'imagoSettings', VariantsStorage]);
 
-angular.module("imago").run(["$templateCache", function($templateCache) {$templateCache.put("/imago/imago-cart.html","<div class=\"cart\"><div ng-click=\"cart.imagoCart.show = !cart.imagoCart.show\" class=\"icon\"><div ng-bind=\"cart.imagoCart.itemsLength\" class=\"counter\"></div></div><div ng-show=\"cart.imagoCart.show\" class=\"box\"><div ng-transclude=\"ng-transclude\"></div><div ng-show=\"cart.imagoCart.itemsLength\" class=\"itemnumber\">{{cart.imagoCart.itemsLength}} items</div><div ng-show=\"cart.imagoCart.itemsLength === 0\" class=\"noitems\">no items in cart</div><button ng-show=\"cart.imagoCart.cart.items.length\" type=\"submit\" ng-click=\"cart.imagoCart.checkout()\" class=\"checkout\">checkout</button></div></div>");}]);
+angular.module("imago").run(["$templateCache", function($templateCache) {$templateCache.put("/imago/imago-cart.html","<div class=\"cart\"><div ng-click=\"cart.imagoCart.show = !cart.imagoCart.show\" class=\"icon\"><div ng-bind=\"cart.imagoCart.itemsLength\" class=\"counter\"></div></div><div ng-show=\"cart.imagoCart.show\" class=\"box\"><div ng-transclude=\"ng-transclude\"></div><div ng-show=\"cart.imagoCart.itemsLength\" class=\"itemnumber\">{{cart.imagoCart.itemsLength}} items</div><div ng-show=\"cart.imagoCart.itemsLength === 0\" class=\"noitems\">cart empty</div><div class=\"subtotal\">subtotal: {{cart.imagoCart.subtotal | price}}</div><button ng-show=\"cart.imagoCart.cart.items.length\" type=\"submit\" ng-click=\"cart.imagoCart.checkout()\" class=\"checkout\">checkout</button></div></div>");}]);

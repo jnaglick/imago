@@ -32,7 +32,7 @@ class imagoCart extends Service
     if @cart.currency isnt @currency
       @cart.currency = angular.copy @currency
       @update()
-    @updateLenght()
+    @calculate()
 
   checkStatus: (id) =>
     @$http.get("#{@imagoSettings.host}/api/carts?cartid=#{id}").then (response) =>
@@ -40,7 +40,7 @@ class imagoCart extends Service
       _.assign @cart, response.data
       for item in @cart.items
         item.finalsale = item.fields?['final-sale']?.value
-      @updateLenght()
+      @calculate()
       @geoip()
 
   checkCart: =>
@@ -98,7 +98,7 @@ class imagoCart extends Service
       @cart.items.push copy
 
     @show = true
-    @updateLenght()
+    @calculate()
 
     # console.log '@cart', @cart
 
@@ -110,18 +110,23 @@ class imagoCart extends Service
     @$http.put("#{@imagoSettings.host}/api/carts/#{@cart._id}", @cart)
 
   remove: (item) =>
-    idx = _.findIndex @cart.items, { _id: item._id }
-    @cart.items.splice idx, 1
-    @updateLenght()
+    _.remove(@cart.items, {'_id': item._id})
+    @calculate()
     @update()
 
-  updateLenght: ->
+  calculate: ->
     @itemsLength = 0
+    @subtotal = 0
 
-    return @itemsLength = 0 unless @cart.items.length
+    unless @cart.items.length
+      @subtotal = 0
+      @itemsLength = 0
+      return
 
     for item in @cart.items
       @itemsLength += item.qty
+      continue unless item.qty and item.fields.price.value[@currency]
+      @subtotal += item.qty * item.fields.price.value[@currency]
 
   checkout: ->
     return unless tenant
