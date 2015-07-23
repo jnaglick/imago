@@ -7,6 +7,11 @@ class imagoPage extends Controller
     else if $location.path() is '/'
       @path = {path: '/home'}
 
+    if $state.current.data?.recursive
+      @path or= {}
+      @path.path = $location.path() unless @path.path
+      @path.recursive = true
+
     imagoModel.getData(@path).then (response) =>
       for data in response
         @data = data

@@ -1016,7 +1016,7 @@ var imagoPage;
 
 imagoPage = (function() {
   function imagoPage($location, $state, imagoModel) {
-    var ref;
+    var ref, ref1;
     if ((ref = $state.current.data) != null ? ref.path : void 0) {
       this.path = {
         path: $state.current.data.path
@@ -1025,6 +1025,13 @@ imagoPage = (function() {
       this.path = {
         path: '/home'
       };
+    }
+    if ((ref1 = $state.current.data) != null ? ref1.recursive : void 0) {
+      this.path || (this.path = {});
+      if (!this.path.path) {
+        this.path.path = $location.path();
+      }
+      this.path.recursive = true;
     }
     imagoModel.getData(this.path).then((function(_this) {
       return function(response) {
