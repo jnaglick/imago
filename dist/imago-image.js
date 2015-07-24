@@ -59,6 +59,7 @@ imagoImage = (function() {
         }
         compile = function() {
           var ref;
+          opts.servingSize = null;
           if (!((ref = scope.source) != null ? ref.serving_url : void 0)) {
             element.remove();
             return;

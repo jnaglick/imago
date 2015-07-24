@@ -50,6 +50,7 @@ class imagoImage extends Directive
             compile()
 
         compile = ->
+          opts.servingSize = null
           unless scope.source?.serving_url
             element.remove()
             return
