@@ -17,9 +17,6 @@ class ImagoFieldNumber extends Directive
 
         scope.disabled = true if attrs.disabled
 
-        scope.$watchGroup ['min', 'max'], ->
-          scope.disabled = true if scope.min is scope.max
-
         ngModelController.$render = ->
           checkValidity()
 
