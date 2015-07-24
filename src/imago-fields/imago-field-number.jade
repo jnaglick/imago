@@ -8,11 +8,11 @@
     ng-disabled="disabled")
   button.decrement(
     type='button'
-    ng-disabled='isOverMin()'
+    ng-disabled='isOverMin() || disabled'
     ng-click='decrement()'
     )
   button.increment(
     type='button'
-    ng-disabled='isOverMax()'
+    ng-disabled='isOverMax() || disabled'
     ng-click='increment()'
     )
