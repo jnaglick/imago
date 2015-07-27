@@ -7,4 +7,5 @@ class Price extends Filter
       else
         price = parseFloat price
         price = (price/100).toFixed(decimal)
+        price = Number(price).toLocaleString()
         return price
