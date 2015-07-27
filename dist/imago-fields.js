@@ -238,11 +238,10 @@ ImagoFieldNumber = (function() {
           return change(-1);
         };
         scope.increment = function() {
-          console.log('increment');
           return change(+1);
         };
         checkValidity();
-        return scope.$watch('min+max', function() {
+        return scope.$watchGroup(['min', 'max'], function() {
           return checkValidity();
         });
       }

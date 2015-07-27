@@ -58,12 +58,11 @@ class ImagoFieldNumber extends Directive
           change(-1)
 
         scope.increment = ->
-          console.log 'increment'
           change(+1)
 
         checkValidity()
 
-        scope.$watch 'min+max', ->
+        scope.$watchGroup ['min', 'max'], ->
           checkValidity()
 
     }
