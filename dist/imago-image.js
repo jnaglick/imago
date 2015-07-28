@@ -19,7 +19,7 @@ imagoImage = (function() {
           responsive: true,
           scale: 1,
           lazy: true,
-          maxsize: 2560
+          maxsize: 4000
         };
         for (key in attrs) {
           value = attrs[key];

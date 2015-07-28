@@ -20,7 +20,7 @@ class imagoImage extends Directive
           responsive: true
           scale     : 1
           lazy      : true
-          maxsize   : 2560
+          maxsize   : 4000
           # width     : ''
           # height    : ''
 
