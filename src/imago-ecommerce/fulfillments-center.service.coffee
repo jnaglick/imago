@@ -4,7 +4,7 @@ class FulfillmentsCenter extends Service
 
   selected: {}
 
-  constructor: (@$http, @$rootScope, @geoIp, @imagoSettings) ->
+  constructor: (@$http, @$rootScope, @geoIp, @imagoSettings, @imagoUtils) ->
     @get()
 
   get: ->
@@ -17,26 +17,25 @@ class FulfillmentsCenter extends Service
       @selected = @data[0]
       return @$rootScope.$emit 'fulfillments:loaded', @data
 
-    if @geoIp.data is null
-      # @checkCurrency()
+    if @geoIp.data.country
+      @geoValid()
+    else if @geoIp.data is null
+      @getGeneric()
     else if _.isEmpty(@geoIp.data)
       watcher = @$rootScope.$on 'geoip:loaded', (evt, data) =>
-        @geoAvailable()
         watcher()
-    else
-      @geoAvailable()
+        if @geoIp.data.country
+          @geoValid()
+        else
+          @getGeneric()
 
-  geoAvailable: ->
+  getGeneric: ->
+    @selected = _.find @data, (ffc) -> !ffc.countries.length
+    @$rootScope.$emit('fulfillments:loaded', @data)
+
+  geoValid: ->
     @selected = _.find @data, (ffc) => @geoIp.data.country in ffc.countries
     if @selected
       return @$rootScope.$emit('fulfillments:loaded', @data)
     else
-      @selected = _.find @data, (ffc) -> !ffc.countries.length
-      return @$rootScope.$emit('fulfillments:loaded', @data) if @selected
-
-    console.log '@geoIp.data', @geoIp.data
-    console.log '@selected', @selected, @data
-
-
-
-
+      @getGeneric()

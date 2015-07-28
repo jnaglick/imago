@@ -6,11 +6,12 @@ FulfillmentsCenter = (function() {
 
   FulfillmentsCenter.prototype.selected = {};
 
-  function FulfillmentsCenter($http, $rootScope, geoIp, imagoSettings) {
+  function FulfillmentsCenter($http, $rootScope, geoIp, imagoSettings, imagoUtils) {
     this.$http = $http;
     this.$rootScope = $rootScope;
     this.geoIp = geoIp;
     this.imagoSettings = imagoSettings;
+    this.imagoUtils = imagoUtils;
     this.get();
   }
 
@@ -29,21 +30,32 @@ FulfillmentsCenter = (function() {
       this.selected = this.data[0];
       return this.$rootScope.$emit('fulfillments:loaded', this.data);
     }
-    if (this.geoIp.data === null) {
-
+    if (this.geoIp.data.country) {
+      return this.geoValid();
+    } else if (this.geoIp.data === null) {
+      return this.getGeneric();
     } else if (_.isEmpty(this.geoIp.data)) {
       return watcher = this.$rootScope.$on('geoip:loaded', (function(_this) {
         return function(evt, data) {
-          _this.geoAvailable();
-          return watcher();
+          watcher();
+          if (_this.geoIp.data.country) {
+            return _this.geoValid();
+          } else {
+            return _this.getGeneric();
+          }
         };
       })(this));
-    } else {
-      return this.geoAvailable();
     }
   };
 
-  FulfillmentsCenter.prototype.geoAvailable = function() {
+  FulfillmentsCenter.prototype.getGeneric = function() {
+    this.selected = _.find(this.data, function(ffc) {
+      return !ffc.countries.length;
+    });
+    return this.$rootScope.$emit('fulfillments:loaded', this.data);
+  };
+
+  FulfillmentsCenter.prototype.geoValid = function() {
     this.selected = _.find(this.data, (function(_this) {
       return function(ffc) {
         var ref;
@@ -53,38 +65,38 @@ FulfillmentsCenter = (function() {
     if (this.selected) {
       return this.$rootScope.$emit('fulfillments:loaded', this.data);
     } else {
-      this.selected = _.find(this.data, function(ffc) {
-        return !ffc.countries.length;
-      });
-      if (this.selected) {
-        return this.$rootScope.$emit('fulfillments:loaded', this.data);
-      }
+      return this.getGeneric();
     }
-    console.log('@geoIp.data', this.geoIp.data);
-    return console.log('@selected', this.selected, this.data);
   };
 
   return FulfillmentsCenter;
 
 })();
 
-angular.module('imago').service('fulfillmentsCenter', ['$http', '$rootScope', 'geoIp', 'imagoSettings', FulfillmentsCenter]);
+angular.module('imago').service('fulfillmentsCenter', ['$http', '$rootScope', 'geoIp', 'imagoSettings', 'imagoUtils', FulfillmentsCenter]);
 
 var GeoIp;
 
 GeoIp = (function() {
   GeoIp.prototype.data = {};
 
-  function GeoIp($rootScope, $http) {
+  function GeoIp($rootScope, $http, imagoUtils) {
     this.$rootScope = $rootScope;
     this.$http = $http;
+    this.imagoUtils = imagoUtils;
     this.get();
   }
 
   GeoIp.prototype.get = function() {
+    if (this.imagoUtils.cookie('countryGeo')) {
+      this.data.country = this.imagoUtils.cookie('countryGeo');
+      this.$rootScope.$emit('geoip:loaded', this.data);
+      return;
+    }
     return this.$http.get('//api.imago.io/geoip').then((function(_this) {
       return function(response) {
         _this.data = response.data;
+        _this.imagoUtils.cookie('countryGeo', _this.data.country);
         return _this.$rootScope.$emit('geoip:loaded', _this.data);
       };
     })(this), (function(_this) {
@@ -99,7 +111,7 @@ GeoIp = (function() {
 
 })();
 
-angular.module('imago').service('geoIp', ['$rootScope', '$http', GeoIp]);
+angular.module('imago').service('geoIp', ['$rootScope', '$http', 'imagoUtils', GeoIp]);
 
 var imagoCart, imagoCartController;
 
