@@ -65,9 +65,6 @@ imagoCart = (function() {
         if (local) {
           return _this.checkStatus(local);
         } else {
-          if (_this.currencies.length === 1) {
-            _this.currency = _this.currencies[0];
-          }
           return _this.geoip();
         }
       };
@@ -119,6 +116,9 @@ imagoCart = (function() {
         for (i = 0, len = ref.length; i < len; i++) {
           item = ref[i];
           item.finalsale = (ref1 = item.fields) != null ? (ref2 = ref1['final-sale']) != null ? ref2.value : void 0 : void 0;
+        }
+        if (!_this.currency) {
+          _this.currency = angular.copy(_this.cart.currency);
         }
         _this.calculate();
         return _this.geoip();

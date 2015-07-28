@@ -15,7 +15,6 @@ class imagoCart extends Service
       if local
         @checkStatus(local)
       else
-        @currency = @currencies[0] if @currencies.length is 1
         @geoip()
 
   geoip: ->
@@ -46,6 +45,7 @@ class imagoCart extends Service
       _.assign @cart, response.data
       for item in @cart.items
         item.finalsale = item.fields?['final-sale']?.value
+      @currency = angular.copy(@cart.currency) unless @currency
       @calculate()
       @geoip()
 
