@@ -18,3 +18,7 @@ class imagoCart extends Directive
 class imagoCartController extends Controller
 
   constructor: (@imagoCart) ->
+
+    @clickOut = (evt, className) ->
+      return if evt.target.tagName is 'BUTTON' and evt.target.className.indexOf(className) isnt -1
+      @imagoCart.show = false

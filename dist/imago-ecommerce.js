@@ -22,6 +22,12 @@ imagoCart = (function() {
 imagoCartController = (function() {
   function imagoCartController(imagoCart1) {
     this.imagoCart = imagoCart1;
+    this.clickOut = function(evt, className) {
+      if (evt.target.tagName === 'BUTTON' && evt.target.className.indexOf(className) !== -1) {
+        return;
+      }
+      return this.imagoCart.show = false;
+    };
   }
 
   return imagoCartController;
