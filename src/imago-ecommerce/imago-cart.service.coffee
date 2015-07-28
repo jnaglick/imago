@@ -4,7 +4,7 @@ class imagoCart extends Service
   itemsLength: 0
   settings: []
 
-  constructor: (@$q, @$rootScope, @$window, @$http, @imagoUtils, @imagoModel, @imagoSettings) ->
+  constructor: (@$q, @$rootScope, @$window, @$http, @imagoUtils, @imagoModel, @fulfillmentsCenter, @geoIp, @imagoSettings) ->
 
     @cart =
       items: []
@@ -15,13 +15,19 @@ class imagoCart extends Service
       if local
         @checkStatus(local)
       else
-        @geoip()
+        @currency = @currencies[0] if @currencies.length is 1
+        @checkGeoIp()
 
-  geoip: ->
-    @$http.get('//api.imago.io/geoip').then (response) =>
-      @geo = response.data
+  checkGeoIp: ->
+    if @geoIp.data is null
       @checkCurrency()
-    , (error) =>
+    else if _.isEmpty(@geoIp.data)
+      watcher = @$rootScope.$on 'geoip:loaded', (evt, data) =>
+        @geo = @geoIp.data
+        @checkCurrency()
+        watcher()
+    else
+      @geo = @geoIp.data
       @checkCurrency()
 
   checkCurrency: ->
@@ -43,11 +49,20 @@ class imagoCart extends Service
     @$http.get("#{@imagoSettings.host}/api/carts?cartid=#{id}").then (response) =>
       console.log 'check cart', response.data
       _.assign @cart, response.data
-      for item in @cart.items
-        item.finalsale = item.fields?['final-sale']?.value
-      @currency = angular.copy(@cart.currency) unless @currency
-      @calculate()
-      @geoip()
+      unless @fulfillmentsCenter.data.length
+        watcher = @$rootScope.$on 'fulfillments:loaded', (evt, data) =>
+          @statusLoaded()
+          watcher()
+      else
+        @statusLoaded()
+
+  statusLoaded: ->
+    for item in @cart.items
+      item.finalsale = item.fields?['final-sale']?.value
+      item.stock = Number(item.fields?.stock?.value?[@fulfillmentsCenter.selected._id])
+    @currency = angular.copy(@cart.currency) unless @currency
+    @calculate()
+    @checkGeoIp()
 
   checkCart: =>
     defer = @$q.defer()

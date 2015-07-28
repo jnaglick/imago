@@ -1,3 +1,106 @@
+var FulfillmentsCenter,
+  indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
+
+FulfillmentsCenter = (function() {
+  FulfillmentsCenter.prototype.data = [];
+
+  FulfillmentsCenter.prototype.selected = {};
+
+  function FulfillmentsCenter($http, $rootScope, geoIp, imagoSettings) {
+    this.$http = $http;
+    this.$rootScope = $rootScope;
+    this.geoIp = geoIp;
+    this.imagoSettings = imagoSettings;
+    this.get();
+  }
+
+  FulfillmentsCenter.prototype.get = function() {
+    return this.$http.get(this.imagoSettings.host + '/api/fulfillmentcenters').then((function(_this) {
+      return function(response) {
+        _this.data = response.data;
+        return _this.getOptions();
+      };
+    })(this));
+  };
+
+  FulfillmentsCenter.prototype.getOptions = function() {
+    var watcher;
+    if (this.data.length === 1) {
+      this.selected = this.data[0];
+      return this.$rootScope.$emit('fulfillments:loaded', this.data);
+    }
+    if (this.geoIp.data === null) {
+
+    } else if (_.isEmpty(this.geoIp.data)) {
+      return watcher = this.$rootScope.$on('geoip:loaded', (function(_this) {
+        return function(evt, data) {
+          _this.geoAvailable();
+          return watcher();
+        };
+      })(this));
+    } else {
+      return this.geoAvailable();
+    }
+  };
+
+  FulfillmentsCenter.prototype.geoAvailable = function() {
+    this.selected = _.find(this.data, (function(_this) {
+      return function(ffc) {
+        var ref;
+        return ref = _this.geoIp.data.country, indexOf.call(ffc.countries, ref) >= 0;
+      };
+    })(this));
+    if (this.selected) {
+      return this.$rootScope.$emit('fulfillments:loaded', this.data);
+    } else {
+      this.selected = _.find(this.data, function(ffc) {
+        return !ffc.countries.length;
+      });
+      if (this.selected) {
+        return this.$rootScope.$emit('fulfillments:loaded', this.data);
+      }
+    }
+    console.log('@geoIp.data', this.geoIp.data);
+    return console.log('@selected', this.selected, this.data);
+  };
+
+  return FulfillmentsCenter;
+
+})();
+
+angular.module('imago').service('fulfillmentsCenter', ['$http', '$rootScope', 'geoIp', 'imagoSettings', FulfillmentsCenter]);
+
+var GeoIp;
+
+GeoIp = (function() {
+  GeoIp.prototype.data = {};
+
+  function GeoIp($rootScope, $http) {
+    this.$rootScope = $rootScope;
+    this.$http = $http;
+    this.get();
+  }
+
+  GeoIp.prototype.get = function() {
+    return this.$http.get('//api.imago.io/geoip').then((function(_this) {
+      return function(response) {
+        _this.data = response.data;
+        return _this.$rootScope.$emit('geoip:loaded', _this.data);
+      };
+    })(this), (function(_this) {
+      return function(err) {
+        _this.data = null;
+        return _this.$rootScope.$emit('geoip:loaded', _this.data);
+      };
+    })(this));
+  };
+
+  return GeoIp;
+
+})();
+
+angular.module('imago').service('geoIp', ['$rootScope', '$http', GeoIp]);
+
 var imagoCart, imagoCartController;
 
 imagoCart = (function() {
@@ -47,13 +150,15 @@ imagoCart = (function() {
 
   imagoCart.prototype.settings = [];
 
-  function imagoCart($q, $rootScope, $window, $http, imagoUtils, imagoModel, imagoSettings) {
+  function imagoCart($q, $rootScope, $window, $http, imagoUtils, imagoModel, fulfillmentsCenter, geoIp, imagoSettings) {
     this.$q = $q;
     this.$rootScope = $rootScope;
     this.$window = $window;
     this.$http = $http;
     this.imagoUtils = imagoUtils;
     this.imagoModel = imagoModel;
+    this.fulfillmentsCenter = fulfillmentsCenter;
+    this.geoIp = geoIp;
     this.imagoSettings = imagoSettings;
     this.remove = bind(this.remove, this);
     this.update = bind(this.update, this);
@@ -71,23 +176,31 @@ imagoCart = (function() {
         if (local) {
           return _this.checkStatus(local);
         } else {
-          return _this.geoip();
+          if (_this.currencies.length === 1) {
+            _this.currency = _this.currencies[0];
+          }
+          return _this.checkGeoIp();
         }
       };
     })(this));
   }
 
-  imagoCart.prototype.geoip = function() {
-    return this.$http.get('//api.imago.io/geoip').then((function(_this) {
-      return function(response) {
-        _this.geo = response.data;
-        return _this.checkCurrency();
-      };
-    })(this), (function(_this) {
-      return function(error) {
-        return _this.checkCurrency();
-      };
-    })(this));
+  imagoCart.prototype.checkGeoIp = function() {
+    var watcher;
+    if (this.geoIp.data === null) {
+      return this.checkCurrency();
+    } else if (_.isEmpty(this.geoIp.data)) {
+      return watcher = this.$rootScope.$on('geoip:loaded', (function(_this) {
+        return function(evt, data) {
+          _this.geo = _this.geoIp.data;
+          _this.checkCurrency();
+          return watcher();
+        };
+      })(this));
+    } else {
+      this.geo = this.geoIp.data;
+      return this.checkCurrency();
+    }
   };
 
   imagoCart.prototype.checkCurrency = function() {
@@ -115,21 +228,34 @@ imagoCart = (function() {
   imagoCart.prototype.checkStatus = function(id) {
     return this.$http.get(this.imagoSettings.host + "/api/carts?cartid=" + id).then((function(_this) {
       return function(response) {
-        var i, item, len, ref, ref1, ref2;
+        var watcher;
         console.log('check cart', response.data);
         _.assign(_this.cart, response.data);
-        ref = _this.cart.items;
-        for (i = 0, len = ref.length; i < len; i++) {
-          item = ref[i];
-          item.finalsale = (ref1 = item.fields) != null ? (ref2 = ref1['final-sale']) != null ? ref2.value : void 0 : void 0;
+        if (!_this.fulfillmentsCenter.data.length) {
+          return watcher = _this.$rootScope.$on('fulfillments:loaded', function(evt, data) {
+            _this.statusLoaded();
+            return watcher();
+          });
+        } else {
+          return _this.statusLoaded();
         }
-        if (!_this.currency) {
-          _this.currency = angular.copy(_this.cart.currency);
-        }
-        _this.calculate();
-        return _this.geoip();
       };
     })(this));
+  };
+
+  imagoCart.prototype.statusLoaded = function() {
+    var i, item, len, ref, ref1, ref2, ref3, ref4, ref5;
+    ref = this.cart.items;
+    for (i = 0, len = ref.length; i < len; i++) {
+      item = ref[i];
+      item.finalsale = (ref1 = item.fields) != null ? (ref2 = ref1['final-sale']) != null ? ref2.value : void 0 : void 0;
+      item.stock = Number((ref3 = item.fields) != null ? (ref4 = ref3.stock) != null ? (ref5 = ref4.value) != null ? ref5[this.fulfillmentsCenter.selected._id] : void 0 : void 0 : void 0);
+    }
+    if (!this.currency) {
+      this.currency = angular.copy(this.cart.currency);
+    }
+    this.calculate();
+    return this.checkGeoIp();
   };
 
   imagoCart.prototype.checkCart = function() {
@@ -267,7 +393,7 @@ imagoCart = (function() {
 
 })();
 
-angular.module('imago').service('imagoCart', ['$q', '$rootScope', '$window', '$http', 'imagoUtils', 'imagoModel', 'imagoSettings', imagoCart]);
+angular.module('imago').service('imagoCart', ['$q', '$rootScope', '$window', '$http', 'imagoUtils', 'imagoModel', 'fulfillmentsCenter', 'geoIp', 'imagoSettings', imagoCart]);
 
 var VariantsStorage;
 
