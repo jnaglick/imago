@@ -39,7 +39,7 @@ var Price;
 Price = (function() {
   function Price(imagoUtils) {
     return function(price, decimal) {
-      var format;
+      var dec, format, thousand;
       if (decimal == null) {
         decimal = 2;
       }
@@ -48,7 +48,12 @@ Price = (function() {
       } else {
         format = 1000.5.toLocaleString();
         price = Number(price) / 100;
-        return imagoUtils.formatCurrency(price, decimal, format.charAt(5), format.charAt(1));
+        dec = format.charAt(5);
+        thousand = format.charAt(1);
+        if (dec !== '.' && dec !== ',') {
+          return price;
+        }
+        return imagoUtils.formatCurrency(price, decimal, dec, thousand);
       }
     };
   }

@@ -7,4 +7,7 @@ class Price extends Filter
       else
         format = 1000.5.toLocaleString()
         price = Number(price) / 100
-        return imagoUtils.formatCurrency(price, decimal, format.charAt(5), format.charAt(1))
+        dec = format.charAt(5)
+        thousand = format.charAt(1)
+        return price if dec not in ['.', ',']
+        return imagoUtils.formatCurrency(price, decimal, dec, thousand)
