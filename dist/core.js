@@ -1724,6 +1724,20 @@ imagoUtils = (function() {
         ints = value.slice(0, value.length - decimal) || '0';
         return ints + "." + floats;
       },
+      formatCurrency: function(number, c, d, t) {
+        var t;
+        var d;
+        var c;
+        var i, j, n, s;
+        n = number;
+        c = isNaN(c = Math.abs(c)) ? 2 : c;
+        d = d === void 0 ? '.' : d;
+        t = t === void 0 ? ',' : t;
+        s = n < 0 ? '-' : '';
+        i = parseInt(n = Math.abs(+n || 0).toFixed(c)) + '';
+        j = (j = i.length) > 3 ? j % 3 : 0;
+        return s + (j ? i.substr(0, j) + t : '') + i.substr(j).replace(/(\d{3})(?=\d)/g, '$1' + t) + (c ? d + Math.abs(n - i).toFixed(c).slice(2) : '');
+      },
       toPrice: function(value, currency) {
         var price, symbol;
         price = this.toFloat(value).replace(/(\d)(?=(\d{3})+\.)/g, '$1,');
