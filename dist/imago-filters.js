@@ -37,18 +37,18 @@ angular.module('imago').filter('normalize', ['imagoUtils', Normalize]);
 var Price;
 
 Price = (function() {
-  function Price() {
+  function Price(imagoUtils) {
     return function(price, decimal) {
+      var format;
       if (decimal == null) {
         decimal = 2;
       }
       if (_.isUndefined(price)) {
         return String(0..toFixed(decimal));
       } else {
-        price = parseFloat(price);
-        price = (price / 100).toFixed(decimal);
-        price = Number(price).toLocaleString();
-        return price;
+        format = 1000.5.toLocaleString();
+        price = Number(price) / 100;
+        return imagoUtils.formatCurrency(price, decimal, format.charAt(5), format.charAt(1));
       }
     };
   }
@@ -57,7 +57,7 @@ Price = (function() {
 
 })();
 
-angular.module('imago').filter('price', [Price]);
+angular.module('imago').filter('price', ['imagoUtils', Price]);
 
 var tagFilter,
   indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };

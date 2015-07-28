@@ -1,11 +1,10 @@
 class Price extends Filter
 
-  constructor: ->
+  constructor: (imagoUtils) ->
     return (price, decimal = 2) ->
       if _.isUndefined price
         return String(0.toFixed(decimal))
       else
-        price = parseFloat price
-        price = (price/100).toFixed(decimal)
-        price = Number(price).toLocaleString()
-        return price
+        format = 1000.5.toLocaleString()
+        price = Number(price) / 100
+        return imagoUtils.formatCurrency(price, decimal, format.charAt(5), format.charAt(1))
