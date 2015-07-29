@@ -79,7 +79,9 @@ class imagoCart extends Service
         item.discountedPrice = item.fields?.discountedPrice?.value
         item.updates.push('price') unless 'price' in item.updates
 
-      update = true if item.updates.length
+      if item.updates.length
+        @newmessages = true
+        update = true
 
     @currency = angular.copy(@cart.currency) unless @currency
     @update() if update
