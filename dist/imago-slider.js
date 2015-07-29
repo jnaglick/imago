@@ -110,6 +110,9 @@ imagoSlider = (function() {
                   return '';
               }
             })();
+            if (index === void 0) {
+              return scope.goNext();
+            }
             scope.currentIndex = index;
             return $rootScope.$emit(scope.imagoslider.conf.namespace + ":changed", index);
           };
@@ -140,7 +143,7 @@ imagoSlider = (function() {
         if (scope.imagoslider.conf.enablekeys) {
           $document.on('keydown', keyboardBinding);
         }
-        watchers.push($rootScope.$on(scope.imagoslider.conf.namespace + ":change", function(event, index) {
+        watchers.push($rootScope.$on(scope.imagoslider.conf.namespace + ":change", function(evt, index) {
           scope.clearInterval();
           return scope.setCurrent(index);
         }));

@@ -105,10 +105,11 @@ class imagoSlider extends Directive
             # make last to first infinit if loop over one collection
             when index is 0 and scope.currentIndex is (parseInt(scope.imagoslider.length) - 1) and not scope.imagoslider.conf.siblings then 'next'
             when index is (parseInt(scope.imagoslider.length) - 1) and scope.currentIndex is 0 and not scope.imagoslider.conf.siblings then 'prev'
-
             when index > scope.currentIndex then 'next'
             when index < scope.currentIndex then 'prev'
             else ''
+
+          return scope.goNext() if index is undefined
 
           # console.log 'scope.action', scope.action
           scope.currentIndex = index
@@ -133,7 +134,7 @@ class imagoSlider extends Directive
         if scope.imagoslider.conf.enablekeys
           $document.on 'keydown', keyboardBinding
 
-        watchers.push $rootScope.$on "#{scope.imagoslider.conf.namespace}:change", (event, index) ->
+        watchers.push $rootScope.$on "#{scope.imagoslider.conf.namespace}:change", (evt, index) ->
           scope.clearInterval()
           scope.setCurrent(index)
 
@@ -159,4 +160,3 @@ class imagoSliderController extends Controller
       autoplay:     0
       next:         null
       prev:         null
-
