@@ -183,12 +183,12 @@ class Calculation extends Service
     with_shippingcost = []
     for item in @cart.items
       # continue unless item.shipping
-      if not item.shipping_cost?[@currency]
+      if not item.fields.shippingCost?.value?[@currency]
         if rate.type is 'weight'
           count += item.weight * item.qty
         else
           count += item.qty
-      else if item.shipping_cost?[@currency]
+      else if item.fields.shippingCost?.value?[@currency]
         with_shippingcost.push(item)
 
     if count is 0 and rate.type isnt 'weight' and not with_shippingcost.length
@@ -207,7 +207,7 @@ class Calculation extends Service
     #   shipping = (range.price[@currency] or 0) * count
 
     for item in with_shippingcost
-      shipping += (item.shipping_cost?[@currency] or 0) * item.qty
+      shipping += (item.fields.shippingCost?.value?[@currency] or 0) * item.qty
     defer.resolve({'shipping': shipping, 'rate': rate})
 
     defer.promise
