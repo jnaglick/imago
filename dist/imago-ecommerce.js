@@ -402,7 +402,9 @@ imagoCart = (function() {
       if (!filter.name) {
         filter.name = copy.name;
       }
-      filter.qty += copy.qty;
+      if (filter.qty !== filter.stock) {
+        filter.qty += copy.qty;
+      }
       _.assign(filter.options, copy.options);
       _.assign(filter.fields, copy.fields);
     } else {
@@ -510,5 +512,5 @@ VariantsStorage = (function() {
 
 angular.module('imago').service('variantsStorage', ['$http', '$q', 'imagoModel', 'imagoSettings', VariantsStorage]);
 
-angular.module("imago").run(["$templateCache", function($templateCache) {$templateCache.put("/imago/imago-cart-messages.html","<div class=\"messages\"><div ng-repeat=\"key in item.updates\" class=\"message\">the {{key}} of this item has a new value.</div></div>");
+angular.module("imago").run(["$templateCache", function($templateCache) {$templateCache.put("/imago/imago-cart-messages.html","<div class=\"messages\"><div ng-repeat=\"key in item.updates\" class=\"message\">sorry, the {{key}} is not available.</div></div>");
 $templateCache.put("/imago/imago-cart.html","<div class=\"cart\"><div ng-click=\"cart.imagoCart.show = !cart.imagoCart.show\" ng-class=\"{\'message\': cart.imagoCart.newmessages}\" class=\"icon\"><div ng-bind=\"cart.imagoCart.itemsLength\" class=\"counter\"></div></div><div ng-show=\"cart.imagoCart.show\" class=\"box\"><div ng-transclude=\"ng-transclude\"></div><div ng-show=\"cart.imagoCart.itemsLength\" class=\"itemnumber\">{{cart.imagoCart.itemsLength}} items</div><div ng-show=\"cart.imagoCart.itemsLength === 0\" class=\"noitems\">cart empty</div><div ng-show=\"cart.imagoCart.itemsLength\" class=\"subtotal\">subtotal: {{cart.imagoCart.subtotal | price:0}}</div><button ng-show=\"cart.imagoCart.cart.items.length\" type=\"submit\" ng-click=\"cart.imagoCart.checkout()\" class=\"checkout\">checkout</button></div></div>");}]);

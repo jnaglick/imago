@@ -136,7 +136,7 @@ class imagoCart extends Service
 
     if filter
       filter.name = copy.name unless filter.name
-      filter.qty += copy.qty
+      filter.qty += copy.qty if filter.qty isnt filter.stock
       _.assign filter.options, copy.options
       _.assign filter.fields, copy.fields
     else
