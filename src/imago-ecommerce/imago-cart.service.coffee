@@ -63,10 +63,26 @@ class imagoCart extends Service
         @statusLoaded()
 
   statusLoaded: ->
+    update = false
     for item in @cart.items
-      item.finalsale = item.fields?['final-sale']?.value
+      item.finalsale = item.fields?.finalSale?.value
       item.stock = Number(item.fields?.stock?.value?[@fulfillmentsCenter.selected._id])
+      item.updates = []
+      continue unless item.changed.length
+      if item.qty > item.stock
+        item.qty = item.stock
+        item.updates.push 'quantity'
+      if 'price' in item.changed
+        item.price = item.fields?.price?.value
+        item.updates.push 'price'
+      if 'discountedPrice' in item.changed
+        item.discountedPrice = item.fields?.discountedPrice?.value
+        item.updates.push('price') unless 'price' in item.updates
+
+      update = true if item.updates.length
+
     @currency = angular.copy(@cart.currency) unless @currency
+    @update() if update
     @calculate()
     @checkGeoIp()
 
@@ -89,7 +105,7 @@ class imagoCart extends Service
     return console.log 'item required' unless item
     return console.log 'quantity required' unless item.qty
 
-    item.finalsale = item.fields?['final-sale']?.value
+    item.finalsale = item.fields?.finalSale?.value
 
     if _.isArray(options) and options?.length
       item.options = {}
