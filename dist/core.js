@@ -1800,24 +1800,26 @@ imagoUtils = (function() {
       getCurrency: function(country) {
         return CURRENCY_MAPPING[country];
       },
-      getCountryByCode: function(country) {
-        var key, value;
-        for (key in CODES) {
-          value = CODES[key];
-          if (value === country) {
+      getCountryByCode: function(code) {
+        var key, ref, value;
+        ref = this.CODES;
+        for (key in ref) {
+          value = ref[key];
+          if (value === code) {
             return key;
+            break;
           }
-          break;
         }
       },
-      getCountryCodeByCountry: function(code) {
-        var key, value;
-        for (key in CODES) {
-          value = CODES[key];
-          if (key === code) {
+      getCountryCodeByCountry: function(country) {
+        var key, ref, value;
+        ref = this.CODES;
+        for (key in ref) {
+          value = ref[key];
+          if (key === country) {
             return value;
+            break;
           }
-          break;
         }
       },
       includesTax: function(currency) {
