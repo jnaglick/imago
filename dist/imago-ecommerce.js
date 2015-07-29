@@ -4,6 +4,8 @@ var FulfillmentsCenter,
 FulfillmentsCenter = (function() {
   FulfillmentsCenter.prototype.data = [];
 
+  FulfillmentsCenter.prototype.loaded = false;
+
   FulfillmentsCenter.prototype.selected = {};
 
   function FulfillmentsCenter($http, $rootScope, geoIp, imagoSettings, imagoUtils) {
@@ -28,13 +30,14 @@ FulfillmentsCenter = (function() {
     var watcher;
     if (this.data.length === 1) {
       this.selected = this.data[0];
+      this.loaded = true;
       return this.$rootScope.$emit('fulfillments:loaded', this.data);
     }
     if (this.geoIp.data.country) {
       return this.geoValid();
     } else if (this.geoIp.data === null) {
       return this.getGeneric();
-    } else if (_.isEmpty(this.geoIp.data)) {
+    } else if (!this.geoIp.loaded) {
       return watcher = this.$rootScope.$on('geoip:loaded', (function(_this) {
         return function(evt, data) {
           watcher();
@@ -52,7 +55,8 @@ FulfillmentsCenter = (function() {
     this.selected = _.find(this.data, function(ffc) {
       return !ffc.countries.length;
     });
-    return this.$rootScope.$emit('fulfillments:loaded', this.data);
+    this.$rootScope.$emit('fulfillments:loaded', this.data);
+    return this.loaded = true;
   };
 
   FulfillmentsCenter.prototype.geoValid = function() {
@@ -63,7 +67,8 @@ FulfillmentsCenter = (function() {
       };
     })(this));
     if (this.selected) {
-      return this.$rootScope.$emit('fulfillments:loaded', this.data);
+      this.$rootScope.$emit('fulfillments:loaded', this.data);
+      this.loaded = true;
     } else {
       return this.getGeneric();
     }
@@ -80,6 +85,8 @@ var GeoIp;
 GeoIp = (function() {
   GeoIp.prototype.data = {};
 
+  GeoIp.prototype.loaded = false;
+
   function GeoIp($rootScope, $http, imagoUtils) {
     this.$rootScope = $rootScope;
     this.$http = $http;
@@ -91,18 +98,21 @@ GeoIp = (function() {
     if (this.imagoUtils.cookie('countryGeo')) {
       this.data.country = this.imagoUtils.cookie('countryGeo');
       this.$rootScope.$emit('geoip:loaded', this.data);
+      this.loaded = true;
       return;
     }
     return this.$http.get('//api.imago.io/geoip').then((function(_this) {
       return function(response) {
         _this.data = response.data;
         _this.imagoUtils.cookie('countryGeo', _this.data.country);
-        return _this.$rootScope.$emit('geoip:loaded', _this.data);
+        _this.$rootScope.$emit('geoip:loaded', _this.data);
+        return _this.loaded = true;
       };
     })(this), (function(_this) {
       return function(err) {
         _this.data = null;
-        return _this.$rootScope.$emit('geoip:loaded', _this.data);
+        _this.$rootScope.$emit('geoip:loaded', _this.data);
+        return _this.loaded = true;
       };
     })(this));
   };
@@ -162,7 +172,7 @@ imagoCart = (function() {
 
   imagoCart.prototype.settings = [];
 
-  function imagoCart($q, $rootScope, $window, $http, imagoUtils, imagoModel, fulfillmentsCenter, geoIp, imagoSettings) {
+  function imagoCart($q, $rootScope, $window, $http, imagoUtils, imagoModel, fulfillmentsCenter, geoIp, imagoSettings, tenantSettings) {
     this.$q = $q;
     this.$rootScope = $rootScope;
     this.$window = $window;
@@ -180,22 +190,30 @@ imagoCart = (function() {
     this.cart = {
       items: []
     };
-    this.$rootScope.$on('settings:loaded', (function(_this) {
-      return function(evt, message) {
-        var local;
-        _this.currencies = _this.$rootScope.tenantSettings.currencies;
-        local = _this.imagoUtils.cookie('imagoCart');
-        if (local) {
-          return _this.checkStatus(local);
-        } else {
-          if (_this.currencies.length === 1) {
-            _this.currency = _this.currencies[0];
-          }
-          return _this.checkGeoIp();
-        }
-      };
-    })(this));
+    if (tenantSettings.loaded) {
+      this.onSettings();
+    } else {
+      this.$rootScope.$on('settings:loaded', (function(_this) {
+        return function(evt, message) {
+          return _this.onSettings();
+        };
+      })(this));
+    }
   }
+
+  imagoCart.prototype.onSettings = function() {
+    var local;
+    this.currencies = this.$rootScope.tenantSettings.currencies;
+    local = this.imagoUtils.cookie('imagoCart');
+    if (local) {
+      return this.checkStatus(local);
+    } else {
+      if (this.currencies.length === 1) {
+        this.currency = this.currencies[0];
+      }
+      return this.checkGeoIp();
+    }
+  };
 
   imagoCart.prototype.checkGeoIp = function() {
     var watcher;
@@ -243,7 +261,7 @@ imagoCart = (function() {
         var watcher;
         console.log('check cart', response.data);
         _.assign(_this.cart, response.data);
-        if (!_this.fulfillmentsCenter.data.length) {
+        if (!_this.fulfillmentsCenter.loaded) {
           return watcher = _this.$rootScope.$on('fulfillments:loaded', function(evt, data) {
             _this.statusLoaded();
             return watcher();
@@ -405,7 +423,7 @@ imagoCart = (function() {
 
 })();
 
-angular.module('imago').service('imagoCart', ['$q', '$rootScope', '$window', '$http', 'imagoUtils', 'imagoModel', 'fulfillmentsCenter', 'geoIp', 'imagoSettings', imagoCart]);
+angular.module('imago').service('imagoCart', ['$q', '$rootScope', '$window', '$http', 'imagoUtils', 'imagoModel', 'fulfillmentsCenter', 'geoIp', 'imagoSettings', 'tenantSettings', imagoCart]);
 
 var VariantsStorage;
 

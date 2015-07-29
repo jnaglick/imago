@@ -1,6 +1,7 @@
 class TenantSettings extends Service
 
   data: {}
+  loaded: false
 
   constructor: (@$http, @$rootScope, @imagoSettings) ->
     @get()
@@ -21,4 +22,5 @@ class TenantSettings extends Service
     @data.settings = tmp
 
     @$rootScope.tenantSettings = @data
+    @loaded = true
     @$rootScope.$emit 'settings:loaded', @data

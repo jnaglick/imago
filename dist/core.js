@@ -2028,6 +2028,8 @@ var TenantSettings;
 TenantSettings = (function() {
   TenantSettings.prototype.data = {};
 
+  TenantSettings.prototype.loaded = false;
+
   function TenantSettings($http, $rootScope, imagoSettings) {
     this.$http = $http;
     this.$rootScope = $rootScope;
@@ -2058,6 +2060,7 @@ TenantSettings = (function() {
     }
     this.data.settings = tmp;
     this.$rootScope.tenantSettings = this.data;
+    this.loaded = true;
     return this.$rootScope.$emit('settings:loaded', this.data);
   };
 

@@ -4,19 +4,25 @@ class imagoCart extends Service
   itemsLength: 0
   settings: []
 
-  constructor: (@$q, @$rootScope, @$window, @$http, @imagoUtils, @imagoModel, @fulfillmentsCenter, @geoIp, @imagoSettings) ->
+  constructor: (@$q, @$rootScope, @$window, @$http, @imagoUtils, @imagoModel, @fulfillmentsCenter, @geoIp, @imagoSettings, tenantSettings) ->
 
     @cart =
       items: []
 
-    @$rootScope.$on 'settings:loaded', (evt, message) =>
-      @currencies = @$rootScope.tenantSettings.currencies
-      local = @imagoUtils.cookie('imagoCart')
-      if local
-        @checkStatus(local)
-      else
-        @currency = @currencies[0] if @currencies.length is 1
-        @checkGeoIp()
+    if tenantSettings.loaded
+      @onSettings()
+    else
+      @$rootScope.$on 'settings:loaded', (evt, message) =>
+        @onSettings()
+
+  onSettings: ->
+    @currencies = @$rootScope.tenantSettings.currencies
+    local = @imagoUtils.cookie('imagoCart')
+    if local
+      @checkStatus(local)
+    else
+      @currency = @currencies[0] if @currencies.length is 1
+      @checkGeoIp()
 
   checkGeoIp: ->
     if @geoIp.data is null
@@ -49,7 +55,7 @@ class imagoCart extends Service
     @$http.get("#{@imagoSettings.host}/api/carts?cartid=#{id}").then (response) =>
       console.log 'check cart', response.data
       _.assign @cart, response.data
-      unless @fulfillmentsCenter.data.length
+      unless @fulfillmentsCenter.loaded
         watcher = @$rootScope.$on 'fulfillments:loaded', (evt, data) =>
           @statusLoaded()
           watcher()
