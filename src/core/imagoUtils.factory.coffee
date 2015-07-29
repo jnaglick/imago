@@ -978,6 +978,18 @@ class imagoUtils extends Factory
       getCurrency: (country) ->
         CURRENCY_MAPPING[country]
 
+      getCountryByCode: (country) ->
+        for key,value of CODES
+          if value is country
+            return key
+          break
+
+      getCountryCodeByCountry: (code) ->
+        for key,value of CODES
+          if key is code
+            return value
+          break
+
       includesTax: (currency) ->
         TAXINCLUDED =
           'USD' : false
