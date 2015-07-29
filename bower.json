@@ -12,7 +12,8 @@
     "angular-mocks": "*",
     "angular-inview": "git@github.com:sebastiannm/angular-inview.git",
     "lodash": "~3",
-    "bowser": "*"
+    "bowser": "*",
+    "polyfill-Number.toLocaleString-with-Locales": "git@github.com:willsp/polyfill-Number.toLocaleString-with-Locales.git"
   },
   "ignore": [
     "**/.*",
