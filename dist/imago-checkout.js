@@ -234,14 +234,20 @@ Calculation = (function() {
       }
       rates = _.filter(rates_by_country, (function(_this) {
         return function(item) {
-          return item.states.length === 0;
+          return !item.states.length;
         };
-      })(this)) || _.filter(this.shippingmethods, function(item) {
+      })(this));
+      if (rates.length) {
+        return rates;
+      }
+      return _.filter(this.shippingmethods, function(item) {
         return !item.countries.length;
       });
-      return rates;
     } else {
-      return rates_by_country || _.filter(this.shippingmethods, function(item) {
+      if (rates_by_country.length) {
+        return rates_by_country;
+      }
+      return _.filter(this.shippingmethods, function(item) {
         return !item.countries.length;
       });
     }

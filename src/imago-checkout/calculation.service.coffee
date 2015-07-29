@@ -121,22 +121,21 @@ class Calculation extends Service
 
     if @country in ['United States of America', 'USA']
       @country = 'United States'
-
     # get all rates for this country
     rates_by_country = _.filter @shippingmethods, (item) =>
       item.active and @country?.toUpperCase() in (c.toUpperCase() for c in item.countries)
-
     if @state
       # check if there is a rate specific for this state
       rates = _.filter rates_by_country, (item) => @state.toUpperCase() in (s.toUpperCase() for s in item.states)
       return rates if rates?.length
-      # console.log 'rates after first loop...', rates
       # if we didnt find any rates yet check if there is a less specific rate.
-      rates = _.filter(rates_by_country, (item) => item.states.length is 0) or \
-             _.filter(@shippingmethods, (item) -> !item.countries.length)
-      return rates
+      rates = _.filter(rates_by_country, (item) => !item.states.length)
+      return rates if rates.length
+      return _.filter(@shippingmethods, (item) -> !item.countries.length)
+       
     else
-      return rates_by_country or _.filter @shippingmethods, (item) -> !item.countries.length
+      return rates_by_country if rates_by_country.length
+      return _.filter @shippingmethods, (item) -> !item.countries.length
 
   changeShipping: =>
     @calcShipping(@shipping_options).then (response) =>
@@ -148,8 +147,6 @@ class Calculation extends Service
 
     return if @calculateShippingRunning
     @calculateShippingRunning = true
-
-    # return @calcShipping(@shipping_options, deferred) if @shipping_options
 
     @costs.shipping = 0
 
@@ -192,19 +189,13 @@ class Calculation extends Service
         with_shippingcost.push(item)
 
     if count is 0 and rate.type isnt 'weight' and not with_shippingcost.length
-      # @costs.shipping = 0
       defer.resolve({'shipping': 0, 'rate': rate})
 
     range = _.find rate.ranges, (range) -> count <= range.to_unit and count >= range.from_unit
     range = rate.ranges[rate.ranges.length - 1] or 0 if not range
-    # console.log 'range is', range, 'rate', rate, 'count', count
 
     shipping = range.price[@currency] or 0
 
-    # if rate.type is 'weight'
-    #   shipping = range.price[@currency] or 0
-    # else
-    #   shipping = (range.price[@currency] or 0) * count
 
     for item in with_shippingcost
       shipping += (item.fields.shippingCost?.value?[@currency] or 0) * item.qty
