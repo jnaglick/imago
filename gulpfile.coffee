@@ -165,8 +165,8 @@ gulp.task "build", ["clean"], ->
 
 ## Essentials Task
 
-gulp.task "watch", ['join'], ->
-  watch "#{src}/**/*.*"
+gulp.task "watch", ->
+  watch({glob: "#{src}/**/*.*", emitOnGlob: false})
     .pipe tap (file, t) ->
       compileFolder(path.dirname(file.relative))
 
