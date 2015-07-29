@@ -16,10 +16,10 @@ class TenantSettings extends Service
     for item in data
       @data[item.name] = item.value
 
-    # tmp = {}
-    # for item in @data.settings
-    #   tmp[_.camelCase item.name] = item.value
-    # @data.settings = tmp
+    tmp = {}
+    for item in @data.settings
+      tmp[item.name] = item.value
+    @data.settings = tmp
 
     @$rootScope.tenantSettings = @data
     @loaded = true
