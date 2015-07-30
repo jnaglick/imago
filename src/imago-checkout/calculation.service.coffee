@@ -77,11 +77,11 @@ class Calculation extends Service
     if meta.type is 'flat'
       value = Math.min(costs.subtotal, meta.value[@currency])
       costs.discount = value
-      costs.subtotal = costs.subtotal - value
+      # costs.subtotal = costs.subtotal - value
     else if meta.type is 'percent'
       percentvalue = Number((costs.subtotal * meta.value / 100).toFixed(0))
       costs.discount = percentvalue
-      costs.subtotal = costs.subtotal - percentvalue
+      # costs.subtotal = costs.subtotal - percentvalue
     else if meta.type is 'free shipping'
       costs.discount = null
       codes = (code.toUpperCase() for code in meta.value) if meta.value?.length
@@ -287,6 +287,7 @@ class Calculation extends Service
   calculateTotal: =>
     @costs.total = 0
     @costs.total += @costs.subtotal if @costs.subtotal
+    @costs.total -= @costs.discount if @costs.discount
     @costs.total += @costs.shipping if @costs.shipping
     # @costs.total += @costs.tax if @costs.tax and !@taxincluded
     @costs.total += @costs.tax if @costs.tax

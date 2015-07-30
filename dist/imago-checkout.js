@@ -127,12 +127,10 @@ Calculation = (function() {
     this.couponState = 'valid';
     if (meta.type === 'flat') {
       value = Math.min(costs.subtotal, meta.value[this.currency]);
-      costs.discount = value;
-      return costs.subtotal = costs.subtotal - value;
+      return costs.discount = value;
     } else if (meta.type === 'percent') {
       percentvalue = Number((costs.subtotal * meta.value / 100).toFixed(0));
-      costs.discount = percentvalue;
-      return costs.subtotal = costs.subtotal - percentvalue;
+      return costs.discount = percentvalue;
     } else if (meta.type === 'free shipping') {
       costs.discount = null;
       if ((ref = meta.value) != null ? ref.length : void 0) {
@@ -490,6 +488,9 @@ Calculation = (function() {
     this.costs.total = 0;
     if (this.costs.subtotal) {
       this.costs.total += this.costs.subtotal;
+    }
+    if (this.costs.discount) {
+      this.costs.total -= this.costs.discount;
     }
     if (this.costs.shipping) {
       this.costs.total += this.costs.shipping;
