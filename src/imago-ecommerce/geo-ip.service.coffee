@@ -8,13 +8,14 @@ class GeoIp extends Service
 
   get: ->
     if @imagoUtils.cookie('countryGeo')
-      @data.country = @imagoUtils.cookie('countryGeo')
+      @data.country = @imagoUtils.getCountryByCode(@imagoUtils.cookie('countryGeo'))
       @$rootScope.$emit 'geoip:loaded', @data
       @loaded = true
       return
     @$http.get('//api.imago.io/geoip').then (response) =>
-      @data = response.data
-      @imagoUtils.cookie 'countryGeo', @data.country
+      code = @imagoUtils.getCountryByCode(response.data.country_code)
+      @imagoUtils.cookie 'countryGeo', response.data.country_code
+      @data = code
       @$rootScope.$emit 'geoip:loaded', @data
       @loaded = true
     , (err) =>

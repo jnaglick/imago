@@ -96,15 +96,17 @@ GeoIp = (function() {
 
   GeoIp.prototype.get = function() {
     if (this.imagoUtils.cookie('countryGeo')) {
-      this.data.country = this.imagoUtils.cookie('countryGeo');
+      this.data.country = this.imagoUtils.getCountryByCode(this.imagoUtils.cookie('countryGeo'));
       this.$rootScope.$emit('geoip:loaded', this.data);
       this.loaded = true;
       return;
     }
     return this.$http.get('//api.imago.io/geoip').then((function(_this) {
       return function(response) {
-        _this.data = response.data;
-        _this.imagoUtils.cookie('countryGeo', _this.data.country);
+        var code;
+        code = _this.imagoUtils.getCountryByCode(response.data.country_code);
+        _this.imagoUtils.cookie('countryGeo', response.data.country_code);
+        _this.data = code;
         _this.$rootScope.$emit('geoip:loaded', _this.data);
         return _this.loaded = true;
       };
