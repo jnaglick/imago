@@ -471,6 +471,44 @@ imagoCart = (function() {
 
 angular.module('imago').service('imagoCart', ['$q', '$rootScope', '$window', '$http', 'imagoUtils', 'imagoModel', 'fulfillmentsCenter', 'geoIp', 'imagoSettings', 'tenantSettings', imagoCart]);
 
+var ShippingCountries;
+
+ShippingCountries = (function() {
+  ShippingCountries.prototype.data = [];
+
+  ShippingCountries.prototype.loaded = false;
+
+  function ShippingCountries($http, imagoSettings) {
+    this.$http = $http;
+    this.imagoSettings = imagoSettings;
+    this.get();
+  }
+
+  ShippingCountries.prototype.get = function() {
+    return this.$http.get(this.imagoSettings.host + '/api/shippingmethods').then((function(_this) {
+      return function(response) {
+        var country, i, j, len, len1, method, ref, ref1;
+        ref = response.data;
+        for (i = 0, len = ref.length; i < len; i++) {
+          method = ref[i];
+          ref1 = method.countries;
+          for (j = 0, len1 = ref1.length; j < len1; j++) {
+            country = ref1[j];
+            _this.data.push(country);
+          }
+        }
+        _this.data = _.compact(_.uniq(_this.data));
+        return _this.loaded = true;
+      };
+    })(this));
+  };
+
+  return ShippingCountries;
+
+})();
+
+angular.module('imago').service('shippingCountries', ['$http', 'imagoSettings', ShippingCountries]);
+
 var VariantsStorage;
 
 VariantsStorage = (function() {
