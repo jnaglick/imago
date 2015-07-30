@@ -120,17 +120,21 @@ Calculation = (function() {
   Calculation.prototype.applyCoupon = function(coupon, costs) {
     var code, codes, meta, percentvalue, ref, ref1, ref2, ref3, value;
     if (!coupon) {
+      costs.discount = null;
       return;
     }
     meta = coupon.meta;
     this.couponState = 'valid';
     if (meta.type === 'flat') {
       value = Math.min(costs.subtotal, meta.value[this.currency]);
+      costs.discount = value;
       return costs.subtotal = costs.subtotal - value;
     } else if (meta.type === 'percent') {
-      percentvalue = Number((costs.subtotal * meta.value / 10000).toFixed(0));
+      percentvalue = Number((costs.subtotal * meta.value / 100).toFixed(0));
+      costs.discount = percentvalue;
       return costs.subtotal = costs.subtotal - percentvalue;
     } else if (meta.type === 'free shipping') {
+      costs.discount = null;
       if ((ref = meta.value) != null ? ref.length : void 0) {
         codes = (function() {
           var i, len, ref1, results;

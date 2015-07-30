@@ -68,17 +68,22 @@ class Calculation extends Service
       @calculate()
 
   applyCoupon: (coupon, costs) =>
-    return unless coupon
+    unless coupon
+      costs.discount = null
+      return
     meta = coupon.meta
     @couponState = 'valid'
 
     if meta.type is 'flat'
       value = Math.min(costs.subtotal, meta.value[@currency])
+      costs.discount = value
       costs.subtotal = costs.subtotal - value
     else if meta.type is 'percent'
-      percentvalue = Number((costs.subtotal * meta.value / 10000).toFixed(0))
+      percentvalue = Number((costs.subtotal * meta.value / 100).toFixed(0))
+      costs.discount = percentvalue
       costs.subtotal = costs.subtotal - percentvalue
     else if meta.type is 'free shipping'
+      costs.discount = null
       codes = (code.toUpperCase() for code in meta.value) if meta.value?.length
       if meta.value?.length and (@shipping_options.code.toUpperCase() in codes)
         costs.shipping = 0
@@ -132,7 +137,7 @@ class Calculation extends Service
       rates = _.filter(rates_by_country, (item) => !item.states.length)
       return rates if rates.length
       return _.filter(@shippingmethods, (item) -> !item.countries.length)
-       
+
     else
       return rates_by_country if rates_by_country.length
       return _.filter @shippingmethods, (item) -> !item.countries.length
