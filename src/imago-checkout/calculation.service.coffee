@@ -124,8 +124,9 @@ class Calculation extends Service
   findShippingRate: =>
     return unless @country
 
-    if @country in ['United States of America', 'USA']
+    if @imagoUtils.inUsa @country
       @country = 'United States'
+
     # get all rates for this country
     rates_by_country = _.filter @shippingmethods, (item) =>
       item.active and @country?.toUpperCase() in (c.toUpperCase() for c in item.countries)

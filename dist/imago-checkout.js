@@ -195,42 +195,42 @@ Calculation = (function() {
   };
 
   Calculation.prototype.findShippingRate = function() {
-    var rates, rates_by_country, ref;
+    var rates, rates_by_country;
     if (!this.country) {
       return;
     }
-    if ((ref = this.country) === 'United States of America' || ref === 'USA') {
+    if (this.imagoUtils.inUsa(this.country)) {
       this.country = 'United States';
     }
     rates_by_country = _.filter(this.shippingmethods, (function(_this) {
       return function(item) {
-        var c, ref1, ref2;
-        return item.active && (ref1 = (ref2 = _this.country) != null ? ref2.toUpperCase() : void 0, indexOf.call((function() {
-          var i, len, ref3, results;
-          ref3 = item.countries;
+        var c, ref, ref1;
+        return item.active && (ref = (ref1 = _this.country) != null ? ref1.toUpperCase() : void 0, indexOf.call((function() {
+          var i, len, ref2, results;
+          ref2 = item.countries;
           results = [];
-          for (i = 0, len = ref3.length; i < len; i++) {
-            c = ref3[i];
+          for (i = 0, len = ref2.length; i < len; i++) {
+            c = ref2[i];
             results.push(c.toUpperCase());
           }
           return results;
-        })(), ref1) >= 0);
+        })(), ref) >= 0);
       };
     })(this));
     if (this.state) {
       rates = _.filter(rates_by_country, (function(_this) {
         return function(item) {
-          var ref1, s;
-          return ref1 = _this.state.toUpperCase(), indexOf.call((function() {
-            var i, len, ref2, results;
-            ref2 = item.states;
+          var ref, s;
+          return ref = _this.state.toUpperCase(), indexOf.call((function() {
+            var i, len, ref1, results;
+            ref1 = item.states;
             results = [];
-            for (i = 0, len = ref2.length; i < len; i++) {
-              s = ref2[i];
+            for (i = 0, len = ref1.length; i < len; i++) {
+              s = ref1[i];
               results.push(s.toUpperCase());
             }
             return results;
-          })(), ref1) >= 0;
+          })(), ref) >= 0;
         };
       })(this));
       if (rates != null ? rates.length : void 0) {
