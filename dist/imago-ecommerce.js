@@ -499,7 +499,7 @@ ShippingCountries = (function() {
             _this.data.push(country);
           }
         }
-        _this.data = _.compact(_.uniq(_this.data));
+        _this.data = _.sortBy(_.compact(_.uniq(_this.data)));
         return _this.loaded = true;
       };
     })(this));

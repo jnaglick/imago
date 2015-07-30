@@ -13,5 +13,5 @@ class ShippingCountries extends Service
         for country in method.countries
           @data.push country
 
-      @data = _.compact _.uniq @data
+      @data = _.sortBy _.compact _.uniq @data
       @loaded = true
