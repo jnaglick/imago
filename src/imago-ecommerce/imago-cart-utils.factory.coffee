@@ -4,8 +4,11 @@ class ImagoCartUtils extends Factory
 
     return {
 
-      updateItem: (item) ->
+      updateChangedItem: (item) ->
         return item unless item.changed.length
+        item.updates = []
+        item.finalsale = item.fields?.finalSale?.value
+        item.presale = item.fields?.presale?.value
         if item.qty > item.stock
           item.qty = item.stock
           item.updates.push 'quantity'

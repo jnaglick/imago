@@ -4,7 +4,7 @@ class imagoCart extends Service
   itemsLength: 0
   settings: []
 
-  constructor: (@$q, @$rootScope, @$window, @$http, @imagoUtils, @imagoModel, @fulfillmentsCenter, @geoIp, @imagoSettings, tenantSettings) ->
+  constructor: (@$q, @$rootScope, @$window, @$http, @imagoUtils, @imagoModel, @fulfillmentsCenter, @geoIp, @imagoSettings, tenantSettings, @imagoCartUtils) ->
 
     @cart =
       items: []
@@ -65,21 +65,9 @@ class imagoCart extends Service
   statusLoaded: ->
     update = false
     for item in @cart.items
-      item.finalsale = item.fields?.finalSale?.value
       item.stock = Number(item.fields?.stock?.value?[@fulfillmentsCenter.selected._id])
-      item.updates = []
-      continue unless item.changed.length
-      if item.qty > item.stock
-        item.qty = item.stock
-        item.updates.push 'quantity'
-      if 'price' in item.changed
-        item.price = item.fields?.price?.value
-        item.updates.push 'price'
-      if 'discountedPrice' in item.changed
-        item.discountedPrice = item.fields?.discountedPrice?.value
-        item.updates.push('price') unless 'price' in item.updates
-
-      if item.updates.length
+      item = @imagoCartUtils.updateChangedItem(item)
+      if item.updates?.length
         @newmessages = true
         update = true
 
@@ -108,6 +96,7 @@ class imagoCart extends Service
     return console.log 'quantity required' unless item.qty
 
     item.finalsale = item.fields?.finalSale?.value
+    item.presale = item.fields?.presale?.value
 
     if _.isArray(options) and options?.length
       item.options = {}
@@ -133,6 +122,11 @@ class imagoCart extends Service
 
     copy = angular.copy item
     filter = _.find @cart.items, { _id: copy._id }
+
+    if copy.fields?.discountedPrice?.value?[@currency]
+      copy.price = copy.fields.discountedPrice.value
+    else
+      copy.price = copy.fields.price.value
 
     if filter
       filter.name = copy.name unless filter.name
@@ -170,8 +164,8 @@ class imagoCart extends Service
 
     for item in @cart.items
       @itemsLength += item.qty
-      continue unless item.qty and item.fields.price.value[@currency]
-      @subtotal += item.qty * item.fields.price.value[@currency]
+      continue unless item.qty and item.price[@currency]
+      @subtotal += item.qty * item.price[@currency]
 
   checkout: ->
     return unless tenant

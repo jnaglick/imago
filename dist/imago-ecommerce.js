@@ -149,21 +149,24 @@ var ImagoCartUtils,
 ImagoCartUtils = (function() {
   function ImagoCartUtils() {
     return {
-      updateItem: function(item) {
-        var ref, ref1, ref2, ref3, ref4, ref5, ref6;
+      updateChangedItem: function(item) {
+        var ref, ref1, ref10, ref2, ref3, ref4, ref5, ref6, ref7, ref8, ref9;
         if (!item.changed.length) {
           return item;
         }
+        item.updates = [];
+        item.finalsale = (ref = item.fields) != null ? (ref1 = ref.finalSale) != null ? ref1.value : void 0 : void 0;
+        item.presale = (ref2 = item.fields) != null ? (ref3 = ref2.presale) != null ? ref3.value : void 0 : void 0;
         if (item.qty > item.stock) {
           item.qty = item.stock;
           item.updates.push('quantity');
         }
         if (indexOf.call(item.changed, 'price') >= 0) {
-          item.price = (ref = item.fields) != null ? (ref1 = ref.price) != null ? ref1.value : void 0 : void 0;
+          item.price = (ref4 = item.fields) != null ? (ref5 = ref4.price) != null ? ref5.value : void 0 : void 0;
           item.updates.push('price');
         }
-        if (indexOf.call(item.changed, 'discountedPrice') >= 0 && ((ref2 = item.fields) != null ? (ref3 = ref2.discountedPrice) != null ? (ref4 = ref3.value) != null ? ref4[this.currency] : void 0 : void 0 : void 0)) {
-          item.price = (ref5 = item.fields) != null ? (ref6 = ref5.discountedPrice) != null ? ref6.value : void 0 : void 0;
+        if (indexOf.call(item.changed, 'discountedPrice') >= 0 && ((ref6 = item.fields) != null ? (ref7 = ref6.discountedPrice) != null ? (ref8 = ref7.value) != null ? ref8[this.currency] : void 0 : void 0 : void 0)) {
+          item.price = (ref9 = item.fields) != null ? (ref10 = ref9.discountedPrice) != null ? ref10.value : void 0 : void 0;
           if (indexOf.call(item.updates, 'price') < 0) {
             item.updates.push('price');
           }
@@ -228,7 +231,7 @@ imagoCart = (function() {
 
   imagoCart.prototype.settings = [];
 
-  function imagoCart($q, $rootScope, $window, $http, imagoUtils, imagoModel, fulfillmentsCenter, geoIp, imagoSettings, tenantSettings) {
+  function imagoCart($q, $rootScope, $window, $http, imagoUtils, imagoModel, fulfillmentsCenter, geoIp, imagoSettings, tenantSettings, imagoCartUtils) {
     this.$q = $q;
     this.$rootScope = $rootScope;
     this.$window = $window;
@@ -238,6 +241,7 @@ imagoCart = (function() {
     this.fulfillmentsCenter = fulfillmentsCenter;
     this.geoIp = geoIp;
     this.imagoSettings = imagoSettings;
+    this.imagoCartUtils = imagoCartUtils;
     this.remove = bind(this.remove, this);
     this.update = bind(this.update, this);
     this.create = bind(this.create, this);
@@ -330,32 +334,14 @@ imagoCart = (function() {
   };
 
   imagoCart.prototype.statusLoaded = function() {
-    var i, item, len, ref, ref1, ref2, ref3, ref4, ref5, ref6, ref7, ref8, ref9, update;
+    var i, item, len, ref, ref1, ref2, ref3, ref4, update;
     update = false;
     ref = this.cart.items;
     for (i = 0, len = ref.length; i < len; i++) {
       item = ref[i];
-      item.finalsale = (ref1 = item.fields) != null ? (ref2 = ref1.finalSale) != null ? ref2.value : void 0 : void 0;
-      item.stock = Number((ref3 = item.fields) != null ? (ref4 = ref3.stock) != null ? (ref5 = ref4.value) != null ? ref5[this.fulfillmentsCenter.selected._id] : void 0 : void 0 : void 0);
-      item.updates = [];
-      if (!item.changed.length) {
-        continue;
-      }
-      if (item.qty > item.stock) {
-        item.qty = item.stock;
-        item.updates.push('quantity');
-      }
-      if (indexOf.call(item.changed, 'price') >= 0) {
-        item.price = (ref6 = item.fields) != null ? (ref7 = ref6.price) != null ? ref7.value : void 0 : void 0;
-        item.updates.push('price');
-      }
-      if (indexOf.call(item.changed, 'discountedPrice') >= 0) {
-        item.discountedPrice = (ref8 = item.fields) != null ? (ref9 = ref8.discountedPrice) != null ? ref9.value : void 0 : void 0;
-        if (indexOf.call(item.updates, 'price') < 0) {
-          item.updates.push('price');
-        }
-      }
-      if (item.updates.length) {
+      item.stock = Number((ref1 = item.fields) != null ? (ref2 = ref1.stock) != null ? (ref3 = ref2.value) != null ? ref3[this.fulfillmentsCenter.selected._id] : void 0 : void 0 : void 0);
+      item = this.imagoCartUtils.updateChangedItem(item);
+      if ((ref4 = item.updates) != null ? ref4.length : void 0) {
         this.newmessages = true;
         update = true;
       }
@@ -392,7 +378,7 @@ imagoCart = (function() {
   };
 
   imagoCart.prototype.add = function(item, options, fields) {
-    var copy, field, filter, i, j, len, len1, option, parent, ref, ref1, ref2;
+    var copy, field, filter, i, j, len, len1, option, parent, ref, ref1, ref2, ref3, ref4, ref5, ref6, ref7;
     if (!item) {
       return console.log('item required');
     }
@@ -400,6 +386,7 @@ imagoCart = (function() {
       return console.log('quantity required');
     }
     item.finalsale = (ref = item.fields) != null ? (ref1 = ref.finalSale) != null ? ref1.value : void 0 : void 0;
+    item.presale = (ref2 = item.fields) != null ? (ref3 = ref2.presale) != null ? ref3.value : void 0 : void 0;
     if (_.isArray(options) && (options != null ? options.length : void 0)) {
       item.options = {};
       for (i = 0, len = options.length; i < len; i++) {
@@ -409,7 +396,7 @@ imagoCart = (function() {
     } else if (_.isPlainObject(options)) {
       item.options = options;
     }
-    if ((ref2 = item.options) != null ? ref2.name : void 0) {
+    if ((ref4 = item.options) != null ? ref4.name : void 0) {
       item.name = item.options.name;
       delete item.options.name;
     }
@@ -436,6 +423,11 @@ imagoCart = (function() {
     filter = _.find(this.cart.items, {
       _id: copy._id
     });
+    if ((ref5 = copy.fields) != null ? (ref6 = ref5.discountedPrice) != null ? (ref7 = ref6.value) != null ? ref7[this.currency] : void 0 : void 0 : void 0) {
+      copy.price = copy.fields.discountedPrice.value;
+    } else {
+      copy.price = copy.fields.price.value;
+    }
     if (filter) {
       if (!filter.name) {
         filter.name = copy.name;
@@ -488,10 +480,10 @@ imagoCart = (function() {
     for (i = 0, len = ref.length; i < len; i++) {
       item = ref[i];
       this.itemsLength += item.qty;
-      if (!(item.qty && item.fields.price.value[this.currency])) {
+      if (!(item.qty && item.price[this.currency])) {
         continue;
       }
-      results.push(this.subtotal += item.qty * item.fields.price.value[this.currency]);
+      results.push(this.subtotal += item.qty * item.price[this.currency]);
     }
     return results;
   };
@@ -507,7 +499,7 @@ imagoCart = (function() {
 
 })();
 
-angular.module('imago').service('imagoCart', ['$q', '$rootScope', '$window', '$http', 'imagoUtils', 'imagoModel', 'fulfillmentsCenter', 'geoIp', 'imagoSettings', 'tenantSettings', imagoCart]);
+angular.module('imago').service('imagoCart', ['$q', '$rootScope', '$window', '$http', 'imagoUtils', 'imagoModel', 'fulfillmentsCenter', 'geoIp', 'imagoSettings', 'tenantSettings', 'imagoCartUtils', imagoCart]);
 
 var ShippingCountries;
 
