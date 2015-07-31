@@ -4,7 +4,7 @@ class imagoCart extends Service
   itemsLength: 0
   settings: []
 
-  constructor: (@$q, @$rootScope, @$window, @$http, @imagoUtils, @imagoModel, @fulfillmentsCenter, @geoIp, @imagoSettings, tenantSettings, @imagoCartUtils) ->
+  constructor: (@$q, @$rootScope, @$location, @$window, @$http, @imagoUtils, @imagoModel, @fulfillmentsCenter, @geoIp, @imagoSettings, tenantSettings, @imagoCartUtils) ->
 
     @cart =
       items: []
@@ -127,6 +127,8 @@ class imagoCart extends Service
       copy.price = copy.fields.discountedPrice.value
     else
       copy.price = copy.fields.price.value
+
+    copy.link = @$location.url()
 
     if filter
       filter.name = copy.name unless filter.name

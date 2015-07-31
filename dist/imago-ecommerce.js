@@ -204,8 +204,9 @@ imagoCart = (function() {
 })();
 
 imagoCartController = (function() {
-  function imagoCartController(imagoCart1) {
+  function imagoCartController(imagoCart1, $location) {
     this.imagoCart = imagoCart1;
+    this.$location = $location;
     this.clickOut = function(evt, className) {
       if (evt.target.tagName === 'BUTTON' && evt.target.className.indexOf(className) !== -1) {
         return;
@@ -214,11 +215,15 @@ imagoCartController = (function() {
     };
   }
 
+  imagoCartController.prototype.goToProduct = function(url) {
+    return this.$location.url(url);
+  };
+
   return imagoCartController;
 
 })();
 
-angular.module('imago').directive('imagoCart', [imagoCart]).controller('imagoCartController', ['imagoCart', imagoCartController]);
+angular.module('imago').directive('imagoCart', [imagoCart]).controller('imagoCartController', ['imagoCart', '$location', imagoCartController]);
 
 var imagoCart,
   bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
@@ -231,9 +236,10 @@ imagoCart = (function() {
 
   imagoCart.prototype.settings = [];
 
-  function imagoCart($q, $rootScope, $window, $http, imagoUtils, imagoModel, fulfillmentsCenter, geoIp, imagoSettings, tenantSettings, imagoCartUtils) {
+  function imagoCart($q, $rootScope, $location, $window, $http, imagoUtils, imagoModel, fulfillmentsCenter, geoIp, imagoSettings, tenantSettings, imagoCartUtils) {
     this.$q = $q;
     this.$rootScope = $rootScope;
+    this.$location = $location;
     this.$window = $window;
     this.$http = $http;
     this.imagoUtils = imagoUtils;
@@ -428,6 +434,7 @@ imagoCart = (function() {
     } else {
       copy.price = copy.fields.price.value;
     }
+    copy.link = this.$location.url();
     if (filter) {
       if (!filter.name) {
         filter.name = copy.name;
@@ -499,7 +506,7 @@ imagoCart = (function() {
 
 })();
 
-angular.module('imago').service('imagoCart', ['$q', '$rootScope', '$window', '$http', 'imagoUtils', 'imagoModel', 'fulfillmentsCenter', 'geoIp', 'imagoSettings', 'tenantSettings', 'imagoCartUtils', imagoCart]);
+angular.module('imago').service('imagoCart', ['$q', '$rootScope', '$location', '$window', '$http', 'imagoUtils', 'imagoModel', 'fulfillmentsCenter', 'geoIp', 'imagoSettings', 'tenantSettings', 'imagoCartUtils', imagoCart]);
 
 var ShippingCountries;
 
