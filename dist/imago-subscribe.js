@@ -1,29 +1,14 @@
 var ImagoSubscribe, ImagoSubscribeController;
 
 ImagoSubscribe = (function() {
-  function ImagoSubscribe($http, $templateCache, $compile, $parse, imagoSettings) {
-    var defaultTemplate, getTemplate;
-    defaultTemplate = '/imago/imago-subscribe.html';
-    getTemplate = function(url) {
-      var templateLoader;
-      templateLoader = $http.get(url, {
-        cache: $templateCache
-      });
-      return templateLoader;
-    };
+  function ImagoSubscribe() {
     return {
       require: 'form',
+      restrict: 'A',
       transclude: true,
       controller: 'imagoSubscribeController as imagosubscribe',
-      link: function(scope, element, attrs) {
-        var syntax, template;
-        template = attrs.templateurl ? attrs.templateurl : defaultTemplate;
-        syntax = void 0;
-        return getTemplate(template).success(function(html) {
-          return syntax = html;
-        }).then(function() {
-          return element.append($compile(syntax)(scope));
-        });
+      templateUrl: function(element, attrs) {
+        return attrs.templateurl || '/imago/imago-subscribe.html';
       }
     };
   }
@@ -57,6 +42,6 @@ ImagoSubscribeController = (function() {
 
 })();
 
-angular.module('imago').directive('imagoSubscribe', ['$http', '$templateCache', '$compile', '$parse', 'imagoSettings', ImagoSubscribe]).controller('imagoSubscribeController', ['$http', '$parse', 'imagoSettings', ImagoSubscribeController]);
+angular.module('imago').directive('imagoSubscribe', [ImagoSubscribe]).controller('imagoSubscribeController', ['$http', '$parse', 'imagoSettings', ImagoSubscribeController]);
 
 angular.module("imago").run(["$templateCache", function($templateCache) {$templateCache.put("/imago/imago-subscribe.html","<div class=\"imago-subscribe\"><div ng-transclude=\"ng-transclude\" ng-hide=\"imagosubscribe.submitted &amp;&amp; !imagosubscribe.error\"></div><div ng-show=\"imagosubscribe.submitted &amp;&amp; imagosubscribe.error\" class=\"error\">please try again later</div><div ng-show=\"imagosubscribe.submitted &amp;&amp; !imagosubscribe.error\" class=\"submitted\">subscription created</div></div>");}]);

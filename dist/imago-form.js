@@ -35,4 +35,4 @@ imagoForm = (function() {
 
 angular.module('imago').directive('imagoForm', ['imagoSubmit', imagoForm]);
 
-angular.module("imago").run(["$templateCache", function($templateCache) {$templateCache.put("/imago/imagoForm.html","<div class=\"imagoForm\"></div>");}]);
+angular.module("imago").run(["$templateCache", function($templateCache) {$templateCache.put("/imago/imago-form.html","<div class=\"imagoForm\"></div>");}]);

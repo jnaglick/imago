@@ -1,29 +1,15 @@
 class ImagoSubscribe extends Directive
 
-  constructor: ($http, $templateCache, $compile, $parse, imagoSettings) ->
-
-    defaultTemplate = '/imago/imago-subscribe.html'
-
-    getTemplate = (url) ->
-      templateLoader = $http.get(url,
-        cache: $templateCache
-      )
-      templateLoader
+  constructor: ->
 
     return {
 
       require: 'form'
+      restrict: 'A'
       transclude: true
       controller: 'imagoSubscribeController as imagosubscribe'
-      link: (scope, element, attrs) ->
-        template = if attrs.templateurl then attrs.templateurl else defaultTemplate
-
-        syntax = undefined
-
-        getTemplate(template).success((html) ->
-          syntax = html
-        ).then ->
-          element.append $compile(syntax)(scope)
+      templateUrl: (element, attrs) ->
+        return attrs.templateurl or '/imago/imago-subscribe.html'
 
     }
 
