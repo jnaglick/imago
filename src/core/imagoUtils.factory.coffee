@@ -979,12 +979,15 @@ class imagoUtils extends Factory
         CURRENCY_MAPPING[country]
 
       getCountryByCode: (code) ->
+        return unless code
+        code = code.toUpperCase()
         for key,value of @CODES
           if value is code
             return key
             break
 
       getCountryCodeByCountry: (country) ->
+        return unless country
         for key,value of @CODES
           if key is country
             return value
