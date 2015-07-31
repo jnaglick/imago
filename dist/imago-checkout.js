@@ -293,7 +293,7 @@ Calculation = (function() {
             if (_this.shipping_options && _this.shipping_options._id === response.rate._id) {
               _this.costs.shipping = response.shipping;
               deferred.resolve();
-            } else if (!_this.shipping_options || !angular.equals(_this.shippingRates, rates)) {
+            } else if (!_this.shipping_options || _.difference(_this.shippingRates, rates).length) {
               _this.setShippingRates(rates);
               _this.costs.shipping = response.shipping;
               deferred.resolve();

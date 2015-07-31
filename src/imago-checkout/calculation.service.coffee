@@ -171,7 +171,7 @@ class Calculation extends Service
           if @shipping_options and @shipping_options._id is response.rate._id
             @costs.shipping = response.shipping
             deferred.resolve()
-          else if not @shipping_options or not angular.equals(@shippingRates, rates)
+          else if not @shipping_options or _.difference(@shippingRates, rates).length
             @setShippingRates(rates)
             @costs.shipping = response.shipping
             deferred.resolve()
