@@ -143,6 +143,42 @@ ImagoCartMessages = (function() {
 
 angular.module('imago').directive('imagoCartMessages', [ImagoCartMessages]);
 
+var ImagoCartUtils,
+  indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
+
+ImagoCartUtils = (function() {
+  function ImagoCartUtils() {
+    return {
+      updateItem: function(item) {
+        var ref, ref1, ref2, ref3, ref4, ref5, ref6;
+        if (!item.changed.length) {
+          return item;
+        }
+        if (item.qty > item.stock) {
+          item.qty = item.stock;
+          item.updates.push('quantity');
+        }
+        if (indexOf.call(item.changed, 'price') >= 0) {
+          item.price = (ref = item.fields) != null ? (ref1 = ref.price) != null ? ref1.value : void 0 : void 0;
+          item.updates.push('price');
+        }
+        if (indexOf.call(item.changed, 'discountedPrice') >= 0 && ((ref2 = item.fields) != null ? (ref3 = ref2.discountedPrice) != null ? (ref4 = ref3.value) != null ? ref4[this.currency] : void 0 : void 0 : void 0)) {
+          item.price = (ref5 = item.fields) != null ? (ref6 = ref5.discountedPrice) != null ? ref6.value : void 0 : void 0;
+          if (indexOf.call(item.updates, 'price') < 0) {
+            item.updates.push('price');
+          }
+        }
+        return item;
+      }
+    };
+  }
+
+  return ImagoCartUtils;
+
+})();
+
+angular.module('imago').factory('imagoCartUtils', [ImagoCartUtils]);
+
 var imagoCart, imagoCartController;
 
 imagoCart = (function() {
