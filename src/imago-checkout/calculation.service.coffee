@@ -184,15 +184,16 @@ class Calculation extends Service
     defer = @$q.defer()
     count = 0
     with_shippingcost = []
+    shipping = 0
     for item in @cart.items
-      # continue unless item.shipping
-      if not item.fields.shippingCost?.value?[@currency]
+
+      if item.fields.overwriteShippingCosts?.value?[@currency]
+        with_shippingcost.push(item)
+      else if item.fields.calculateShippingCosts?.value
         if rate.type is 'weight'
           count += item.weight * item.qty
         else
           count += item.qty
-      else if item.fields.shippingCost?.value?[@currency]
-        with_shippingcost.push(item)
 
     if count is 0 and rate.type isnt 'weight' and not with_shippingcost.length
       defer.resolve({'shipping': 0, 'rate': rate})
@@ -200,11 +201,11 @@ class Calculation extends Service
     range = _.find rate.ranges, (range) -> count <= range.to_unit and count >= range.from_unit
     range = rate.ranges[rate.ranges.length - 1] or 0 if not range
 
-    shipping = range.price[@currency] or 0
+    shipping = range.price[@currency] or 0 if count
 
-
+    console.log 'shipping', shipping
     for item in with_shippingcost
-      shipping += (item.fields.shippingCost?.value?[@currency] or 0) * item.qty
+      shipping += (item.fields.overwriteShippingCosts?.value?[@currency] or 0) * item.qty
     defer.resolve({'shipping': shipping, 'rate': rate})
 
     defer.promise
@@ -216,15 +217,11 @@ class Calculation extends Service
     @getTaxRate().then =>
       @costs.tax = 0
 
-      # if @taxincluded
-      #   deferred.resolve()
-      #   return
-      # console.log 'currency', @currency, 'includestax', @imagoUtils.includesTax(@currency)
       if @imagoUtils.includesTax(@currency)
         @costs.includedTax = 0
-        # console.log '@costs.taxRate', @costs.taxRate
         if @costs.taxRate
           for item in @cart.items
+            continue unless item.fields.calculateTaxes?.value
             onepercent = item.fields.price.value[@currency]/(100+(@costs.taxRate*100)) * item.qty
             @costs.includedTax += onepercent*@costs.taxRate*100
           deferred.resolve()
@@ -232,6 +229,7 @@ class Calculation extends Service
           deferred.resolve()
       else
         for item in @cart.items
+          continue unless item.fields.calculateTaxes?.value
           if item.fields.price.value[@currency]
             @costs.tax += Math.round(item.fields.price.value[@currency] * item.qty * @costs.taxRate)
         deferred.resolve()
