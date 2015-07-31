@@ -130,10 +130,12 @@ class Calculation extends Service
     # get all rates for this country
     rates_by_country = _.filter @shippingmethods, (item) =>
       item.active and @country?.toUpperCase() in (c.toUpperCase() for c in item.countries)
+
     if @state
       # check if there is a rate specific for this state
       rates = _.filter rates_by_country, (item) => @state.toUpperCase() in (s.toUpperCase() for s in item.states)
       return rates if rates?.length
+
       # if we didnt find any rates yet check if there is a less specific rate.
       rates = _.filter(rates_by_country, (item) => !item.states.length)
       return rates if rates.length
@@ -191,7 +193,7 @@ class Calculation extends Service
         with_shippingcost.push(item)
       else if item.fields.calculateShippingCosts?.value
         if rate.type is 'weight'
-          count += item.weight * item.qty
+          count += (item.weight or 1) * item.qty
         else
           count += item.qty
 
@@ -201,9 +203,8 @@ class Calculation extends Service
     range = _.find rate.ranges, (range) -> count <= range.to_unit and count >= range.from_unit
     range = rate.ranges[rate.ranges.length - 1] or 0 if not range
 
-    shipping = range.price[@currency] or 0 if count
+    shipping = range.price[@currency] if count
 
-    console.log 'shipping', shipping
     for item in with_shippingcost
       shipping += (item.fields.overwriteShippingCosts?.value?[@currency] or 0) * item.qty
     defer.resolve({'shipping': shipping, 'rate': rate})

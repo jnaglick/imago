@@ -324,7 +324,7 @@ Calculation = (function() {
         with_shippingcost.push(item);
       } else if ((ref3 = item.fields.calculateShippingCosts) != null ? ref3.value : void 0) {
         if (rate.type === 'weight') {
-          count += item.weight * item.qty;
+          count += (item.weight || 1) * item.qty;
         } else {
           count += item.qty;
         }
@@ -343,9 +343,8 @@ Calculation = (function() {
       range = rate.ranges[rate.ranges.length - 1] || 0;
     }
     if (count) {
-      shipping = range.price[this.currency] || 0;
+      shipping = range.price[this.currency];
     }
-    console.log('shipping', shipping);
     for (j = 0, len1 = with_shippingcost.length; j < len1; j++) {
       item = with_shippingcost[j];
       shipping += (((ref4 = item.fields.overwriteShippingCosts) != null ? (ref5 = ref4.value) != null ? ref5[this.currency] : void 0 : void 0) || 0) * item.qty;
