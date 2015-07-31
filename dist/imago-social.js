@@ -4,7 +4,7 @@ imagoLike = (function() {
   function imagoLike() {
     return {
       scope: {},
-      templateUrl: '/imago/imagoLike.html'
+      templateUrl: '/imago/imago-like.html'
     };
   }
 
@@ -19,7 +19,7 @@ var imagoShare, imagoShareController;
 imagoShare = (function() {
   function imagoShare($compile, $templateCache, $http) {
     var defaultTemplate, getTemplate;
-    defaultTemplate = '/imago/imagoShare.html';
+    defaultTemplate = '/imago/imago-share.html';
     getTemplate = function(url) {
       var templateLoader;
       templateLoader = $http.get(url, {

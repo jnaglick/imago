@@ -5,7 +5,7 @@ imagoControls = (function() {
     return {
       replace: true,
       require: '^imagoVideo',
-      templateUrl: '/imago/controlsVideo.html',
+      templateUrl: '/imago/controls-video.html',
       controller: 'imagoControlsController as imagocontrols',
       link: function(scope, element, attrs) {
         scope.seek = function(value) {
@@ -87,7 +87,7 @@ imagoVideo = (function() {
     return {
       replace: true,
       scope: true,
-      templateUrl: '/imago/imagoVideo.html',
+      templateUrl: '/imago/imago-video.html',
       controller: 'imagoVideoController as imagovideo',
       link: function(scope, element, attrs) {
         var compile, detectCodec, isId, key, loadFormats, onResize, opts, preload, render, self, setPlayerAttrs, styleVideo, styleWrapper, value, watchers;

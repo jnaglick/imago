@@ -5,7 +5,7 @@ class imagoForm extends Directive
       scope: {}
       replace: true
       transclude: true
-      templateUrl: '/imago/imagoForm.html'
+      templateUrl: '/imago/imago-form.html'
       link: (scope, element, attr, cntrl, transclude) ->
 
         scope.data = {}

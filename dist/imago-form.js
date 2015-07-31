@@ -6,7 +6,7 @@ imagoForm = (function() {
       scope: {},
       replace: true,
       transclude: true,
-      templateUrl: '/imago/imagoForm.html',
+      templateUrl: '/imago/imago-form.html',
       link: function(scope, element, attr, cntrl, transclude) {
         scope.data = {};
         transclude(scope, function(clone, scope) {

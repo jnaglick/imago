@@ -5,7 +5,7 @@ imagoImage = (function() {
     return {
       replace: true,
       scope: true,
-      templateUrl: '/imago/imagoImage.html',
+      templateUrl: '/imago/imago-image.html',
       controller: 'imagoImageController',
       link: function(scope, element, attrs) {
         var calcMediaSize, compile, initialize, isId, key, opts, render, self, setImageStyle, value, watchers;

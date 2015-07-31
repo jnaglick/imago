@@ -5,6 +5,6 @@ class imagoLike extends Directive
     return {
 
       scope: {}
-      templateUrl: '/imago/imagoLike.html'
+      templateUrl: '/imago/imago-like.html'
 
     }

@@ -2,29 +2,13 @@ var imagoDownload;
 
 imagoDownload = (function() {
   function imagoDownload($compile, $templateCache, $http) {
-    var defaultTemplate, getTemplate;
-    defaultTemplate = '/imago/imagoDownload.html';
-    getTemplate = function(url) {
-      var templateLoader;
-      templateLoader = $http.get(url, {
-        cache: $templateCache
-      });
-      return templateLoader;
-    };
     return {
       scope: {
         asset: "=",
         fieldname: "="
       },
-      link: function(scope, element, attrs) {
-        var syntax, template;
-        template = attrs.templateurl ? attrs.templateurl : defaultTemplate;
-        syntax = void 0;
-        return getTemplate(template).success(function(html) {
-          return syntax = html;
-        }).then(function() {
-          return element.append($compile(syntax)(scope));
-        });
+      templateUrl: function(element, attrs) {
+        return attrs.templateurl || '/imago/imago-download.html';
       }
     };
   }

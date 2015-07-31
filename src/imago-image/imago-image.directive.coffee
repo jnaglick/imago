@@ -5,7 +5,7 @@ class imagoImage extends Directive
     return {
       replace: true
       scope: true
-      templateUrl: '/imago/imagoImage.html'
+      templateUrl: '/imago/imago-image.html'
       controller: 'imagoImageController'
       link: (scope, element, attrs) ->
         self = {}

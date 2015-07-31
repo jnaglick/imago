@@ -2,7 +2,7 @@ class imagoShare extends Directive
 
   constructor: ($compile, $templateCache, $http) ->
 
-    defaultTemplate = '/imago/imagoShare.html'
+    defaultTemplate = '/imago/imago-share.html'
 
     getTemplate = (url) ->
 

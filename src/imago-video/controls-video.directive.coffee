@@ -4,7 +4,7 @@ class imagoControls extends Directive
     return {
       replace: true
       require: '^imagoVideo'
-      templateUrl: '/imago/controlsVideo.html'
+      templateUrl: '/imago/controls-video.html'
       controller: 'imagoControlsController as imagocontrols'
       link: (scope, element, attrs) ->
 
