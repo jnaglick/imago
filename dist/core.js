@@ -1802,6 +1802,10 @@ imagoUtils = (function() {
       },
       getCountryByCode: function(code) {
         var key, ref, value;
+        if (!code) {
+          return;
+        }
+        code = code.toUpperCase();
         ref = this.CODES;
         for (key in ref) {
           value = ref[key];
@@ -1813,6 +1817,9 @@ imagoUtils = (function() {
       },
       getCountryCodeByCountry: function(country) {
         var key, ref, value;
+        if (!country) {
+          return;
+        }
         ref = this.CODES;
         for (key in ref) {
           value = ref[key];
