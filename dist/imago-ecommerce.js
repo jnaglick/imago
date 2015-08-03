@@ -151,10 +151,10 @@ ImagoCartUtils = (function() {
     return {
       updateChangedItem: function(item) {
         var ref, ref1, ref10, ref2, ref3, ref4, ref5, ref6, ref7, ref8, ref9;
+        item.updates = [];
         if (!item.changed.length) {
           return item;
         }
-        item.updates = [];
         item.finalsale = (ref = item.fields) != null ? (ref1 = ref.finalSale) != null ? ref1.value : void 0 : void 0;
         item.presale = (ref2 = item.fields) != null ? (ref3 = ref2.presale) != null ? ref3.value : void 0 : void 0;
         if (item.qty > item.stock) {
