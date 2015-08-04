@@ -15,7 +15,7 @@ class ImagoSubscribe extends Directive
 
 class ImagoSubscribeController extends Controller
 
-  constructor:($http, $parse, imagoSettings) ->
+  constructor:($scope, $attrs, $http, $parse, imagoSettings) ->
 
     @submit = (validate) ->
       return if validate.$invalid
