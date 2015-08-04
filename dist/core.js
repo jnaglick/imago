@@ -821,7 +821,7 @@ imagoModel = (function() {
       minusOrder = this.imagoSettings.index;
     } else {
       minusOrder = (idxOne.order - idxTwo.order) / (selection.length + 1);
-      if (minusOrder <= 0) {
+      if (minusOrder <= 0.05) {
         repair = true;
       }
     }

@@ -534,7 +534,7 @@ class imagoModel extends Service
       minusOrder = @imagoSettings.index
     else
       minusOrder = (idxOne.order-idxTwo.order) / (selection.length+1)
-      repair = true if minusOrder <= 0
+      repair = true if minusOrder <= 0.05
 
     data =
       minus  : minusOrder
