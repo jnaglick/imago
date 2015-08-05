@@ -77,18 +77,18 @@ class imagoSlider extends Directive
           # no loop
           if not scope.imagoslider.conf.loop
             scope.imagoslider.setCurrent(
-              if (scope.currentIndex < Number(scope.imagoslider.length) - 1) then scope.currentIndex + 1 else scope.currentIndex
+              if (scope.currentIndex < scope.imagoslider.length - 1) then scope.currentIndex + 1 else scope.currentIndex
             )
 
           # loop through current collection
           else if scope.imagoslider.conf.loop and not scope.imagoslider.conf.siblings
             scope.imagoslider.setCurrent(
-              if (scope.currentIndex < Number(scope.imagoslider.length) - 1) then scope.currentIndex + 1 else 0
+              if (scope.currentIndex < scope.imagoslider.length - 1) then scope.currentIndex + 1 else 0
             )
 
           # loop through sibling collections
           else if scope.imagoslider.conf.loop and scope.imagoslider.conf.siblings
-            if (scope.currentIndex < Number(scope.imagoslider.length) - 1)
+            if (scope.currentIndex < scope.imagoslider.length - 1)
               scope.imagoslider.setCurrent(scope.currentIndex + 1)
             else
               $location.path scope.imagoslider.conf.next

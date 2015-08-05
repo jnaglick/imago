@@ -81,11 +81,11 @@ imagoSlider = (function() {
               }
             }
             if (!scope.imagoslider.conf.loop) {
-              return scope.imagoslider.setCurrent(scope.currentIndex < Number(scope.imagoslider.length) - 1 ? scope.currentIndex + 1 : scope.currentIndex);
+              return scope.imagoslider.setCurrent(scope.currentIndex < scope.imagoslider.length - 1 ? scope.currentIndex + 1 : scope.currentIndex);
             } else if (scope.imagoslider.conf.loop && !scope.imagoslider.conf.siblings) {
-              return scope.imagoslider.setCurrent(scope.currentIndex < Number(scope.imagoslider.length) - 1 ? scope.currentIndex + 1 : 0);
+              return scope.imagoslider.setCurrent(scope.currentIndex < scope.imagoslider.length - 1 ? scope.currentIndex + 1 : 0);
             } else if (scope.imagoslider.conf.loop && scope.imagoslider.conf.siblings) {
-              if (scope.currentIndex < Number(scope.imagoslider.length) - 1) {
+              if (scope.currentIndex < scope.imagoslider.length - 1) {
                 return scope.imagoslider.setCurrent(scope.currentIndex + 1);
               } else {
                 return $location.path(scope.imagoslider.conf.next);
