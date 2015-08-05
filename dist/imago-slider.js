@@ -29,16 +29,16 @@ imagoSlider = (function() {
         }
         watchers = [];
         if (angular.isDefined(attrs.length)) {
-          watchers.push(attrs.$observe('length', function(data) {
+          attrs.$observe('length', function(data) {
             return scope.imagoslider.length = data;
-          }));
+          });
         } else {
-          watchers.push(scope.$watch('imagoslider.assets', function(data) {
+          scope.$watch('imagoslider.assets', function(data) {
             if (!data || !_.isArray(data)) {
               return;
             }
             return scope.imagoslider.length = data.length;
-          }));
+          });
         }
         scope.imagoslider.conf.siblings = !!(scope.imagoslider.conf.next && scope.imagoslider.conf.prev);
         if ($location.path().indexOf('last')) {
@@ -52,36 +52,41 @@ imagoSlider = (function() {
           }
           return $interval.cancel(scope.imagoslider.conf.interval);
         };
-        scope.goPrev = function(ev) {
+        scope.imagoslider.goPrev = function(ev) {
           if (typeof ev === 'object') {
             scope.clearInterval();
             ev.stopPropagation();
           }
           if (!scope.imagoslider.conf.loop) {
-            return scope.setCurrent(scope.currentIndex > 0 ? scope.currentIndex - 1 : scope.currentIndex);
+            return scope.imagoslider.setCurrent(scope.currentIndex > 0 ? scope.currentIndex - 1 : scope.currentIndex);
           } else if (scope.imagoslider.conf.loop && !scope.imagoslider.conf.siblings) {
-            return scope.setCurrent(scope.currentIndex > 0 ? scope.currentIndex - 1 : parseInt(scope.imagoslider.length) - 1);
+            return scope.imagoslider.setCurrent(scope.currentIndex > 0 ? scope.currentIndex - 1 : parseInt(scope.imagoslider.length) - 1);
           } else if (scope.imagoslider.conf.loop && scope.imagoslider.conf.siblings) {
             if (scope.currentIndex > 0) {
-              return scope.setCurrent(scope.currentIndex - 1);
+              return scope.imagoslider.setCurrent(scope.currentIndex - 1);
             } else {
               return $location.path(scope.imagoslider.conf.prev);
             }
           }
         };
-        scope.goNext = (function(_this) {
-          return function(ev) {
-            if (typeof ev === 'object') {
+        scope.imagoslider.goNext = (function(_this) {
+          return function(ev, clearInterval) {
+            if (clearInterval == null) {
+              clearInterval = true;
+            }
+            if (typeof ev === 'object' || clearInterval) {
               scope.clearInterval();
-              ev.stopPropagation();
+              if (ev) {
+                ev.stopPropagation();
+              }
             }
             if (!scope.imagoslider.conf.loop) {
-              return scope.setCurrent(scope.currentIndex < parseInt(scope.imagoslider.length) - 1 ? scope.currentIndex + 1 : scope.currentIndex);
+              return scope.imagoslider.setCurrent(scope.currentIndex < Number(scope.imagoslider.length) - 1 ? scope.currentIndex + 1 : scope.currentIndex);
             } else if (scope.imagoslider.conf.loop && !scope.imagoslider.conf.siblings) {
-              return scope.setCurrent(scope.currentIndex < parseInt(scope.imagoslider.length) - 1 ? scope.currentIndex + 1 : 0);
+              return scope.imagoslider.setCurrent(scope.currentIndex < Number(scope.imagoslider.length) - 1 ? scope.currentIndex + 1 : 0);
             } else if (scope.imagoslider.conf.loop && scope.imagoslider.conf.siblings) {
-              if (scope.currentIndex < parseInt(scope.imagoslider.length) - 1) {
-                return scope.setCurrent(scope.currentIndex + 1);
+              if (scope.currentIndex < Number(scope.imagoslider.length) - 1) {
+                return scope.imagoslider.setCurrent(scope.currentIndex + 1);
               } else {
                 return $location.path(scope.imagoslider.conf.next);
               }
@@ -89,39 +94,39 @@ imagoSlider = (function() {
           };
         })(this);
         scope.getLast = function() {
-          return parseInt(scope.imagoslider.length) - 1;
+          return Number(scope.imagoslider.length) - 1;
         };
         scope.getCurrent = function() {
           return scope.currentIndex;
         };
-        scope.setCurrent = (function(_this) {
-          return function(index) {
-            scope.action = (function() {
-              switch (false) {
-                case !(index === 0 && scope.currentIndex === (parseInt(scope.imagoslider.length) - 1) && !scope.imagoslider.conf.siblings):
-                  return 'next';
-                case !(index === (parseInt(scope.imagoslider.length) - 1) && scope.currentIndex === 0 && !scope.imagoslider.conf.siblings):
-                  return 'prev';
-                case !(index > scope.currentIndex):
-                  return 'next';
-                case !(index < scope.currentIndex):
-                  return 'prev';
-                default:
-                  return '';
-              }
-            })();
-            if (index === void 0) {
-              return scope.goNext();
+        scope.imagoslider.setCurrent = function(index) {
+          scope.action = (function() {
+            switch (false) {
+              case !(index === 0 && scope.currentIndex === (parseInt(this.length) - 1) && !this.conf.siblings):
+                return 'next';
+              case !(index === (parseInt(this.length) - 1) && scope.currentIndex === 0 && !this.conf.siblings):
+                return 'prev';
+              case !(index > scope.currentIndex):
+                return 'next';
+              case !(index < scope.currentIndex):
+                return 'prev';
+              default:
+                return '';
             }
-            scope.currentIndex = index;
-            return $rootScope.$emit(scope.imagoslider.conf.namespace + ":changed", index);
-          };
-        })(this);
+          }).call(this);
+          if (index === void 0) {
+            return this.goNext();
+          }
+          scope.currentIndex = index;
+          return $rootScope.$emit(this.conf.namespace + ":changed", index);
+        };
         if (!_.isUndefined(attrs.autoplay)) {
           scope.$watch(attrs.autoplay, (function(_this) {
             return function(value) {
               if (parseInt(value) > 0) {
-                return scope.imagoslider.conf.interval = $interval(scope.goNext, parseInt(value));
+                return scope.imagoslider.conf.interval = $interval(function() {
+                  return scope.imagoslider.goNext('', false);
+                }, parseInt(value));
               } else {
                 return scope.clearInterval();
               }
@@ -132,11 +137,11 @@ imagoSlider = (function() {
           switch (e.keyCode) {
             case 37:
               return scope.$apply(function() {
-                return scope.goPrev();
+                return scope.imagoslider.goPrev();
               });
             case 39:
               return scope.$apply(function() {
-                return scope.goNext();
+                return scope.imagoslider.goNext();
               });
           }
         };
@@ -145,7 +150,7 @@ imagoSlider = (function() {
         }
         watchers.push($rootScope.$on(scope.imagoslider.conf.namespace + ":change", function(evt, index) {
           scope.clearInterval();
-          return scope.setCurrent(index);
+          return scope.imagoslider.setCurrent(index);
         }));
         return scope.$on('$destroy', function() {
           var i, len, results, watch;
@@ -187,4 +192,4 @@ imagoSliderController = (function() {
 
 angular.module('imago').directive('imagoSlider', ['$rootScope', '$document', '$interval', '$location', imagoSlider]).controller('imagoSliderController', [imagoSliderController]);
 
-angular.module("imago").run(["$templateCache", function($templateCache) {$templateCache.put("/imago/imago-slider.html","<div ng-class=\"[imagoslider.conf.animation, action]\" ng-swipe-left=\"goNext($event)\" ng-swipe-right=\"goPrev($event)\" class=\"imagoslider\"><div ng-show=\"imagoslider.conf.enablearrows &amp;&amp; imagoslider.length &gt; 1\" ng-click=\"goPrev($event)\" analytics-on=\"click\" analytics-event=\"Previous Slide\" class=\"prev\"></div><div ng-show=\"imagoslider.conf.enablearrows &amp;&amp; imagoslider.length &gt; 1\" ng-click=\"goNext($event)\" analytics-on=\"click\" analytics-event=\"Next Slide\" class=\"next\"></div></div>");}]);
+angular.module("imago").run(["$templateCache", function($templateCache) {$templateCache.put("/imago/imago-slider.html","<div ng-class=\"[imagoslider.conf.animation, action]\" ng-swipe-left=\"imagoslider.goNext($event)\" ng-swipe-right=\"imagoslider.goPrev($event)\" class=\"imagoslider\"><div ng-show=\"imagoslider.conf.enablearrows &amp;&amp; imagoslider.length &gt; 1\" ng-click=\"imagoslider.goPrev($event)\" analytics-on=\"click\" analytics-event=\"Previous Slide\" class=\"prev\"></div><div ng-show=\"imagoslider.conf.enablearrows &amp;&amp; imagoslider.length &gt; 1\" ng-click=\"imagoslider.goNext($event)\" analytics-on=\"click\" analytics-event=\"Next Slide\" class=\"next\"></div></div>");}]);
