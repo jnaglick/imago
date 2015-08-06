@@ -575,7 +575,7 @@ class imagoModel extends Service
     for asset, idx in assets
       original = @find('_id' : asset._id)
 
-      return unless original
+      continue unless original
 
       copy =
         fields : original.fields
@@ -583,15 +583,16 @@ class imagoModel extends Service
 
       toedit = angular.copy asset
 
-      for key, value of toedit
+      for key of toedit
         if key is 'fields'
-
           for key of toedit.fields
             copy['fields'] or= {}
             copy['fields'][key] = toedit.fields[key]
 
         else
           copy[key] = toedit[key]
+
+      delete copy.fields if _.isEmpty copy.fields
 
       assets[idx] = copy
 

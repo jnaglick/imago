@@ -870,14 +870,14 @@ imagoModel = (function() {
   };
 
   imagoModel.prototype.batchChange = function(assets) {
-    var asset, copy, idx, j, key, len, original, toedit, value;
+    var asset, copy, idx, j, key, len, original, toedit;
     for (idx = j = 0, len = assets.length; j < len; idx = ++j) {
       asset = assets[idx];
       original = this.find({
         '_id': asset._id
       });
       if (!original) {
-        return;
+        continue;
       }
       copy = {
         fields: original.fields,
@@ -885,7 +885,6 @@ imagoModel = (function() {
       };
       toedit = angular.copy(asset);
       for (key in toedit) {
-        value = toedit[key];
         if (key === 'fields') {
           for (key in toedit.fields) {
             copy['fields'] || (copy['fields'] = {});
@@ -894,6 +893,9 @@ imagoModel = (function() {
         } else {
           copy[key] = toedit[key];
         }
+      }
+      if (_.isEmpty(copy.fields)) {
+        delete copy.fields;
       }
       assets[idx] = copy;
     }
