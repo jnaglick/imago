@@ -44,7 +44,7 @@ Price = (function() {
         decimal = 2;
       }
       if (_.isUndefined(price)) {
-        return void 0;
+        return '';
       } else {
         format = 1000.5.toLocaleString();
         price = Number(price) / 100;

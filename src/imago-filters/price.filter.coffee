@@ -3,7 +3,7 @@ class Price extends Filter
   constructor: (imagoUtils) ->
     return (price, decimal = 2) ->
       if _.isUndefined price
-        return undefined
+        return ''
       else
         format = 1000.5.toLocaleString()
         price = Number(price) / 100
