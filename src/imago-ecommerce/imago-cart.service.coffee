@@ -25,19 +25,15 @@ class imagoCart extends Service
       @checkGeoIp()
 
   checkGeoIp: ->
-    if @geoIp.data is null
-      @checkCurrency()
-    else if _.isEmpty(@geoIp.data)
+    unless @geoIp.loaded
       watcher = @$rootScope.$on 'geoip:loaded', (evt, data) =>
-        @geo = @geoIp.data
         @checkCurrency()
         watcher()
     else
-      @geo = @geoIp.data
       @checkCurrency()
 
   checkCurrency: ->
-    currency = @imagoUtils.CURRENCY_MAPPING[@geo.country] if @geo
+    currency = @imagoUtils.CURRENCY_MAPPING[@geoIp.data.country] unless _.isEmpty @geoIp.data
     if currency and @currencies and currency in @currencies
       @currency = currency
     else if @currencies?.length

@@ -106,7 +106,7 @@ GeoIp = (function() {
         var code;
         code = _this.imagoUtils.getCountryByCode(response.data.country_code);
         _this.imagoUtils.cookie('countryGeo', response.data.country_code);
-        _this.data = code;
+        _this.data.country = code;
         _this.$rootScope.$emit('geoip:loaded', _this.data);
         return _this.loaded = true;
       };
@@ -283,26 +283,22 @@ imagoCart = (function() {
 
   imagoCart.prototype.checkGeoIp = function() {
     var watcher;
-    if (this.geoIp.data === null) {
-      return this.checkCurrency();
-    } else if (_.isEmpty(this.geoIp.data)) {
+    if (!this.geoIp.loaded) {
       return watcher = this.$rootScope.$on('geoip:loaded', (function(_this) {
         return function(evt, data) {
-          _this.geo = _this.geoIp.data;
           _this.checkCurrency();
           return watcher();
         };
       })(this));
     } else {
-      this.geo = this.geoIp.data;
       return this.checkCurrency();
     }
   };
 
   imagoCart.prototype.checkCurrency = function() {
     var currency, ref;
-    if (this.geo) {
-      currency = this.imagoUtils.CURRENCY_MAPPING[this.geo.country];
+    if (!_.isEmpty(this.geoIp.data)) {
+      currency = this.imagoUtils.CURRENCY_MAPPING[this.geoIp.data.country];
     }
     if (currency && this.currencies && indexOf.call(this.currencies, currency) >= 0) {
       this.currency = currency;
