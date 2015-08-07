@@ -274,9 +274,6 @@ imagoCart = (function() {
     if (local) {
       return this.checkStatus(local);
     } else {
-      if (this.currencies.length === 1) {
-        this.currency = this.currencies[0];
-      }
       return this.checkGeoIp();
     }
   };
@@ -284,6 +281,7 @@ imagoCart = (function() {
   imagoCart.prototype.checkGeoIp = function() {
     var watcher;
     if (!this.geoIp.loaded) {
+      this.checkCurrency();
       return watcher = this.$rootScope.$on('geoip:loaded', (function(_this) {
         return function(evt, data) {
           _this.checkCurrency();

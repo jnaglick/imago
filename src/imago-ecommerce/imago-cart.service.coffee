@@ -21,11 +21,11 @@ class imagoCart extends Service
     if local
       @checkStatus(local)
     else
-      @currency = @currencies[0] if @currencies.length is 1
       @checkGeoIp()
 
   checkGeoIp: ->
     unless @geoIp.loaded
+      @checkCurrency()
       watcher = @$rootScope.$on 'geoip:loaded', (evt, data) =>
         @checkCurrency()
         watcher()
