@@ -4,8 +4,7 @@
     type='text'
     ng-model='ngModel'
     ng-model-options="{'updateOn': 'blur'}"
-    ng-change="update(ngModel)"
-    ng-disabled="disabled || (min && max && isOverMin() === isOverMax())")
+    ng-change="update(ngModel)")
   button.decrement(
     type='button'
     ng-disabled='isOverMin() || disabled'
