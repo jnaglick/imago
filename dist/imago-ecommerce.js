@@ -378,7 +378,7 @@ imagoCart = (function() {
   };
 
   imagoCart.prototype.add = function(item, options, fields) {
-    var copy, field, filter, i, j, len, len1, option, parent, ref, ref1, ref2, ref3, ref4, ref5, ref6, ref7;
+    var copy, field, filter, i, j, len, len1, option, parent, ref, ref1, ref2, ref3, ref4, ref5, ref6, ref7, ref8, ref9;
     if (!item) {
       return console.log('item required');
     }
@@ -405,7 +405,7 @@ imagoCart = (function() {
     });
     if (parent) {
       if (!item.name) {
-        item.name = parent.name;
+        item.name = (ref5 = parent.fields) != null ? (ref6 = ref5.title) != null ? ref6.value : void 0 : void 0;
       }
       if (!item.serving_url) {
         item.serving_url = parent.serving_url;
@@ -423,7 +423,7 @@ imagoCart = (function() {
     filter = _.find(this.cart.items, {
       _id: copy._id
     });
-    if ((ref5 = copy.fields) != null ? (ref6 = ref5.discountedPrice) != null ? (ref7 = ref6.value) != null ? ref7[this.currency] : void 0 : void 0 : void 0) {
+    if ((ref7 = copy.fields) != null ? (ref8 = ref7.discountedPrice) != null ? (ref9 = ref8.value) != null ? ref9[this.currency] : void 0 : void 0 : void 0) {
       copy.price = copy.fields.discountedPrice.value;
     } else {
       copy.price = copy.fields.price.value;
