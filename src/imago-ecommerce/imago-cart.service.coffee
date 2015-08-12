@@ -108,7 +108,7 @@ class imagoCart extends Service
     parent = @imagoModel.find {'_id' : item.parent}
 
     if parent
-      item.name = parent.name unless item.name
+      item.name = parent.fields?.title?.value unless item.name
       item.serving_url = parent.serving_url unless item.serving_url
       if _.isArray(fields) and fields.length
         for field in fields

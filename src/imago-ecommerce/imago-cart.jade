@@ -11,8 +11,8 @@
     .itemnumber(
       ng-show="cart.imagoCart.itemsLength"
       ) {{cart.imagoCart.itemsLength}}
+      span(ng-show="cart.imagoCart.itemsLength === 1")  item
       span(ng-show="cart.imagoCart.itemsLength > 1")  items
-      span(ng-show="cart.imagoCart.itemsLength < 2")  item
     .noitems(
       ng-show="cart.imagoCart.itemsLength === 0"
       ) cart empty
