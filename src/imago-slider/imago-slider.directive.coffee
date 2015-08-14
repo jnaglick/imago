@@ -1,7 +1,9 @@
 class imagoSlider extends Directive
 
   constructor: ($rootScope, $document, $interval, $location) ->
+
     return {
+
       transclude: true
       scope: true
       templateUrl: '/imago/imago-slider.html'
@@ -29,8 +31,7 @@ class imagoSlider extends Directive
           attrs.$observe 'length', (data) ->
             scope.imagoslider.length = data
         else
-          scope.$watch 'imagoslider.assets', (data) ->
-            # console.log 'data', data
+          scope.$watchCollection 'imagoslider.assets', (data) ->
             return if not data or not _.isArray data
             scope.imagoslider.length = data.length
 
@@ -144,6 +145,7 @@ class imagoSlider extends Directive
           scope.clearInterval()
           for watch in watchers
             watch()
+
   }
 
 

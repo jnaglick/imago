@@ -33,7 +33,7 @@ imagoSlider = (function() {
             return scope.imagoslider.length = data;
           });
         } else {
-          scope.$watch('imagoslider.assets', function(data) {
+          scope.$watchCollection('imagoslider.assets', function(data) {
             if (!data || !_.isArray(data)) {
               return;
             }
