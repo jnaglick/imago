@@ -110,6 +110,8 @@ class imagoCart extends Service
     if parent
       item.name = parent.fields?.title?.value unless item.name
       item.serving_url = parent.serving_url unless item.serving_url
+      item.fields?.title?.value = parent.fields?.title?.value
+      item.fields?.description?.value = parent.fields?.description?.value
       if _.isArray(fields) and fields.length
         for field in fields
           item.fields[field] = parent.fields[field]

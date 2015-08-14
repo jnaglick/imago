@@ -378,7 +378,7 @@ imagoCart = (function() {
   };
 
   imagoCart.prototype.add = function(item, options, fields) {
-    var copy, field, filter, i, j, len, len1, option, parent, ref, ref1, ref2, ref3, ref4, ref5, ref6, ref7, ref8, ref9;
+    var copy, field, filter, i, j, len, len1, option, parent, ref, ref1, ref10, ref11, ref12, ref13, ref14, ref15, ref16, ref17, ref2, ref3, ref4, ref5, ref6, ref7, ref8, ref9;
     if (!item) {
       return console.log('item required');
     }
@@ -410,6 +410,16 @@ imagoCart = (function() {
       if (!item.serving_url) {
         item.serving_url = parent.serving_url;
       }
+      if ((ref7 = item.fields) != null) {
+        if ((ref8 = ref7.title) != null) {
+          ref8.value = (ref9 = parent.fields) != null ? (ref10 = ref9.title) != null ? ref10.value : void 0 : void 0;
+        }
+      }
+      if ((ref11 = item.fields) != null) {
+        if ((ref12 = ref11.description) != null) {
+          ref12.value = (ref13 = parent.fields) != null ? (ref14 = ref13.description) != null ? ref14.value : void 0 : void 0;
+        }
+      }
       if (_.isArray(fields) && fields.length) {
         for (j = 0, len1 = fields.length; j < len1; j++) {
           field = fields[j];
@@ -423,7 +433,7 @@ imagoCart = (function() {
     filter = _.find(this.cart.items, {
       _id: copy._id
     });
-    if ((ref7 = copy.fields) != null ? (ref8 = ref7.discountedPrice) != null ? (ref9 = ref8.value) != null ? ref9[this.currency] : void 0 : void 0 : void 0) {
+    if ((ref15 = copy.fields) != null ? (ref16 = ref15.discountedPrice) != null ? (ref17 = ref16.value) != null ? ref17[this.currency] : void 0 : void 0 : void 0) {
       copy.price = copy.fields.discountedPrice.value;
     } else {
       copy.price = copy.fields.price.value;
