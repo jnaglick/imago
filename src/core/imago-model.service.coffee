@@ -106,9 +106,9 @@ class imagoModel extends Service
 
         asset.assets = @findChildren(asset)
 
-        if asset.count or asset.assets.length
+        if (asset.count or asset.assets.length) or asset.count is 0
 
-          if asset.assets.length isnt asset.count
+          if asset.assets.length isnt asset.count or asset.count is 0
             # console.log "count not same as assets.length - go to server", asset.count, asset.assets.length
             defer.reject query
 
@@ -117,7 +117,7 @@ class imagoModel extends Service
             defer.resolve asset
 
         else
-          # console.log 'asset found asset has no children'
+          # console.log 'asset found asset has no children', asset
           defer.resolve asset
 
       else

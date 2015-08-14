@@ -191,8 +191,8 @@ imagoModel = (function() {
       asset = this.find(localQuery);
       if (asset) {
         asset.assets = this.findChildren(asset);
-        if (asset.count || asset.assets.length) {
-          if (asset.assets.length !== asset.count) {
+        if ((asset.count || asset.assets.length) || asset.count === 0) {
+          if (asset.assets.length !== asset.count || asset.count === 0) {
             defer.reject(query);
           } else {
             asset.assets = this.filterAssets(asset.assets, query);
