@@ -826,6 +826,7 @@ class imagoUtils extends Factory
           '&': 'and'
           'é': 'e'
           'ë': 'e'
+          'ê': 'e'
           'ï': 'i'
           'è': 'e'
           'à': 'a'
