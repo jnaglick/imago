@@ -3,10 +3,12 @@ class imagoImage extends Directive
   constructor: ($window, $rootScope, $timeout, $parse, $log, imagoUtils, imagoModel) ->
 
     return {
+
       replace: true
       scope: true
       templateUrl: '/imago/imago-image.html'
-      controller: 'imagoImageController'
+      controller: 'imagoImageController as imagoimage'
+      bindToController: true
       link: (scope, element, attrs) ->
         self = {}
 
@@ -33,6 +35,8 @@ class imagoImage extends Directive
             opts[key] = value
 
         # console.log 'attrs.imagoImage', attrs.imagoImage, typeof attrs.imagoImage
+
+        scope.imagoimage.opts = opts
 
         isId = /[0-9a-fA-F]{24}/
 
@@ -69,7 +73,6 @@ class imagoImage extends Directive
 
           initialize()
 
-
         initialize = ->
           if angular.isString(scope.source.resolution)
             r = scope.source.resolution.split('x')
@@ -78,8 +81,8 @@ class imagoImage extends Directive
               height: r[1]
             opts.assetRatio = r[0]/r[1]
 
-          return console.log('tried to render during rendering!!') if scope.status is 'preloading'
-          scope.status = 'preloading'
+          return console.log('tried to render during rendering!!') if scope.imagoimage.status is 'preloading'
+          scope.imagoimage.status = 'preloading'
 
           scope.align = opts.align
           scope.sizemode = opts.sizemode
@@ -127,7 +130,7 @@ class imagoImage extends Directive
           # make sure we only load a new size
           # console.log 'new size, old size', servingSize, opts.servingSize
           if servingSize is opts.servingSize
-            scope.status = 'loaded'
+            scope.imagoimage.status = 'loaded'
             return
 
           opts.servingSize = servingSize
@@ -154,16 +157,16 @@ class imagoImage extends Directive
             img = angular.element('<img>')
             img.on 'load', (e) ->
               if opts.sizemode is 'crop'
-                scope.imageStyle =
+                scope.imagoimage.imageStyle =
                   backgroundImage:    "url(#{opts.servingUrl})"
                   backgroundSize:     calcMediaSize()
                   backgroundPosition: opts.align
               else
                 scope.servingUrl = opts.servingUrl
 
-              scope.status = 'loaded'
+              scope.imagoimage.status = 'loaded'
               scope.$evalAsync()
-            # console.log 'scope.imageStyle', scope.imageStyle
+            # console.log 'scope.imagoimage.imageStyle', scope.imagoimage.imageStyle
 
             img[0].src = opts.servingUrl
 
@@ -179,17 +182,17 @@ class imagoImage extends Directive
           if opts.sizemode is 'crop'
             # crop
             if opts.assetRatio < wrapperRatio
-              scope.imageStyle['background-size'] = "100% auto"
+              scope.imagoimage.imageStyle['background-size'] = "100% auto"
             else
-              scope.imageStyle['background-size'] = "auto 100%"
+              scope.imagoimage.imageStyle['background-size'] = "auto 100%"
           # else
           #   # fit
           #   if opts.assetRatio > wrapperRatio
-          #     scope.imageStyle['width']  = 'auto'
-          #     scope.imageStyle['height'] = '100%'
+          #     scope.imagoimage.imageStyle['width']  = 'auto'
+          #     scope.imagoimage.imageStyle['height'] = '100%'
           #   else
-          #     scope.imageStyle['width']  = '100%'
-          #     scope.imageStyle['height'] = 'auto'
+          #     scope.imagoimage.imageStyle['width']  = '100%'
+          #     scope.imagoimage.imageStyle['height'] = 'auto'
 
         setImageStyle = ->
           if opts.sizemode is 'crop'
@@ -213,7 +216,7 @@ class imagoImage extends Directive
           #   scope.resizing = 'resizing'
 
           watchers.resizestop = $rootScope.$on 'resizestop', ->
-            scope.status = 'loading'
+            scope.imagoimage.status = 'loading'
             # scope.resizing = ''
             initialize() if scope.source
 
@@ -231,7 +234,9 @@ class imagoImage extends Directive
 
 class imagoImageController extends Controller
 
-  constructor: ($scope) ->
-    $scope.status = 'loading'
-    $scope.imageStyle = {}
+  constructor: ($attrs) ->
+    @status = 'loading'
+    @imageStyle = {}
 
+    if angular.isDefined($attrs.lazy) and $attrs.lazy is 'false'
+      @removeInView = true

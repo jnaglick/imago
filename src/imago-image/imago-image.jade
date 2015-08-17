@@ -2,12 +2,13 @@
   visible="visible"
   in-view="visible = $inview"
   in-view-options="{debounce: 100}"
+  in-view-remove="imagoimage.removeInView"
   ng-style="elementStyle"
-  ng-class="[status, align]"
+  ng-class="[imagoimage.status, align]"
   ng-switch="sizemode"
   )
-  img.imagox23(ng-src="{{servingUrl}}" ng-style="imageStyle" ng-switch-when="fit")
-  .imagox23(ng-style="imageStyle" ng-switch-when="crop")
+  img.imagox23(ng-src="{{servingUrl}}" ng-style="imagoimage.imageStyle" ng-switch-when="fit")
+  .imagox23(ng-style="imagoimage.imageStyle" ng-switch-when="crop")
   .loading
     .spin
     .spin2

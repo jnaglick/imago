@@ -6,7 +6,8 @@ imagoImage = (function() {
       replace: true,
       scope: true,
       templateUrl: '/imago/imago-image.html',
-      controller: 'imagoImageController',
+      controller: 'imagoImageController as imagoimage',
+      bindToController: true,
       link: function(scope, element, attrs) {
         var calcMediaSize, compile, initialize, isId, key, opts, render, self, setImageStyle, value, watchers;
         self = {};
@@ -29,6 +30,7 @@ imagoImage = (function() {
             opts[key] = value;
           }
         }
+        scope.imagoimage.opts = opts;
         isId = /[0-9a-fA-F]{24}/;
         if (attrs.imagoImage.match(isId)) {
           self.watch = attrs.$observe('imagoImage', function(value) {
@@ -92,10 +94,10 @@ imagoImage = (function() {
             };
             opts.assetRatio = r[0] / r[1];
           }
-          if (scope.status === 'preloading') {
+          if (scope.imagoimage.status === 'preloading') {
             return console.log('tried to render during rendering!!');
           }
-          scope.status = 'preloading';
+          scope.imagoimage.status = 'preloading';
           scope.align = opts.align;
           scope.sizemode = opts.sizemode;
           width = element[0].clientWidth;
@@ -125,7 +127,7 @@ imagoImage = (function() {
           }
           servingSize = parseInt(Math.min(servingSize * dpr, opts.maxsize), 10);
           if (servingSize === opts.servingSize) {
-            scope.status = 'loaded';
+            scope.imagoimage.status = 'loaded';
             return;
           }
           opts.servingSize = servingSize;
@@ -153,7 +155,7 @@ imagoImage = (function() {
             img = angular.element('<img>');
             img.on('load', function(e) {
               if (opts.sizemode === 'crop') {
-                scope.imageStyle = {
+                scope.imagoimage.imageStyle = {
                   backgroundImage: "url(" + opts.servingUrl + ")",
                   backgroundSize: calcMediaSize(),
                   backgroundPosition: opts.align
@@ -161,7 +163,7 @@ imagoImage = (function() {
               } else {
                 scope.servingUrl = opts.servingUrl;
               }
-              scope.status = 'loaded';
+              scope.imagoimage.status = 'loaded';
               return scope.$evalAsync();
             });
             return img[0].src = opts.servingUrl;
@@ -176,9 +178,9 @@ imagoImage = (function() {
           }
           if (opts.sizemode === 'crop') {
             if (opts.assetRatio < wrapperRatio) {
-              return scope.imageStyle['background-size'] = "100% auto";
+              return scope.imagoimage.imageStyle['background-size'] = "100% auto";
             } else {
-              return scope.imageStyle['background-size'] = "auto 100%";
+              return scope.imagoimage.imageStyle['background-size'] = "auto 100%";
             }
           }
         };
@@ -198,7 +200,7 @@ imagoImage = (function() {
         watchers = {};
         if (opts.responsive) {
           watchers.resizestop = $rootScope.$on('resizestop', function() {
-            scope.status = 'loading';
+            scope.imagoimage.status = 'loading';
             if (scope.source) {
               return initialize();
             }
@@ -227,15 +229,18 @@ imagoImage = (function() {
 })();
 
 imagoImageController = (function() {
-  function imagoImageController($scope) {
-    $scope.status = 'loading';
-    $scope.imageStyle = {};
+  function imagoImageController($attrs) {
+    this.status = 'loading';
+    this.imageStyle = {};
+    if (angular.isDefined($attrs.lazy) && $attrs.lazy === 'false') {
+      this.removeInView = true;
+    }
   }
 
   return imagoImageController;
 
 })();
 
-angular.module('imago').directive('imagoImage', ['$window', '$rootScope', '$timeout', '$parse', '$log', 'imagoUtils', 'imagoModel', imagoImage]).controller('imagoImageController', ['$scope', imagoImageController]);
+angular.module('imago').directive('imagoImage', ['$window', '$rootScope', '$timeout', '$parse', '$log', 'imagoUtils', 'imagoModel', imagoImage]).controller('imagoImageController', ['$attrs', imagoImageController]);
 
-angular.module("imago").run(["$templateCache", function($templateCache) {$templateCache.put("/imago/imago-image.html","<div visible=\"visible\" in-view=\"visible = $inview\" in-view-options=\"{debounce: 100}\" ng-style=\"elementStyle\" ng-class=\"[status, align]\" ng-switch=\"sizemode\" class=\"imagoimage\"><img ng-src=\"{{servingUrl}}\" ng-style=\"imageStyle\" ng-switch-when=\"fit\" class=\"imagox23\"/><div ng-style=\"imageStyle\" ng-switch-when=\"crop\" class=\"imagox23\"></div><div class=\"loading\"><div class=\"spin\"></div><div class=\"spin2\"></div></div></div>");}]);
+angular.module("imago").run(["$templateCache", function($templateCache) {$templateCache.put("/imago/imago-image.html","<div visible=\"visible\" in-view=\"visible = $inview\" in-view-options=\"{debounce: 100}\" in-view-remove=\"imagoimage.removeInView\" ng-style=\"elementStyle\" ng-class=\"[imagoimage.status, align]\" ng-switch=\"sizemode\" class=\"imagoimage\"><img ng-src=\"{{servingUrl}}\" ng-style=\"imagoimage.imageStyle\" ng-switch-when=\"fit\" class=\"imagox23\"/><div ng-style=\"imagoimage.imageStyle\" ng-switch-when=\"crop\" class=\"imagox23\"></div><div class=\"loading\"><div class=\"spin\"></div><div class=\"spin2\"></div></div></div>");}]);
