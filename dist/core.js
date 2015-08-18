@@ -1556,7 +1556,7 @@ imagoUtils = (function() {
           ref = document.cookie.split(';');
           for (k = 0, len = ref.length; k < len; k++) {
             cookie = ref[k];
-            if (cookie.indexOf(name) === 1) {
+            if (cookie.indexOf(name) >= 0) {
               return cookie.split('=')[1];
             }
           }
