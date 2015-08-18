@@ -40,8 +40,9 @@ FulfillmentsCenter = (function() {
     } else if (!this.geoIp.loaded) {
       return watcher = this.$rootScope.$on('geoip:loaded', (function(_this) {
         return function(evt, data) {
+          var ref;
           watcher();
-          if (_this.geoIp.data.country) {
+          if ((ref = _this.geoIp.data) != null ? ref.country : void 0) {
             return _this.geoValid();
           } else {
             return _this.getGeneric();

@@ -25,7 +25,7 @@ class FulfillmentsCenter extends Service
     else if not @geoIp.loaded
       watcher = @$rootScope.$on 'geoip:loaded', (evt, data) =>
         watcher()
-        if @geoIp.data.country
+        if @geoIp.data?.country
           @geoValid()
         else
           @getGeneric()
