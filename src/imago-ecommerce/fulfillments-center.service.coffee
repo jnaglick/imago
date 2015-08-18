@@ -18,7 +18,7 @@ class FulfillmentsCenter extends Service
       @loaded = true
       return @$rootScope.$emit 'fulfillments:loaded', @data
 
-    if @geoIp.data.country
+    if @geoIp.data?.country
       @geoValid()
     else if @geoIp.data is null
       @getGeneric()

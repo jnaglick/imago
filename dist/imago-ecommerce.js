@@ -27,22 +27,22 @@ FulfillmentsCenter = (function() {
   };
 
   FulfillmentsCenter.prototype.getOptions = function() {
-    var watcher;
+    var ref, watcher;
     if (this.data.length === 1) {
       this.selected = this.data[0];
       this.loaded = true;
       return this.$rootScope.$emit('fulfillments:loaded', this.data);
     }
-    if (this.geoIp.data.country) {
+    if ((ref = this.geoIp.data) != null ? ref.country : void 0) {
       return this.geoValid();
     } else if (this.geoIp.data === null) {
       return this.getGeneric();
     } else if (!this.geoIp.loaded) {
       return watcher = this.$rootScope.$on('geoip:loaded', (function(_this) {
         return function(evt, data) {
-          var ref;
+          var ref1;
           watcher();
-          if ((ref = _this.geoIp.data) != null ? ref.country : void 0) {
+          if ((ref1 = _this.geoIp.data) != null ? ref1.country : void 0) {
             return _this.geoValid();
           } else {
             return _this.getGeneric();
