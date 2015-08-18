@@ -115,6 +115,7 @@ imagoImage = (function() {
           } else {
             if (!height || opts.autosize === 'height') {
               opts.autosize = 'height';
+              opts.maxHeight = Math.round(width / opts.assetRatio);
               servingSize = Math.round(Math.max(width, width / opts.assetRatio));
             } else if (!width || opts.autosize === 'width') {
               opts.autosize = 'width';
@@ -162,6 +163,11 @@ imagoImage = (function() {
                 };
               } else {
                 scope.servingUrl = opts.servingUrl;
+                if (opts.maxHeight) {
+                  scope.imagoimage.imageStyle = {
+                    'max-height': opts.maxHeight + "px"
+                  };
+                }
               }
               scope.imagoimage.status = 'loaded';
               return scope.$evalAsync();

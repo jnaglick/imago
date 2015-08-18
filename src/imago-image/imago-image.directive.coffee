@@ -91,7 +91,7 @@ class imagoImage extends Directive
           height = element[0].clientHeight
 
           wrapperRatio = width / height if height
-          # console.log 'wrapperRatio', wrapperRatio, width, height
+          # console.log 'wrapperRatio', wrapperRatio, width, height, opts.resolution
 
           dpr = if opts.hires then Math.ceil($window.devicePixelRatio) or 1 else 1
 
@@ -110,7 +110,8 @@ class imagoImage extends Directive
             # $log.log 'assetratio: ', opts.assetRatio, 'wrapperraito: ' , wrapperRatio
             if not height or opts.autosize is 'height'
               opts.autosize = 'height'
-              # console.log 'opts.autosize inside', opts.autosize, width, height, opts.assetRatio, opts.autosize
+              opts.maxHeight = Math.round(width / opts.assetRatio)
+              # console.log 'opts.autosize inside', opts.autosize, width, height, opts.assetRatio, opts.autosize, opts.maxHeight
               servingSize = Math.round(Math.max(width, width / opts.assetRatio))
 
             else if not width or opts.autosize is 'width'
@@ -163,6 +164,7 @@ class imagoImage extends Directive
                   backgroundPosition: opts.align
               else
                 scope.servingUrl = opts.servingUrl
+                scope.imagoimage.imageStyle = {'max-height': "#{opts.maxHeight}px"} if opts.maxHeight
 
               scope.imagoimage.status = 'loaded'
               scope.$evalAsync()
