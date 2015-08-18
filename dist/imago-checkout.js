@@ -372,7 +372,7 @@ Calculation = (function() {
               if (!((ref1 = item.fields.calculateTaxes) != null ? ref1.value : void 0)) {
                 continue;
               }
-              onepercent = item.fields.price.value[_this.currency] / (100 + (_this.costs.taxRate * 100)) * item.qty;
+              onepercent = item.price[_this.currency] / (100 + (_this.costs.taxRate * 100)) * item.qty;
               _this.costs.includedTax += onepercent * _this.costs.taxRate * 100;
             }
             return deferred.resolve();
@@ -386,8 +386,8 @@ Calculation = (function() {
             if (!((ref3 = item.fields.calculateTaxes) != null ? ref3.value : void 0)) {
               continue;
             }
-            if (item.fields.price.value[_this.currency]) {
-              _this.costs.tax += Math.round(item.fields.price.value[_this.currency] * item.qty * _this.costs.taxRate);
+            if (item.price[_this.currency]) {
+              _this.costs.tax += Math.round(item.price[_this.currency] * item.qty * _this.costs.taxRate);
             }
           }
           return deferred.resolve();
@@ -556,7 +556,7 @@ Calculation = (function() {
   Calculation.prototype.calculate = function() {
     return this.checkStock((function(_this) {
       return function() {
-        var i, item, len, ref, ref1, ref2;
+        var i, item, len, ref;
         _this.costs = {
           subtotal: 0,
           shipping: 0,
@@ -567,8 +567,8 @@ Calculation = (function() {
         ref = _this.cart.items;
         for (i = 0, len = ref.length; i < len; i++) {
           item = ref[i];
-          if (((ref1 = item.fields) != null ? (ref2 = ref1.price) != null ? ref2.value[_this.currency] : void 0 : void 0) && item.qty) {
-            _this.costs.subtotal += item.qty * item.fields.price.value[_this.currency];
+          if (item.price[_this.currency] && item.qty) {
+            _this.costs.subtotal += item.qty * item.price[_this.currency];
           }
         }
         _this.costs.total = _this.costs.subtotal;

@@ -223,7 +223,7 @@ class Calculation extends Service
         if @costs.taxRate
           for item in @cart.items
             continue unless item.fields.calculateTaxes?.value
-            onepercent = item.fields.price.value[@currency]/(100+(@costs.taxRate*100)) * item.qty
+            onepercent = item.price[@currency]/(100+(@costs.taxRate*100)) * item.qty
             @costs.includedTax += onepercent*@costs.taxRate*100
           deferred.resolve()
         else
@@ -231,8 +231,8 @@ class Calculation extends Service
       else
         for item in @cart.items
           continue unless item.fields.calculateTaxes?.value
-          if item.fields.price.value[@currency]
-            @costs.tax += Math.round(item.fields.price.value[@currency] * item.qty * @costs.taxRate)
+          if item.price[@currency]
+            @costs.tax += Math.round(item.price[@currency] * item.qty * @costs.taxRate)
         deferred.resolve()
     return deferred.promise
 
@@ -331,8 +331,8 @@ class Calculation extends Service
         total       : 0
 
       for item in @cart.items
-        if item.fields?.price?.value[@currency] and item.qty
-          @costs.subtotal += item.qty * item.fields.price.value[@currency]
+        if item.price[@currency] and item.qty
+          @costs.subtotal += item.qty * item.price[@currency]
       @costs.total = @costs.subtotal
 
       @$q.all([@calculateTax(), @calculateShipping()]).then =>
