@@ -9,6 +9,6 @@
   )
   img.imagox23(ng-src="{{servingUrl}}" ng-style="imagoimage.imageStyle" ng-switch-when="fit")
   .imagox23(ng-style="imagoimage.imageStyle" ng-switch-when="crop")
-  .loading
+  .loading(ng-show="imagoimage.status === 'loading'")
     .spin
     .spin2
