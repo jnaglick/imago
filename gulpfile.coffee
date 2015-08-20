@@ -178,6 +178,7 @@ reportError = (err) ->
   gutil.log err.message
   @emit 'end'
 
+
 ## End essentials tasks
 
 gulp.task "default", ["watch"]
