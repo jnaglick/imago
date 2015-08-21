@@ -1,0 +1,15 @@
+.canvas(ng-style="canvasHeight")
+  .renderer.item(
+    ng-repeat="item in visibleProvider"
+    ng-style="item.styles"
+    ui-sref="details({'id': item._id})"
+    ng-class="item.type"
+    )
+    div
+      .media(style="background-image: url({{item.serving_url}}=s480);")
+      .caption
+        div.source
+          span {{item.fields.source.value}}
+        h2: span {{item.fields.title.value}}
+        br
+        h3: span {{item.fields.description.value}}
