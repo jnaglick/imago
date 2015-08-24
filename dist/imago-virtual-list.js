@@ -4,14 +4,16 @@ ImagoVirtualList = (function() {
   function ImagoVirtualList($timeout) {
     return {
       scope: {
-        data: '='
+        data: '=',
+        rowHeight: '=',
+        rowWidth: '='
       },
-      templateUrl: '/app/tests/ui-virtual-list.html',
-      link: function(scope, element, attrs) {
-        var rowHeight, rowWidth;
-        rowHeight = 454;
-        rowWidth = 350;
-        scope.height = 500;
+      templateUrl: '/imago/imago-virtual-list.html',
+      transclude: true,
+      link: function(scope, element, attrs, ctrl, transclude) {
+        transclude(scope, function(clone, scope) {
+          return element.children().append(clone);
+        });
         scope.width = element[0].clientWidth;
         scope.scrollTop = 0;
         scope.visibleProvider = [];
@@ -19,22 +21,26 @@ ImagoVirtualList = (function() {
         scope.numberOfCells = 0;
         scope.canvasHeight = {};
         scope.init = function() {
+          scope.height = element[0].clientHeight;
           element[0].addEventListener('scroll', scope.onScroll);
-          scope.itemsPerRow = Math.round(scope.width / rowWidth);
-          scope.cellsPerPage = Math.round(scope.height / rowHeight) * scope.itemsPerRow;
+          scope.itemsPerRow = Math.round(scope.width / scope.rowWidth);
+          scope.cellsPerPage = Math.round(scope.height / scope.rowHeight) * scope.itemsPerRow;
           scope.numberOfCells = 3 * scope.cellsPerPage;
           scope.canvasHeight = {
-            height: Math.ceil((scope.data.length * rowHeight) / scope.itemsPerRow) + 'px'
+            height: Math.ceil((scope.data.length * scope.rowHeight) / scope.itemsPerRow) + 'px'
           };
           return scope.updateDisplayList();
         };
         scope.updateDisplayList = function() {
           var cellsToCreate, chunks, data, findIndex, firstCell, i, idx, oldVisible, results;
-          firstCell = Math.max(Math.floor(scope.scrollTop / rowHeight) - (Math.round(scope.height / rowHeight)), 0);
+          firstCell = Math.max(Math.floor(scope.scrollTop / scope.rowHeight) - (Math.round(scope.height / scope.rowHeight)), 0);
           cellsToCreate = Math.min(firstCell + scope.numberOfCells, scope.numberOfCells);
           oldVisible = angular.copy(scope.visibleProvider);
           data = firstCell * scope.itemsPerRow;
           scope.visibleProvider = scope.data.slice(data, data + cellsToCreate);
+          if (angular.equals(scope.visibleProvider, oldVisible)) {
+            return;
+          }
           chunks = _.chunk(scope.visibleProvider, scope.itemsPerRow);
           i = 0;
           results = [];
@@ -58,20 +64,25 @@ ImagoVirtualList = (function() {
             };
             idx = findIndex();
             scope.visibleProvider[i].styles = {
-              'transform': "translate3d(" + ((rowWidth * idx.inside) + 'px') + ", " + ((firstCell + idx.chunk) * rowHeight + 'px') + ", 0)"
+              'transform': "translate3d(" + ((scope.rowWidth * idx.inside) + 'px') + ", " + ((firstCell + idx.chunk) * scope.rowHeight + 'px') + ", 0)"
             };
             results.push(i++);
           }
           return results;
         };
-        scope.onScroll = function(evt) {
+        scope.onScroll = function() {
           scope.scrollTop = element.prop('scrollTop');
           scope.updateDisplayList();
           return scope.$apply();
         };
-        return scope.$watch('data', function(value) {
-          if (!value) {
+        return scope.$watchGroup(['data', 'rowHeight', 'rowWidth'], function() {
+          var rowWidth;
+          if (!scope.data || !scope.rowWidth || !scope.rowHeight) {
             return;
+          }
+          if (typeof scope.rowWidth === 'string') {
+            rowWidth = parseInt(scope.rowWidth) / 100;
+            scope.rowWidth = scope.width * rowWidth;
           }
           return scope.init();
         });
@@ -85,4 +96,4 @@ ImagoVirtualList = (function() {
 
 angular.module('imago').directive('imagoVirtualList', ['$timeout', ImagoVirtualList]);
 
-angular.module("imago").run(["$templateCache", function($templateCache) {$templateCache.put("/imago/imago-virtual-list.html","<div ng-style=\"canvasHeight\" class=\"canvas\"><div ng-repeat=\"item in visibleProvider\" ng-style=\"item.styles\" ui-sref=\"details({\'id\': item._id})\" ng-class=\"item.type\" class=\"renderer item\"><div><div style=\"background-image: url({{item.serving_url}}=s480);\" class=\"media\"></div><div class=\"caption\"><div class=\"source\"><span>{{item.fields.source.value}}</span></div><h2><span>{{item.fields.title.value}}</span></h2><br/><h3><span>{{item.fields.description.value}}</span></h3></div></div></div></div>");}]);
+angular.module("imago").run(["$templateCache", function($templateCache) {$templateCache.put("/imago/imago-virtual-list.html","<div ng-style=\"canvasHeight\" class=\"canvas\"></div>");}]);
