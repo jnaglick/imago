@@ -1,7 +1,7 @@
 var ImagoVirtualList;
 
 ImagoVirtualList = (function() {
-  function ImagoVirtualList($window, $rootScope) {
+  function ImagoVirtualList($window, $rootScope, $timeout) {
     return {
       scope: true,
       templateUrl: '/imago/imago-virtual-list.html',
@@ -14,7 +14,7 @@ ImagoVirtualList = (function() {
         rowWidth: '='
       },
       link: function(scope, element, attrs, ctrl, transclude) {
-        var watcher;
+        var watchers;
         transclude(scope, function(clone, scope) {
           return element.children().append(clone);
         });
@@ -24,38 +24,44 @@ ImagoVirtualList = (function() {
         scope.cellsPerPage = 0;
         scope.numberOfCells = 0;
         scope.canvasHeight = {};
-        scope.init = function(rowWidth, rowHeight) {
-          var testDiv;
-          if (!rowWidth || !rowHeight) {
+        scope.init = function() {
+          if (!scope.imagovirtuallist.data) {
+            return;
+          }
+          return $timeout(function() {
+            var cellsPerHeight, testDiv;
             testDiv = document.createElement('div');
-            testDiv.className = attrs.classitem;
+            testDiv.className = attrs.classItem;
             testDiv.id = 'virtual-list-test-div';
             element.append(testDiv);
-            rowWidth = rowWidth || testDiv.clientWidth;
-            rowHeight = rowHeight || testDiv.clientHeight;
+            scope.rowWidth = testDiv.clientWidth;
+            scope.rowHeight = testDiv.clientHeight;
             angular.element(element[0].querySelector('#virtual-list-test-div')).remove();
-          }
-          scope.rowWidth = rowWidth;
-          scope.rowHeight = rowHeight;
-          if (!scope.width) {
-            scope.width = element[0].clientWidth;
-          }
-          if (!scope.height) {
-            scope.height = element[0].clientHeight;
-          }
-          if (attrs.imagoVirtualListContainer) {
-            element[0].addEventListener('scroll', scope.onScrollContainer);
-          } else {
-            angular.element($window).on('scroll', scope.onScrollWindow);
-          }
-          scope.itemsPerRow = Math.round(scope.width / scope.rowWidth);
-          scope.canvasHeight = {
-            height: Math.ceil((scope.imagovirtuallist.data.length * scope.rowHeight) / scope.itemsPerRow) + 'px'
-          };
-          scope.cellsPerPage = Math.round(scope.height / scope.rowHeight) * scope.itemsPerRow;
-          scope.numberOfCells = 3 * scope.cellsPerPage;
-          scope.margin = 0;
-          return scope.updateDisplayList();
+            if (!scope.width) {
+              scope.width = element[0].clientWidth;
+            }
+            if (!scope.height) {
+              scope.height = element[0].clientHeight;
+            }
+            if (attrs.imagoVirtualListContainer) {
+              element[0].addEventListener('scroll', scope.onScrollContainer);
+            } else {
+              angular.element($window).on('scroll', scope.onScrollWindow);
+            }
+            scope.itemsPerRow = Math.round(scope.width / scope.rowWidth);
+            scope.canvasHeight = {
+              height: Math.ceil((scope.imagovirtuallist.data.length * scope.rowHeight) / scope.itemsPerRow) + 'px'
+            };
+            cellsPerHeight = Math.round(scope.height / scope.rowHeight);
+            scope.cellsPerPage = cellsPerHeight * scope.itemsPerRow;
+            if (cellsPerHeight === Math.ceil(scope.height / scope.rowHeight)) {
+              scope.numberOfCells = 3 * scope.cellsPerPage;
+            } else {
+              scope.numberOfCells = 4 * scope.cellsPerPage;
+            }
+            scope.margin = 0;
+            return scope.updateDisplayList();
+          }, 50);
         };
         scope.updateDisplayList = function() {
           var cellsToCreate, chunks, data, findIndex, firstCell, i, idx, results;
@@ -86,7 +92,7 @@ ImagoVirtualList = (function() {
             };
             idx = findIndex();
             scope.visibleProvider[i].styles = {
-              'transform': "translate3d(" + ((scope.rowWidth * idx.inside) + scope.margin + 'px') + ", " + ((firstCell + idx.chunk) * scope.rowHeight + 'px') + ", 0)"
+              'transform': "translate(" + ((scope.rowWidth * idx.inside) + scope.margin + 'px') + ", " + ((firstCell + idx.chunk) * scope.rowHeight + 'px') + ")"
             };
             results.push(i++);
           }
@@ -95,37 +101,32 @@ ImagoVirtualList = (function() {
         scope.onScrollContainer = function() {
           scope.scrollTop = element.prop('scrollTop');
           scope.updateDisplayList();
-          return scope.$apply();
+          return scope.$digest();
         };
         scope.onScrollWindow = function() {
           scope.scrollTop = $window.pageYOffset;
           scope.updateDisplayList();
-          return scope.$apply();
+          return scope.$digest();
         };
-        scope.$watchGroup(['imagovirtuallist.data', 'imagovirtuallist.rowHeight', 'imagovirtuallist.rowWidth'], function() {
-          var rowHeight, rowWidth;
-          if (!scope.imagovirtuallist.data) {
-            return;
-          }
-          if (angular.isString(scope.imagovirtuallist.rowWidth)) {
-            rowWidth = parseInt(scope.imagovirtuallist.rowWidth) / 100;
-            rowWidth = scope.width * rowWidth;
-          } else {
-            if (angular.isDefined(scope.imagovirtuallist.rowWidth)) {
-              rowWidth = scope.imagovirtuallist.rowWidth;
-            }
-          }
-          if (angular.isDefined(scope.imagovirtuallist.rowHeight)) {
-            rowHeight = scope.imagovirtuallist.rowHeight;
-          }
-          return scope.init(rowWidth, rowHeight);
-        });
-        watcher = $rootScope.$on('imagovirtuallist:init', function() {
+        scope.$watch('imagovirtuallist.data', function() {
           return scope.init();
         });
+        watchers = [];
+        watchers.push($rootScope.$on('imagovirtuallist:init', function() {
+          return scope.init();
+        }));
+        watchers.push($rootScope.$on('resizestop', function() {
+          return scope.init();
+        }));
         return scope.$on('$destroy', function() {
+          var j, len, results, watcher;
           angular.element($window).off('scroll', scope.onScrollWindow);
-          return watcher();
+          results = [];
+          for (j = 0, len = watchers.length; j < len; j++) {
+            watcher = watchers[j];
+            results.push(watcher());
+          }
+          return results;
         });
       }
     };
@@ -135,6 +136,6 @@ ImagoVirtualList = (function() {
 
 })();
 
-angular.module('imago').directive('imagoVirtualList', ['$window', '$rootScope', ImagoVirtualList]);
+angular.module('imago').directive('imagoVirtualList', ['$window', '$rootScope', '$timeout', ImagoVirtualList]);
 
 angular.module("imago").run(["$templateCache", function($templateCache) {$templateCache.put("/imago/imago-virtual-list.html","<div ng-style=\"canvasHeight\" class=\"canvas\"></div>");}]);

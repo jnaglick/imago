@@ -3,10 +3,6 @@ class imagoVideo extends Directive
   constructor: ($timeout, $rootScope, imagoUtils, imagoModel) ->
     return {
       replace: true
-      # scope: {
-      #   visible: '='
-      #   source: '=imagoVideo'
-      # }
       scope: true
       templateUrl: '/imago/imago-video.html'
       controller: 'imagoVideoController as imagovideo'
