@@ -194,7 +194,7 @@ imagoSlider = (function() {
 })();
 
 imagoSliderController = (function() {
-  function imagoSliderController() {
+  function imagoSliderController($scope) {
     this.conf = {
       animation: 'fade',
       enablekeys: true,
@@ -209,7 +209,12 @@ imagoSliderController = (function() {
     };
     this.setServingSize = (function(_this) {
       return function(value) {
-        return _this.servingSize = value;
+        if (_this.servingSize) {
+          return _this.servingSize = value;
+        } else {
+          _this.servingSize = value;
+          return $scope.prefetch('initial');
+        }
       };
     })(this);
   }
@@ -218,6 +223,6 @@ imagoSliderController = (function() {
 
 })();
 
-angular.module('imago').directive('imagoSlider', ['$rootScope', '$document', '$interval', '$location', imagoSlider]).controller('imagoSliderController', [imagoSliderController]);
+angular.module('imago').directive('imagoSlider', ['$rootScope', '$document', '$interval', '$location', imagoSlider]).controller('imagoSliderController', ['$scope', imagoSliderController]);
 
 angular.module("imago").run(["$templateCache", function($templateCache) {$templateCache.put("/imago/imago-slider.html","<div ng-class=\"[imagoslider.conf.animation, action]\" ng-swipe-left=\"imagoslider.goNext($event)\" ng-swipe-right=\"imagoslider.goPrev($event)\" class=\"imagoslider\"><div ng-show=\"imagoslider.conf.enablearrows &amp;&amp; imagoslider.length &gt; 1\" ng-click=\"imagoslider.goPrev($event)\" analytics-on=\"click\" analytics-event=\"Previous Slide\" class=\"prev\"></div><div ng-show=\"imagoslider.conf.enablearrows &amp;&amp; imagoslider.length &gt; 1\" ng-click=\"imagoslider.goNext($event)\" analytics-on=\"click\" analytics-event=\"Next Slide\" class=\"next\"></div></div>");}]);

@@ -171,7 +171,7 @@ class imagoSlider extends Directive
 
 class imagoSliderController extends Controller
 
-  constructor: ->
+  constructor: ($scope) ->
 
     @conf =
       animation:    'fade'
@@ -186,4 +186,8 @@ class imagoSliderController extends Controller
       prefetch:     true
 
     @setServingSize = (value) =>
-      @servingSize = value
+      if @servingSize
+        @servingSize = value
+      else
+        @servingSize = value
+        $scope.prefetch('initial')
