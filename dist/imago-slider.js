@@ -11,11 +11,11 @@ imagoSlider = (function() {
         assets: '=?imagoSlider'
       },
       link: function(scope, element, attrs, ctrl, transclude) {
-        var key, keyboardBinding, ref, slider, value, watchers;
-        slider = element.children();
+        var key, keyboardBinding, ref, value, watchers;
+        watchers = [];
         scope.imagoslider.length = attrs.length || ((ref = scope.imagoslider.assets) != null ? ref.length : void 0);
-        transclude(scope, function(clone, scope) {
-          return slider.append(clone);
+        transclude(scope, function(clone) {
+          return element.children().append(clone);
         });
         for (key in attrs) {
           value = attrs[key];
@@ -27,7 +27,6 @@ imagoSlider = (function() {
           }
           scope.imagoslider.conf[key] = value;
         }
-        watchers = [];
         if (angular.isDefined(attrs.length)) {
           attrs.$observe('length', function(data) {
             return scope.imagoslider.length = data;
@@ -37,7 +36,8 @@ imagoSlider = (function() {
             if (!data || !_.isArray(data)) {
               return;
             }
-            return scope.imagoslider.length = data.length;
+            scope.imagoslider.length = data.length;
+            return scope.prefetch('initial');
           });
         }
         scope.imagoslider.conf.siblings = !!(scope.imagoslider.conf.next && scope.imagoslider.conf.prev);
@@ -58,16 +58,17 @@ imagoSlider = (function() {
             ev.stopPropagation();
           }
           if (!scope.imagoslider.conf.loop) {
-            return scope.imagoslider.setCurrent(scope.currentIndex > 0 ? scope.currentIndex - 1 : scope.currentIndex);
+            scope.imagoslider.setCurrent(scope.currentIndex > 0 ? scope.currentIndex - 1 : scope.currentIndex);
           } else if (scope.imagoslider.conf.loop && !scope.imagoslider.conf.siblings) {
-            return scope.imagoslider.setCurrent(scope.currentIndex > 0 ? scope.currentIndex - 1 : parseInt(scope.imagoslider.length) - 1);
+            scope.imagoslider.setCurrent(scope.currentIndex > 0 ? scope.currentIndex - 1 : parseInt(scope.imagoslider.length) - 1);
           } else if (scope.imagoslider.conf.loop && scope.imagoslider.conf.siblings) {
             if (scope.currentIndex > 0) {
-              return scope.imagoslider.setCurrent(scope.currentIndex - 1);
+              scope.imagoslider.setCurrent(scope.currentIndex - 1);
             } else {
-              return $location.path(scope.imagoslider.conf.prev);
+              $location.path(scope.imagoslider.conf.prev);
             }
           }
+          return scope.prefetch('prev');
         };
         scope.imagoslider.goNext = (function(_this) {
           return function(ev, clearInterval) {
@@ -81,18 +82,39 @@ imagoSlider = (function() {
               }
             }
             if (!scope.imagoslider.conf.loop) {
-              return scope.imagoslider.setCurrent(scope.currentIndex < scope.imagoslider.length - 1 ? scope.currentIndex + 1 : scope.currentIndex);
+              scope.imagoslider.setCurrent(scope.currentIndex < scope.imagoslider.length - 1 ? scope.currentIndex + 1 : scope.currentIndex);
             } else if (scope.imagoslider.conf.loop && !scope.imagoslider.conf.siblings) {
-              return scope.imagoslider.setCurrent(scope.currentIndex < scope.imagoslider.length - 1 ? scope.currentIndex + 1 : 0);
+              scope.imagoslider.setCurrent(scope.currentIndex < scope.imagoslider.length - 1 ? scope.currentIndex + 1 : 0);
             } else if (scope.imagoslider.conf.loop && scope.imagoslider.conf.siblings) {
               if (scope.currentIndex < scope.imagoslider.length - 1) {
-                return scope.imagoslider.setCurrent(scope.currentIndex + 1);
+                scope.imagoslider.setCurrent(scope.currentIndex + 1);
               } else {
-                return $location.path(scope.imagoslider.conf.next);
+                $location.path(scope.imagoslider.conf.next);
               }
             }
+            return scope.prefetch('next');
           };
         })(this);
+        scope.prefetch = function(direction) {
+          var idx, image, ref1, ref2;
+          if (!scope.imagoslider.conf.prefetch || !((ref1 = scope.imagoslider.assets) != null ? ref1.length : void 0)) {
+            return;
+          }
+          if (scope.currentIndex === scope.getLast()) {
+            idx = 0;
+          } else if (direction === 'initial') {
+            idx = 1;
+          } else if (direction === 'prev') {
+            idx = angular.copy(scope.currentIndex) - 1;
+          } else if (direction === 'next') {
+            idx = angular.copy(scope.currentIndex) + 1;
+          }
+          if (!((ref2 = scope.imagoslider.assets[idx]) != null ? ref2.serving_url : void 0) || !scope.imagoslider.servingSize) {
+            return;
+          }
+          image = new Image();
+          return image.src = scope.imagoslider.assets[idx].serving_url + scope.imagoslider.servingSize;
+        };
         scope.getLast = function() {
           return Number(scope.imagoslider.length) - 1;
         };
@@ -182,8 +204,14 @@ imagoSliderController = (function() {
       namespace: 'slider',
       autoplay: 0,
       next: null,
-      prev: null
+      prev: null,
+      prefetch: true
     };
+    this.setServingSize = (function(_this) {
+      return function(value) {
+        return _this.servingSize = value;
+      };
+    })(this);
   }
 
   return imagoSliderController;

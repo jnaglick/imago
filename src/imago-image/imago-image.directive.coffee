@@ -8,8 +8,10 @@ class imagoImage extends Directive
       scope: true
       templateUrl: '/imago/imago-image.html'
       controller: 'imagoImageController as imagoimage'
+      require: '?^imagoSlider'
       bindToController: true
-      link: (scope, element, attrs) ->
+      link: (scope, element, attrs, imagoSlider) ->
+
         self = {}
 
         scope.visible = false
@@ -141,6 +143,9 @@ class imagoImage extends Directive
 
           else
             opts.servingUrl = "#{ scope.source.serving_url }=s#{ servingSize * opts.scale }"
+
+          if imagoSlider
+            imagoSlider.setServingSize("=s#{ servingSize * opts.scale }")
 
           # $log.log 'opts.servingUrl', opts.servingUrl
 

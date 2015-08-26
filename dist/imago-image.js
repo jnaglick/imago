@@ -7,8 +7,9 @@ imagoImage = (function() {
       scope: true,
       templateUrl: '/imago/imago-image.html',
       controller: 'imagoImageController as imagoimage',
+      require: '?^imagoSlider',
       bindToController: true,
-      link: function(scope, element, attrs) {
+      link: function(scope, element, attrs, imagoSlider) {
         var calcMediaSize, compile, initialize, isId, key, opts, render, self, setImageStyle, value, watchers;
         self = {};
         scope.visible = false;
@@ -136,6 +137,9 @@ imagoImage = (function() {
             opts.servingUrl = scope.source.serving_url;
           } else {
             opts.servingUrl = scope.source.serving_url + "=s" + (servingSize * opts.scale);
+          }
+          if (imagoSlider) {
+            imagoSlider.setServingSize("=s" + (servingSize * opts.scale));
           }
           return render();
         };

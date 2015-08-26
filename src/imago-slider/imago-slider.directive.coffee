@@ -12,20 +12,19 @@ class imagoSlider extends Directive
         assets: '=?imagoSlider'
 
       link: (scope, element, attrs, ctrl, transclude) ->
-        slider = element.children()
+
+        watchers = []
 
         scope.imagoslider.length = attrs.length or scope.imagoslider.assets?.length
 
-        transclude scope, (clone, scope) ->
-          slider.append(clone)
+        transclude scope, (clone) ->
+          element.children().append(clone)
 
         for key, value of attrs
           continue unless key.charAt(0) isnt '$'
           if value in ['true', 'false']
             value = JSON.parse value
           scope.imagoslider.conf[key] = value
-
-        watchers = []
 
         if angular.isDefined attrs.length
           attrs.$observe 'length', (data) ->
@@ -34,6 +33,7 @@ class imagoSlider extends Directive
           scope.$watchCollection 'imagoslider.assets', (data) ->
             return if not data or not _.isArray data
             scope.imagoslider.length = data.length
+            scope.prefetch('initial')
 
         scope.imagoslider.conf.siblings = !!(scope.imagoslider.conf.next and scope.imagoslider.conf.prev)
 
@@ -70,6 +70,8 @@ class imagoSlider extends Directive
             else
               $location.path scope.imagoslider.conf.prev
 
+          scope.prefetch('prev')
+
         scope.imagoslider.goNext = (ev, clearInterval = true) =>
           if typeof ev is 'object' or clearInterval
             scope.clearInterval()
@@ -93,6 +95,24 @@ class imagoSlider extends Directive
               scope.imagoslider.setCurrent(scope.currentIndex + 1)
             else
               $location.path scope.imagoslider.conf.next
+
+          scope.prefetch('next')
+
+        scope.prefetch = (direction) ->
+          return if not scope.imagoslider.conf.prefetch or not scope.imagoslider.assets?.length
+          if scope.currentIndex is scope.getLast()
+            idx = 0
+          else if direction is 'initial'
+            idx = 1
+          else if direction is 'prev'
+            idx = angular.copy(scope.currentIndex) - 1
+          else if direction is 'next'
+            idx = angular.copy(scope.currentIndex) + 1
+
+          return if not scope.imagoslider.assets[idx]?.serving_url or not scope.imagoslider.servingSize
+
+          image = new Image()
+          image.src = scope.imagoslider.assets[idx].serving_url + scope.imagoslider.servingSize
 
         scope.getLast = ->
           Number(scope.imagoslider.length) - 1
@@ -163,3 +183,7 @@ class imagoSliderController extends Controller
       autoplay:     0
       next:         null
       prev:         null
+      prefetch:     true
+
+    @setServingSize = (value) =>
+      @servingSize = value
