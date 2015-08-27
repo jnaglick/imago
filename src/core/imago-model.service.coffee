@@ -604,13 +604,12 @@ class imagoModel extends Service
     defer = @$q.defer()
     defer.reject(asset.name) unless asset.name
 
-    name = @imagoUtils.normalize(asset.name)
+    name = _.kebabCase(asset.name)
     result = undefined
 
     assetsChildren = _.filter assets, (chr) =>
-      return false if not chr.name
-      normalizeName = angular.copy(@imagoUtils.normalize(chr.name))
-      return normalizeName is name
+      return false unless chr.name
+      return name is _.kebabCase(chr.name)
 
     if assetsChildren.length
 
@@ -625,8 +624,7 @@ class imagoModel extends Service
           name = "#{original_name}_#{i}"
           i++
           findName = _.find assets, (chr) =>
-            normalizeName = angular.copy @imagoUtils.normalize(chr.name)
-            return normalizeName is name
+            return name is _.kebabCase(chr.name)
           exists = (if findName then true else false)
 
         defer.resolve name

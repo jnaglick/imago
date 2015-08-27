@@ -20,11 +20,7 @@ class ImagoVirtualList extends Directive
           element.children().append clone
 
         scope.scrollTop = 0
-        scope.width = element[0].clientWidth
-        scope.visibleProvider = []
-        scope.cellsPerPage = 0
-        scope.numberOfCells = 0
-        scope.canvasHeight = {}
+        scope.reset()
 
         scope.init = ->
           return unless scope.imagovirtuallist.data
@@ -48,10 +44,11 @@ class ImagoVirtualList extends Directive
             scope.canvasHeight = height: Math.ceil((scope.imagovirtuallist.data.length * scope.rowHeight) / scope.itemsPerRow) + 'px'
             cellsPerHeight = Math.round(scope.height / scope.rowHeight)
             scope.cellsPerPage = cellsPerHeight * scope.itemsPerRow
-            if cellsPerHeight is Math.ceil(scope.height / scope.rowHeight)
-              scope.numberOfCells = 3 * scope.cellsPerPage
-            else
-              scope.numberOfCells = 4 * scope.cellsPerPage
+            scope.numberOfCells = 3 * scope.cellsPerPage
+            # if cellsPerHeight is Math.ceil(scope.height / scope.rowHeight)
+            #   scope.numberOfCells = 3 * scope.cellsPerPage
+            # else
+            #   scope.numberOfCells = 4 * scope.cellsPerPage
             scope.margin = 0
             scope.updateDisplayList()
           , 50
@@ -82,15 +79,19 @@ class ImagoVirtualList extends Directive
           scope.scrollTop = element.prop('scrollTop')
           scope.updateDisplayList()
           scope.$digest()
-          # scope.$apply()
-          # scope.$evalAsync()
 
         scope.onScrollWindow = ->
           scope.scrollTop = $window.pageYOffset
           scope.updateDisplayList()
           scope.$digest()
-          # scope.$apply()
-          # scope.$evalAsync()
+
+        scope.resetSize = ->
+          scope.width           = element[0].clientWidth
+          scope.visibleProvider = []
+          scope.cellsPerPage    = 0
+          scope.numberOfCells   = 0
+          scope.canvasHeight    = {}
+          scope.$digest()
 
         scope.$watch 'imagovirtuallist.data', ->
           scope.init()
@@ -101,6 +102,7 @@ class ImagoVirtualList extends Directive
           scope.init()
 
         watchers.push $rootScope.$on 'resizestop', ->
+          scope.resetSize()
           scope.init()
 
         scope.$on '$destroy', ->

@@ -916,16 +916,14 @@ imagoModel = (function() {
     if (!asset.name) {
       defer.reject(asset.name);
     }
-    name = this.imagoUtils.normalize(asset.name);
+    name = _.kebabCase(asset.name);
     result = void 0;
     assetsChildren = _.filter(assets, (function(_this) {
       return function(chr) {
-        var normalizeName;
         if (!chr.name) {
           return false;
         }
-        normalizeName = angular.copy(_this.imagoUtils.normalize(chr.name));
-        return normalizeName === name;
+        return name === _.kebabCase(chr.name);
       };
     })(this));
     if (assetsChildren.length) {
@@ -941,9 +939,7 @@ imagoModel = (function() {
           i++;
           findName = _.find(assets, (function(_this) {
             return function(chr) {
-              var normalizeName;
-              normalizeName = angular.copy(_this.imagoUtils.normalize(chr.name));
-              return normalizeName === name;
+              return name === _.kebabCase(chr.name);
             };
           })(this));
           exists = (findName ? true : false);

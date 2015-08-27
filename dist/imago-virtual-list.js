@@ -19,11 +19,7 @@ ImagoVirtualList = (function() {
           return element.children().append(clone);
         });
         scope.scrollTop = 0;
-        scope.width = element[0].clientWidth;
-        scope.visibleProvider = [];
-        scope.cellsPerPage = 0;
-        scope.numberOfCells = 0;
-        scope.canvasHeight = {};
+        scope.reset();
         scope.init = function() {
           if (!scope.imagovirtuallist.data) {
             return;
@@ -54,11 +50,7 @@ ImagoVirtualList = (function() {
             };
             cellsPerHeight = Math.round(scope.height / scope.rowHeight);
             scope.cellsPerPage = cellsPerHeight * scope.itemsPerRow;
-            if (cellsPerHeight === Math.ceil(scope.height / scope.rowHeight)) {
-              scope.numberOfCells = 3 * scope.cellsPerPage;
-            } else {
-              scope.numberOfCells = 4 * scope.cellsPerPage;
-            }
+            scope.numberOfCells = 3 * scope.cellsPerPage;
             scope.margin = 0;
             return scope.updateDisplayList();
           }, 50);
@@ -108,6 +100,14 @@ ImagoVirtualList = (function() {
           scope.updateDisplayList();
           return scope.$digest();
         };
+        scope.resetSize = function() {
+          scope.width = element[0].clientWidth;
+          scope.visibleProvider = [];
+          scope.cellsPerPage = 0;
+          scope.numberOfCells = 0;
+          scope.canvasHeight = {};
+          return scope.$digest();
+        };
         scope.$watch('imagovirtuallist.data', function() {
           return scope.init();
         });
@@ -116,6 +116,7 @@ ImagoVirtualList = (function() {
           return scope.init();
         }));
         watchers.push($rootScope.$on('resizestop', function() {
+          scope.resetSize();
           return scope.init();
         }));
         return scope.$on('$destroy', function() {
