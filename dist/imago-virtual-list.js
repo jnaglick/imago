@@ -15,11 +15,15 @@ ImagoVirtualList = (function() {
       },
       link: function(scope, element, attrs, ctrl, transclude) {
         var watchers;
-        transclude(scope, function(clone, scope) {
+        transclude(scope, function(clone) {
           return element.children().append(clone);
         });
         scope.scrollTop = 0;
-        scope.reset();
+        scope.width = element[0].clientWidth;
+        scope.visibleProvider = [];
+        scope.cellsPerPage = 0;
+        scope.numberOfCells = 0;
+        scope.canvasHeight = {};
         scope.init = function() {
           if (!scope.imagovirtuallist.data) {
             return;
@@ -101,7 +105,6 @@ ImagoVirtualList = (function() {
           return scope.$digest();
         };
         scope.resetSize = function() {
-          scope.width = element[0].clientWidth;
           scope.visibleProvider = [];
           scope.cellsPerPage = 0;
           scope.numberOfCells = 0;

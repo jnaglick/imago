@@ -16,11 +16,15 @@ class ImagoVirtualList extends Directive
 
       link: (scope, element, attrs, ctrl, transclude) ->
 
-        transclude scope, (clone, scope) ->
+        transclude scope, (clone) ->
           element.children().append clone
 
-        scope.scrollTop = 0
-        scope.reset()
+        scope.scrollTop       = 0
+        scope.width           = element[0].clientWidth
+        scope.visibleProvider = []
+        scope.cellsPerPage    = 0
+        scope.numberOfCells   = 0
+        scope.canvasHeight    = {}
 
         scope.init = ->
           return unless scope.imagovirtuallist.data
@@ -86,7 +90,6 @@ class ImagoVirtualList extends Directive
           scope.$digest()
 
         scope.resetSize = ->
-          scope.width           = element[0].clientWidth
           scope.visibleProvider = []
           scope.cellsPerPage    = 0
           scope.numberOfCells   = 0
