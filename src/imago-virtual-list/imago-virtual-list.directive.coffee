@@ -26,6 +26,9 @@ class ImagoVirtualList extends Directive
         scope.numberOfCells   = 0
         scope.canvasHeight    = {}
 
+        scope.times = 0
+        scope.total = 0
+
         scope.init = ->
           return unless scope.imagovirtuallist.data
           $timeout ->
@@ -48,11 +51,11 @@ class ImagoVirtualList extends Directive
             scope.canvasHeight = height: Math.ceil((scope.imagovirtuallist.data.length * scope.rowHeight) / scope.itemsPerRow) + 'px'
             cellsPerHeight = Math.round(scope.height / scope.rowHeight)
             scope.cellsPerPage = cellsPerHeight * scope.itemsPerRow
-            scope.numberOfCells = 3 * scope.cellsPerPage
-            # if cellsPerHeight is Math.ceil(scope.height / scope.rowHeight)
-            #   scope.numberOfCells = 3 * scope.cellsPerPage
-            # else
-            #   scope.numberOfCells = 4 * scope.cellsPerPage
+            # scope.numberOfCells = 3 * scope.cellsPerPage
+            if cellsPerHeight is Math.ceil(scope.height / scope.rowHeight)
+              scope.numberOfCells = 3 * scope.cellsPerPage
+            else
+              scope.numberOfCells = 4 * scope.cellsPerPage
             scope.margin = 0
             scope.updateDisplayList()
           , 50
@@ -64,7 +67,8 @@ class ImagoVirtualList extends Directive
           scope.visibleProvider = scope.imagovirtuallist.data.slice(data, data + cellsToCreate)
           chunks = _.chunk(scope.visibleProvider, scope.itemsPerRow)
           i = 0
-          while i < scope.visibleProvider.length
+          l = scope.visibleProvider.length
+          while i < l
             findIndex = ->
               for chunk, indexChunk in chunks
                 for item, indexItem in chunk
@@ -75,8 +79,8 @@ class ImagoVirtualList extends Directive
                   return idx
 
             idx = findIndex()
-            # scope.visibleProvider[i].styles = 'transform': "translate3d(#{(scope.rowWidth * idx.inside) + scope.margin + 'px'}, #{(firstCell + idx.chunk) * scope.rowHeight + 'px'}, 0)"
-            scope.visibleProvider[i].styles = 'transform': "translate(#{(scope.rowWidth * idx.inside) + scope.margin + 'px'}, #{(firstCell + idx.chunk) * scope.rowHeight + 'px'})"
+            scope.visibleProvider[i].styles = 'transform': "translate3d(#{(scope.rowWidth * idx.inside) + scope.margin + 'px'}, #{(firstCell + idx.chunk) * scope.rowHeight + 'px'}, 0)"
+            # scope.visibleProvider[i].styles = 'transform': "translate(#{(scope.rowWidth * idx.inside) + scope.margin + 'px'}, #{(firstCell + idx.chunk) * scope.rowHeight + 'px'})"
             i++
 
         scope.onScrollContainer = ->
@@ -93,6 +97,8 @@ class ImagoVirtualList extends Directive
           scope.visibleProvider = []
           scope.cellsPerPage    = 0
           scope.numberOfCells   = 0
+          scope.width           = 0
+          scope.height          = 0
           scope.canvasHeight    = {}
           scope.$digest()
 

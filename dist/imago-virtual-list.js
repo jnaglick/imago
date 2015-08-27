@@ -24,6 +24,8 @@ ImagoVirtualList = (function() {
         scope.cellsPerPage = 0;
         scope.numberOfCells = 0;
         scope.canvasHeight = {};
+        scope.times = 0;
+        scope.total = 0;
         scope.init = function() {
           if (!scope.imagovirtuallist.data) {
             return;
@@ -54,21 +56,26 @@ ImagoVirtualList = (function() {
             };
             cellsPerHeight = Math.round(scope.height / scope.rowHeight);
             scope.cellsPerPage = cellsPerHeight * scope.itemsPerRow;
-            scope.numberOfCells = 3 * scope.cellsPerPage;
+            if (cellsPerHeight === Math.ceil(scope.height / scope.rowHeight)) {
+              scope.numberOfCells = 3 * scope.cellsPerPage;
+            } else {
+              scope.numberOfCells = 4 * scope.cellsPerPage;
+            }
             scope.margin = 0;
             return scope.updateDisplayList();
           }, 50);
         };
         scope.updateDisplayList = function() {
-          var cellsToCreate, chunks, data, findIndex, firstCell, i, idx, results;
+          var cellsToCreate, chunks, data, findIndex, firstCell, i, idx, l, results;
           firstCell = Math.max(Math.floor(scope.scrollTop / scope.rowHeight) - (Math.round(scope.height / scope.rowHeight)), 0);
           cellsToCreate = Math.min(firstCell + scope.numberOfCells, scope.numberOfCells);
           data = firstCell * scope.itemsPerRow;
           scope.visibleProvider = scope.imagovirtuallist.data.slice(data, data + cellsToCreate);
           chunks = _.chunk(scope.visibleProvider, scope.itemsPerRow);
           i = 0;
+          l = scope.visibleProvider.length;
           results = [];
-          while (i < scope.visibleProvider.length) {
+          while (i < l) {
             findIndex = function() {
               var chunk, idx, indexChunk, indexItem, item, j, k, len, len1;
               for (indexChunk = j = 0, len = chunks.length; j < len; indexChunk = ++j) {
@@ -88,7 +95,7 @@ ImagoVirtualList = (function() {
             };
             idx = findIndex();
             scope.visibleProvider[i].styles = {
-              'transform': "translate(" + ((scope.rowWidth * idx.inside) + scope.margin + 'px') + ", " + ((firstCell + idx.chunk) * scope.rowHeight + 'px') + ")"
+              'transform': "translate3d(" + ((scope.rowWidth * idx.inside) + scope.margin + 'px') + ", " + ((firstCell + idx.chunk) * scope.rowHeight + 'px') + ", 0)"
             };
             results.push(i++);
           }
@@ -108,6 +115,8 @@ ImagoVirtualList = (function() {
           scope.visibleProvider = [];
           scope.cellsPerPage = 0;
           scope.numberOfCells = 0;
+          scope.width = 0;
+          scope.height = 0;
           scope.canvasHeight = {};
           return scope.$digest();
         };
