@@ -148,4 +148,4 @@ ImagoVirtualList = (function() {
 
 angular.module('imago').directive('imagoVirtualList', ['$window', '$rootScope', '$timeout', ImagoVirtualList]);
 
-angular.module("imago").run(["$templateCache", function($templateCache) {$templateCache.put("/imago/imago-virtual-list.html","<div ng-style=\"canvasHeight\" class=\"canvas\"></div>");}]);
+angular.module("imago").run(["$templateCache", function($templateCache) {$templateCache.put("/imago/imago-virtual-list.html","<div ng-style=\"canvasStyle\" class=\"canvas\"></div>");}]);
