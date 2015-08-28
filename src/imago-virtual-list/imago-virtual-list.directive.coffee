@@ -11,13 +11,16 @@ class ImagoVirtualList extends Directive
       controllerAs: 'imagovirtuallist'
       bindToController:
         data: '='
+        onBottom: '&'
 
       link: (scope, element, attrs, ctrl, transclude) ->
 
         transclude scope, (clone) ->
           element.children().append clone
 
-        scope.scrollTop = 0
+        self = {}
+        self.scrollTop = 0
+        self.scrollBottomTrigger = 500
 
         scope.init = ->
           return unless scope.imagovirtuallist.data
@@ -27,38 +30,40 @@ class ImagoVirtualList extends Directive
             testDiv.className = attrs.classItem
             testDiv.id = 'virtual-list-test-div'
             element.append testDiv
-            scope.rowWidth = testDiv.clientWidth
-            scope.rowHeight = testDiv.clientHeight
+            self.rowWidth = testDiv.clientWidth
+            self.rowHeight = testDiv.clientHeight
             angular.element(element[0].querySelector('#virtual-list-test-div')).remove()
 
-            scope.width = element[0].clientWidth
-            scope.height = element[0].clientHeight
+            self.width = element[0].clientWidth
+            self.height = element[0].clientHeight
 
             if attrs.imagoVirtualListContainer
               element[0].addEventListener 'scroll', scope.onScrollContainer
             else
               angular.element($window).on 'scroll', scope.onScrollWindow
-            scope.itemsPerRow = Math.floor(scope.width / scope.rowWidth)
-            scope.canvasHeight = height: Math.ceil(scope.imagovirtuallist.data.length / scope.itemsPerRow) * scope.rowHeight + 'px'
-            cellsPerHeight = Math.round(scope.height / scope.rowHeight)
-            scope.cellsPerPage = cellsPerHeight * scope.itemsPerRow
-            # scope.numberOfCells = 3 * scope.cellsPerPage
-            if cellsPerHeight is Math.ceil(scope.height / scope.rowHeight)
-              scope.numberOfCells = 3 * scope.cellsPerPage
+            self.triggerHeight = self.rowHeight + self.scrollBottomTrigger
+            self.itemsPerRow = Math.floor(self.width / self.rowWidth)
+            self.canvasHeight = Math.ceil(scope.imagovirtuallist.data.length / self.itemsPerRow) * self.rowHeight
+            scope.canvasStyle = height: self.canvasHeight + 'px'
+            cellsPerHeight = Math.round(self.height / self.rowHeight)
+            self.cellsPerPage = cellsPerHeight * self.itemsPerRow
+            # self.numberOfCells = 3 * self.cellsPerPage
+            if cellsPerHeight is Math.ceil(self.height / self.rowHeight)
+              self.numberOfCells = 3 * self.cellsPerPage
             else
-              scope.numberOfCells = 4 * scope.cellsPerPage
+              self.numberOfCells = 4 * self.cellsPerPage
+            self.margin = Math.round((self.width / self.itemsPerRow) - self.rowWidth)
+            self.margin = self.margin / 2 if self.itemsPerRow is 1
             scope.updateDisplayList()
 
         scope.updateDisplayList = ->
-          firstCell = Math.max(Math.floor(scope.scrollTop / scope.rowHeight) - (Math.round(scope.height / scope.rowHeight)), 0)
-          cellsToCreate = Math.min(firstCell + scope.numberOfCells, scope.numberOfCells)
-          data = firstCell * scope.itemsPerRow
+          firstCell = Math.max(Math.floor(self.scrollTop / self.rowHeight) - (Math.round(self.height / self.rowHeight)), 0)
+          cellsToCreate = Math.min(firstCell + self.numberOfCells, self.numberOfCells)
+          data = firstCell * self.itemsPerRow
           scope.visibleProvider = scope.imagovirtuallist.data.slice(data, data + cellsToCreate)
-          chunks = _.chunk(scope.visibleProvider, scope.itemsPerRow)
+          chunks = _.chunk(scope.visibleProvider, self.itemsPerRow)
           i = 0
           l = scope.visibleProvider.length
-          margin = Math.round((scope.width / scope.itemsPerRow) - scope.rowWidth)
-          margin = margin / 2 if scope.itemsPerRow is 1
           while i < l
             findIndex = ->
               for chunk, indexChunk in chunks
@@ -71,27 +76,29 @@ class ImagoVirtualList extends Directive
 
             idx = findIndex()
 
-            # scope.visibleProvider[i].styles = 'transform': "translate3d(#{(scope.rowWidth * idx.inside) + margin + 'px'}, #{(firstCell + idx.chunk) * scope.rowHeight + 'px'}, 0)"
-            scope.visibleProvider[i].styles = 'transform': "translate(#{(scope.rowWidth * idx.inside) + margin + 'px'}, #{(firstCell + idx.chunk) * scope.rowHeight + 'px'})"
+            # scope.visibleProvider[i].styles = 'transform': "translate3d(#{(self.rowWidth * idx.inside) + self.margin + 'px'}, #{(firstCell + idx.chunk) * self.rowHeight + 'px'}, 0)"
+            scope.visibleProvider[i].styles = 'transform': "translate(#{(self.rowWidth * idx.inside) + self.margin + 'px'}, #{(firstCell + idx.chunk) * self.rowHeight + 'px'})"
             i++
 
         scope.onScrollContainer = ->
-          scope.scrollTop = element.prop('scrollTop')
+          self.scrollTop = element.prop('scrollTop')
           scope.updateDisplayList()
           scope.$digest()
 
         scope.onScrollWindow = ->
-          scope.scrollTop = $window.pageYOffset
+          self.scrollTop = $window.pageYOffset
+          if (self.canvasHeight - self.scrollTop) <= self.triggerHeight
+            scope.imagovirtuallist.onBottom()
           scope.updateDisplayList()
           scope.$digest()
 
         scope.resetSize = ->
           scope.visibleProvider = []
-          scope.cellsPerPage    = 0
-          scope.numberOfCells   = 0
-          scope.width           = 0
-          scope.height          = 0
-          scope.canvasHeight    = {}
+          scope.canvasStyle     = {}
+          self.cellsPerPage     = 0
+          self.numberOfCells    = 0
+          self.width            = 0
+          self.height           = 0
 
         scope.$watch 'imagovirtuallist.data', ->
           scope.init()
