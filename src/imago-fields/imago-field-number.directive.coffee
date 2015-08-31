@@ -10,12 +10,14 @@ class ImagoFieldNumber extends Directive
         min: '='
         max: '='
         ngModel: '='
-        disabled: '=ngDisabled'
       transclude: true
       templateUrl: '/imago/imago-field-number.html'
       link: (scope, element, attrs, ngModelController) ->
 
         scope.disabled = true if attrs.disabled
+
+        attrs.$observe 'disabled', (value) ->
+          scope.disabled = value
 
         ngModelController.$render = ->
           checkValidity()

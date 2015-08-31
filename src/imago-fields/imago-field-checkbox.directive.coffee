@@ -8,13 +8,15 @@ class ImagoFieldCheckbox extends Directive
       require: 'ngModel'
       scope:
         ngModel: '='
-        disabled: '=ngDisabled'
       transclude: true
       templateUrl: '/imago/imago-field-checkbox.html'
 
       link: (scope, element, attrs, ngModelController) ->
 
         scope.disabled = true if attrs.disabled
+
+        attrs.$observe 'disabled', (value) ->
+          scope.disabled = value
 
         scope.update = (value, disabled) ->
           return if disabled

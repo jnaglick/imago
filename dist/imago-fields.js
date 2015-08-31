@@ -6,8 +6,7 @@ ImagoFieldCheckbox = (function() {
       replace: true,
       require: 'ngModel',
       scope: {
-        ngModel: '=',
-        disabled: '=ngDisabled'
+        ngModel: '='
       },
       transclude: true,
       templateUrl: '/imago/imago-field-checkbox.html',
@@ -15,6 +14,9 @@ ImagoFieldCheckbox = (function() {
         if (attrs.disabled) {
           scope.disabled = true;
         }
+        attrs.$observe('disabled', function(value) {
+          return scope.disabled = value;
+        });
         return scope.update = function(value, disabled) {
           if (disabled) {
             return;
@@ -174,8 +176,7 @@ ImagoFieldNumber = (function() {
       scope: {
         min: '=',
         max: '=',
-        ngModel: '=',
-        disabled: '=ngDisabled'
+        ngModel: '='
       },
       transclude: true,
       templateUrl: '/imago/imago-field-number.html',
@@ -184,6 +185,9 @@ ImagoFieldNumber = (function() {
         if (attrs.disabled) {
           scope.disabled = true;
         }
+        attrs.$observe('disabled', function(value) {
+          return scope.disabled = value;
+        });
         ngModelController.$render = function() {
           return checkValidity();
         };
