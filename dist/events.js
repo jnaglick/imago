@@ -104,3 +104,29 @@ StopPropagation = (function() {
 })();
 
 angular.module('imago').directive('stopPropagation', [StopPropagation]);
+
+var StopScroll;
+
+StopScroll = (function() {
+  function StopScroll() {
+    return {
+      link: function(scope, element, attrs) {
+        return element.on('mousewheel', function(evt) {
+          var minus;
+          minus = element[0].scrollHeight - element[0].clientHeight;
+          if (minus === 0) {
+            return;
+          }
+          if ((minus === element[0].scrollTop && evt.wheelDelta < 0) || (element[0].scrollTop === 0 && evt.wheelDelta > 0)) {
+            return evt.preventDefault();
+          }
+        });
+      }
+    };
+  }
+
+  return StopScroll;
+
+})();
+
+angular.module('imago').directive('stopScroll', [StopScroll]);

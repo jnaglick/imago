@@ -54,10 +54,10 @@ ImagoVirtualList = (function() {
             if (self.itemsPerRow === 1) {
               self.margin = self.margin / 2;
             }
-            return scope.updateDisplayList();
+            return self.updateDisplayList();
           });
         };
-        scope.updateDisplayList = function() {
+        self.updateDisplayList = function() {
           var cellsToCreate, chunks, data, findIndex, firstCell, i, idx, l, results;
           firstCell = Math.max(Math.round(self.scrollTop / self.rowHeight) - (Math.round(self.height / self.rowHeight)), 0);
           cellsToCreate = Math.min(firstCell + self.numberOfCells, self.numberOfCells);
@@ -95,7 +95,7 @@ ImagoVirtualList = (function() {
         };
         scope.onScrollContainer = function() {
           self.scrollTop = element.prop('scrollTop');
-          scope.updateDisplayList();
+          self.updateDisplayList();
           return scope.$digest();
         };
         scope.onScrollWindow = function() {
@@ -103,7 +103,7 @@ ImagoVirtualList = (function() {
           if ((self.canvasHeight - self.scrollTop) <= self.triggerHeight) {
             scope.imagovirtuallist.onBottom();
           }
-          scope.updateDisplayList();
+          self.updateDisplayList();
           return scope.$digest();
         };
         scope.resetSize = function() {

@@ -50,9 +50,9 @@ class ImagoVirtualList extends Directive
             self.numberOfCells = 3 * self.cellsPerPage
             self.margin = Math.round((self.width / self.itemsPerRow) - self.rowWidth)
             self.margin = self.margin / 2 if self.itemsPerRow is 1
-            scope.updateDisplayList()
+            self.updateDisplayList()
 
-        scope.updateDisplayList = ->
+        self.updateDisplayList = ->
           firstCell = Math.max(Math.round(self.scrollTop / self.rowHeight) - (Math.round(self.height / self.rowHeight)), 0)
           cellsToCreate = Math.min(firstCell + self.numberOfCells, self.numberOfCells)
           data = firstCell * self.itemsPerRow
@@ -78,14 +78,14 @@ class ImagoVirtualList extends Directive
 
         scope.onScrollContainer = ->
           self.scrollTop = element.prop('scrollTop')
-          scope.updateDisplayList()
+          self.updateDisplayList()
           scope.$digest()
 
         scope.onScrollWindow = ->
           self.scrollTop = $window.pageYOffset
           if (self.canvasHeight - self.scrollTop) <= self.triggerHeight
             scope.imagovirtuallist.onBottom()
-          scope.updateDisplayList()
+          self.updateDisplayList()
           scope.$digest()
 
         scope.resetSize = ->

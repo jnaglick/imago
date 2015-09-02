@@ -5,7 +5,7 @@
     )
     .counter(ng-bind="cart.imagoCart.itemsLength")
 
-  .box(ng-show="cart.imagoCart.show")
+  .box(ng-show="cart.imagoCart.show" stop-scroll)
     div(ng-transclude)
 
     .itemnumber(
