@@ -4,19 +4,19 @@ class imagoModel extends Service
 
     @assets =
       get: (id) =>
-        @$http.get "#{@imagoSettings.host}/api/assets/#{id}"
+        @$http.get "#{@imagoSettings.host}/api/v1/assets/#{id}"
 
       create: (assets) =>
-        @$http.post "#{@imagoSettings.host}/api/assets", assets
+        @$http.post "#{@imagoSettings.host}/api/v1/assets", assets # TODO undocument/not supported
 
       update: (item) =>
-        @$http.put "#{@imagoSettings.host}/api/assets/#{item._id}", item
+        @$http.put "#{@imagoSettings.host}/api/v1/assets/#{item._id}", item # TODO undocument/not supported
 
       delete: (id) =>
-        @$http.delete "#{@imagoSettings.host}/api/assets/#{id}"
+        @$http.delete "#{@imagoSettings.host}/api/v1/assets/#{id}" # TODO undocument/not supported
 
       trash: (assets) =>
-        @$http.post "#{@imagoSettings.host}/api/assets/trash", assets
+        @$http.post "#{@imagoSettings.host}/api/v1/assets/trash", assets # TODO undocument/not supported
 
       move: (items, src, dest) =>
         data =
@@ -24,7 +24,7 @@ class imagoModel extends Service
           dest  : dest
           items : items
 
-        @$http.post "#{@imagoSettings.host}/api/assets/move", data
+        @$http.post "#{@imagoSettings.host}/api/v1/assets/move", data # TODO undocument/not supported
 
       copy: (items, src, dest) =>
         data =
@@ -32,23 +32,23 @@ class imagoModel extends Service
           dest  : dest
           items : items
 
-        @$http.post "#{@imagoSettings.host}/api/assets/copy", data
+        @$http.post "#{@imagoSettings.host}/api/v1/assets/copy", data # TODO undocument/not supported
 
       batch: (list) =>
         defer = @$q.defer()
         promises = []
         list = _.chunk(list, 100)
         for request in list
-          promises.push @$http.put "#{@imagoSettings.host}/api/assets/update", {assets: request}
+          promises.push @$http.put "#{@imagoSettings.host}/api/v1/assets/update", {assets: request} # TODO undocument/not supported
         @$q.all(promises).then =>
           defer.resolve()
         defer.promise
 
       download: (ids, res) =>
-        @$http.post "#{@imagoSettings.host}/api/assets/download", {assets: ids, resolution: res}
+        @$http.post "#{@imagoSettings.host}/api/v1/assets/download", {assets: ids, resolution: res} # TODO undocument/not supported
 
       repair: (id) =>
-        @$http.put "#{@imagoSettings.host}/api/assets/repairorder", {_id: id}
+        @$http.put "#{@imagoSettings.host}/api/v1/assets/repairorder", {_id: id} # TODO undocument/not supported
 
   data: []
 
@@ -62,7 +62,7 @@ class imagoModel extends Service
       defer = @$q.defer()
       defer.resolve()
       return defer.promise
-    return @$http.post("#{@imagoSettings.host}/api/search", angular.toJson(params))
+    return @$http.post("#{@imagoSettings.host}/api/v1/search", angular.toJson(params))
 
   getLocalData: (query, options = {}) =>
     defer = @$q.defer()

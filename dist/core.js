@@ -57,27 +57,27 @@ imagoModel = (function() {
     this.assets = {
       get: (function(_this) {
         return function(id) {
-          return _this.$http.get(_this.imagoSettings.host + "/api/assets/" + id);
+          return _this.$http.get(_this.imagoSettings.host + "/api/v1/assets/" + id);
         };
       })(this),
       create: (function(_this) {
         return function(assets) {
-          return _this.$http.post(_this.imagoSettings.host + "/api/assets", assets);
+          return _this.$http.post(_this.imagoSettings.host + "/api/v1/assets", assets);
         };
       })(this),
       update: (function(_this) {
         return function(item) {
-          return _this.$http.put(_this.imagoSettings.host + "/api/assets/" + item._id, item);
+          return _this.$http.put(_this.imagoSettings.host + "/api/v1/assets/" + item._id, item);
         };
       })(this),
       "delete": (function(_this) {
         return function(id) {
-          return _this.$http["delete"](_this.imagoSettings.host + "/api/assets/" + id);
+          return _this.$http["delete"](_this.imagoSettings.host + "/api/v1/assets/" + id);
         };
       })(this),
       trash: (function(_this) {
         return function(assets) {
-          return _this.$http.post(_this.imagoSettings.host + "/api/assets/trash", assets);
+          return _this.$http.post(_this.imagoSettings.host + "/api/v1/assets/trash", assets);
         };
       })(this),
       move: (function(_this) {
@@ -88,7 +88,7 @@ imagoModel = (function() {
             dest: dest,
             items: items
           };
-          return _this.$http.post(_this.imagoSettings.host + "/api/assets/move", data);
+          return _this.$http.post(_this.imagoSettings.host + "/api/v1/assets/move", data);
         };
       })(this),
       copy: (function(_this) {
@@ -99,7 +99,7 @@ imagoModel = (function() {
             dest: dest,
             items: items
           };
-          return _this.$http.post(_this.imagoSettings.host + "/api/assets/copy", data);
+          return _this.$http.post(_this.imagoSettings.host + "/api/v1/assets/copy", data);
         };
       })(this),
       batch: (function(_this) {
@@ -110,7 +110,7 @@ imagoModel = (function() {
           list = _.chunk(list, 100);
           for (j = 0, len = list.length; j < len; j++) {
             request = list[j];
-            promises.push(_this.$http.put(_this.imagoSettings.host + "/api/assets/update", {
+            promises.push(_this.$http.put(_this.imagoSettings.host + "/api/v1/assets/update", {
               assets: request
             }));
           }
@@ -122,7 +122,7 @@ imagoModel = (function() {
       })(this),
       download: (function(_this) {
         return function(ids, res) {
-          return _this.$http.post(_this.imagoSettings.host + "/api/assets/download", {
+          return _this.$http.post(_this.imagoSettings.host + "/api/v1/assets/download", {
             assets: ids,
             resolution: res
           });
@@ -130,7 +130,7 @@ imagoModel = (function() {
       })(this),
       repair: (function(_this) {
         return function(id) {
-          return _this.$http.put(_this.imagoSettings.host + "/api/assets/repairorder", {
+          return _this.$http.put(_this.imagoSettings.host + "/api/v1/assets/repairorder", {
             _id: id
           });
         };
@@ -150,7 +150,7 @@ imagoModel = (function() {
       defer.resolve();
       return defer.promise;
     }
-    return this.$http.post(this.imagoSettings.host + "/api/search", angular.toJson(params));
+    return this.$http.post(this.imagoSettings.host + "/api/v1/search", angular.toJson(params));
   };
 
   imagoModel.prototype.getLocalData = function(query, options) {
